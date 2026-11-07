@@ -1,6 +1,6 @@
 # Alta Pure Labs
 
-A responsive, static research catalog with category filtering, search, sorting, a persistent inquiry list, and a non-binding availability-request flow.
+A responsive, static catalog of lyophilized research powders with search, sorting, a persistent inquiry list, and a non-binding availability-request flow.
 
 ## Run locally
 
@@ -16,4 +16,4 @@ Then open `http://localhost:8000`.
 
 Visitors can add catalog items to an inquiry list, adjust quantities, and prepare a JSON availability request. The request is downloaded in the browser; this static site does not send customer information, place orders, reserve inventory, or collect payment. A secure backend and payment provider would be required for transactional checkout.
 
-Catalog product names, package sizes, categories and listed per-unit prices are based on the provided wholesale pick-and-pack sheet. Shipping is not included. All catalog items are presented for research and laboratory purposes only and are not for human or veterinary use.
+Catalog compounds, product names, package sizes and source prices are based on the provided pick-and-pack sheet. Listed per-unit prices reflect a 200% markup over the source catalog. Shipping is not included. Catalog listings are presented for laboratory research.

@@ -63,9 +63,6 @@
 
   function productArt(product) {
     const name = escapeHtml(product.name);
-    if (product.category === "Capsules") {
-      return `<div class="product-art" data-kind="Capsules" aria-hidden="true"><div class="art-capsule"></div></div>`;
-    }
     return `<div class="product-art" data-kind="${escapeHtml(product.category)}" data-name="${name}" aria-hidden="true">
       <div class="art-cap"></div><div class="art-neck"></div>
       <div class="art-bottle"><span>ALTA</span><i></i><small>RESEARCH<br>CATALOG</small></div>
@@ -90,7 +87,7 @@
           <span class="product-code">${escapeHtml(product.code)}</span>
           <span class="product-number">${String(index + 1).padStart(2, "0")} / ${String(visible.length).padStart(2, "0")}</span>
           ${productArt(product)}
-          <span class="product-tag">${escapeHtml(product.category)}</span>
+          <span class="product-tag">Lyophilized powder</span>
         </div>
         <div class="product-info">
           <div class="product-name-row"><h3 class="product-name">${escapeHtml(product.name)}</h3><span class="product-price">${money(product.price)}</span></div>
@@ -152,7 +149,7 @@
     elements.dialogContent.innerHTML = `
       <ul class="cart-list">${list}</ul>
       <div class="cart-summary"><span>Catalog subtotal</span><span>${money(cartTotal())}</span></div>
-      <p class="shipping-note">Listed catalog prices are per-unit wholesale prices. Shipping is not included. Availability and fulfillment terms are confirmed upon inquiry.</p>
+      <p class="shipping-note">Listed catalog prices are per unit. Shipping is not included. Availability and fulfillment terms are confirmed upon inquiry.</p>
       <button class="secondary-button" type="button" data-clear-list>Clear list</button>
       <form class="inquiry-form" id="inquiry-form">
         <h3>Request availability</h3>
@@ -161,7 +158,7 @@
         <label>Work email<input name="email" type="email" autocomplete="email" required maxlength="200"></label>
         <label>Additional notes (optional)<textarea name="notes" maxlength="1000"></textarea></label>
         <label class="research-check"><input name="researchOnly" type="checkbox" required>
-          <span>I confirm this inquiry is solely for qualified research and laboratory purposes, and not for human or veterinary use.</span>
+          <span>I confirm this inquiry is solely for qualified laboratory research.</span>
         </label>
         <button class="submit-inquiry" type="submit">Prepare availability request</button>
       </form>`;
