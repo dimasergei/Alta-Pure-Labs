@@ -2,6 +2,7 @@ const state = {
   group: "All",
   query: "",
   sort: "name",
+  limit: 12,
   cart: loadCart(),
 };
 
@@ -35,22 +36,10 @@ function vialSvg(product) {
   const label = product.name.length > 16 ? product.name.slice(0, 15) + "…" : product.name;
   const size = product.variants[0].size;
   const duo = product.variants.length > 1;
-  const tone = product.category === "capsules" ? "#e7d7b8" : product.category === "supplies" ? "#d5e4ef" : "#d7f3ee";
+  const tone = product.category === "capsules" ? "#e1e5e7" : product.category === "supplies" ? "#dbe6ee" : "#deebe6";
   return `
     <svg viewBox="0 0 360 280" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="${product.name}">
-      <defs>
-        <linearGradient id="g-${product.id}" x1="0" y1="0" x2="1" y2="1">
-          <stop offset="0" stop-color="#243936"/>
-          <stop offset="1" stop-color="#101816"/>
-        </linearGradient>
-        <linearGradient id="gl-${product.id}" x1="0" y1="0" x2="1" y2="0">
-          <stop offset="0" stop-color="#ffffff" stop-opacity="0.15"/>
-          <stop offset="0.5" stop-color="#ffffff" stop-opacity="0.7"/>
-          <stop offset="1" stop-color="#ffffff" stop-opacity="0.12"/>
-        </linearGradient>
-      </defs>
-      <rect width="360" height="280" rx="18" fill="url(#g-${product.id})"/>
-      <ellipse cx="180" cy="232" rx="92" ry="16" fill="#000" opacity="0.28"/>
+      <title>${escapeXml(product.name)} product illustration</title>
       ${duo ? vial(118, product.id, tone, label, size) + vial(214, product.id, "#f4f1ea", label, product.variants[product.variants.length - 1].size) : vial(180, product.id, tone, label, size)}
     </svg>`;
 }
@@ -59,13 +48,17 @@ function vial(cx, id, tone, label, size) {
   const x = cx - 38;
   return `
     <g>
-      <rect x="${cx - 16}" y="42" width="32" height="14" rx="3" fill="#151515"/>
-      <rect x="${cx - 10}" y="56" width="20" height="16" fill="url(#gl-${id})"/>
-      <rect x="${x}" y="72" width="76" height="132" rx="14" fill="url(#gl-${id})" stroke="#ffffff" stroke-opacity="0.35"/>
-      <rect x="${x + 8}" y="132" width="60" height="60" rx="8" fill="${tone}" opacity="0.9"/>
-      <rect x="${x + 10}" y="86" width="56" height="40" rx="4" fill="#f7f5f1"/>
-      <text x="${cx}" y="104" text-anchor="middle" font-family="Plus Jakarta Sans, Arial" font-size="8" font-weight="700" fill="#143832">${escapeXml(label)}</text>
-      <text x="${cx}" y="118" text-anchor="middle" font-family="Plus Jakarta Sans, Arial" font-size="8" fill="#1c7a73">${escapeXml(size)}</text>
+      <rect x="${cx - 25}" y="35" width="50" height="20" rx="3" fill="#bac3c3"/>
+      <rect x="${cx - 21}" y="36" width="42" height="5" rx="2" fill="#e6ebea"/>
+      <rect x="${cx - 19}" y="55" width="38" height="18" fill="#d6deda"/>
+      <rect x="${x}" y="70" width="76" height="157" rx="15" fill="#d8e1df"/>
+      <rect x="${x + 6}" y="72" width="64" height="150" rx="12" fill="#edf1ef"/>
+      <rect x="${x + 12}" y="80" width="5" height="132" rx="2" fill="white" opacity=".85"/>
+      <rect x="${x + 3}" y="115" width="70" height="86" fill="#fff"/>
+      <rect x="${x + 3}" y="172" width="70" height="29" fill="${tone}"/>
+      <text x="${cx}" y="134" text-anchor="middle" font-family="Plus Jakarta Sans, Arial" font-size="6" font-weight="700" letter-spacing="1" fill="#143832">ALTAPURE LABS</text>
+      <text x="${cx}" y="155" text-anchor="middle" font-family="Plus Jakarta Sans, Arial" font-size="8" font-weight="700" fill="#143832">${escapeXml(label)}</text>
+      <text x="${cx}" y="190" text-anchor="middle" font-family="Plus Jakarta Sans, Arial" font-size="9" fill="#143832">${escapeXml(size)}</text>
     </g>`;
 }
 
@@ -101,14 +94,14 @@ function renderFilters() {
 function productCardMarkup(product) {
   return `
       <article class="card">
-        <button class="shot" type="button" data-open="${product.id}">${vialSvg(product)}</button>
+        <button class="shot" type="button" data-open="${product.id}" aria-label="View ${escapeXml(product.name)} details">${vialSvg(product)}</button>
         <div class="meta">
           <span class="group">${product.group}</span>
           <h3>${product.name}</h3>
           <span class="muted">${product.variants.map((variant) => variant.size).join(" · ")}</span>
           <div class="price-row">
             <div>
-              <span class="from">FROM</span>
+              <span class="from">From</span>
               <span class="price">${money(fromPrice(product))}</span>
             </div>
             <button class="add" type="button" data-open="${product.id}" aria-label="Choose ${escapeXml(product.name)}">
@@ -141,9 +134,12 @@ function renderGrid() {
   $("#result-count").textContent = `${items.length} ${noun}`;
   if (!items.length) {
     $("#grid").innerHTML = `<p class="empty">No products match that search.</p>`;
+    $("#show-more").hidden = true;
     return;
   }
-  $("#grid").innerHTML = items.map(productCardMarkup).join("");
+  $("#grid").innerHTML = items.slice(0, state.limit).map(productCardMarkup).join("");
+  $("#show-more").hidden = state.limit >= items.length;
+  $("#show-more").textContent = `Show more products (${items.length - state.limit} remaining)`;
 }
 
 function renderCartCount() {
@@ -187,7 +183,7 @@ function openProduct(id) {
   $("#product-body").innerHTML = `
     <header class="dialog-head">
       <div>
-        <p class="eyebrow">${product.group}</p>
+        <p class="product-category">${product.group}</p>
         <h2>${product.name}</h2>
       </div>
       <button class="icon-btn" value="cancel" type="submit" aria-label="Close">×</button>
@@ -196,7 +192,7 @@ function openProduct(id) {
       ${vialSvg(product)}
       <div>
         <p>${product.blurb}</p>
-        <p class="fine">Wholesale unit price. Labeling and pick-and-pack included. Shipping is not included. Research use only — not for human consumption.</p>
+        <p class="fine">Wholesale unit price. Labeling and pick-and-pack included. Shipping is not included. Research use only. Not for human consumption.</p>
         <div class="variants">
           ${product.variants
             .map(
@@ -276,23 +272,33 @@ function init() {
     const button = event.target.closest("[data-group]");
     if (!button) return;
     state.group = button.dataset.group;
+    state.limit = 12;
     renderFilters();
     renderGrid();
   });
-  $(".hero-actions").addEventListener("click", (event) => {
+  document.querySelector("main").addEventListener("click", (event) => {
     const link = event.target.closest("[data-select-group]");
     if (!link) return;
     state.group = link.dataset.selectGroup;
+    state.query = "";
+    state.limit = 12;
+    $("#search").value = "";
     renderFilters();
     renderGrid();
   });
   $("#search").addEventListener("input", (event) => {
     state.query = event.target.value;
+    state.limit = 12;
     renderGrid();
   });
   $("#open-search").addEventListener("click", () => $("#search").focus());
+  $("#show-more").addEventListener("click", () => {
+    state.limit += 12;
+    renderGrid();
+  });
   $("#sort").addEventListener("change", (event) => {
     state.sort = event.target.value;
+    state.limit = 12;
     renderGrid();
   });
   document.querySelector("main").addEventListener("click", (event) => {
@@ -330,10 +336,9 @@ function init() {
     saveCart();
     $("#checkout-dialog").querySelector(".dialog-body").innerHTML = `
       <div class="confirm">
-        <p class="eyebrow">Request received</p>
-        <h2>Order noted</h2>
-        <p>${escapeXml(data.get("name"))}, ${count} units totaling ${money(total)} are ready for fulfillment review.</p>
-        <p class="fine">Shipping is not included. No payment was processed. Research use only.</p>
+        <h2>Summary prepared</h2>
+        <p>${escapeXml(data.get("name"))}, your local summary contains ${count} ${count === 1 ? "unit" : "units"} totaling ${money(total)}.</p>
+        <p class="fine">This summary stays in your browser. No order was sent and no payment was processed. Shipping is not included. Research use only.</p>
         <button class="pill pill-dark" type="button" id="done">Back to catalog</button>
       </div>`;
     $("#done").addEventListener("click", () => {

@@ -1,0 +1,4 @@
+.taste-skill/
+dist/
+node_modules/
+assets/*.png
