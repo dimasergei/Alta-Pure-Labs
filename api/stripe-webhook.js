@@ -14,7 +14,9 @@ module.exports=async(req,res)=>{
   try {
     const s=await stripe.checkout.sessions.retrieve(event.data.object.id);
     if(!s.metadata?.order_id) return res.status(200).json({received:true,ignored:true});
-    const shipping=s.shipping_details;
+    const shipping =
+  s.collected_information?.shipping_details ??
+  s.shipping_details;
     checked(await db.rpc('apply_store_checkout_event',{
       p_event_id:event.id,p_event_type:event.type,p_order_id:s.metadata.order_id,
       p_session_id:s.id,p_payment_intent:typeof s.payment_intent==='string'?s.payment_intent:s.payment_intent?.id||null,
