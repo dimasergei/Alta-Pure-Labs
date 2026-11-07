@@ -5,7 +5,9 @@ vm.runInNewContext(fs.readFileSync('products.js', 'utf8') + '\n;globalThis.expor
 fs.mkdirSync('lib', {recursive:true});
 fs.writeFileSync('lib/catalog.json', JSON.stringify(sandbox.exported));
 let html = fs.readFileSync('index.html','utf8');
-if (!html.includes('src="checkout.js"')) html = html.replace('</body>', '<script src="checkout.js"></script>\n</body>');
+if (!html.includes('src="checkout.js"')) {
+  html = html.replace('</body>', '<script src="checkout.js"></script>\n</body>');
+}
 html = html.replace('This is a local order summary. No payment is processed.', 'Test checkout only. No real payments. USD; US shipping is $25 per order.');
 html = html.replace('No. The order flow prepares a local request summary; it does not process payment or place an order.', 'Checkout is currently in test mode. No real payments are accepted. US shipping is $25 per order.');
 html = html.replace('Place request <span', 'Continue to test payment <span');
