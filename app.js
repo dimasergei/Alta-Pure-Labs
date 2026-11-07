@@ -76,7 +76,7 @@ function vial(cx, id, tone, label, size) {
       <rect x="${x + 12}" y="80" width="5" height="132" rx="2" fill="white" opacity=".85"/>
       <rect x="${x + 3}" y="115" width="70" height="86" fill="#fff"/>
       <rect x="${x + 3}" y="172" width="70" height="29" fill="${tone}"/>
-      <text x="${cx}" y="134" text-anchor="middle" font-family="Plus Jakarta Sans, Arial" font-size="6" font-weight="700" letter-spacing="1" fill="#143832">ALTAPURE LABS</text>
+      <image class="vial-brand" href="assets/brand-label.webp" x="${cx - 30}" y="122" width="60" height="16" aria-label="AltaPure Labs" />
       <text x="${cx}" y="155" text-anchor="middle" font-family="Plus Jakarta Sans, Arial" font-size="8" font-weight="700" fill="#143832">${escapeXml(label)}</text>
       <text x="${cx}" y="190" text-anchor="middle" font-family="Plus Jakarta Sans, Arial" font-size="9" fill="#143832">${escapeXml(size)}</text>
     </g>`;
@@ -113,7 +113,7 @@ function renderFilters() {
 
 function productCardMarkup(product) {
   return `
-      <article class="card">
+      <article class="card" data-group="${escapeXml(product.group)}">
         <button class="shot" type="button" data-open="${product.id}" aria-label="View ${escapeXml(product.name)} details">${vialSvg(product)}</button>
         <div class="meta">
           <span class="group">${product.group}</span>

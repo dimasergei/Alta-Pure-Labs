@@ -80,12 +80,23 @@ button { border: 0; }
 .section-heading h2, .shop-head h2 { margin: 0; }
 .grid { display: grid; grid-template-columns: repeat(4,minmax(0,1fr)); gap: 40px 24px; }
 .featured-grid { grid-template-columns: repeat(3,minmax(0,1fr)); max-width: 1440px; margin: auto; }
-.card { min-width: 0; display: flex; flex-direction: column; }
-.shot { width: 100%; padding: 0; background: #f1f3f2; overflow: hidden; }
+.card { min-width: 0; display: flex; flex-direction: column; background: var(--card-bg, #f1f3f2); }
+.card[data-group="GLP-1 & Metabolic"] { --card-bg: #dcebf5; }
+.card[data-group="Healing & Recovery"] { --card-bg: #dceee3; }
+.card[data-group="Growth Hormone"] { --card-bg: #f5e3d2; }
+.card[data-group="Cognitive & Nootropic"] { --card-bg: #e8e1f4; }
+.card[data-group="Longevity"] { --card-bg: #f2edce; }
+.card[data-group="Cosmetic & Skin"] { --card-bg: #f4e0dc; }
+.card[data-group="Sexual & Hormonal"] { --card-bg: #efdce8; }
+.card[data-group="Capsules"] { --card-bg: #e0e4f5; }
+.card[data-group="BAC Water & Supplies"] { --card-bg: #e2e9e9; }
+.shot { width: 100%; padding: 0; background: transparent; overflow: hidden; }
 .shot svg { width: 100%; height: auto; transition: transform .5s var(--ease); }
 .shot:hover svg { transform: scale(1.045); }
-.featured .shot { background: white; }
-.meta { padding: 22px 2px 0; display: flex; flex-direction: column; gap: 8px; flex: 1; }
+.meta { padding: 8px 20px 20px; display: flex; flex-direction: column; gap: 8px; flex: 1; }
+.card .group, .card .muted, .card .from { color: #4e5b56; }
+.card .add { background: #ffffffb8; }
+.card .add:hover { background: white; }
 .meta h3 { font: 600 20px/1.3 var(--font); letter-spacing: -.025em; margin: 0; }
 .group { font-size: 13px; color: var(--muted); }
 .muted { color: var(--muted); font-size: 13px; }
@@ -214,7 +225,7 @@ dialog::backdrop { background: #05090bd9; }
   .grid { grid-template-columns: repeat(2,minmax(0,1fr)); gap: 32px 14px; }
   .featured-grid { grid-template-columns: 1fr; gap: 36px; }
   .featured .card { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; align-items: center; }
-  .featured .meta { padding: 0; gap: 6px; }
+  .featured .meta { padding: 16px 16px 16px 0; gap: 6px; }
   .featured .meta h3 { font-size: 18px; }
   .meta { padding-top: 16px; gap: 6px; }
   .meta h3 { font-size: 16px; }

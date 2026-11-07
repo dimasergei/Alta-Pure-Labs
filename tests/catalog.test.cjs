@@ -37,3 +37,25 @@ test("featured and spotlight entries keep their original minimum prices", () => 
     assert.equal(Math.min(...product.variants.map((variant) => variant.price)), expected);
   }
 });
+
+test("every category has a unique card background and every vial uses the original brand asset", () => {
+  const app = readFileSync(resolve(__dirname, "../app.js"), "utf8").replace(/\binit\(\);\s*$/, "");
+  vm.runInContext(`${app}; globalThis.cardMarkup = productCardMarkup; globalThis.productSvg = vialSvg;`, sandbox);
+  const css = readFileSync(resolve(__dirname, "../styles.css"), "utf8");
+  const colors = new Set();
+  for (const group of groups.filter((group) => group !== "All")) {
+    const rule = `.card[data-group="${group}"]`;
+    assert.ok(css.includes(rule), `Missing background for ${group}`);
+    const color = css.slice(css.indexOf(rule)).match(/--card-bg:\s*(#[a-f0-9]+)/)[1];
+    colors.add(color);
+  }
+  assert.equal(colors.size, 9);
+  for (const product of catalog) {
+    const svg = sandbox.productSvg(product);
+    const logos = svg.match(/class="vial-brand"/g) || [];
+    assert.equal(logos.length, product.variants.length > 1 ? 2 : 1, product.id);
+    assert.ok(svg.includes('href="assets/brand-label.webp"'));
+    assert.ok(sandbox.cardMarkup(product).includes(`data-group="${product.group.replaceAll("&", "&amp;")}"`));
+  }
+  assert.ok(readFileSync(resolve(__dirname, "../assets/brand-label.webp")).length > 0);
+});

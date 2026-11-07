@@ -18,6 +18,8 @@ Open `http://localhost:3000`. There is no build step or framework dependency.
 
 The original three-bar logo and wordmark are retained, using the existing light treatment on the dark header and footer. Generated still lifes are conceptual illustrations, not actual packaging photographs; this is disclosed in the footer.
 
+Every small product illustration uses the original logo/wordmark in `assets/brand-label.webp`, including single and paired vials in featured cards, catalog cards and product dialogs. Each of the nine catalog groups has its own muted full-card background, defined by `.card[data-group]` rules in `styles.css`; category names remain visible so color is not the only identifier.
+
 ## Behavior
 
 - Session-based adult/research-use gate.
