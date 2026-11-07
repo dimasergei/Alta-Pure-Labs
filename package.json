@@ -1,0 +1,12 @@
+{
+  "name": "altapure-store",
+  "private": true,
+  "version": "0.1.0",
+  "scripts": {
+    "build": "node install-store.cjs"
+  },
+  "dependencies": {
+    "stripe": "^18.0.0",
+    "@supabase/supabase-js": "^2.49.0"
+  }
+}
