@@ -1,6 +1,6 @@
 # Alta Pure Labs
 
-A responsive, static catalog of lyophilized research powders with search, sorting, a persistent inquiry list, and a non-binding availability-request flow.
+A responsive research storefront catalog with search, sorting, category filters, a persistent cart, and a non-binding availability-request flow.
 
 ## Run locally
 
@@ -12,8 +12,8 @@ python3 -m http.server 8000
 
 Then open `http://localhost:8000`.
 
-## Inquiry flow
+## Cart and availability requests
 
-Visitors can add catalog items to an inquiry list, adjust quantities, and prepare a JSON availability request. The request is downloaded in the browser; this static site does not send customer information, place orders, reserve inventory, or collect payment. A secure backend and payment provider would be required for transactional checkout.
+Visitors can add catalog items to a cart, adjust quantities, and prepare a JSON availability request. The request is downloaded in the browser; this static site does not send customer information, place orders, reserve inventory, or collect payment. Transactional checkout requires a trusted server and a payment provider.
 
-Catalog compounds, product names, package sizes and source prices are based on the provided pick-and-pack sheet. Listed per-unit prices reflect a 200% markup over the source catalog. Shipping is not included. Catalog listings are presented for laboratory research.
+All products, names, categories and package sizes from the provided pick-and-pack sheet are included. Listed per-unit prices reflect a 200% markup over the source catalog. Shipping is not included. Catalog listings are presented for laboratory research.

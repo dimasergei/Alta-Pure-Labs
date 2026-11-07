@@ -80,4 +80,16 @@ window.PRODUCTS = [
   { name: "LL-37", variant: "10 mg", price: 87, category: "Compounds" },
   { name: "Snap8", variant: "10 mg", price: 57, category: "Compounds" },
   { name: "Thymosin Alpha-1", variant: "10 mg", price: 87, category: "Compounds" },
+  { name: "AMPK", variant: "60 ct", price: 147, category: "Capsules" },
+  { name: "Super NAD+", variant: "60 ct", price: 159, category: "Capsules" },
+  { name: "BPC-157 w/ Aminos", variant: "60 ct", price: 126, category: "Capsules" },
+  { name: "Micellular LiverGenix+", variant: "60 ct", price: 114, category: "Capsules" },
+  { name: "Wolverine Elite+", variant: "60 ct", price: 216, category: "Capsules" },
+  { name: "Gonadorelin Elite+", variant: "20 ct", price: 183, category: "Capsules" },
+  { name: "Vitamax Regener8", variant: "60 ct", price: 114, category: "Capsules" },
+  { name: "Zazen-ST", variant: "90 ct", price: 93, category: "Capsules" },
+  { name: "Male Ultra Elite+", variant: "60 ct", price: 183, category: "Capsules" },
+  { name: "BAC Water", variant: "3 mL", price: 15, category: "Lab supplies" },
+  { name: "BAC Water", variant: "10 mL", price: 18, category: "Lab supplies" },
+  { name: "Needles 31G 5/16\"", variant: "10pk", price: 12, category: "Lab supplies" }
 ];

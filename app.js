@@ -35,8 +35,8 @@
         )
       );
     } catch (error) {
-      console.error("Could not restore the saved inquiry list.", error);
-      showToast("Saved inquiry list could not be restored; starting with an empty list.");
+      console.error("Could not restore the saved cart.", error);
+      showToast("Saved cart could not be restored; starting with an empty cart.");
       return {};
     }
   }
@@ -45,7 +45,7 @@
     try {
       localStorage.setItem("alta-pure-labs-inquiry", JSON.stringify(cart));
     } catch (error) {
-      console.error("Could not save the inquiry list.", error);
+      console.error("Could not save the cart.", error);
       showToast("Your browser could not save this list. Keep this page open while you review it.");
     }
     updateCartCount();
@@ -63,6 +63,9 @@
 
   function productArt(product) {
     const name = escapeHtml(product.name);
+    if (product.category === "Capsules") {
+      return `<div class="product-art" data-kind="Capsules" aria-hidden="true"><div class="art-capsule"></div></div>`;
+    }
     return `<div class="product-art" data-kind="${escapeHtml(product.category)}" data-name="${name}" aria-hidden="true">
       <div class="art-cap"></div><div class="art-neck"></div>
       <div class="art-bottle"><span>ALTA</span><i></i><small>RESEARCH<br>CATALOG</small></div>
@@ -87,13 +90,13 @@
           <span class="product-code">${escapeHtml(product.code)}</span>
           <span class="product-number">${String(index + 1).padStart(2, "0")} / ${String(visible.length).padStart(2, "0")}</span>
           ${productArt(product)}
-          <span class="product-tag">Lyophilized powder</span>
+          <span class="product-tag">${escapeHtml(product.category)}</span>
         </div>
         <div class="product-info">
           <div class="product-name-row"><h3 class="product-name">${escapeHtml(product.name)}</h3><span class="product-price">${money(product.price)}</span></div>
           <div class="product-meta"><span class="product-variant">${escapeHtml(product.variant)}</span><span>Per unit</span></div>
-          <button class="add-button" type="button" data-add="${escapeHtml(product.id)}" aria-label="Add ${escapeHtml(product.name)} ${escapeHtml(product.variant)} to inquiry list">
-            <span aria-hidden="true">+</span> Add to inquiry list
+          <button class="add-button" type="button" data-add="${escapeHtml(product.id)}" aria-label="Add ${escapeHtml(product.name)} ${escapeHtml(product.variant)} to cart">
+            <span aria-hidden="true">+</span> Add to cart
           </button>
         </div>
       </article>
@@ -107,7 +110,7 @@
   function updateCartCount() {
     const count = Object.values(cart).reduce((sum, quantity) => sum + quantity, 0);
     elements.cartCount.textContent = String(count);
-    elements.cartCount.setAttribute("aria-label", `${count} items in inquiry list`);
+    elements.cartCount.setAttribute("aria-label", `${count} items in cart`);
   }
 
   function showToast(message) {
@@ -126,8 +129,8 @@
     if (entries.length === 0) {
       elements.dialogContent.innerHTML = `
         <div class="cart-empty">
-          <strong>Your list is empty.</strong>
-          <p>Explore the catalog and add items to request availability.</p>
+          <strong>Your cart is empty.</strong>
+          <p>Explore the catalog and add items to your cart.</p>
           <button class="text-button" type="button" data-close-and-browse>Browse catalog <span aria-hidden="true">↗</span></button>
         </div>`;
       return;
@@ -148,8 +151,8 @@
 
     elements.dialogContent.innerHTML = `
       <ul class="cart-list">${list}</ul>
-      <div class="cart-summary"><span>Catalog subtotal</span><span>${money(cartTotal())}</span></div>
-      <p class="shipping-note">Listed catalog prices are per unit. Shipping is not included. Availability and fulfillment terms are confirmed upon inquiry.</p>
+      <div class="cart-summary"><span>Subtotal</span><span>${money(cartTotal())}</span></div>
+      <p class="shipping-note">Listed catalog prices are per unit. Shipping is not included. Availability and fulfillment terms are confirmed upon request.</p>
       <button class="secondary-button" type="button" data-clear-list>Clear list</button>
       <form class="inquiry-form" id="inquiry-form">
         <h3>Request availability</h3>
@@ -158,7 +161,7 @@
         <label>Work email<input name="email" type="email" autocomplete="email" required maxlength="200"></label>
         <label>Additional notes (optional)<textarea name="notes" maxlength="1000"></textarea></label>
         <label class="research-check"><input name="researchOnly" type="checkbox" required>
-          <span>I confirm this inquiry is solely for qualified laboratory research.</span>
+          <span>I confirm this request is solely for qualified laboratory research.</span>
         </label>
         <button class="submit-inquiry" type="submit">Prepare availability request</button>
       </form>`;
@@ -166,7 +169,7 @@
 
   function requestDocument(formData) {
     const request = {
-      requestType: "Non-binding availability inquiry",
+      requestType: "Non-binding availability request",
       submittedAt: new Date().toISOString(),
       contact: {
         name: formData.get("name").trim(),
@@ -191,7 +194,7 @@
     const url = URL.createObjectURL(blob);
     const link = document.createElement("a");
     link.href = url;
-    link.download = `alta-pure-labs-inquiry-${new Date().toISOString().slice(0, 10)}.json`;
+    link.download = `alta-pure-labs-availability-request-${new Date().toISOString().slice(0, 10)}.json`;
     document.body.append(link);
     link.click();
     link.remove();
@@ -203,7 +206,7 @@
     elements.dialogContent.innerHTML = `
       <div class="request-confirmation">
         <span class="confirmation-mark" aria-hidden="true">✓</span>
-        <h3>Your inquiry file is ready.</h3>
+        <h3>Your availability request is ready.</h3>
         <p>A JSON copy of your non-binding availability request has been downloaded. This page does not send your information, place an order, reserve products, or collect payment.</p>
         <button type="button" class="text-button request-download" data-download-again>Download request again <span aria-hidden="true">↗</span></button>
         <button type="button" class="secondary-button" data-finish>Return to catalog</button>
@@ -223,7 +226,7 @@
     if (!byId.has(id)) return;
     cart[id] = Math.min(99, (cart[id] || 0) + 1);
     saveCart();
-    showToast(`${byId.get(id).name} added to your inquiry list.`);
+    showToast(`${byId.get(id).name} added to your cart.`);
   });
 
   document.querySelector(".category-tabs").addEventListener("click", (event) => {
@@ -276,8 +279,8 @@
         const request = JSON.parse(elements.dialogContent.dataset.request);
         downloadRequest(request);
       } catch (error) {
-        console.error("Could not recreate the inquiry file.", error);
-        showToast("The inquiry file could not be created again. Please submit a new request.");
+        console.error("Could not recreate the availability request.", error);
+        showToast("The request file could not be created again. Please submit a new request.");
       }
     }
   });
