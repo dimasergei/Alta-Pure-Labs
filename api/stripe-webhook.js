@@ -7,7 +7,6 @@ module.exports=async(req,res)=>{
     const chunks=[]; let length=0;
     for await (const chunk of req) {const c=Buffer.isBuffer(chunk)?chunk:Buffer.from(chunk); length+=c.length; if(length>1048576) return res.status(413).end(); chunks.push(c);}
     event=stripe.webhooks.constructEvent(Buffer.concat(chunks),req.headers['stripe-signature'],process.env.STRIPE_WEBHOOK_SECRET);
-    if(event.livemode) return res.status(400).send('Test events only.');
   } catch(e) {return res.status(400).send('Invalid signature or webhook configuration.');}
   const allowed=['checkout.session.completed','checkout.session.async_payment_succeeded','checkout.session.async_payment_failed','checkout.session.expired'];
   if(!allowed.includes(event.type)) return res.status(200).json({received:true,ignored:true});
