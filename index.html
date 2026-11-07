@@ -25,7 +25,7 @@
   </div>
 
   <div class="announce">
-    <p>Research use only. Pick-and-pack included. Shipping billed separately.</p>
+    <p>Research use only. Pick-and-pack included. US shipping: $25 per order. Prices in USD.</p>
   </div>
 
   <header class="topbar">
@@ -167,7 +167,7 @@
         </details>
         <details>
           <summary>Does the site process payment?</summary>
-          <p>No. The order flow prepares a local request summary; it does not process payment or place an order.</p>
+          <p>Checkout is currently in test mode. No real payments are accepted. US shipping is $25 per order.</p>
         </details>
       </div>
     </section>
@@ -212,7 +212,7 @@
         <h2>Order request</h2>
         <button class="icon-btn" type="button" id="close-checkout" aria-label="Close checkout">×</button>
       </header>
-      <p class="fine">This is a local order summary. No payment is processed.</p>
+      <p class="fine">Test checkout only. No real payments. USD; US shipping is $25 per order.</p>
       <label>Name <input name="name" required autocomplete="name" /></label>
       <label>Email <input name="email" type="email" required autocomplete="email" /></label>
       <label>Laboratory or organization <input name="org" required /></label>
@@ -221,11 +221,13 @@
         I confirm this request is for laboratory research only and not for human consumption.
       </label>
       <div id="checkout-summary"></div>
-      <button class="pill pill-dark" type="submit">Place request <span aria-hidden="true">→</span></button>
+      <button class="pill pill-dark" type="submit">Continue to test payment <span aria-hidden="true">→</span></button>
     </form>
   </dialog>
 
   <script src="products.js"></script>
+  <script type="module" src="analytics.js"></script>
   <script src="app.js"></script>
+<script src="checkout.js"></script>
 </body>
 </html>
