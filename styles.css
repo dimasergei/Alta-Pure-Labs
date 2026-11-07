@@ -294,3 +294,95 @@ dialog::backdrop { background: #05090bd9; }
   color: #fff;
   text-decoration: underline;
 }
+
+.faq-section {
+  padding: 80px 0 40px;
+}
+
+.faq-section .eyebrow {
+  color: rgba(255, 255, 255, 0.65);
+  font-size: 0.8rem;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  margin: 0 0 14px;
+}
+
+.faq-numbered {
+  display: grid;
+  gap: 0;
+  margin-top: 36px;
+  border-top: 1px solid rgba(255, 255, 255, 0.14);
+}
+
+.faq-row {
+  display: grid;
+  grid-template-columns: 72px 1fr;
+  gap: 20px;
+  padding: 22px 0;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.14);
+}
+
+.faq-number {
+  color: rgba(255, 255, 255, 0.55);
+  font-size: 0.9rem;
+  font-weight: 600;
+  padding-top: 4px;
+}
+
+.faq-row details summary {
+  cursor: pointer;
+  font-size: 1.1rem;
+  font-weight: 600;
+  color: #fff;
+  list-style: none;
+}
+
+.faq-row details summary::-webkit-details-marker {
+  display: none;
+}
+
+.faq-row details summary::after {
+  content: "+";
+  float: right;
+  color: rgba(255, 255, 255, 0.65);
+  font-weight: 400;
+}
+
+.faq-row details[open] summary::after {
+  content: "–";
+}
+
+.faq-row details p {
+  margin: 14px 0 0;
+  color: rgba(255, 255, 255, 0.72);
+  max-width: 68ch;
+}
+
+.faq-cta {
+  margin-top: 72px;
+  padding: 48px;
+  border-radius: 24px;
+  background: rgba(255, 255, 255, 0.06);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  text-align: center;
+}
+
+.faq-cta h2 {
+  margin: 0 0 12px;
+}
+
+.faq-cta p {
+  color: rgba(255, 255, 255, 0.72);
+  margin: 0 0 24px;
+}
+
+@media (max-width: 720px) {
+  .faq-row {
+    grid-template-columns: 1fr;
+    gap: 8px;
+  }
+
+  .faq-cta {
+    padding: 32px 20px;
+  }
+}
