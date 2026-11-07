@@ -33,6 +33,7 @@ module.exports = async (req,res) => {
     checked(await db.from('store_orders').insert({id,customer_email:b.email.trim(),customer_name:b.name.trim(),organization:b.org.trim(),currency:'usd',subtotal_cents:subtotal,shipping_cents:shipping,total_cents:subtotal+shipping,research_confirmation_at:new Date().toISOString()}));
     checked(await db.from('store_order_items').insert(items.map(i=>({...i,order_id:id}))));
     const session=await stripe.checkout.sessions.create({
+      adaptive_pricing: { enabled: false },
       mode:'payment',payment_method_types:['card'],customer_email:b.email.trim(),
       client_reference_id:id,metadata:{order_id:id},payment_intent_data:{metadata:{order_id:id}},
       line_items:items.map(i=>({quantity:i.quantity,price_data:{currency:'usd',unit_amount:i.unit_price_cents,product_data:{name:i.product_name+' — '+i.variant_size}}})),
