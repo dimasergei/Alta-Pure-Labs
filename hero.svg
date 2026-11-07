@@ -1,0 +1,57 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1400 800" preserveAspectRatio="xMidYMid slice">
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#0d2422"/>
+      <stop offset="0.55" stop-color="#1a3d3a"/>
+      <stop offset="1" stop-color="#071413"/>
+    </linearGradient>
+    <radialGradient id="glow" cx="0.72" cy="0.42" r="0.35">
+      <stop offset="0" stop-color="#7fd0c6" stop-opacity="0.55"/>
+      <stop offset="1" stop-color="#7fd0c6" stop-opacity="0"/>
+    </radialGradient>
+    <linearGradient id="glass" x1="0" y1="0" x2="1" y2="0">
+      <stop offset="0" stop-color="#d7eeea" stop-opacity="0.18"/>
+      <stop offset="0.45" stop-color="#ffffff" stop-opacity="0.55"/>
+      <stop offset="1" stop-color="#9ec7c2" stop-opacity="0.16"/>
+    </linearGradient>
+    <linearGradient id="liquid" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#d5f4ef"/>
+      <stop offset="1" stop-color="#7eb8b0"/>
+    </linearGradient>
+  </defs>
+  <rect width="1400" height="800" fill="url(#bg)"/>
+  <rect width="1400" height="800" fill="url(#glow)"/>
+  <g opacity="0.35" fill="none" stroke="#b7e4dc" stroke-width="1.2">
+    <circle cx="1080" cy="250" r="180"/>
+    <circle cx="1080" cy="250" r="260"/>
+    <path d="M980 160c40 30 40 90 0 120M1180 180c-30 40-30 100 0 140"/>
+  </g>
+  <g transform="translate(860 150)">
+    <rect x="70" y="0" width="150" height="36" rx="8" fill="#111"/>
+    <rect x="96" y="36" width="98" height="28" fill="url(#glass)"/>
+    <rect x="40" y="64" width="210" height="340" rx="28" fill="url(#glass)" stroke="#ffffff" stroke-opacity="0.45"/>
+    <rect x="58" y="210" width="174" height="170" rx="16" fill="url(#liquid)" opacity="0.85"/>
+    <rect x="68" y="120" width="154" height="92" rx="8" fill="#f4f7f6"/>
+    <text x="145" y="156" text-anchor="middle" font-family="Arial" font-size="14" font-weight="700" fill="#143832">ALTA PURE LABS</text>
+    <text x="145" y="180" text-anchor="middle" font-family="Arial" font-size="13" fill="#1c7a73">RESEARCH</text>
+    <ellipse cx="145" cy="430" rx="90" ry="16" fill="#000" opacity="0.25"/>
+  </g>
+  <g transform="translate(1088 230) scale(0.82)">
+    <rect x="70" y="0" width="150" height="36" rx="8" fill="#1b1b1b"/>
+    <rect x="96" y="36" width="98" height="28" fill="url(#glass)"/>
+    <rect x="40" y="64" width="210" height="340" rx="28" fill="url(#glass)" stroke="#ffffff" stroke-opacity="0.4"/>
+    <rect x="58" y="240" width="174" height="140" rx="16" fill="#c9ebe4" opacity="0.8"/>
+    <rect x="68" y="130" width="154" height="86" rx="8" fill="#f7f4ef"/>
+    <text x="145" y="168" text-anchor="middle" font-family="Arial" font-size="18" font-weight="700" fill="#143832">LYOPHILIZED</text>
+    <text x="145" y="192" text-anchor="middle" font-family="Arial" font-size="13" fill="#1c7a73">VIAL</text>
+  </g>
+  <g fill="#e8fffb" opacity="0.45">
+    <circle cx="240" cy="120" r="3"/>
+    <circle cx="420" cy="200" r="2"/>
+    <circle cx="180" cy="340" r="2.5"/>
+    <circle cx="640" cy="90" r="2"/>
+    <circle cx="700" cy="420" r="3"/>
+    <circle cx="1280" cy="120" r="2"/>
+    <circle cx="1320" cy="520" r="3"/>
+  </g>
+</svg>

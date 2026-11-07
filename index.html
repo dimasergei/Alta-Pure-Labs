@@ -1,0 +1,229 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>AltaPure Labs · Pick &amp; Pack</title>
+  <meta name="description" content="Wholesale pick-and-pack catalog. Research use only. Shipping not included." />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Oswald:wght@500;600&family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="styles.css" />
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='14' fill='%23163832'/%3E%3Ctext x='32' y='40' text-anchor='middle' font-size='22' font-family='Arial' fill='white'%3EAP%3C/text%3E%3C/svg%3E" />
+</head>
+<body>
+  <div id="gate" class="gate" hidden>
+    <div class="gate-card">
+      <p class="eyebrow">Restricted access</p>
+      <h2>Age verification</h2>
+      <div class="rule"></div>
+      <p class="gate-kicker">Research purposes only</p>
+      <p>The products in this catalog are strictly for in-vitro laboratory research. They are <strong>not</strong> for human consumption, supplements, or drugs.</p>
+      <p>By continuing, you confirm you are 21 or older and that you will use these materials for laboratory research only.</p>
+      <button id="gate-yes" class="pill pill-dark" type="button">I am 21 or older <span aria-hidden="true">→</span></button>
+      <button id="gate-no" class="pill pill-ghost" type="button">Under 21</button>
+      <p id="gate-block" class="gate-block" hidden>This catalog is limited to adults 21 and older.</p>
+    </div>
+  </div>
+
+  <div class="announce">
+    <p>Wholesale pick &amp; pack · out-the-door unit price · shipping not included</p>
+  </div>
+
+  <header class="topbar">
+    <a class="brand" href="#shop" aria-label="AltaPure Labs home">
+      <span class="brand-mark" aria-hidden="true"><span></span><span></span><span></span></span>
+      <span class="brand-name">ALTA<span>PURE LABS</span></span>
+    </a>
+    <nav class="top-links" aria-label="Primary">
+      <a href="#featured">Featured</a>
+      <a href="#shop">Catalog</a>
+      <a href="#faq">Help</a>
+    </nav>
+    <div class="top-actions">
+      <button id="open-search" class="icon-btn" type="button" aria-label="Focus search">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="11" cy="11" r="6.5"/><path d="M16 16l5 5"/></svg>
+      </button>
+      <button id="open-cart" class="icon-btn" type="button" aria-label="Open cart">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 7h15l-1.6 8.2a2 2 0 0 1-2 1.6H9.2a2 2 0 0 1-2-1.6L5.2 4H3"/><circle cx="9" cy="20" r="1.3"/><circle cx="17" cy="20" r="1.3"/></svg>
+        <span id="cart-count" class="count" hidden>0</span>
+      </button>
+    </div>
+  </header>
+
+  <main>
+    <section class="hero">
+      <div class="hero-stage">
+        <div class="hero-copy">
+          <p class="eyebrow light">AltaPure Labs · Research catalog</p>
+          <h1>Research materials, made easier to browse</h1>
+          <p>Explore compounds, capsules, and laboratory supplies from the current catalog. Clear per-unit pricing, with pick-and-pack included.</p>
+          <div class="hero-actions">
+            <a class="pill pill-dark" href="#shop" data-select-group="GLP-1 &amp; Metabolic">Shop compounds <span aria-hidden="true">→</span></a>
+            <a class="hero-text-link" href="#shop" data-select-group="Capsules">Shop capsules <span aria-hidden="true">↘</span></a>
+            <a class="hero-text-link" href="#shop" data-select-group="BAC Water &amp; Supplies">Shop lab supplies <span aria-hidden="true">↘</span></a>
+          </div>
+        </div>
+        <ul class="assurances">
+          <li>HPLC documented</li>
+          <li>Made in the U.S.A.</li>
+          <li>Research use only</li>
+        </ul>
+      </div>
+    </section>
+
+    <section id="featured" class="featured">
+      <div class="section-heading">
+        <div>
+          <p class="eyebrow">A place to start</p>
+          <h2>Featured <span>selection</span></h2>
+        </div>
+        <a class="text-link" href="#shop">View all products <span aria-hidden="true">→</span></a>
+      </div>
+      <div id="featured-grid" class="grid featured-grid"></div>
+    </section>
+
+    <section class="spotlight-wrap" aria-labelledby="spotlight-title">
+      <div class="spotlight">
+        <div class="spotlight-art" aria-hidden="true">
+          <span class="spotlight-orbit orbit-a"></span>
+          <span class="spotlight-orbit orbit-b"></span>
+          <span class="spotlight-vial"></span>
+          <span class="spotlight-caption">ALTAPURE · CATALOG</span>
+        </div>
+        <div class="spotlight-copy">
+          <p class="eyebrow">Catalog highlight</p>
+          <h2 id="spotlight-title">A closer look at the selection.</h2>
+          <p id="spotlight-description">Explore the current catalog and compare listed sizes and per-unit prices.</p>
+          <div class="spotlight-product">
+            <div>
+              <strong id="spotlight-name">Catalog selection</strong>
+              <span id="spotlight-price" class="muted"></span>
+            </div>
+            <button id="spotlight-open" class="pill pill-dark" type="button" data-open="">View details <span aria-hidden="true">→</span></button>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section id="shop" class="shop">
+      <div class="shop-head">
+        <div>
+          <p class="eyebrow">The full selection</p>
+          <h2>Research catalog</h2>
+        </div>
+        <p class="shop-note" id="result-count"></p>
+      </div>
+
+      <div class="toolbar">
+        <div class="filters" id="filters" role="tablist" aria-label="Categories"></div>
+        <label class="search">
+          <span class="sr">Search products</span>
+          <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="11" cy="11" r="6.5"/><path d="M16 16l5 5"/></svg>
+          <input id="search" type="search" placeholder="Search compounds" autocomplete="off" />
+        </label>
+        <label class="sort">
+          <span class="sr">Sort</span>
+          <select id="sort" aria-label="Sort products">
+            <option value="name">Name</option>
+            <option value="price-asc">Price · low</option>
+            <option value="price-desc">Price · high</option>
+          </select>
+        </label>
+      </div>
+
+      <div id="grid" class="grid"></div>
+    </section>
+
+    <section id="policy" class="policy">
+      <div>
+        <p class="eyebrow light">Browse with clarity</p>
+        <h2>Everything in its place.</h2>
+        <p>Compare available sizes and per-unit prices across the catalog. Pick-and-pack is included; shipping is billed separately. Listings are for laboratory research only and are not for human or animal use.</p>
+      </div>
+      <a class="pill pill-light" href="#shop">Explore the catalog <span aria-hidden="true">→</span></a>
+    </section>
+
+    <section id="faq" class="faq">
+      <div class="faq-heading">
+        <p class="eyebrow">Helpful details</p>
+        <h2>Questions, <span>answered.</span></h2>
+        <p>Information about listings, pricing, and research-use restrictions.</p>
+      </div>
+      <div class="faq-list">
+        <details>
+          <summary>What does the listed price include?</summary>
+          <p>Prices are per unit and include labeling and pick-and-pack. Shipping is not included.</p>
+        </details>
+        <details>
+          <summary>What are these products intended for?</summary>
+          <p>Catalog listings are strictly for controlled laboratory and analytical research. They are not for human or animal use.</p>
+        </details>
+        <details>
+          <summary>How do I compare product sizes?</summary>
+          <p>Use the category filters or search, then open a product to review its listed sizes and per-unit prices.</p>
+        </details>
+        <details>
+          <summary>Does the site process payment?</summary>
+          <p>No. The order flow prepares a local request summary; it does not process payment or place an order.</p>
+        </details>
+      </div>
+    </section>
+  </main>
+
+  <footer class="footer">
+    <div>
+      <a class="brand footer-brand" href="#shop" aria-label="AltaPure Labs home">
+        <span class="brand-mark" aria-hidden="true"><span></span><span></span><span></span></span>
+        <span class="brand-name">ALTA<span>PURE LABS</span></span>
+      </a>
+      <p>Research use only · Not for human consumption · Made in the U.S.A.</p>
+    </div>
+    <p>Unit prices from the wholesale pick-and-pack sheet. Shipping not included.</p>
+  </footer>
+
+  <dialog id="product-dialog">
+    <form method="dialog" class="dialog-body" id="product-body"></form>
+  </dialog>
+
+  <dialog id="cart-dialog">
+    <form method="dialog" class="dialog-body cart-body">
+      <header class="dialog-head">
+        <h2>Cart</h2>
+        <button class="icon-btn" value="cancel" type="submit" aria-label="Close cart">×</button>
+      </header>
+      <div id="cart-lines"></div>
+      <footer class="cart-foot">
+        <div class="totals">
+          <span>Subtotal</span>
+          <strong id="cart-total">$0</strong>
+        </div>
+        <p class="fine">Shipping is not included. Research use only.</p>
+        <button id="checkout" class="pill pill-dark" type="button">Review order <span aria-hidden="true">→</span></button>
+      </footer>
+    </form>
+  </dialog>
+
+  <dialog id="checkout-dialog">
+    <form class="dialog-body" id="checkout-form">
+      <header class="dialog-head">
+        <h2>Order request</h2>
+        <button class="icon-btn" type="button" id="close-checkout" aria-label="Close checkout">×</button>
+      </header>
+      <p class="fine">This is a local order summary. No payment is processed.</p>
+      <label>Name <input name="name" required autocomplete="name" /></label>
+      <label>Email <input name="email" type="email" required autocomplete="email" /></label>
+      <label>Laboratory or organization <input name="org" required /></label>
+      <label class="check">
+        <input type="checkbox" name="research" required />
+        I confirm this request is for laboratory research only and not for human consumption.
+      </label>
+      <div id="checkout-summary"></div>
+      <button class="pill pill-dark" type="submit">Place request <span aria-hidden="true">→</span></button>
+    </form>
+  </dialog>
+
+  <script src="products.js"></script>
+  <script src="app.js"></script>
+</body>
+</html>
