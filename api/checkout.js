@@ -43,7 +43,19 @@ module.exports = async (req,res) => {
     checked(await db.from('store_orders').update({stripe_checkout_session_id:session.id}).eq('id',id));
     return res.status(200).json({url:session.url});
   } catch(e) {
-    console.error('checkout failed',e.code||e.type||e.name);
+    const safeMessage = String(e.message || 'Unknown error')
+  .replace(
+    /(?:sk|rk)_(?:test|live)_[A-Za-z0-9_]+|whsec_[A-Za-z0-9_]+|sb_secret_[A-Za-z0-9_-]+|eyJ[A-Za-z0-9_-]+\.[A-Za-z0-9_-]+\.[A-Za-z0-9_-]+/g,
+    '[REDACTED]'
+  )
+  .slice(0, 600);
+
+console.error('checkout failed', {
+  name: e.name,
+  code: e.code,
+  type: e.type,
+  message: safeMessage,
+});
     return res.status(e.validation?400:500).json({error:e.validation?e.message:'Checkout unavailable. Check Vercel function logs and configuration.'});
   }
 };
