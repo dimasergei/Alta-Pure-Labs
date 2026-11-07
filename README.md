@@ -29,6 +29,8 @@ The original three-bar logo and wordmark are retained, using the existing light 
 
 This site does not send orders, process payments or contact a fulfillment service. The confirmation explicitly states that no order was sent.
 
+Embedded previews that prohibit browser storage use an in-memory fallback. Their carts and age confirmation reset when the page reloads; normal browser deployments retain the original local/session persistence.
+
 ## Regression checks
 
 Run the dependency-free catalog checks:

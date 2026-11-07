@@ -1,3 +1,23 @@
+// Embedded previews may have an opaque origin and disallow browser storage.
+// Keep the app usable there without changing persistence in normal browsers.
+const memoryStorage = { localStorage: new Map(), sessionStorage: new Map() };
+
+function readStorage(type, key) {
+  try {
+    return window[type].getItem(key);
+  } catch {
+    return memoryStorage[type].get(key) ?? null;
+  }
+}
+
+function writeStorage(type, key, value) {
+  try {
+    window[type].setItem(key, value);
+  } catch {
+    memoryStorage[type].set(key, value);
+  }
+}
+
 const state = {
   group: "All",
   query: "",
@@ -11,7 +31,7 @@ const money = (n) => `$${n.toFixed(0)}`;
 
 function loadCart() {
   try {
-    const cart = JSON.parse(localStorage.getItem("pp-cart") || "[]");
+    const cart = JSON.parse(readStorage("localStorage", "pp-cart") || "[]");
     if (!Array.isArray(cart)) return [];
     return cart.map((line) => {
       const product = CATALOG.find((item) => item.id === line.id);
@@ -24,7 +44,7 @@ function loadCart() {
 }
 
 function saveCart() {
-  localStorage.setItem("pp-cart", JSON.stringify(state.cart));
+  writeStorage("localStorage", "pp-cart", JSON.stringify(state.cart));
   renderCartCount();
 }
 
@@ -246,13 +266,13 @@ function renderCheckoutSummary() {
 }
 
 function initGate() {
-  if (sessionStorage.getItem("pp-age") === "yes") {
+  if (readStorage("sessionStorage", "pp-age") === "yes") {
     $("#gate").hidden = true;
     return;
   }
   $("#gate").hidden = false;
   $("#gate-yes").addEventListener("click", () => {
-    sessionStorage.setItem("pp-age", "yes");
+    writeStorage("sessionStorage", "pp-age", "yes");
     $("#gate").hidden = true;
   });
   $("#gate-no").addEventListener("click", () => {
