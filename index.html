@@ -10,6 +10,10 @@
   <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet" />
   <link rel="stylesheet" href="styles.css" />
   <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='14' fill='%23163832'/%3E%3Ctext x='32' y='40' text-anchor='middle' font-size='22' font-family='Arial' fill='white'%3EAP%3C/text%3E%3C/svg%3E" />
+  <script>
+    window.si = window.si || function () { (window.siq = window.siq || []).push(arguments); };
+  </script>
+  <script defer src="/_vercel/speed-insights/script.js"></script>
 </head>
 <body>
   <div id="gate" class="gate" hidden>
@@ -25,7 +29,7 @@
   </div>
 
   <div class="announce">
-    <p>Research use only. Pick-and-pack included. Shipping billed separately.</p>
+    <p>Research use only. Pick-and-pack included. US shipping: $25 per order. Prices in USD.</p>
   </div>
 
   <header class="topbar">
@@ -167,7 +171,7 @@
         </details>
         <details>
           <summary>Does the site process payment?</summary>
-          <p>No. The order flow prepares a local request summary; it does not process payment or place an order.</p>
+          <p>Checkout is currently in test mode. No real payments are accepted. US shipping is $25 per order.</p>
         </details>
       </div>
     </section>
@@ -402,7 +406,7 @@
         <h2>Order request</h2>
         <button class="icon-btn" type="button" id="close-checkout" aria-label="Close checkout">×</button>
       </header>
-      <p class="fine">This is a local order summary. No payment is processed.</p>
+      <p class="fine">Test checkout only. No real payments. USD; US shipping is $25 per order.</p>
       <label>Name <input name="name" required autocomplete="name" /></label>
       <label>Email <input name="email" type="email" required autocomplete="email" /></label>
       <label>Laboratory or organization <input name="org" required /></label>
@@ -411,11 +415,12 @@
         I confirm this request is for laboratory research only and not for human consumption.
       </label>
       <div id="checkout-summary"></div>
-      <button class="pill pill-dark" type="submit">Place request <span aria-hidden="true">→</span></button>
+      <button class="pill pill-dark" type="submit">Continue to test payment <span aria-hidden="true">→</span></button>
     </form>
   </dialog>
 
   <script src="products.js"></script>
   <script src="app.js"></script>
+<script src="checkout.js"></script>
 </body>
 </html>
