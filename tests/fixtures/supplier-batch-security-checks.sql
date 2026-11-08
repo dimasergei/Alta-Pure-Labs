@@ -2,7 +2,7 @@ DO $$
 DECLARE
   v_signature regprocedure :=
     'public.create_supplier_batch(uuid,text,uuid[])'::regprocedure;
-  v_result jsonb;
+  v_postgres_oid oid := 'postgres'::regrole;
 BEGIN
   IF has_function_privilege('anon', v_signature, 'EXECUTE') THEN
     RAISE EXCEPTION 'anon unexpectedly has EXECUTE';
@@ -17,7 +17,17 @@ BEGIN
     RAISE EXCEPTION 'service_role is missing EXECUTE';
   END IF;
   IF NOT has_function_privilege('postgres', v_signature, 'EXECUTE') THEN
-    RAISE EXCEPTION 'function owner lost inherent EXECUTE';
+    RAISE EXCEPTION 'postgres lost effective owner EXECUTE';
+  END IF;
+  IF NOT EXISTS (
+    SELECT 1
+    FROM pg_proc p
+    CROSS JOIN LATERAL aclexplode(p.proacl) a
+    WHERE p.oid = v_signature
+      AND a.grantee = v_postgres_oid
+      AND a.privilege_type = 'EXECUTE'
+  ) THEN
+    RAISE EXCEPTION 'existing explicit postgres EXECUTE ACL was not preserved';
   END IF;
   IF (SELECT rolcanlogin FROM pg_roles WHERE rolname = 'schema_inspector') THEN
     RAISE EXCEPTION 'schema_inspector must remain NOLOGIN';
