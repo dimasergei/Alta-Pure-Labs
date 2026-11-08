@@ -83,7 +83,7 @@ module.exports = async (req, res) => {
     );
 
     const items = (batch.supplier_batch_items || []).map((item) => ({
-      order_number: item.order_number,
+      order_number: item.store_orders?.order_number,
       order_id: item.order_id,
       product_name: item.product_name,
       variant_size: item.variant_size,
