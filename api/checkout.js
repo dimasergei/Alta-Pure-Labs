@@ -61,6 +61,10 @@ module.exports = async (req, res) => {
     }
 
     const { stripe, db } = clients();
+    const authorization=req.headers.authorization||'';
+    const token=/^Bearer ([A-Za-z0-9._~-]{20,8192})$/.exec(authorization);
+    if(authorization&&!token)return res.status(401).json({error:'Sign in again to continue checkout.'});
+    if(token){const {data,error}=await db.auth.getUser(token[1]);const email=data?.user?.email;if(error||!data?.user||!email||!data.user.email_confirmed_at)return res.status(401).json({error:'Sign in again to continue checkout.'});b.email=email.trim().toLowerCase();b.name=String(data.user.user_metadata?.full_name||b.name).trim();}else{b.email=b.email.trim().toLowerCase();}
 
     await enforceRateLimit(
       db,

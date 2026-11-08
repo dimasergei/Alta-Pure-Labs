@@ -1,0 +1,15 @@
+const {clients,checked}=require('../lib/backend');
+const SELECT='order_number,created_at,customer_name,customer_email,payment_status,fulfillment_status,currency,subtotal_cents,shipping_cents,total_cents,shipping_name,shipping_address,tracking_carrier,tracking_number,store_order_items(id,product_name,variant_size,quantity,unit_price_cents)';
+module.exports=async(req,res)=>{
+res.setHeader('Cache-Control','no-store');res.setHeader('X-Content-Type-Options','nosniff');res.setHeader('Vary','Authorization');
+if(req.method!=='GET'){res.setHeader('Allow','GET');return res.status(405).json({error:'Method not allowed.'});}
+const m=/^Bearer ([A-Za-z0-9._~-]{20,8192})$/.exec(req.headers.authorization||'');if(!m)return res.status(401).json({error:'Sign in to view your orders.'});
+try{
+const {db}=clients();const {data,error}=await db.auth.getUser(m[1]);const email=typeof data?.user?.email==='string'?data.user.email.trim().toLowerCase():'';
+if(error||!data?.user||!email||!data.user.email_confirmed_at)return res.status(401).json({error:'Your session is invalid. Please sign in again.'});
+const url=new URL(req.url,'https://account.internal'),number=url.searchParams.get('orderNumber');
+let q=db.from('store_orders').select(SELECT).ilike('customer_email',email.replace(/[\\%_]/g,'\\$&'));
+if(number!==null){if(!/^[A-Za-z0-9-]{4,40}$/.test(number))return res.status(404).json({error:'Order not found.'});const order=checked(await q.eq('order_number',number).maybeSingle());if(!order)return res.status(404).json({error:'Order not found.'});return res.status(200).json({order:safe(order)});}
+const orders=checked(await q.order('created_at',{ascending:false}).limit(100));return res.status(200).json({orders:(orders||[]).map(safe)});
+}catch(e){console.error('Customer order lookup failed',{name:e.name,code:e.code});return res.status(503).json({error:'Orders are temporarily unavailable.'});}};
+function safe(o){const key=String(o.tracking_carrier||'').toLowerCase().replace(/[^a-z]/g,''),n=encodeURIComponent(String(o.tracking_number||'').trim()),links={usps:'https://tools.usps.com/go/TrackConfirmAction?tLabels='+n,ups:'https://www.ups.com/track?tracknum='+n,fedex:'https://www.fedex.com/fedextrack/?trknbr='+n,dhl:'https://www.dhl.com/global-en/home/tracking.html?tracking-id='+n};return{order_number:o.order_number,created_at:o.created_at,customer_name:o.customer_name,customer_email:o.customer_email,payment_status:o.payment_status,fulfillment_status:o.fulfillment_status,currency:o.currency,subtotal_cents:o.subtotal_cents,shipping_cents:o.shipping_cents,total_cents:o.total_cents,shipping_name:o.shipping_name,shipping_address:o.shipping_address,tracking_carrier:o.tracking_carrier,tracking_number:o.tracking_number,tracking_url:o.tracking_number?links[key]||null:null,items:(o.store_order_items||[]).map(i=>({product_name:i.product_name,variant_size:i.variant_size,quantity:i.quantity,unit_price_cents:i.unit_price_cents}))};}

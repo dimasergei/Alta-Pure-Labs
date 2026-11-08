@@ -5,5 +5,15 @@
     "api/checkout.js": {
       "includeFiles": "lib/catalog.json"
     }
-  }
+  },
+  "rewrites": [
+    {
+      "source": "/account",
+      "destination": "/account.html"
+    },
+    {
+      "source": "/account/:path*",
+      "destination": "/account.html"
+    }
+  ]
 }
