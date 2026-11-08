@@ -9,6 +9,12 @@ const {
   listAdminOrders
 } = require('../lib/admin-order-query');
 
+const {
+  queueStatusNotification,
+  markNotificationSent,
+  markNotificationFailed
+} = require('../lib/order-notifications');
+
 const ALLOWED_STATUSES = [
   'unfulfilled',
   'processing',
@@ -488,35 +494,10 @@ async function updateOrder(res, body) {
     statusChanged &&
     STATUS_EMAILS[fulfillmentStatus]
   ) {
-    if (!updatedOrder.customer_email) {
-      notification = {
-        status: 'failed',
-        error: 'Customer email is missing.'
-      };
-    } else {
-      try {
-        const result = await sendStatusEmail(
-          updatedOrder,
-          fulfillmentStatus
-        );
-
-        notification = {
-          status: 'accepted',
-          provider_id: result.id || null
-        };
-      } catch (error) {
-        console.error('Status notification failed', {
-          order_id: orderId,
-          name: error.name
-        });
-
-        notification = {
-          status: 'failed',
-          error:
-            'Order saved, but the customer email was not confirmed as accepted. Check Resend before resending.'
-        };
-      }
-    }
+    notification = await sendStatusEmail(
+      updatedOrder,
+      fulfillmentStatus
+    );
   }
 
   return res.status(200).json({
@@ -529,30 +510,106 @@ async function sendStatusEmail(order, status) {
   const statusCopy = STATUS_EMAILS[status];
 
   if (!statusCopy) {
-    return {};
+    return {
+      status: 'not_required'
+    };
+  }
+
+  if (!order.customer_email) {
+    return {
+      status: 'failed',
+      error: 'Customer email is missing.'
+    };
+  }
+
+  /*
+   * The order is already saved at this point, so a queue problem must
+   * be reported as a notification failure, not thrown as a failed save.
+   */
+  let queued;
+
+  try {
+    queued = await queueStatusNotification({
+      orderId: order.id,
+      customerEmail: order.customer_email,
+      notificationType: status
+    });
+  } catch (error) {
+    console.error('Status notification queue failed', {
+      order_id: order.id,
+      name: error.name,
+      code: error.code
+    });
+
+    return {
+      status: 'failed',
+      error:
+        'Order saved, but the customer email could not be queued. Check the notification queue before resending.'
+    };
+  }
+
+  if (!queued.created) {
+    return {
+      status: queued.status === 'sent'
+        ? 'already_sent'
+        : 'already_queued',
+      notification_id: queued.id
+    };
   }
 
   const orderNumber =
     order.order_number || order.id;
 
-  return await sendEmail({
-    to: order.customer_email,
-    from:
-      process.env.ORDER_CONFIRMATION_FROM ||
-      'AltaPure Labs <orders@altapurelabs.com>',
-    replyTo:
-      process.env.ADMIN_ORDER_EMAIL ||
-      'altapurelabs@protonmail.com',
-    subject: `${statusCopy.subject} — ${orderNumber}`,
-    html: statusEmailHtml({
-      order,
-      statusCopy
-    }),
-    text: statusEmailText({
-      order,
-      statusCopy
-    })
-  });
+  try {
+    const result = await sendEmail({
+      to: order.customer_email,
+      from:
+        process.env.ORDER_CONFIRMATION_FROM ||
+        'AltaPure Labs <orders@altapurelabs.com>',
+      replyTo:
+        process.env.ADMIN_ORDER_EMAIL ||
+        'altapurelabs@protonmail.com',
+      subject: `${statusCopy.subject} — ${orderNumber}`,
+      html: statusEmailHtml({
+        order,
+        statusCopy
+      }),
+      text: statusEmailText({
+        order,
+        statusCopy
+      })
+    });
+
+    await markNotificationSent({
+      notificationId: queued.id,
+      providerMessageId: result?.id || null
+    });
+
+    return {
+      status: 'accepted',
+      notification_id: queued.id,
+      provider_id: result?.id || null
+    };
+  } catch (error) {
+    try {
+      await markNotificationFailed({
+        notificationId: queued.id,
+        error: error.message
+      });
+    } catch (markError) {
+      console.error('Could not record notification failure', {
+        notification_id: queued.id,
+        name: markError.name
+      });
+    }
+
+    return {
+      status: 'failed',
+      notification_id: queued.id,
+      error:
+        'Order saved, but the customer email was not confirmed as accepted. Check the notification queue before resending.'
+    };
+  }
 }
 
 function shouldIncludeTracking(order) {
