@@ -15,8 +15,10 @@ jobs:
     name: Apply pending production migrations
     runs-on: ubuntu-latest
     steps:
-      - name: Check out repository
+      - name: Check out main
         uses: actions/checkout@v4
+        with:
+          ref: main
 
       - name: Install Supabase CLI
         uses: supabase/setup-cli@v1
@@ -49,17 +51,30 @@ jobs:
           set -euo pipefail
           supabase link --project-ref "$SUPABASE_PROJECT_ID" --password "$SUPABASE_DB_PASSWORD"
 
-      - name: Push pending migrations and verify remote migration history
+      - name: Preview pending production migrations (no changes applied)
         shell: bash
         env:
           SUPABASE_ACCESS_TOKEN: ${{ secrets.SUPABASE_ACCESS_TOKEN }}
         run: |
           set -euo pipefail
+          echo "=== Dry run: migrations that would be applied to production ==="
+          supabase db push --dry-run --remote
 
-          echo "=== Applying migrations not yet applied to production ==="
-          supabase db push --remote
+      - name: Apply pending production migrations
+        shell: bash
+        env:
+          SUPABASE_ACCESS_TOKEN: ${{ secrets.SUPABASE_ACCESS_TOKEN }}
+        run: |
+          set -euo pipefail
+          echo "=== Applying pending production migrations ==="
+          supabase db push --yes --remote
 
-          echo "=== Production migration history after db push ==="
+      - name: Verify production migration history
+        shell: bash
+        env:
+          SUPABASE_ACCESS_TOKEN: ${{ secrets.SUPABASE_ACCESS_TOKEN }}
+        run: |
+          set -euo pipefail
+          echo "=== Production migration history after push ==="
           supabase migration list --remote
-
-          echo "=== Supabase production migration push and verification completed ==="
+          echo "=== Production migration push and verification completed ==="
