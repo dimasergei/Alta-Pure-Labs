@@ -150,7 +150,6 @@ module.exports = async (req, res) => {
       {
         adaptive_pricing: { enabled: false },
         mode: 'payment',
-        payment_method_types: ['card'],
         customer_email: b.email.trim(),
         client_reference_id: orderId,
         metadata: {
