@@ -1536,3 +1536,88 @@ dialog::backdrop {
     transition: none !important;
   }
 }
+/* Order confirmation */
+.confirm-page {
+  min-height: calc(100svh - 86px);
+  padding: 80px var(--gutter) 100px;
+  display: grid;
+  place-items: center;
+  background: var(--surface);
+}
+
+.confirm-card {
+  width: min(720px, 100%);
+  background: #fff;
+  padding: clamp(28px, 5vw, 56px);
+  border: 1px solid #e2e6e5;
+}
+
+.confirm-eyebrow {
+  margin: 0 0 10px;
+  font-size: 13px;
+  font-weight: 700;
+  letter-spacing: .18em;
+  text-transform: uppercase;
+  color: var(--teal);
+}
+
+.confirm-card h1 {
+  font-size: clamp(32px, 4.5vw, 48px);
+  margin-bottom: 14px;
+}
+
+#confirm-message {
+  color: var(--muted);
+  margin-bottom: 32px;
+}
+
+.confirm-summary {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 20px;
+  padding: 22px;
+  background: var(--surface);
+  margin-bottom: 24px;
+}
+
+.confirm-label {
+  display: block;
+  margin-bottom: 5px;
+  font-size: 12px;
+  letter-spacing: .08em;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+
+.confirm-note {
+  padding: 18px;
+  background: #eef6f3;
+  border-left: 3px solid var(--teal);
+  color: var(--muted);
+  font-size: 14px;
+}
+
+.confirm-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 14px;
+  margin-top: 32px;
+}
+
+.confirm-disclaimer {
+  margin: 32px 0 0;
+  padding-top: 22px;
+  border-top: 1px solid #e2e6e5;
+  color: var(--muted);
+  font-size: 13px;
+}
+
+@media (max-width: 700px) {
+  .confirm-page {
+    padding: 48px 18px 72px;
+  }
+
+  .confirm-summary {
+    grid-template-columns: 1fr;
+  }
+}
