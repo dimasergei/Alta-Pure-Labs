@@ -20,3 +20,13 @@ test("shipping address omits missing fields without blank lines", () => {
 test("empty address returns an empty string", () => {
   assert.equal(formatShippingAddress("", {}), "");
 });
+
+test("browser page receives the shared address formatter global", () => {
+  const vm = require("node:vm");
+  const { readFileSync } = require("node:fs");
+  const { resolve } = require("node:path");
+  const source = readFileSync(resolve(__dirname, "../account-format.js"), "utf8");
+  const sandbox = { window: {} };
+  vm.runInNewContext(source, sandbox);
+  assert.equal(typeof sandbox.window.AltaPureAccountFormat.formatShippingAddress, "function");
+});
