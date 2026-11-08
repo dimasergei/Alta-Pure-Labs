@@ -62,17 +62,20 @@ module.exports = async (req, res) => {
             email
           ),
           supplier_batch_items (
-            id,
-            order_id,
-            order_item_id,
-            product_name,
-            variant_size,
-            quantity,
-            supplier_sku,
-            supplier_name,
-            lot_number,
-            fulfillment_notes
-          )
+  id,
+  order_id,
+  order_item_id,
+  product_name,
+  variant_size,
+  quantity,
+  supplier_sku,
+  supplier_name,
+  lot_number,
+  fulfillment_notes,
+  store_orders (
+    order_number
+  )
+)
         `
         )
         .eq('id', batchId)
