@@ -28,8 +28,11 @@ class CatalogExporterTests(unittest.TestCase):
   self.assertNotIn('PRIVATE_CUSTOMER_ROW_SENTINEL',json.dumps(self.doc))
  def test_no_table_or_column_select(self):
   with psycopg.connect(DSN) as c:
-   x=c.execute("""SELECT has_table_privilege(current_user,'app_private.customer_records','SELECT'),
-   has_column_privilege(current_user,'app_private.customer_records','email','SELECT'),
-   has_schema_privilege(current_user,'app_private','USAGE')""").fetchone()
+   x=c.execute("""SELECT has_table_privilege(current_user,c.oid,'SELECT'),
+   has_column_privilege(current_user,c.oid,a.attnum,'SELECT'),
+   has_schema_privilege(current_user,n.oid,'USAGE')
+   FROM pg_catalog.pg_class c JOIN pg_catalog.pg_namespace n ON n.oid=c.relnamespace
+   JOIN pg_catalog.pg_attribute a ON a.attrelid=c.oid AND a.attname='email'
+   WHERE n.nspname='app_private' AND c.relname='customer_records'""").fetchone()
   self.assertEqual(x,(False,False,False))
 if __name__=="__main__": unittest.main()
