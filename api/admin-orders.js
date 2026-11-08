@@ -479,6 +479,8 @@ async function updateOrder(res, body) {
 
   let notification = { status: 'not_required' };
 
+  // A status transition is keyed by its persisted history timestamp.
+  // If tracking is edited in the same save, this one email includes it.
   if (statusChanged && STATUS_COPY[fulfillmentStatus]) {
     notification = await sendStatusEmail(
       updatedOrder,
