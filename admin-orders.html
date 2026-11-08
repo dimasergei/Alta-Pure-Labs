@@ -1,0 +1,346 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>Admin Orders — AltaPure Labs</title>
+  <meta name="robots" content="noindex,nofollow">
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='14' fill='%23163832'/%3E%3Ctext x='32' y='40' text-anchor='middle' font-size='22' font-family='Arial' fill='white'%3EAP%3C/text%3E%3C/svg%3E" />
+  <link rel="stylesheet" href="styles.css">
+  <style>
+    .admin-page {
+      min-height: 100svh;
+      padding: 48px var(--gutter) 80px;
+      background: var(--surface);
+    }
+
+    .admin-card {
+      max-width: 1200px;
+      margin: auto;
+      background: #fff;
+      padding: clamp(24px, 4vw, 44px);
+      border: 1px solid #e2e6e5;
+    }
+
+    .admin-head {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 20px;
+      margin-bottom: 28px;
+    }
+
+    .admin-head h1 {
+      font-size: clamp(28px, 4vw, 42px);
+      margin: 0;
+    }
+
+    .admin-login {
+      display: grid;
+      gap: 14px;
+      max-width: 440px;
+    }
+
+    .admin-login input {
+      padding: 14px;
+      border: 1px solid #899591;
+      background: #fff;
+    }
+
+    .order {
+      border: 1px solid #e2e6e5;
+      padding: 22px;
+      margin-bottom: 20px;
+      background: #fff;
+    }
+
+    .order-top {
+      display: flex;
+      justify-content: space-between;
+      gap: 16px;
+      flex-wrap: wrap;
+      margin-bottom: 16px;
+    }
+
+    .order-items {
+      margin: 16px 0;
+      padding: 14px;
+      background: var(--surface);
+    }
+
+    .order-items div {
+      display: flex;
+      justify-content: space-between;
+      gap: 16px;
+      padding: 6px 0;
+    }
+
+    .admin-form {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 12px;
+      margin-top: 16px;
+    }
+
+    .admin-form label {
+      font-size: 13px;
+      font-weight: 600;
+    }
+
+    .admin-form input,
+    .admin-form select,
+    .admin-form textarea {
+      width: 100%;
+      padding: 11px;
+      margin-top: 6px;
+      border: 1px solid #899591;
+      background: #fff;
+    }
+
+    .admin-form .full {
+      grid-column: 1 / -1;
+    }
+
+    .status-paid { color: #166534; font-weight: 700; }
+    .status-processing { color: #92400e; font-weight: 700; }
+    .status-shipped { color: #1d4ed8; font-weight: 700; }
+    .status-delivered { color: #166534; font-weight: 700; }
+    .status-canceled { color: #991b1b; font-weight: 700; }
+
+    @media (max-width: 700px) {
+      .admin-form {
+        grid-template-columns: 1fr;
+      }
+    }
+  </style>
+</head>
+
+<body>
+  <main class="admin-page">
+    <div class="admin-card">
+      <div class="admin-head">
+        <h1>Orders</h1>
+        <a class="pill pill-ghost" href="/">Back to site</a>
+      </div>
+
+      <div id="login-view">
+        <div class="admin-login">
+          <label for="admin-password">Admin password</label>
+          <input id="admin-password" type="password" autocomplete="current-password">
+          <button id="login-button" class="pill pill-dark" type="button">View orders</button>
+          <p id="login-error" class="fine" hidden></p>
+        </div>
+      </div>
+
+      <div id="orders-view" hidden>
+        <p id="orders-message" class="fine">Loading orders…</p>
+        <div id="orders-list"></div>
+      </div>
+    </div>
+  </main>
+
+  <script>
+    const passwordInput = document.querySelector('#admin-password');
+    const loginButton = document.querySelector('#login-button');
+    const loginError = document.querySelector('#login-error');
+    const loginView = document.querySelector('#login-view');
+    const ordersView = document.querySelector('#orders-view');
+    const ordersMessage = document.querySelector('#orders-message');
+    const ordersList = document.querySelector('#orders-list');
+
+    let adminPassword = sessionStorage.getItem('altapure_admin_password') || '';
+
+    const money = (cents, currency = 'USD') =>
+      new Intl.NumberFormat('en-US', {
+        style: 'currency',
+        currency
+      }).format(cents / 100);
+
+    const escapeHtml = (value) =>
+      String(value ?? '')
+        .replaceAll('&', '&amp;')
+        .replaceAll('<', '&lt;')
+        .replaceAll('>', '&gt;')
+        .replaceAll('"', '&quot;')
+        .replaceAll("'", '&#39;');
+
+    async function loadOrders() {
+      ordersMessage.textContent = 'Loading orders…';
+
+      const response = await fetch('/api/admin-orders', {
+        headers: {
+          'x-admin-password': adminPassword
+        }
+      });
+
+      if (!response.ok) {
+        const data = await response.json().catch(() => ({}));
+        throw new Error(data.error || 'Unable to load orders.');
+      }
+
+      const data = await response.json();
+      renderOrders(data.orders || []);
+    }
+
+    function renderOrders(orders) {
+      ordersView.hidden = false;
+      loginView.hidden = true;
+
+      if (!orders.length) {
+        ordersMessage.textContent = 'No orders yet.';
+        return;
+      }
+
+      ordersMessage.textContent = `${orders.length} most recent orders`;
+
+      ordersList.innerHTML = orders.map((order) => {
+        const address = order.shipping_address || {};
+        const addressText = [
+          address.line1,
+          address.line2,
+          [address.city, address.state, address.postal_code].filter(Boolean).join(', '),
+          address.country
+        ].filter(Boolean).join('<br>');
+
+        const items = (order.store_order_items || [])
+          .map(
+            (item) => `
+              <div>
+                <span>${escapeHtml(item.product_name)} — ${escapeHtml(item.variant_size)} × ${item.quantity}</span>
+                <strong>${money(item.quantity * item.unit_price_cents, order.currency)}</strong>
+              </div>`
+          )
+          .join('');
+
+        return `
+          <article class="order" data-order-id="${escapeHtml(order.id)}">
+            <div class="order-top">
+              <div>
+                <strong>${escapeHtml(order.customer_name)}</strong><br>
+                <span class="muted">${escapeHtml(order.customer_email)}<br>${escapeHtml(order.organization || '')}</span>
+              </div>
+              <div>
+                <span class="muted">Order</span><br>
+                <strong>${escapeHtml(order.id)}</strong><br>
+                <span class="status-${escapeHtml(order.fulfillment_status)}">${escapeHtml(order.fulfillment_status)}</span>
+              </div>
+              <div>
+                <span class="muted">Total</span><br>
+                <strong>${money(order.total_cents, order.currency)}</strong>
+              </div>
+            </div>
+
+            <div class="order-items">${items}</div>
+
+            <p class="muted">
+              <strong>Ship to:</strong><br>
+              ${escapeHtml(order.shipping_name || '')}<br>
+              ${addressText}
+            </p>
+
+            <form class="admin-form">
+              <label>
+                Fulfillment status
+                <select name="fulfillment_status">
+                  ${['paid', 'processing', 'shipped', 'delivered', 'canceled']
+                    .map(
+                      (status) => `
+                        <option value="${status}" ${order.fulfillment_status === status ? 'selected' : ''}>
+                          ${status}
+                        </option>`
+                    )
+                    .join('')}
+                </select>
+              </label>
+
+              <label>
+                Carrier
+                <input name="tracking_carrier" value="${escapeHtml(order.tracking_carrier || '')}">
+              </label>
+
+              <label class="full">
+                Tracking number
+                <input name="tracking_number" value="${escapeHtml(order.tracking_number || '')}">
+              </label>
+
+              <label class="full">
+                Internal notes
+                <textarea name="admin_notes" rows="2">${escapeHtml(order.admin_notes || '')}</textarea>
+              </label>
+
+              <button class="pill pill-dark full" type="submit">Save order</button>
+            </form>
+          </article>`;
+      }).join('');
+
+      ordersList.querySelectorAll('form').forEach((form) => {
+        form.addEventListener('submit', async (event) => {
+          event.preventDefault();
+
+          const article = event.target.closest('.order');
+          const orderId = article.dataset.orderId;
+          const formData = new FormData(event.target);
+
+          const button = event.target.querySelector('button');
+          button.disabled = true;
+          button.textContent = 'Saving…';
+
+          try {
+            const response = await fetch('/api/admin-orders', {
+              method: 'PATCH',
+              headers: {
+                'Content-Type': 'application/json',
+                'x-admin-password': adminPassword
+              },
+              body: JSON.stringify({
+                order_id: orderId,
+                fulfillment_status: formData.get('fulfillment_status'),
+                tracking_carrier: formData.get('tracking_carrier'),
+                tracking_number: formData.get('tracking_number'),
+                admin_notes: formData.get('admin_notes')
+              })
+            });
+
+            if (!response.ok) {
+              throw new Error('Update failed.');
+            }
+
+            button.textContent = 'Saved';
+            await loadOrders();
+          } catch (error) {
+            button.textContent = 'Try again';
+          } finally {
+            button.disabled = false;
+          }
+        });
+      });
+    }
+
+    loginButton.addEventListener('click', async () => {
+      adminPassword = passwordInput.value.trim();
+      loginError.hidden = true;
+
+      try {
+        sessionStorage.setItem('altapure_admin_password', adminPassword);
+        await loadOrders();
+      } catch (error) {
+        sessionStorage.removeItem('altapure_admin_password');
+        loginError.textContent = error.message;
+        loginError.hidden = false;
+      }
+    });
+
+    passwordInput.addEventListener('keydown', (event) => {
+      if (event.key === 'Enter') {
+        loginButton.click();
+      }
+    });
+
+    if (adminPassword) {
+      loadOrders().catch(() => {
+        sessionStorage.removeItem('altapure_admin_password');
+      });
+    }
+  </script>
+</body>
+</html>
