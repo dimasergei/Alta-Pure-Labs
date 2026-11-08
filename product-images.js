@@ -43,6 +43,6 @@ const PRODUCT_IMAGES = {
   "kisspeptin": IMAGE_BASE + "KISSPEPTIN%20%2010mg.webp",
   "vip": IMAGE_BASE + "VIP%2010mg.webp",
   "bac-3": IMAGE_BASE + "BAC%20WATER%203ML.webp",
-  "bac-10": IMAGE_BASE + "BAC%20WATER%203ML.webp"
+  "bac-10": IMAGE_BASE + "BAC%20WATER%203ML.webp",
   "needles": "https://99puritypeptides.com/_next/image?url=https%3A%2F%2Fpub-82f90d490a8048aa9629f0ae3ea6f567.r2.dev%2FProduct%20Images%2F10%20Needles-1.webp&w=3840&q=75"
 };
