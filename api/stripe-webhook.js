@@ -1,4 +1,9 @@
 const { clients, checked } = require('../lib/backend');
+const {
+  queueStatusNotification,
+  markNotificationSent,
+  markNotificationFailed
+} = require('../lib/order-notifications');
 
 module.exports = async (req, res) => {
   res.setHeader('Cache-Control', 'no-store');
@@ -80,15 +85,9 @@ module.exports = async (req, res) => {
       .eq('stripe_event_id', event.id)
       .maybeSingle();
 
-    if (alreadyProcessed.data) {
-      return res.status(200).json({
-        received: true,
-        alreadyProcessed: true,
-      });
-    }
-
-    checked(
-      await db.rpc('apply_store_checkout_event', {
+    if (!alreadyProcessed.data) {
+      checked(
+        await db.rpc('apply_store_checkout_event', {
         p_event_id: event.id,
         p_event_type: event.type,
         p_order_id: orderId,
@@ -104,9 +103,10 @@ module.exports = async (req, res) => {
         p_tax: session.total_details?.amount_tax || 0,
         p_total: session.amount_total,
         p_shipping_name: shipping?.name || null,
-        p_shipping_address: shipping?.address || null,
-      })
-    );
+          p_shipping_address: shipping?.address || null,
+        })
+      );
+    }
 
     if (
       event.type === 'checkout.session.completed' ||
@@ -124,7 +124,7 @@ module.exports = async (req, res) => {
     console.error('Stripe webhook processing failed', {
       name: error.name,
       code: error.code,
-      message: error.message,
+      message: sanitizeLogMessage(error.message),
     });
 
     return res.status(500).send('Processing failed; retry.');
@@ -132,55 +132,40 @@ module.exports = async (req, res) => {
 };
 
 async function sendOrderEmails(db, orderId, session) {
-  const orderResponse = await db
-    .from('store_orders')
-    .select('*')
-    .eq('id', orderId)
-    .single();
-
+  const orderResponse = await db.from('store_orders').select('*').eq('id', orderId).single();
+  if (orderResponse.error) throw orderResponse.error;
   const order = orderResponse.data;
-
-  if (!order) {
-    throw new Error('Order not found after payment.');
-  }
-
-  const itemsResponse = await db
-    .from('store_order_items')
-    .select('*')
-    .eq('order_id', orderId)
-    .order('created_at', { ascending: true });
-
+  if (!order) throw new Error('Order not found after payment.');
+  const itemsResponse = await db.from('store_order_items').select('*').eq('order_id', orderId).order('created_at', { ascending: true });
+  if (itemsResponse.error) throw itemsResponse.error;
   const items = itemsResponse.data || [];
-
   const customerEmail = order.customer_email;
   const adminEmail = process.env.ADMIN_ORDER_EMAIL;
-  const fromEmail =
-    process.env.ORDER_CONFIRMATION_FROM || 'AltaPure Labs <orders@altapurelabs.com>';
-
-  if (!customerEmail) {
-    throw new Error('Customer email is missing.');
+  const fromEmail = process.env.ORDER_CONFIRMATION_FROM || 'AltaPure Labs <orders@altapurelabs.com>';
+  if (!customerEmail) throw new Error('Customer email is missing.');
+  let queued;
+  try {
+    queued = await queueStatusNotification({ orderId: order.id, customerEmail, notificationType: 'confirmation', eventKey: 'payment-confirmed' });
+  } catch (error) {
+    console.error('Order confirmation could not be queued', { order_id: order.id, name: error.name, code: error.code, message: sanitizeLogMessage(error.message) });
+    return;
   }
-
+  if (!queued.created) return;
   const emailData = buildEmailData(order, items, session);
-
-  await sendEmail({
-    to: customerEmail,
-    from: fromEmail,
-    subject: `Your AltaPure Labs order is confirmed — ${emailData.orderNumber}`,
-    html: customerEmailHtml(emailData),
-  });
-
+  try {
+    const result = await sendEmail({ to: customerEmail, from: fromEmail, subject: `Your AltaPure Labs order is confirmed — ${emailData.orderNumber}`, html: customerEmailHtml(emailData) });
+    await markNotificationSent({ notificationId: queued.id, providerMessageId: result?.id || null });
+  } catch (error) {
+    try { await markNotificationFailed({ notificationId: queued.id, error: sanitizeLogMessage(error.message) }); }
+    catch (markError) { console.error('Could not record confirmation email failure', { notification_id: queued.id, name: markError.name, code: markError.code }); }
+    console.error('Customer order confirmation email failed', { order_number: order.order_number, name: error.name, code: error.code, message: sanitizeLogMessage(error.message) });
+    return;
+  }
   if (adminEmail) {
-    await sendEmail({
-      to: adminEmail,
-      from: fromEmail,
-      replyTo: customerEmail,
-      subject: `New paid order — ${emailData.orderNumber}`,
-      html: adminEmailHtml(emailData),
-    });
+    try { await sendEmail({ to: adminEmail, from: fromEmail, replyTo: customerEmail, subject: `New paid order — ${emailData.orderNumber}`, html: adminEmailHtml(emailData) }); }
+    catch (error) { console.error('Admin new-order email failed', { order_number: order.order_number, name: error.name, code: error.code, message: sanitizeLogMessage(error.message) }); }
   }
 }
-
 function buildEmailData(order, items, session) {
   const formatMoney = (cents) =>
     new Intl.NumberFormat('en-US', {
@@ -220,7 +205,7 @@ function buildEmailData(order, items, session) {
     .join('<br>');
 
   return {
-    orderNumber: order.id,
+    orderNumber: order.order_number || 'Unavailable',
     customerName: order.customer_name,
     customerEmail: order.customer_email,
     organization: order.organization,
@@ -231,7 +216,8 @@ function buildEmailData(order, items, session) {
     total: formatMoney(order.total_cents),
     shippingName: order.shipping_name || '',
     shippingAddress: addressLines,
-    paymentStatus: order.payment_status,
+    paymentStatus: formatPaymentStatus(order.payment_status),
+    fulfillmentStatus: formatFulfillmentStatus(order.fulfillment_status),
     receiptUrl: session?.receipt_url || '',
   };
 }
@@ -253,7 +239,9 @@ function customerEmailHtml(data) {
 
         <div style="background:#f3f5f5;padding:18px;border-radius:10px;margin-bottom:24px;">
           <p style="margin:0 0 8px;"><strong>Order number:</strong> ${escapeHtml(data.orderNumber)}</p>
-          <p style="margin:0;"><strong>Payment status:</strong> ${escapeHtml(data.paymentStatus)}</p>
+          <p style="margin:0 0 8px;"><strong>Payment status:</strong> ${escapeHtml(data.paymentStatus)}</p>
+          <p style="margin:0 0 8px;"><strong>Order status:</strong> ${escapeHtml(data.fulfillmentStatus)}</p>
+          <p style="margin:0;"><strong>Customer email:</strong> ${escapeHtml(data.customerEmail)}</p>
         </div>
 
         <h3 style="margin:0 0 12px;font-size:18px;">Order details</h3>
@@ -356,33 +344,30 @@ function adminEmailHtml(data) {
 
 async function sendEmail({ to, from, subject, html, replyTo }) {
   const apiKey = process.env.RESEND_API_KEY;
-
-  if (!apiKey) {
-    console.error('RESEND_API_KEY is missing; email was not sent.');
-    return;
-  }
-
+  if (!apiKey) throw new Error('RESEND_API_KEY is missing.');
   const response = await fetch('https://api.resend.com/emails', {
     method: 'POST',
-    headers: {
-      Authorization: `Bearer ${apiKey}`,
-      'Content-Type': 'application/json',
-    },
-    body: JSON.stringify({
-      from,
-      to: [to],
-      subject,
-      html,
-      ...(replyTo ? { reply_to: replyTo } : {}),
-    }),
+    signal: AbortSignal.timeout(10000),
+    headers: { Authorization: `Bearer ${apiKey}`, 'Content-Type': 'application/json' },
+    body: JSON.stringify({ from, to: [to], subject, html, ...(replyTo ? { reply_to: replyTo } : {}) })
   });
-
-  if (!response.ok) {
-    const errorText = await response.text();
-    throw new Error(`Resend email failed: ${response.status} ${errorText}`);
-  }
+  if (!response.ok) throw new Error(`Resend rejected the request (${response.status}).`);
+  return await response.json();
 }
 
+function formatPaymentStatus(status) {
+  const labels = { pending: 'Pending', paid: 'Paid', failed: 'Failed', expired: 'Expired', partially_refunded: 'Partially Refunded', refunded: 'Refunded' };
+  return labels[status] || String(status || 'Unknown');
+}
+
+function formatFulfillmentStatus(status) {
+  const labels = { unfulfilled: 'Unfulfilled', processing: 'Processing', awaiting_supplier: 'Awaiting Supplier', partially_shipped: 'Partially Shipped', shipped: 'Shipped', delivered: 'Delivered', canceled: 'Canceled' };
+  return labels[status] || String(status || 'Unknown');
+}
+
+function sanitizeLogMessage(value) {
+  return String(value || 'Unknown error').replace(/(?:sk|rk)_(?:test|live)_[A-Za-z0-9_]+|whsec_[A-Za-z0-9_]+|re_[A-Za-z0-9_]+|sb_secret_[A-Za-z0-9_-]+/g, '[REDACTED]').slice(0, 500);
+}
 function escapeHtml(value) {
   return String(value ?? '')
     .replaceAll('&', '&amp;')
