@@ -2979,11 +2979,29 @@
       const batchId = button.dataset.batchId;
 
       if (button.dataset.action === 'download-batch') {
-        const batch = supplierBatches.find((item) => item.id === batchId);
+        try {
+          const response = await api(
+            '/api/admin-supplier-batches'
+          );
 
-        if (!batch) return;
+          const batches = Array.isArray(response.batches)
+            ? response.batches
+            : [];
 
-        downloadSupplierBatchCsv(batch);
+          const batch = batches.find(
+            (item) => item.id === batchId
+          );
+
+          if (!batch) {
+            setNotice('Supplier batch not found.', true);
+            return;
+          }
+
+          downloadSupplierBatchCsv(batch);
+        } catch (error) {
+          setNotice(error.message, true);
+        }
+
         return;
       }
 
