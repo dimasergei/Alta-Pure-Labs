@@ -71,7 +71,8 @@ Schema/database access and callable SECURITY DEFINER routines across all non-sys
 SELECT n.nspname,has_schema_privilege('schema_inspector',n.oid,'USAGE') can_use,
  has_schema_privilege('schema_inspector',n.oid,'CREATE') can_create
 FROM pg_catalog.pg_namespace n WHERE n.nspname<>'information_schema' AND n.nspname !~ '^pg_(catalog|toast|temp)(_|$)' ORDER BY 1;
-SELECT datname,has_database_privilege('schema_inspector',oid,'CONNECT') can_connect,
+SELECT datname,pg_get_userbyid(datdba) owner_name,datacl,
+ has_database_privilege('schema_inspector',oid,'CONNECT') can_connect,
  has_database_privilege('schema_inspector',oid,'CREATE') can_create,
  has_database_privilege('schema_inspector',oid,'TEMP') can_temp FROM pg_catalog.pg_database ORDER BY 1;
 SELECT n.nspname,p.proname,pg_get_function_identity_arguments(p.oid) arguments,
