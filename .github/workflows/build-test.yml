@@ -15,7 +15,7 @@ concurrency:
 
 jobs:
   build-and-test:
-    name: Node tests, catalog exporter tests, and production build
+    name: Node tests, database security tests, catalog exporter tests, and production build
     runs-on: ubuntu-latest
     timeout-minutes: 15
     services:
@@ -31,6 +31,18 @@ jobs:
           --health-interval 5s
           --health-timeout 5s
           --health-retries 10
+      supplier-postgres:
+        image: postgres:16
+        env:
+          POSTGRES_PASSWORD: postgres
+          POSTGRES_DB: postgres
+        ports:
+          - 5433:5432
+        options: >-
+          --health-cmd "pg_isready -U postgres -d postgres"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 10
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
@@ -38,14 +50,26 @@ jobs:
           node-version: 22
       - name: Install Node dependencies
         run: npm install --no-audit --no-fund
-      - name: Run existing Node tests
+      - name: Run existing and admin API Node tests
         run: node --test tests/*.test.cjs
+      - name: Create disposable supplier-batch database fixture
+        env:
+          PGPASSWORD: postgres
+        run: |
+          psql -X -v ON_ERROR_STOP=1 -h 127.0.0.1 -p 5433 -U postgres -d postgres -f tests/fixtures/supplier-batch-security.sql
+          psql -X -v ON_ERROR_STOP=1 -h 127.0.0.1 -p 5433 -U postgres -d postgres -f supabase/migrations/20261108020000_admin_supplier_batch_function.sql
+          psql -X -v ON_ERROR_STOP=1 -h 127.0.0.1 -p 5433 -U postgres -d postgres -c "GRANT EXECUTE ON FUNCTION public.create_supplier_batch(uuid, text, uuid[]) TO anon, authenticated, postgres, service_role"
+          psql -X -v ON_ERROR_STOP=1 -h 127.0.0.1 -p 5433 -U postgres -d postgres -f supabase/migrations/20261108060000_restrict_supplier_batch_execution.sql
+      - name: Verify supplier-batch ACLs and valid backend creation
+        env:
+          PGPASSWORD: postgres
+        run: psql -X -v ON_ERROR_STOP=1 -h 127.0.0.1 -p 5433 -U postgres -d postgres -f tests/fixtures/supplier-batch-security-checks.sql
       - uses: actions/setup-python@v5
         with:
           python-version: "3.12"
       - name: Install catalog exporter dependency
         run: python -m pip install "psycopg[binary]==3.2.9"
-      - name: Create disposable PostgreSQL fixture
+      - name: Create disposable schema-inspection fixture
         env:
           PGPASSWORD: postgres
         run: psql -X -v ON_ERROR_STOP=1 -h 127.0.0.1 -U postgres -d postgres -f tests/fixtures/schema-inspection.sql
