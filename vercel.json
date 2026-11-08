@@ -15,5 +15,8 @@
       "source": "/account/:path*",
       "destination": "/account.html"
     }
-  ]
+  ],
+  "git": {
+    "deploymentEnabled": false
+  }
 }
