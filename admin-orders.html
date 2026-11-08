@@ -8,209 +8,317 @@
   <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='14' fill='%23163832'/%3E%3Ctext x='32' y='40' text-anchor='middle' font-size='22' font-family='Arial' fill='white'%3EAP%3C/text%3E%3C/svg%3E" />
   <link rel="stylesheet" href="styles.css">
   <style>
+    :root {
+      --admin-bg: #0b0f10;
+      --admin-panel: #121718;
+      --admin-panel-soft: #171d1e;
+      --admin-border: #232b2c;
+      --admin-text: #e8edeb;
+      --admin-muted: #8d9a96;
+      --admin-teal: #59c2b4;
+      --admin-teal-soft: #17302c;
+    }
+
+    body {
+      background: var(--admin-bg);
+      color: var(--admin-text);
+    }
+
     .admin-page {
       min-height: 100svh;
-      padding: 32px var(--gutter) 80px;
-      background: #f4f6f5;
+      padding: 28px clamp(16px, 4vw, 48px) 80px;
     }
 
     .admin-shell {
-      max-width: 1180px;
+      max-width: 1120px;
       margin: auto;
     }
 
-    .admin-topbar {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      gap: 20px;
-      margin-bottom: 24px;
-    }
-
-    .admin-title {
-      margin: 0;
-      font-size: clamp(28px, 4vw, 40px);
-    }
-
-    .admin-subtitle {
-      margin: 6px 0 0;
-      color: var(--muted);
-      font-size: 14px;
-    }
-
-    .admin-card {
-      background: #fff;
-      border: 1px solid #e3e7e6;
-      padding: clamp(22px, 4vw, 36px);
-    }
-
-    .login-card {
-      max-width: 460px;
-      margin: 60px auto 0;
-      text-align: center;
-    }
-
-    .login-card h2 {
-      margin: 0 0 10px;
-      font-size: 28px;
-    }
-
-    .login-card p {
-      color: var(--muted);
-      margin-bottom: 26px;
-    }
-
-    .login-field {
-      display: grid;
-      gap: 8px;
-      text-align: left;
-      margin-bottom: 18px;
-    }
-
-    .login-field label {
-      font-size: 13px;
-      font-weight: 700;
-      letter-spacing: .05em;
-      text-transform: uppercase;
-      color: var(--muted);
-    }
-
-    .login-field input {
-      padding: 15px;
-      border: 1px solid #c8d0cd;
-      background: #fff;
-    }
-
-    .toolbar {
+    .admin-top {
       display: flex;
       align-items: center;
       justify-content: space-between;
       gap: 16px;
-      flex-wrap: wrap;
-      margin-bottom: 22px;
+      margin-bottom: 18px;
     }
 
-    .toolbar-count {
-      color: var(--muted);
+    .admin-title {
+      margin: 0;
+      font-size: 24px;
+      letter-spacing: -.03em;
+    }
+
+    .admin-subtitle {
+      margin: 4px 0 0;
+      color: var(--admin-muted);
+      font-size: 13px;
+    }
+
+    .admin-actions {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .ghost-button {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      min-height: 40px;
+      padding: 9px 16px;
+      border: 1px solid var(--admin-border);
+      border-radius: 100px;
+      background: transparent;
+      color: var(--admin-text);
+      font-size: 13px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: border-color .2s ease, color .2s ease, background .2s ease;
+    }
+
+    .ghost-button:hover,
+    .ghost-button:focus-visible {
+      border-color: var(--admin-teal);
+      color: var(--admin-teal);
+    }
+
+    .ghost-button:disabled {
+      opacity: .45;
+      cursor: not-allowed;
+    }
+
+    .login-card {
+      max-width: 420px;
+      margin: 80px auto 0;
+      padding: 34px;
+      background: var(--admin-panel);
+      border: 1px solid var(--admin-border);
+      text-align: center;
+    }
+
+    .login-card h2 {
+      margin: 0 0 8px;
+      font-size: 24px;
+    }
+
+    .login-card p {
+      margin: 0 0 24px;
+      color: var(--admin-muted);
       font-size: 14px;
     }
 
-    .orders {
+    .login-field {
       display: grid;
-      gap: 18px;
+      gap: 7px;
+      margin-bottom: 18px;
+      text-align: left;
     }
 
-    .order {
-      border: 1px solid #e3e7e6;
-      background: #fff;
-      overflow: hidden;
-    }
-
-    .order-header {
-      display: grid;
-      grid-template-columns: 1.4fr .8fr .7fr;
-      gap: 18px;
-      align-items: center;
-      padding: 20px 24px;
-      background: #fafbfb;
-      border-bottom: 1px solid #e3e7e6;
-    }
-
-    .order-label {
-      display: block;
-      margin-bottom: 4px;
+    .login-field label {
       font-size: 11px;
       font-weight: 700;
       letter-spacing: .09em;
       text-transform: uppercase;
-      color: var(--muted);
+      color: var(--admin-muted);
+    }
+
+    .login-field input {
+      padding: 14px;
+      border: 1px solid var(--admin-border);
+      background: #0e1314;
+      color: var(--admin-text);
+    }
+
+    .login-field input:focus {
+      outline: none;
+      border-color: var(--admin-teal);
+    }
+
+    .primary-button {
+      width: 100%;
+      min-height: 46px;
+      border: 0;
+      border-radius: 100px;
+      background: var(--admin-teal);
+      color: #06201d;
+      font-weight: 700;
+      cursor: pointer;
+      transition: filter .2s ease;
+    }
+
+    .primary-button:hover,
+    .primary-button:focus-visible {
+      filter: brightness(1.08);
+    }
+
+    .primary-button:disabled {
+      opacity: .55;
+      cursor: not-allowed;
+    }
+
+    .error {
+      margin: 12px 0 0;
+      color: #ff8a8a;
+      font-size: 13px;
+    }
+
+    .orders {
+      display: grid;
+      gap: 10px;
+    }
+
+    .order {
+      background: var(--admin-panel);
+      border: 1px solid var(--admin-border);
+      overflow: hidden;
+      transition: border-color .2s ease;
+    }
+
+    .order:hover,
+    .order:focus-within {
+      border-color: #31403e;
+    }
+
+    .order-row {
+      width: 100%;
+      display: grid;
+      grid-template-columns: minmax(130px, 1.1fr) minmax(0, 1.6fr) 100px 130px 34px;
+      align-items: center;
+      gap: 16px;
+      padding: 16px 18px;
+      background: transparent;
+      border: 0;
+      color: inherit;
+      font: inherit;
+      text-align: left;
+      cursor: pointer;
+    }
+
+    .order-row:hover {
+      background: var(--admin-panel-soft);
     }
 
     .order-number {
-      font-size: 20px;
+      font-size: 16px;
       font-weight: 700;
       letter-spacing: .02em;
     }
 
+    .order-date {
+      display: block;
+      margin-top: 3px;
+      color: var(--admin-muted);
+      font-size: 12px;
+    }
+
+    .customer-preview strong {
+      display: block;
+      font-size: 14px;
+      font-weight: 600;
+    }
+
+    .customer-preview span {
+      display: block;
+      color: var(--admin-muted);
+      font-size: 12px;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+
     .order-total {
-      font-size: 20px;
       font-weight: 700;
       text-align: right;
+      font-variant-numeric: tabular-nums;
     }
 
     .status-pill {
       display: inline-flex;
-      align-items: center;
-      padding: 7px 13px;
+      justify-content: center;
+      padding: 6px 10px;
       border-radius: 100px;
-      font-size: 12px;
+      font-size: 11px;
       font-weight: 700;
-      letter-spacing: .04em;
+      letter-spacing: .05em;
       text-transform: uppercase;
+      white-space: nowrap;
     }
 
     .status-paid {
-      background: #e7f3ee;
-      color: #166534;
+      background: #17302c;
+      color: #7fd7c7;
     }
 
     .status-processing {
-      background: #fdf3e2;
-      color: #92400e;
+      background: #3a2c14;
+      color: #f0c073;
     }
 
     .status-shipped {
-      background: #e8f0fd;
-      color: #1d4ed8;
+      background: #182c44;
+      color: #8db8ff;
     }
 
     .status-delivered {
-      background: #e7f3ee;
-      color: #166534;
+      background: #17302c;
+      color: #7fd7c7;
     }
 
     .status-canceled {
-      background: #fdeaea;
-      color: #991b1b;
+      background: #3d1c1c;
+      color: #ff9a9a;
     }
 
-    .order-body {
+    .chevron {
+      color: var(--admin-muted);
+      font-size: 20px;
+      line-height: 1;
+      text-align: center;
+      transition: transform .2s ease;
+    }
+
+    .order.open .chevron {
+      transform: rotate(180deg);
+    }
+
+    .order-details {
+      display: none;
+      padding: 0 18px 20px;
+      border-top: 1px solid var(--admin-border);
+    }
+
+    .order.open .order-details {
+      display: block;
+    }
+
+    .details-grid {
       display: grid;
-      grid-template-columns: 1.15fr .85fr;
+      grid-template-columns: 1fr 1fr;
       gap: 24px;
-      padding: 24px;
+      padding-top: 20px;
     }
 
     .section-title {
-      margin: 0 0 12px;
-      font-size: 13px;
+      margin: 0 0 10px;
+      font-size: 11px;
       font-weight: 700;
       letter-spacing: .09em;
       text-transform: uppercase;
-      color: var(--muted);
-    }
-
-    .customer-block strong {
-      display: block;
-      font-size: 17px;
-    }
-
-    .customer-block .muted {
-      display: block;
-      margin-top: 4px;
+      color: var(--admin-muted);
     }
 
     .items {
-      border: 1px solid #e3e7e6;
-      background: #fafbfb;
+      border: 1px solid var(--admin-border);
+      background: #0e1314;
     }
 
     .item {
       display: flex;
       justify-content: space-between;
-      gap: 16px;
-      padding: 13px 16px;
-      border-bottom: 1px solid #e3e7e6;
+      gap: 14px;
+      padding: 11px 14px;
+      border-bottom: 1px solid var(--admin-border);
+      font-size: 14px;
     }
 
     .item:last-child {
@@ -223,99 +331,127 @@
 
     .item-variant {
       display: block;
-      color: var(--muted);
-      font-size: 13px;
       margin-top: 2px;
+      color: var(--admin-muted);
+      font-size: 12px;
     }
 
     .address {
-      color: var(--muted);
+      margin: 0;
+      color: var(--admin-muted);
+      font-size: 14px;
       line-height: 1.55;
     }
 
     .address strong {
-      color: var(--ink);
+      color: var(--admin-text);
     }
 
     .fulfillment {
-      margin-top: 24px;
-      padding-top: 22px;
-      border-top: 1px solid #e3e7e6;
+      margin-top: 22px;
+      padding-top: 18px;
+      border-top: 1px solid var(--admin-border);
     }
 
-    .fulfillment-grid {
+    .form-grid {
       display: grid;
       grid-template-columns: repeat(3, minmax(0, 1fr));
-      gap: 14px;
+      gap: 12px;
     }
 
-    .fulfillment-grid .full {
+    .form-grid .full {
       grid-column: 1 / -1;
     }
 
     .field {
       display: grid;
-      gap: 7px;
+      gap: 6px;
     }
 
     .field label {
-      font-size: 12px;
+      font-size: 11px;
       font-weight: 700;
-      letter-spacing: .07em;
+      letter-spacing: .08em;
       text-transform: uppercase;
-      color: var(--muted);
+      color: var(--admin-muted);
     }
 
     .field input,
     .field select,
     .field textarea {
       width: 100%;
-      padding: 12px;
-      border: 1px solid #c8d0cd;
-      background: #fff;
+      padding: 11px 12px;
+      border: 1px solid var(--admin-border);
+      background: #0e1314;
+      color: var(--admin-text);
       font: inherit;
     }
 
+    .field input:focus,
+    .field select:focus,
+    .field textarea:focus {
+      outline: none;
+      border-color: var(--admin-teal);
+    }
+
     .field textarea {
-      min-height: 78px;
+      min-height: 72px;
       resize: vertical;
     }
 
     .save-row {
       display: flex;
       justify-content: flex-end;
-      margin-top: 16px;
+      margin-top: 14px;
     }
 
     .save-button {
-      min-width: 170px;
+      min-width: 160px;
     }
 
     .empty {
-      padding: 70px 20px;
+      padding: 60px 20px;
       text-align: center;
-      color: var(--muted);
+      color: var(--admin-muted);
     }
 
-    .error {
-      color: #991b1b;
-      font-weight: 600;
-    }
+    @media (max-width: 860px) {
+      .order-row {
+        grid-template-columns: 1fr auto;
+        grid-template-areas:
+          "number chevron"
+          "customer chevron"
+          "total status";
+        row-gap: 10px;
+      }
 
-    @media (max-width: 900px) {
-      .order-header {
-        grid-template-columns: 1fr;
+      .order-number {
+        grid-area: number;
+      }
+
+      .customer-preview {
+        grid-area: customer;
       }
 
       .order-total {
+        grid-area: total;
         text-align: left;
       }
 
-      .order-body {
+      .status-pill {
+        grid-area: status;
+        justify-self: end;
+      }
+
+      .chevron {
+        grid-area: chevron;
+      }
+
+      .details-grid {
         grid-template-columns: 1fr;
       }
 
-      .fulfillment-grid {
+      .form-grid {
         grid-template-columns: 1fr;
       }
     }
@@ -326,37 +462,34 @@
   <main class="admin-page">
     <div class="admin-shell">
       <div id="login-view">
-        <div class="admin-card login-card">
+        <div class="login-card">
           <h2>Admin access</h2>
-          <p>Enter your admin password to view and manage orders.</p>
+          <p>Enter your password to manage orders.</p>
 
           <div class="login-field">
             <label for="admin-password">Admin password</label>
             <input id="admin-password" type="password" autocomplete="current-password">
           </div>
 
-          <button id="login-button" class="pill pill-dark" type="button">View orders</button>
+          <button id="login-button" class="primary-button" type="button">View orders</button>
           <p id="login-error" class="error" hidden></p>
         </div>
       </div>
 
       <div id="orders-view" hidden>
-        <div class="admin-topbar">
+        <div class="admin-top">
           <div>
             <h1 class="admin-title">Orders</h1>
             <p class="admin-subtitle" id="orders-message">Loading orders…</p>
           </div>
-          <a class="pill pill-ghost" href="/">Back to site</a>
-        </div>
 
-        <div class="admin-card">
-          <div class="toolbar">
-            <span class="toolbar-count" id="order-count"></span>
-            <button id="refresh-button" class="pill pill-ghost" type="button">Refresh</button>
+          <div class="admin-actions">
+            <button id="refresh-button" class="ghost-button" type="button">Refresh</button>
+            <a class="ghost-button" href="/">Site</a>
           </div>
-
-          <div id="orders-list" class="orders"></div>
         </div>
+
+        <div id="orders-list" class="orders"></div>
       </div>
     </div>
   </main>
@@ -368,7 +501,6 @@
     const loginView = document.querySelector('#login-view');
     const ordersView = document.querySelector('#orders-view');
     const ordersMessage = document.querySelector('#orders-message');
-    const orderCount = document.querySelector('#order-count');
     const ordersList = document.querySelector('#orders-list');
     const refreshButton = document.querySelector('#refresh-button');
 
@@ -434,8 +566,7 @@
       ordersView.hidden = false;
       loginView.hidden = true;
 
-      orderCount.textContent = `${orders.length} order${orders.length === 1 ? '' : 's'}`;
-      ordersMessage.textContent = 'Manage fulfillment, tracking, and internal notes.';
+      ordersMessage.textContent = `${orders.length} order${orders.length === 1 ? '' : 's'} · click an order to expand`;
 
       if (!orders.length) {
         ordersList.innerHTML = `
@@ -469,88 +600,116 @@
 
         return `
           <article class="order" data-order-id="${escapeHtml(order.id)}">
-            <div class="order-header">
+            <button
+              class="order-row"
+              type="button"
+              aria-expanded="false"
+              aria-controls="details-${escapeHtml(order.id)}"
+            >
               <div>
-                <span class="order-label">Order</span>
                 <span class="order-number">${escapeHtml(order.order_number || order.id)}</span>
-                <span class="muted">${formatDate(order.created_at)}</span>
+                <span class="order-date">${formatDate(order.created_at)}</span>
+              </div>
+
+              <div class="customer-preview">
+                <strong>${escapeHtml(order.customer_name)}</strong>
+                <span>${escapeHtml(order.customer_email)}</span>
+              </div>
+
+              <div class="order-total">
+                ${money(order.total_cents, order.currency)}
               </div>
 
               <div>
-                <span class="order-label">Fulfillment</span>
                 <span class="status-pill status-${escapeHtml(order.fulfillment_status)}">
                   ${escapeHtml(formatStatus(order.fulfillment_status))}
                 </span>
               </div>
 
-              <div>
-                <span class="order-label">Total</span>
-                <span class="order-total">${money(order.total_cents, order.currency)}</span>
-              </div>
-            </div>
+              <span class="chevron" aria-hidden="true">⌄</span>
+            </button>
 
-            <div class="order-body">
-              <div>
-                <h3 class="section-title">Customer</h3>
-                <div class="customer-block">
-                  <strong>${escapeHtml(order.customer_name)}</strong>
-                  <span class="muted">${escapeHtml(order.customer_email)}</span>
-                  <span class="muted">${escapeHtml(order.organization || '')}</span>
+            <div class="order-details" id="details-${escapeHtml(order.id)}">
+              <div class="details-grid">
+                <div>
+                  <h3 class="section-title">Customer</h3>
+                  <p class="address">
+                    <strong>${escapeHtml(order.customer_name)}</strong><br>
+                    ${escapeHtml(order.customer_email)}<br>
+                    ${escapeHtml(order.organization || '')}
+                  </p>
+
+                  <h3 class="section-title" style="margin-top:22px;">Items</h3>
+                  <div class="items">${items}</div>
                 </div>
 
-                <h3 class="section-title" style="margin-top:24px;">Items</h3>
-                <div class="items">${items}</div>
-              </div>
+                <div>
+                  <h3 class="section-title">Shipping</h3>
+                  <p class="address">
+                    <strong>${escapeHtml(order.shipping_name || '')}</strong><br>
+                    ${addressText}
+                  </p>
 
-              <div>
-                <h3 class="section-title">Shipping</h3>
-                <p class="address">
-                  <strong>${escapeHtml(order.shipping_name || '')}</strong><br>
-                  ${addressText}
-                </p>
+                  <div class="fulfillment">
+                    <h3 class="section-title">Fulfillment</h3>
 
-                <div class="fulfillment">
-                  <h3 class="section-title">Fulfillment</h3>
+                    <form class="form-grid">
+                      <label class="field">
+                        Status
+                        <select name="fulfillment_status">
+                          ${['paid', 'processing', 'shipped', 'delivered', 'canceled']
+                            .map(
+                              (status) => `
+                                <option value="${status}" ${order.fulfillment_status === status ? 'selected' : ''}>
+                                  ${formatStatus(status)}
+                                </option>`
+                            )
+                            .join('')}
+                        </select>
+                      </label>
 
-                  <form class="fulfillment-grid">
-                    <label class="field">
-                      Status
-                      <select name="fulfillment_status">
-                        ${['paid', 'processing', 'shipped', 'delivered', 'canceled']
-                          .map(
-                            (status) => `
-                              <option value="${status}" ${order.fulfillment_status === status ? 'selected' : ''}>
-                                ${formatStatus(status)}
-                              </option>`
-                          )
-                          .join('')}
-                      </select>
-                    </label>
+                      <label class="field">
+                        Carrier
+                        <input name="tracking_carrier" value="${escapeHtml(order.tracking_carrier || '')}">
+                      </label>
 
-                    <label class="field">
-                      Carrier
-                      <input name="tracking_carrier" value="${escapeHtml(order.tracking_carrier || '')}">
-                    </label>
+                      <label class="field">
+                        Tracking number
+                        <input name="tracking_number" value="${escapeHtml(order.tracking_number || '')}">
+                      </label>
 
-                    <label class="field">
-                      Tracking number
-                      <input name="tracking_number" value="${escapeHtml(order.tracking_number || '')}">
-                    </label>
+                      <label class="field full">
+                        Internal notes
+                        <textarea name="admin_notes" rows="3">${escapeHtml(order.admin_notes || '')}</textarea>
+                      </label>
 
-                    <label class="field full">
-                      Internal notes
-                      <textarea name="admin_notes" rows="3">${escapeHtml(order.admin_notes || '')}</textarea>
-                    </label>
-
-                    <div class="save-row full">
-                      <button class="pill pill-dark save-button" type="submit">Save changes</button>
-                    </div>
-                  </form>
+                      <div class="save-row full">
+                        <button class="primary-button save-button" type="submit">Save changes</button>
+                      </div>
+                    </form>
+                  </div>
                 </div>
               </div>
             </div>
           </article>`;
       }).join('');
+
+      ordersList.querySelectorAll('.order-row').forEach((row) => {
+        row.addEventListener('click', () => {
+          const order = row.closest('.order');
+          const isOpen = order.classList.contains('open');
+
+          ordersList.querySelectorAll('.order.open').forEach((openOrder) => {
+            openOrder.classList.remove('open');
+            openOrder.querySelector('.order-row').setAttribute('aria-expanded', 'false');
+          });
+
+          if (!isOpen) {
+            order.classList.add('open');
+            row.setAttribute('aria-expanded', 'true');
+          }
+        });
+      });
 
       ordersList.querySelectorAll('form').forEach((form) => {
         form.addEventListener('submit', async (event) => {
