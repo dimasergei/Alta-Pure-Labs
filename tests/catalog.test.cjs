@@ -39,6 +39,8 @@ test("featured and spotlight entries keep their original minimum prices", () => 
 });
 
 test("every category has a unique card background and every vial uses the original brand asset", () => {
+  const imageSource = readFileSync(resolve(__dirname, "../product-images.js"), "utf8");
+  vm.runInContext(imageSource, sandbox);
   const app = readFileSync(resolve(__dirname, "../app.js"), "utf8").replace(/\binit\(\);\s*$/, "");
   vm.runInContext(`${app}; globalThis.cardMarkup = productCardMarkup; globalThis.productSvg = vialSvg;`, sandbox);
   const css = readFileSync(resolve(__dirname, "../styles.css"), "utf8");
