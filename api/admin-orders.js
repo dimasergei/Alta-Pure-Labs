@@ -33,34 +33,39 @@ const ALLOWED_STATUSES = [
 const UUID_PATTERN =
   /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 
-const ORDER_UPDATE_SELECT = [
-  'id',
-  'order_number',
-  'customer_email',
-  'customer_name',
-  'payment_status',
-  'fulfillment_status',
-  'supplier_status',
-  'priority',
-  'tracking_carrier',
-  'tracking_number',
-  'shipped_at',
-  'admin_notes',
-  'internal_status_history',
-  'currency',
-  'subtotal_cents',
-  'shipping_cents',
-  'total_cents',
-  'shipping_name',
-  'shipping_address',
+const ORDER_UPDATE_SELECT = `
+  id,
+  order_number,
+  customer_email,
+  customer_name,
+  payment_status,
+  fulfillment_status,
+  supplier_status,
+  priority,
+  tracking_carrier,
+  tracking_number,
+  shipped_at,
+  admin_notes,
+  internal_status_history,
+  currency,
+  subtotal_cents,
+  shipping_cents,
+  total_cents,
+  shipping_name,
+  shipping_address,
   store_order_items (
     id,
+    product_id,
     product_name,
     variant_size,
     quantity,
-    unit_price_cents
+    unit_price_cents,
+    supplier_sku,
+    supplier_name,
+    lot_number,
+    fulfillment_notes
   )
-].join(',');
+`;
 
 module.exports = async (req, res) => {
   res.setHeader('Cache-Control', 'no-store');
