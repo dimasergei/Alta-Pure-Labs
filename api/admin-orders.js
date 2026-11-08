@@ -1,6 +1,7 @@
 const {
   createHash,
-  timingSafeEqual
+  timingSafeEqual,
+  randomUUID
 } = require('node:crypto');
 
 const { clients, checked } = require('../lib/backend');
@@ -14,6 +15,10 @@ const {
   markNotificationSent,
   markNotificationFailed
 } = require('../lib/order-notifications');
+const {
+  STATUS_COPY,
+  buildStatusEmail
+} = require('../lib/customer-order-email');
 
 const ALLOWED_STATUSES = [
   'unfulfilled',
@@ -41,45 +46,22 @@ const ORDER_UPDATE_SELECT = [
   'tracking_number',
   'shipped_at',
   'admin_notes',
-  'internal_status_history'
+  'internal_status_history',
+  'currency',
+  'subtotal_cents',
+  'shipping_cents',
+  'total_cents',
+  'shipping_name',
+  'shipping_address',
+  'updated_at',
+  store_order_items (
+    id,
+    product_name,
+    variant_size,
+    quantity,
+    unit_price_cents
+  )
 ].join(',');
-
-const STATUS_EMAILS = {
-  processing: {
-    subject: 'Your AltaPure Labs order is being prepared',
-    heading: 'Your order is being prepared',
-    message:
-      'We received your order and are preparing it for shipment. We will notify you when it ships.'
-  },
-
-  partially_shipped: {
-    subject: 'Part of your AltaPure Labs order has shipped',
-    heading: 'Part of your order has shipped',
-    message:
-      'Part of your order has shipped. Any remaining items will be shipped separately. Available tracking information is included below.'
-  },
-
-  shipped: {
-    subject: 'Your AltaPure Labs order has shipped',
-    heading: 'Your order has shipped',
-    message:
-      'Your order has shipped. Tracking information is included below when available.'
-  },
-
-  delivered: {
-    subject: 'Your AltaPure Labs order was delivered',
-    heading: 'Your order was delivered',
-    message:
-      'Your order has been marked as delivered. If you did not receive it, please contact us promptly.'
-  },
-
-  canceled: {
-    subject: 'Your AltaPure Labs order was canceled',
-    heading: 'Your order was canceled',
-    message:
-      'Your order has been canceled. This notice does not confirm a refund. Please contact us if you have questions about your payment.'
-  }
-};
 
 module.exports = async (req, res) => {
   res.setHeader('Cache-Control', 'no-store');
@@ -376,20 +358,16 @@ async function updateOrder(res, body) {
     'Supplier status'
   );
 
-  const trackingCarrier = optionalText(
+  const trackingCarrier = validateCarrier(
     body.tracking_carrier === undefined
       ? previousOrder.tracking_carrier
-      : body.tracking_carrier,
-    100,
-    'Carrier'
+      : body.tracking_carrier
   );
 
-  const trackingNumber = optionalText(
+  const trackingNumber = validateTrackingNumber(
     body.tracking_number === undefined
       ? previousOrder.tracking_number
-      : body.tracking_number,
-    254,
-    'Tracking number'
+      : body.tracking_number
   );
 
   const adminNotes = optionalText(
@@ -400,11 +378,11 @@ async function updateOrder(res, body) {
     'Internal notes'
   );
 
-  const previousStatus =
-    previousOrder.fulfillment_status;
-
-  const statusChanged =
-    previousStatus !== fulfillmentStatus;
+  const previousStatus = previousOrder.fulfillment_status;
+  const statusChanged = previousStatus !== fulfillmentStatus;
+  const trackingChanged =
+    (previousOrder.tracking_carrier || null) !== trackingCarrier ||
+    (previousOrder.tracking_number || null) !== trackingNumber;
 
   const requiresPaidOrder = [
     'processing',
@@ -417,30 +395,18 @@ async function updateOrder(res, body) {
   if (
     statusChanged &&
     requiresPaidOrder &&
-    !['paid', 'partially_refunded'].includes(
-      previousOrder.payment_status
-    )
+    !['paid', 'partially_refunded'].includes(previousOrder.payment_status)
   ) {
-    throw httpError(
-      409,
-      'This fulfillment action requires a paid order.'
-    );
+    throw httpError(409, 'This fulfillment action requires a paid order.');
   }
 
   const now = new Date().toISOString();
-
-  const history = Array.isArray(
-    previousOrder.internal_status_history
-  )
+  const history = Array.isArray(previousOrder.internal_status_history)
     ? [...previousOrder.internal_status_history]
     : [];
 
   if (statusChanged) {
-    history.push({
-      from: previousStatus,
-      to: fulfillmentStatus,
-      at: now
-    });
+    history.push({ from: previousStatus, to: fulfillmentStatus, at: now });
   }
 
   const updateData = {
@@ -454,29 +420,24 @@ async function updateOrder(res, body) {
   };
 
   if (
-    ['partially_shipped', 'shipped'].includes(
-      fulfillmentStatus
-    ) &&
+    ['partially_shipped', 'shipped'].includes(fulfillmentStatus) &&
     !previousOrder.shipped_at
   ) {
     updateData.shipped_at = now;
   }
 
-  /*
-   * Guard against another request changing fulfillment status
-   * between our read and update.
-   *
-   * Full transactional auditing and concurrency control will
-   * replace this in the workflow-service stage.
-   */
+  let updateQuery = db
+    .from('store_orders')
+    .update(updateData)
+    .eq('id', orderId)
+    .eq('fulfillment_status', previousStatus);
+
+  if (previousOrder.updated_at) {
+    updateQuery = updateQuery.eq('updated_at', previousOrder.updated_at);
+  }
+
   const updatedOrder = checked(
-    await db
-      .from('store_orders')
-      .update(updateData)
-      .eq('id', orderId)
-      .eq('fulfillment_status', previousStatus)
-      .select(ORDER_UPDATE_SELECT)
-      .maybeSingle()
+    await updateQuery.select(ORDER_UPDATE_SELECT).maybeSingle()
   );
 
   if (!updatedOrder) {
@@ -486,17 +447,22 @@ async function updateOrder(res, body) {
     );
   }
 
-  let notification = {
-    status: 'not_required'
-  };
+  let notification = { status: 'not_required' };
 
-  if (
-    statusChanged &&
-    STATUS_EMAILS[fulfillmentStatus]
+  if (statusChanged && STATUS_COPY[fulfillmentStatus]) {
+    notification = await sendStatusEmail(
+      updatedOrder,
+      fulfillmentStatus,
+      history[history.length - 1]?.at || now
+    );
+  } else if (
+    trackingChanged &&
+    (trackingCarrier || trackingNumber)
   ) {
     notification = await sendStatusEmail(
       updatedOrder,
-      fulfillmentStatus
+      'tracking_updated',
+      randomUUID()
     );
   }
 
@@ -506,112 +472,50 @@ async function updateOrder(res, body) {
   });
 }
 
-async function sendStatusEmail(order, status) {
-  const statusCopy = STATUS_EMAILS[status];
-
-  if (!statusCopy) {
-    return {
-      status: 'not_required'
-    };
-  }
-
-  if (!order.customer_email) {
-    return {
-      status: 'failed',
-      error: 'Customer email is missing.'
-    };
-  }
-
-  /*
-   * The order is already saved at this point, so a queue problem must
-   * be reported as a notification failure, not thrown as a failed save.
-   */
+async function sendStatusEmail(order, notificationType, eventKey) {
+  if (!STATUS_COPY[notificationType]) return { status: 'not_required' };
+  if (!order.customer_email) return { status: 'failed', error: 'Customer email is missing.' };
   let queued;
-
   try {
-    queued = await queueStatusNotification({
-      orderId: order.id,
-      customerEmail: order.customer_email,
-      notificationType: status
-    });
+    queued = await queueStatusNotification({ orderId: order.id, customerEmail: order.customer_email, notificationType, eventKey });
   } catch (error) {
-    console.error('Status notification queue failed', {
-      order_id: order.id,
-      name: error.name,
-      code: error.code
-    });
-
-    return {
-      status: 'failed',
-      error:
-        'Order saved, but the customer email could not be queued. Check the notification queue before resending.'
-    };
+    console.error('Customer notification queue failed', { order_id: order.id, name: error.name, code: error.code });
+    return { status: 'failed', error: 'Order saved, but the customer email could not be queued. Check the notification queue.' };
   }
-
-  if (!queued.created) {
-    return {
-      status: queued.status === 'sent'
-        ? 'already_sent'
-        : 'already_queued',
-      notification_id: queued.id
-    };
-  }
-
-  const orderNumber =
-    order.order_number || order.id;
-
+  if (!queued.created) return { status: queued.status === 'sent' ? 'already_sent' : 'already_queued', notification_id: queued.id };
   try {
+    const email = buildStatusEmail({ order, notificationType });
     const result = await sendEmail({
       to: order.customer_email,
-      from:
-        process.env.ORDER_CONFIRMATION_FROM ||
-        'AltaPure Labs <orders@altapurelabs.com>',
-      replyTo:
-        process.env.ADMIN_ORDER_EMAIL ||
-        'altapurelabs@protonmail.com',
-      subject: `${statusCopy.subject} — ${orderNumber}`,
-      html: statusEmailHtml({
-        order,
-        statusCopy
-      }),
-      text: statusEmailText({
-        order,
-        statusCopy
-      })
+      from: process.env.ORDER_CONFIRMATION_FROM || 'AltaPure Labs <orders@altapurelabs.com>',
+      replyTo: process.env.ADMIN_ORDER_EMAIL || 'altapurelabs@protonmail.com',
+      subject: email.subject, html: email.html, text: email.text
     });
-
-    await markNotificationSent({
-      notificationId: queued.id,
-      providerMessageId: result?.id || null
-    });
-
-    return {
-      status: 'accepted',
-      notification_id: queued.id,
-      provider_id: result?.id || null
-    };
+    await markNotificationSent({ notificationId: queued.id, providerMessageId: result?.id || null });
+    return { status: 'accepted', notification_id: queued.id, provider_id: result?.id || null };
   } catch (error) {
-    try {
-      await markNotificationFailed({
-        notificationId: queued.id,
-        error: error.message
-      });
-    } catch (markError) {
-      console.error('Could not record notification failure', {
-        notification_id: queued.id,
-        name: markError.name
-      });
-    }
-
-    return {
-      status: 'failed',
-      notification_id: queued.id,
-      error:
-        'Order saved, but the customer email was not confirmed as accepted. Check the notification queue before resending.'
-    };
+    try { await markNotificationFailed({ notificationId: queued.id, error: sanitizeLogMessage(error.message) }); }
+    catch (markError) { console.error('Could not record notification failure', { notification_id: queued.id, name: markError.name, code: markError.code }); }
+    console.error('Customer notification send failed', { notification_id: queued.id, order_number: order.order_number, name: error.name, code: error.code, message: sanitizeLogMessage(error.message) });
+    return { status: 'failed', notification_id: queued.id, error: 'Order saved, but the customer email was not confirmed as accepted. Check the notification queue before retrying.' };
   }
 }
 
+function validateCarrier(value) {
+  const carrier = optionalText(value, 100, 'Carrier');
+  if (carrier && /[\\u0000-\\u001f\\u007f]/.test(carrier)) throw httpError(400, 'Carrier contains invalid characters.');
+  return carrier;
+}
+
+function validateTrackingNumber(value) {
+  const number = optionalText(value, 100, 'Tracking number');
+  if (number && !/^[A-Za-z0-9 .#-]+$/.test(number)) throw httpError(400, 'Tracking number contains invalid characters.');
+  return number;
+}
+
+function sanitizeLogMessage(value) {
+  return String(value || 'Unknown error').replace(/(?:sk|rk)_(?:test|live)_[A-Za-z0-9_]+|whsec_[A-Za-z0-9_]+|re_[A-Za-z0-9_]+|sb_secret_[A-Za-z0-9_-]+/g, '[REDACTED]').slice(0, 500);
+}
 function shouldIncludeTracking(order) {
   return [
     'partially_shipped',
