@@ -8,7 +8,7 @@ Routine and view definitions are included for review and may contain hard-coded 
 
 A PostgreSQL login is not a query sandbox: it can issue arbitrary SQL within its effective privileges. PostgreSQL commonly grants function EXECUTE to PUBLIC by default. Review every callable SECURITY DEFINER function across all non-system schemas before enabling login. Inspect memberships and effective database/schema/table/column/function privileges; an unreviewed callable definer function is a stop condition.
 
-Metadata includes schema inventory/owners/ACLs; relations and view definitions; columns/types/defaults/column ACLs; constraints; indexes; RLS flags and policies; routine definitions, owners, settings, ACLs and effective execution; triggers; types; extensions; role attributes/memberships; default ACLs; database privileges; and dependency descriptions. All visible non-system schemas are included, not only public. Provider-hidden internals, role password verifiers, external provider settings and cluster secrets are not exported.
+Metadata includes schema inventory/owners/ACLs; relations and view definitions; columns/types/defaults/column ACLs; constraints; indexes; RLS flags and policies; routine definitions, owners, settings, ACLs and effective execution; triggers; types; extensions; role attributes/memberships; default ACLs; database ACLs and effective privileges; and dependency descriptions. All visible non-system schemas are included, not only public. Provider-hidden internals, role password verifiers, external provider settings and cluster secrets are not exported.
 
 ## Tests
 
@@ -59,7 +59,7 @@ SELECT n.nspname,c.relname,c.relkind,
 FROM pg_catalog.pg_class c JOIN pg_catalog.pg_namespace n ON n.oid=c.relnamespace
 LEFT JOIN pg_catalog.pg_attribute a ON a.attrelid=c.oid AND a.attnum>0 AND NOT a.attisdropped
  AND has_column_privilege('schema_inspector',c.oid,a.attnum,'SELECT')
-WHERE n.nspname<>'information_schema' AND n.nspname !~ '^pg_'
+WHERE n.nspname<>'information_schema' AND n.nspname !~ '^pg_(catalog|toast|temp)(_|$)'
  AND c.relkind IN ('r','p','v','m','f')
  AND (has_table_privilege('schema_inspector',c.oid,'SELECT') OR a.attname IS NOT NULL)
 ORDER BY 1,2,5;
@@ -70,7 +70,7 @@ Schema/database access and callable SECURITY DEFINER routines across all non-sys
 ```sql
 SELECT n.nspname,has_schema_privilege('schema_inspector',n.oid,'USAGE') can_use,
  has_schema_privilege('schema_inspector',n.oid,'CREATE') can_create
-FROM pg_catalog.pg_namespace n WHERE n.nspname<>'information_schema' AND n.nspname !~ '^pg_' ORDER BY 1;
+FROM pg_catalog.pg_namespace n WHERE n.nspname<>'information_schema' AND n.nspname !~ '^pg_(catalog|toast|temp)(_|$)' ORDER BY 1;
 SELECT datname,has_database_privilege('schema_inspector',oid,'CONNECT') can_connect,
  has_database_privilege('schema_inspector',oid,'CREATE') can_create,
  has_database_privilege('schema_inspector',oid,'TEMP') can_temp FROM pg_catalog.pg_database ORDER BY 1;
@@ -78,7 +78,7 @@ SELECT n.nspname,p.proname,pg_get_function_identity_arguments(p.oid) arguments,
  pg_get_userbyid(p.proowner) owner_name,p.proacl,p.proconfig,
  has_function_privilege('schema_inspector',p.oid,'EXECUTE') can_execute
 FROM pg_catalog.pg_proc p JOIN pg_catalog.pg_namespace n ON n.oid=p.pronamespace
-WHERE p.prosecdef AND n.nspname<>'information_schema' AND n.nspname !~ '^pg_' ORDER BY 1,2;
+WHERE p.prosecdef AND n.nspname<>'information_schema' AND n.nspname !~ '^pg_(catalog|toast|temp)(_|$)' ORDER BY 1,2;
 ```
 
 Review every executable definer function's definition, owner, ACL, settings/search_path and dependencies. Also review all other callable routines in the export. Resolve unexpected memberships, SELECT, schema CREATE, database CREATE/TEMP, or unreviewed function access before proceeding. This is deliberately not a public-only check; it includes visible auth/storage/extensions and project-specific schemas.
