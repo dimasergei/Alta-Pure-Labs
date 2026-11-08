@@ -758,6 +758,35 @@
         width: 100%;
       }
     }
+    .list-tools .actions {
+      align-items: center;
+    }
+
+    #csv-scope {
+      width: auto;
+      min-width: 160px;
+      min-height: 38px;
+      padding: 8px 10px;
+      font-size: 12px;
+    }
+
+    @media (max-width: 520px) {
+      .list-tools {
+        align-items: flex-start;
+      }
+
+      .list-tools .actions {
+        width: 100%;
+      }
+
+      #result-summary {
+        flex-basis: 100%;
+      }
+
+      #csv-scope {
+        flex: 1 1 150px;
+      }
+    }
   </style>
 </head>
 
@@ -886,7 +915,29 @@
             <input id="select-all" type="checkbox">
             Select visible
           </label>
-          <span id="result-summary">50 orders per page</span>
+
+          <div class="actions">
+            <span id="result-summary">50 orders per page</span>
+
+            <select id="csv-scope" aria-label="CSV export scope">
+              <option value="selected">Selected orders</option>
+              <option value="page">Current page</option>
+              <option value="filtered">All matching orders</option>
+            </select>
+
+            <button id="export-csv" class="ghost" type="button">
+              Export CSV
+            </button>
+
+            <button
+              id="cancel-csv"
+              class="ghost"
+              type="button"
+              hidden
+            >
+              Cancel export
+            </button>
+          </div>
         </div>
 
         <div id="bulkbar" class="bulkbar" hidden>
@@ -1213,6 +1264,8 @@
     }
 
     function logout() {
+      csvExportController?.abort();
+
       requestNumber += 1;
       clearTimeout(searchTimer);
       adminPassword = '';
@@ -2229,6 +2282,336 @@
 
     $('#next-page').addEventListener('click', () => {
       changePage(1);
+    });
+
+    let csvExportRunning = false;
+    let csvExportController = null;
+
+    function csvCell(value) {
+      let text = String(value ?? '');
+
+      /*
+       * Prevent spreadsheet software from interpreting customer-supplied
+       * text as a formula. Quoting alone does not prevent formulas.
+       */
+      if (/^[\s\uFEFF]*[=+\-@]/.test(text)) {
+        text = "'" + text;
+      }
+
+      return `"${text.replaceAll('"', '""')}"`;
+    }
+
+    function buildCsv(orders) {
+      const headers = [
+        'Order Number',
+        'Internal Order ID',
+        'Created At',
+        'Payment Status',
+        'Fulfillment Status',
+        'Archived',
+        'Priority',
+        'Customer Name',
+        'Customer Email',
+        'Organization',
+        'Recipient',
+        'Address Line 1',
+        'Address Line 2',
+        'City',
+        'State',
+        'Postal Code',
+        'Country',
+        'Product ID',
+        'Product',
+        'Variant',
+        'Quantity',
+        'Unit Price Cents',
+        'Line Total Cents',
+        'Currency',
+        'Supplier',
+        'Supplier SKU',
+        'Lot Number',
+        'Carrier',
+        'Tracking Number'
+      ];
+
+      const rows = [headers];
+
+      orders.forEach((order) => {
+        const address = order.shipping_address || {};
+
+        const items = Array.isArray(order.store_order_items) &&
+          order.store_order_items.length
+          ? order.store_order_items
+          : [null];
+
+        items.forEach((item) => {
+          const quantity = item ? Number(item.quantity) : null;
+          const unitPrice = item
+            ? Number(item.unit_price_cents)
+            : null;
+
+          const lineTotal =
+            Number.isFinite(quantity) &&
+            Number.isFinite(unitPrice)
+              ? quantity * unitPrice
+              : '';
+
+          rows.push([
+            order.order_number || order.id,
+            order.id,
+            order.created_at,
+            formatStatus(order.payment_status),
+            formatStatus(order.fulfillment_status),
+            order.archived ? 'Yes' : 'No',
+            order.priority
+              ? order.priority.charAt(0).toUpperCase() +
+                order.priority.slice(1)
+              : 'Normal',
+            order.customer_name,
+            order.customer_email,
+            order.organization,
+            order.shipping_name,
+            address.line1,
+            address.line2,
+            address.city,
+            address.state,
+            address.postal_code,
+            address.country,
+            item?.product_id,
+            item?.product_name,
+            item?.variant_size,
+            item?.quantity,
+            item?.unit_price_cents,
+            lineTotal,
+            String(order.currency || 'usd').toUpperCase(),
+            item?.supplier_name,
+            item?.supplier_sku,
+            item?.lot_number,
+            order.tracking_carrier,
+            order.tracking_number
+          ]);
+        });
+      });
+
+      return '\uFEFF' +
+        rows
+          .map((row) => row.map(csvCell).join(','))
+          .join('\r\n');
+    }
+
+    function downloadCsv(orders, scope) {
+      const content = buildCsv(orders);
+
+      const blob = new Blob([content], {
+        type: 'text/csv;charset=utf-8'
+      });
+
+      const url = URL.createObjectURL(blob);
+      const link = document.createElement('a');
+
+      const timestamp = new Date()
+        .toISOString()
+        .replace(/[:.]/g, '-');
+
+      link.href = url;
+      link.download =
+        `altapure-orders-${scope}-${timestamp}.csv`;
+
+      document.body.appendChild(link);
+      link.click();
+      link.remove();
+
+      setTimeout(() => URL.revokeObjectURL(url), 10000);
+    }
+
+    function exportParameters(snapshot, page) {
+      const params = new URLSearchParams({
+        status: snapshot.status,
+        search: snapshot.search,
+        sort: snapshot.sort,
+        priority: snapshot.priority,
+        page: String(page),
+        page_size: '100'
+      });
+
+      if (snapshot.from) {
+        params.set('from', snapshot.from);
+      }
+
+      if (snapshot.to) {
+        params.set('to', snapshot.to);
+      }
+
+      return params;
+    }
+
+    async function fetchAllMatchingForCsv(snapshot, signal) {
+      const maximumOrders = 10000;
+      const byId = new Map();
+
+      let page = 1;
+
+      while (true) {
+        if (signal.aborted) {
+          throw new DOMException('Export canceled.', 'AbortError');
+        }
+
+        const params = exportParameters(snapshot, page);
+
+        const response = await api(
+          `/api/admin-orders?${params}`,
+          { signal }
+        );
+
+        const orders = Array.isArray(response.orders)
+          ? response.orders
+          : [];
+
+        const meta = response.pagination;
+
+        if (!meta) {
+          throw new Error(
+            'The updated paginated API is required for this export.'
+          );
+        }
+
+        if (meta.total > maximumOrders) {
+          throw new Error(
+            'This browser export supports up to 10,000 orders. Narrow the date range and export again.'
+          );
+        }
+
+        orders.forEach((order) => {
+          byId.set(order.id, order);
+        });
+
+        setNotice(
+          `Preparing CSV: ${byId.size} of approximately ${meta.total} orders…`
+        );
+
+        if (!meta.has_next) break;
+
+        if (!orders.length) {
+          throw new Error(
+            'The export could not finish. Please try again.'
+          );
+        }
+
+        page += 1;
+
+        if (page > 100) {
+          throw new Error(
+            'Export limit reached. Narrow the date range.'
+          );
+        }
+      }
+
+      return [...byId.values()];
+    }
+
+    $('#cancel-csv').addEventListener('click', () => {
+      csvExportController?.abort();
+    });
+
+    $('#export-csv').addEventListener('click', async () => {
+      if (csvExportRunning) return;
+
+      if (saving || hasUnsavedChanges()) {
+        setNotice(
+          'Save your order changes before exporting.',
+          true
+        );
+        return;
+      }
+
+      const scope = $('#csv-scope').value;
+
+      const snapshot = {
+        status: currentStatus,
+        search: currentSearch,
+        ...appliedFilters
+      };
+
+      let orders;
+
+      if (scope === 'selected') {
+        orders = loadedOrders.filter((order) =>
+          selectedOrders.has(order.id)
+        );
+
+        if (!orders.length) {
+          setNotice('Select at least one order first.', true);
+          return;
+        }
+      } else if (scope === 'page') {
+        orders = [...loadedOrders];
+
+        if (!orders.length) {
+          setNotice('There are no orders on this page.', true);
+          return;
+        }
+      } else if (scope !== 'filtered') {
+        return;
+      }
+
+      if (!window.confirm(
+        'Export customer names, email addresses, shipping addresses, and order items to a CSV file? Keep the file private.'
+      )) {
+        return;
+      }
+
+      const button = $('#export-csv');
+      const scopeSelect = $('#csv-scope');
+      const cancelButton = $('#cancel-csv');
+
+      csvExportRunning = true;
+      csvExportController = new AbortController();
+
+      button.disabled = true;
+      button.textContent = 'Exporting…';
+      scopeSelect.disabled = true;
+      cancelButton.hidden = scope !== 'filtered';
+
+      try {
+        if (scope === 'filtered') {
+          orders = await fetchAllMatchingForCsv(
+            snapshot,
+            csvExportController.signal
+          );
+        }
+
+        if (csvExportController.signal.aborted) {
+          throw new DOMException('Export canceled.', 'AbortError');
+        }
+
+        if (!orders.length) {
+          setNotice('No matching orders to export.');
+          return;
+        }
+
+        downloadCsv(orders, scope);
+
+        setNotice(
+          `CSV prepared for ${orders.length} order${
+            orders.length === 1 ? '' : 's'
+          }.`
+        );
+      } catch (error) {
+        setNotice(
+          error.name === 'AbortError'
+            ? 'CSV export canceled.'
+            : error.message,
+          error.name !== 'AbortError'
+        );
+      } finally {
+        csvExportRunning = false;
+        csvExportController = null;
+
+        button.disabled = false;
+        button.textContent = 'Export CSV';
+        scopeSelect.disabled = false;
+        cancelButton.hidden = true;
+      }
     });
 
     if (adminPassword) {
