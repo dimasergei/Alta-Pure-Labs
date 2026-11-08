@@ -14,7 +14,6 @@ ALTER TABLE app_private.customer_records FORCE ROW LEVEL SECURITY;
 CREATE POLICY customer_self_policy ON app_private.customer_records FOR SELECT TO schema_inspector USING (id=0);
 REVOKE ALL ON ALL TABLES IN SCHEMA app_private FROM PUBLIC;
 REVOKE ALL ON ALL TABLES IN SCHEMA app_private FROM schema_inspector;
-GRANT USAGE ON SCHEMA app_private TO schema_inspector;
 CREATE FUNCTION app_private.reviewed_definer() RETURNS text LANGUAGE sql SECURITY DEFINER
  SET search_path=pg_catalog,app_private AS $$ SELECT 'metadata-only-fixture'::text $$;
 REVOKE ALL ON FUNCTION app_private.reviewed_definer() FROM PUBLIC;

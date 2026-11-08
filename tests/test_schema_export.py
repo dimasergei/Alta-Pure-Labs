@@ -29,6 +29,7 @@ class CatalogExporterTests(unittest.TestCase):
  def test_no_table_or_column_select(self):
   with psycopg.connect(DSN) as c:
    x=c.execute("""SELECT has_table_privilege(current_user,'app_private.customer_records','SELECT'),
-   has_column_privilege(current_user,'app_private.customer_records','email','SELECT')""").fetchone()
-  self.assertEqual(x,(False,False))
+   has_column_privilege(current_user,'app_private.customer_records','email','SELECT'),
+   has_schema_privilege(current_user,'app_private','USAGE')""").fetchone()
+  self.assertEqual(x,(False,False,False))
 if __name__=="__main__": unittest.main()
