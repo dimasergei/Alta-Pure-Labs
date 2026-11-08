@@ -489,7 +489,6 @@ button { border: 0; }
 .card[data-group="Longevity"] { --card-bg: #f2edce; }
 .card[data-group="Cosmetic & Skin"] { --card-bg: #f4e0dc; }
 .card[data-group="Sexual & Hormonal"] { --card-bg: #efdce8; }
-.card[data-group="Capsules"] { --card-bg: #e0e4f5; }
 .card[data-group="BAC Water & Supplies"] { --card-bg: #e2e9e9; }
 
 /* Product image area */
@@ -678,30 +677,6 @@ button { border: 0; }
 
 .spotlight-product .muted {
   color: #d2d9d6;
-}
-
-.capsule-feature {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  background: #edf0f1;
-}
-
-.capsule-copy {
-  align-self: center;
-  padding: 80px var(--gutter);
-}
-
-.capsule-copy p {
-  max-width: 440px;
-  color: var(--muted);
-  margin-bottom: 30px;
-}
-
-.capsule-feature > img {
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-  min-width: 0;
 }
 
 /* Catalog controls */
@@ -1327,7 +1302,6 @@ dialog::backdrop {
   .section-heading,
   .featured .card,
   .spotlight-copy > *,
-  .capsule-copy > *,
   .policy > *,
   .faq-heading > *,
   .faq-list details {
@@ -1350,8 +1324,7 @@ dialog::backdrop {
 @media (max-width:1000px) {
   .grid { grid-template-columns: repeat(3,minmax(0,1fr)); }
   .featured-grid { grid-template-columns: repeat(3,minmax(0,1fr)); }
-  .spotlight-copy,
-  .capsule-copy { padding: 60px 32px; }
+  .spotlight-copy { padding: 60px 32px; }
   .policy { grid-template-columns: 1fr; }
   .policy .pill { justify-self: start; }
   .faq { gap: 40px; grid-template-columns: 1fr 1.2fr; }
@@ -1476,22 +1449,19 @@ dialog::backdrop {
   .price-row { padding-top: 10px; }
   .from { font-size: 13px; }
 
-  .spotlight,
-  .capsule-feature { grid-template-columns: 1fr; }
+  .spotlight { grid-template-columns: 1fr; }
 
   .spotlight-art img {
     max-height: 360px;
     object-position: center;
   }
 
-  .spotlight-copy,
-  .capsule-copy {
+  .spotlight-copy {
     padding: 48px var(--gutter) 56px;
   }
 
   .spotlight-copy h2 { font-size: 46px; }
   .spotlight-product { justify-content: space-between; }
-  .capsule-feature > img { max-height: 340px; }
 
   .shop-head {
     align-items: center;
