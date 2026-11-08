@@ -85,15 +85,7 @@ module.exports = async (req, res) => {
     const batchItems = batch.supplier_batch_items || [];
     const orderIds = [...new Set(batchItems.map((item) => item.order_id).filter(Boolean))];
 
-    if (orderIds.length) {
-      checked(
-        await db
-          .from('store_orders')
-          .update({ supplier_report_generated_at: new Date().toISOString() })
-          .in('id', orderIds)
-          .select('id')
-      );
-    }
+
 
     const items = batchItems.map((item) => ({
       order_number: item.store_orders?.order_number,
@@ -112,6 +104,16 @@ module.exports = async (req, res) => {
       supplier: batch.suppliers || { name: 'Unknown supplier' },
       generatedAt: new Date().toISOString()
     });
+
+    if (orderIds.length) {
+      checked(
+        await db
+          .from('store_orders')
+          .update({ supplier_report_generated_at: new Date().toISOString() })
+          .in('id', orderIds)
+          .select('id')
+      );
+    }
 
     res.setHeader('Content-Type', 'application/pdf');
     res.setHeader(
