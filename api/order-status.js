@@ -16,7 +16,7 @@ module.exports = async (req, res) => {
     sessionId.length > 255
   ) {
     return res.status(400).json({
-      error: 'Invalid session.',
+      error: 'Invalid session.'
     });
   }
 
@@ -26,7 +26,9 @@ module.exports = async (req, res) => {
     const response = checked(
       await db
         .from('store_orders')
-        .select('id,payment_status,total_cents,currency')
+        .select(
+          'id,order_number,payment_status,fulfillment_status,total_cents,currency'
+        )
         .eq('stripe_checkout_session_id', sessionId)
         .maybeSingle()
     );
@@ -35,21 +37,23 @@ module.exports = async (req, res) => {
 
     if (!order) {
       return res.status(200).json({
-        status: 'pending',
+        status: 'pending'
       });
     }
 
     return res.status(200).json({
       status: order.payment_status,
       order_id: order.id,
+      order_number: order.order_number || order.id,
+      fulfillment_status: order.fulfillment_status || 'paid',
       total_cents: order.total_cents,
-      currency: order.currency,
+      currency: order.currency
     });
   } catch (error) {
     console.error('Order status lookup failed', error.message);
 
     return res.status(503).json({
-      error: 'Status unavailable.',
+      error: 'Status unavailable.'
     });
   }
 };
