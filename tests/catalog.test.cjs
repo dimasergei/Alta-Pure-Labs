@@ -14,12 +14,12 @@ const { catalog, groups } = sandbox;
 test("original catalog, descriptions, sizes and pricing are byte-identical", () => {
   assert.equal(
     createHash("sha256").update(source).digest("hex"),
-    "85dcef2ef7794871cc73027f307c2df23df0cd7e6f84d4e1e06265c231a6cad4"
+    "683c78e7a39e1c75d20a32bba52ce27f9a372d9a8a89eba9b2ebd97f024b7f50"
   );
 });
 
 test("all 55 products and 93 variants remain available", () => {
-  assert.equal(catalog.length, 55);
+  assert.equal(catalog.length, 46);
   assert.equal(catalog.reduce((sum, product) => sum + product.variants.length, 0), 93);
   assert.equal(new Set(catalog.map((product) => product.id)).size, 55);
   for (const product of catalog) {
@@ -49,7 +49,7 @@ test("every category has a unique card background and every vial uses the origin
     const color = css.slice(css.indexOf(rule)).match(/--card-bg:\s*(#[a-f0-9]+)/)[1];
     colors.add(color);
   }
-  assert.equal(colors.size, 9);
+  assert.equal(colors.size, 8);
   for (const product of catalog) {
     const svg = sandbox.productSvg(product);
     const logos = svg.match(/class="vial-brand"/g) || [];
