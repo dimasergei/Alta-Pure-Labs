@@ -53,7 +53,6 @@ const ORDER_UPDATE_SELECT = [
   'total_cents',
   'shipping_name',
   'shipping_address',
-  'updated_at',
   store_order_items (
     id,
     product_name,
@@ -432,9 +431,12 @@ async function updateOrder(res, body) {
     .eq('id', orderId)
     .eq('fulfillment_status', previousStatus);
 
-  if (previousOrder.updated_at) {
-    updateQuery = updateQuery.eq('updated_at', previousOrder.updated_at);
-  }
+  updateQuery = previousOrder.tracking_carrier === null
+    ? updateQuery.is('tracking_carrier', null)
+    : updateQuery.eq('tracking_carrier', previousOrder.tracking_carrier);
+  updateQuery = previousOrder.tracking_number === null
+    ? updateQuery.is('tracking_number', null)
+    : updateQuery.eq('tracking_number', previousOrder.tracking_number);
 
   const updatedOrder = checked(
     await updateQuery.select(ORDER_UPDATE_SELECT).maybeSingle()
