@@ -1,0 +1,74 @@
+name: Manual read-only application schema export
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  export-schema:
+    name: Export public application schema only
+    if: github.ref == 'refs/heads/feature/customer-platform'
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    environment: schema-export-readonly
+    steps:
+      - name: Install PostgreSQL client
+        run: |
+          sudo apt-get update
+          sudo apt-get install --yes postgresql-client
+      - name: Export schema definitions only
+        env:
+          SUPABASE_READONLY_DB_URL: ${{ secrets.SUPABASE_READONLY_DB_URL }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          if [[ -z "${SUPABASE_READONLY_DB_URL:-}" ]]; then
+            echo "Required read-only database secret is not configured."
+            exit 1
+          fi
+          export PGPASSFILE="$RUNNER_TEMP/pgpass"
+          python3 - <<'PY'
+          import os
+          from urllib.parse import urlparse, unquote
+          url = urlparse(os.environ["SUPABASE_READONLY_DB_URL"])
+          if not url.hostname or not url.username or not url.password:
+              raise SystemExit("Database URL is incomplete.")
+          fields = [
+              url.hostname.replace(":", r"\:"),
+              str(url.port or 5432),
+              (url.path.lstrip("/") or "postgres").replace(":", r"\:"),
+              unquote(url.username).replace(":", r"\:"),
+              unquote(url.password).replace(":", r"\:")
+          ]
+          with open(os.environ["PGPASSFILE"], "w", encoding="utf-8") as handle:
+              handle.write(":".join(fields) + "\n")
+          os.chmod(os.environ["PGPASSFILE"], 0o600)
+          PY
+          pg_dump \
+            --schema-only \
+            --schema=public \
+            --format=plain \
+            --no-password \
+            --file="$RUNNER_TEMP/application-schema.sql" \
+            "$SUPABASE_READONLY_DB_URL"
+          rm -f "$PGPASSFILE"
+          unset SUPABASE_READONLY_DB_URL
+      - name: Screen export for common embedded secret patterns
+        shell: bash
+        run: |
+          set -euo pipefail
+          SCHEMA_FILE="$RUNNER_TEMP/application-schema.sql"
+          if grep -Eiq 'sk_(live|test)_[A-Za-z0-9]{16,}|whsec_[A-Za-z0-9]{16,}|sb_(secret|publishable)_[A-Za-z0-9_-]{20,}|eyJ[A-Za-z0-9_-]{30,}' "$SCHEMA_FILE"; then
+            echo "Potential embedded credential detected. Export blocked; inspect securely before sharing."
+            exit 1
+          fi
+          echo "Automated secret-pattern screen passed. Human review of function bodies is still required before sharing."
+      - name: Upload short-retention schema artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: application-schema-review-${{ github.run_id }}
+          path: ${{ runner.temp }}/application-schema.sql
+          if-no-files-found: error
+          retention-days: 1
