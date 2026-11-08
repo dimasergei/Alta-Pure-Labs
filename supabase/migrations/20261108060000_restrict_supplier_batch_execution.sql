@@ -1,9 +1,9 @@
 -- Restrict the SECURITY DEFINER supplier-batch RPC to its verified
--- server-side backend caller. The function owner (postgres) retains
--- inherent owner privileges; its redundant explicit ACL entry is removed.
+-- server-side backend caller. Preserve the existing explicit EXECUTE grant
+-- to postgres; postgres also remains the function owner.
 REVOKE EXECUTE
 ON FUNCTION public.create_supplier_batch(uuid, text, uuid[])
-FROM PUBLIC, anon, authenticated, postgres;
+FROM PUBLIC, anon, authenticated;
 
 GRANT EXECUTE
 ON FUNCTION public.create_supplier_batch(uuid, text, uuid[])
