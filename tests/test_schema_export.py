@@ -1,4 +1,4 @@
-import os, unittest
+import os, unittest, json
 import psycopg
 from scripts.export_schema import export_catalog
 DSN=os.environ.get("SCHEMA_TEST_DSN")
@@ -23,6 +23,9 @@ class CatalogExporterTests(unittest.TestCase):
  def test_effective_definer_execution(self):
   x={r["routine_name"]:r for r in self.doc["sections"]["effective_security_definer_execution"]}
   self.assertTrue(x["reviewed_definer"]["can_execute"]); self.assertFalse(x["private_definer"]["can_execute"])
+ def test_export_contains_database_acl_and_no_customer_rows(self):
+  self.assertIn('acl',self.doc['sections']['database_privileges'][0])
+  self.assertNotIn('PRIVATE_CUSTOMER_ROW_SENTINEL',json.dumps(self.doc))
  def test_no_table_or_column_select(self):
   with psycopg.connect(DSN) as c:
    x=c.execute("""SELECT has_table_privilege(current_user,'app_private.customer_records','SELECT'),

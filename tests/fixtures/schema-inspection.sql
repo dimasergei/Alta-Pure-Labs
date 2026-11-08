@@ -7,6 +7,7 @@ CREATE TABLE app_private.customer_records (
  status text NOT NULL DEFAULT 'new',
  CONSTRAINT customer_status_check CHECK (status IN ('new','active'))
 );
+INSERT INTO app_private.customer_records(email,status) VALUES ('PRIVATE_CUSTOMER_ROW_SENTINEL','active');
 CREATE INDEX customer_records_status_idx ON app_private.customer_records(status);
 ALTER TABLE app_private.customer_records ENABLE ROW LEVEL SECURITY;
 ALTER TABLE app_private.customer_records FORCE ROW LEVEL SECURITY;
