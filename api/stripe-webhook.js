@@ -40,7 +40,7 @@ module.exports = async (req, res) => {
       process.env.STRIPE_WEBHOOK_SECRET
     );
   } catch (error) {
-    console.error('Stripe webhook verification failed', error.message);
+    console.error('Stripe webhook verification failed', sanitizeLogMessage(error.message));
     return res.status(400).send('Invalid signature or webhook configuration.');
   }
 
