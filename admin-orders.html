@@ -933,7 +933,33 @@
         flex: 1 1 100%;
       }
     }
-  </style>
+      .supplier-create {
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 12px;
+      background: var(--panel-soft);
+    }
+
+    .supplier-create summary {
+      cursor: pointer;
+      font-weight: 600;
+      font-size: 13px;
+    }
+
+    .supplier-create[open] {
+      margin-bottom: 12px;
+    }
+
+    .supplier-create .field {
+      margin-top: 12px;
+    }
+
+    .supplier-create button {
+      margin-top: 12px;
+      width: 100%;
+    }
+
+</style>
 </head>
 
 <body>
@@ -1130,6 +1156,57 @@
 
           <div class="supplier-grid">
             <div class="supplier-form">
+              <details class="supplier-create">
+                <summary>Add supplier</summary>
+
+                <label class="field">
+                  Supplier name
+                  <input
+                    id="new-supplier-name"
+                    type="text"
+                    maxlength="120"
+                    placeholder="Supplier name"
+                  >
+                </label>
+
+                <label class="field">
+                  Contact name
+                  <input
+                    id="new-supplier-contact"
+                    type="text"
+                    maxlength="120"
+                    placeholder="Optional"
+                  >
+                </label>
+
+                <label class="field">
+                  Email
+                  <input
+                    id="new-supplier-email"
+                    type="email"
+                    maxlength="254"
+                    placeholder="Optional"
+                  >
+                </label>
+
+                <label class="field">
+                  Notes
+                  <textarea
+                    id="new-supplier-notes"
+                    maxlength="5000"
+                    placeholder="Optional notes"
+                  ></textarea>
+                </label>
+
+                <button
+                  id="create-supplier"
+                  class="ghost"
+                  type="button"
+                >
+                  Add supplier
+                </button>
+              </details>
+
               <label class="field">
                 Supplier
                 <select id="batch-supplier">
@@ -2881,6 +2958,53 @@
       }
     }
 
+    async function createSupplier() {
+      const name = $('#new-supplier-name').value.trim();
+      const contactName = $('#new-supplier-contact').value.trim();
+      const email = $('#new-supplier-email').value.trim();
+      const notes = $('#new-supplier-notes').value.trim();
+
+      if (!name) {
+        setNotice('Enter a supplier name.', true);
+        return;
+      }
+
+      const button = $('#create-supplier');
+
+      button.disabled = true;
+      button.textContent = 'Adding…';
+
+      try {
+        await api('/api/admin-suppliers', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify({
+            name,
+            contact_name: contactName || undefined,
+            email: email || undefined,
+            notes: notes || undefined
+          })
+        });
+
+        $('#new-supplier-name').value = '';
+        $('#new-supplier-contact').value = '';
+        $('#new-supplier-email').value = '';
+        $('#new-supplier-notes').value = '';
+
+        await loadSupplierData();
+        setNotice('Supplier added.');
+      } catch (error) {
+        setNotice(error.message, true);
+      } finally {
+        button.disabled = false;
+        button.textContent = 'Add supplier';
+      }
+    }
+
+
+
     function renderSupplierBatches() {
       const container = $('#supplier-batches');
 
@@ -3129,6 +3253,11 @@
 
       setTimeout(() => URL.revokeObjectURL(url), 10000);
     }
+
+    $('#create-supplier').addEventListener(
+      'click',
+      createSupplier
+    );
 
     $('#create-batch').addEventListener('click', async () => {
       if (saving || hasUnsavedChanges()) {
