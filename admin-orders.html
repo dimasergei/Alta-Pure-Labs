@@ -3078,7 +3078,7 @@
 
       items.forEach((item) => {
         rows.push([
-          item.order_number || item.order_id,
+          item.store_orders?.order_number || item.order_id,
           item.product_name,
           item.variant_size,
           item.quantity,
