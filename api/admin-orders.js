@@ -65,6 +65,7 @@ module.exports = async (req, res) => {
         .select(
           `
           id,
+          order_number,
           created_at,
           customer_name,
           customer_email,
@@ -131,7 +132,7 @@ module.exports = async (req, res) => {
       const previousOrderResponse = await db
         .from('store_orders')
         .select(
-          'id,customer_email,customer_name,fulfillment_status,tracking_carrier,tracking_number,shipped_at,admin_notes'
+          'id,order_number,customer_email,customer_name,fulfillment_status,tracking_carrier,tracking_number,shipped_at,admin_notes'
         )
         .eq('id', orderId)
         .single();
@@ -156,7 +157,7 @@ module.exports = async (req, res) => {
         .update(updateData)
         .eq('id', orderId)
         .select(
-          'id,customer_email,customer_name,fulfillment_status,tracking_carrier,tracking_number,shipped_at,admin_notes'
+          'id,order_number,customer_email,customer_name,fulfillment_status,tracking_carrier,tracking_number,shipped_at,admin_notes'
         )
         .single();
 
@@ -253,8 +254,8 @@ function statusEmailHtml({ order, statusCopy }) {
         <p style="margin:0 0 24px;color:#4e5556;">${escapeHtml(statusCopy.message)}</p>
 
         <div style="background:#f3f5f5;padding:18px;border-radius:10px;">
-          <p style="margin:0 0 8px;"><strong>Order number:</strong> ${escapeHtml(order.id)}</p>
-          <p style="margin:0;"><strong>Status:</strong> ${escapeHtml(order.fulfillment_status)}</p>
+          <p style="margin:0 0 8px;"><strong>Order number:</strong> ${escapeHtml(order.order_number || order.id)}</p>
+          <p style="margin:0;"><strong>Status:</strong> ${escapeHtml(formatStatus(order.fulfillment_status))}</p>
         </div>
 
         ${tracking}
@@ -303,6 +304,18 @@ async function sendEmail({ to, from, subject, html, replyTo }) {
       `Resend status email failed: ${response.status} ${errorText}`
     );
   }
+}
+
+function formatStatus(status) {
+  const labels = {
+    paid: 'Paid',
+    processing: 'Processing',
+    shipped: 'Shipped',
+    delivered: 'Delivered',
+    canceled: 'Canceled'
+  };
+
+  return labels[status] || status;
 }
 
 function escapeHtml(value) {
