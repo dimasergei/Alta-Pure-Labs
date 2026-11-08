@@ -858,6 +858,81 @@
         grid-template-columns: 1fr;
       }
     }
+    .notification-panel {
+      margin-top: 20px;
+    }
+
+    .notification-panel .panel-head {
+      display: flex;
+      align-items: flex-start;
+      justify-content: space-between;
+      flex-wrap: wrap;
+      gap: 12px;
+    }
+
+    .notification-panel .actions select,
+    .notification-panel .actions input {
+      width: auto;
+      min-height: 38px;
+      padding: 8px 10px;
+      font-size: 12px;
+    }
+
+    .notifications {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      max-height: 420px;
+      overflow-y: auto;
+    }
+
+    .notification-card {
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 12px;
+      background: var(--panel-soft);
+    }
+
+    .notification-card strong {
+      display: block;
+      margin-bottom: 4px;
+    }
+
+    .notification-card .meta {
+      color: var(--muted);
+      font-size: 12px;
+      overflow-wrap: anywhere;
+    }
+
+    .notification-card .actions {
+      margin-top: 8px;
+    }
+
+    .notification-card.failed {
+      border-color: #b3261e;
+      background: #361f21;
+    }
+
+    .notification-card.sent {
+      border-color: #1d7a4f;
+      background: #11201d;
+    }
+
+    .notification-card.pending {
+      border-color: #b7791f;
+      background: #352b18;
+    }
+
+    @media (max-width: 520px) {
+      .notification-panel .actions {
+        width: 100%;
+      }
+
+      .notification-panel .actions select,
+      .notification-panel .actions input {
+        flex: 1 1 100%;
+      }
+    }
   </style>
 </head>
 
@@ -1087,6 +1162,41 @@
             </div>
           </div>
         </section>
+
+        <section class="panel notification-panel">
+          <div class="panel-head">
+            <div>
+              <h2>Customer notifications</h2>
+              <p>Review order-status emails and retry failed sends.</p>
+            </div>
+
+            <div class="actions">
+              <select id="notification-status" aria-label="Notification status">
+                <option value="all">All statuses</option>
+                <option value="pending">Pending</option>
+                <option value="sent">Sent</option>
+                <option value="failed">Failed</option>
+              </select>
+
+              <input
+                id="notification-search"
+                type="search"
+                placeholder="Search email or order"
+                maxlength="120"
+              >
+
+              <button
+                id="refresh-notifications"
+                class="ghost"
+                type="button"
+              >
+                Refresh
+              </button>
+            </div>
+          </div>
+
+          <div id="notifications-list" class="notifications"></div>
+        </section>
       </section>
     </div>
   </main>
@@ -1145,6 +1255,7 @@
     let searchTimer;
     let requestNumber = 0;
     let saving = false;
+    let notificationSearchTimer = null;
 
     let currentPage = 1;
     const pageSize = 50;
@@ -1905,12 +2016,22 @@
 
         form.dataset.dirty = 'false';
 
-        const notificationFailed =
-          saveResponse.notification?.status === 'failed';
+        const notificationStatus =
+          saveResponse.notification?.status || 'not_required';
 
-        result.textContent = notificationFailed
-          ? 'Order saved. Customer email needs attention.'
-          : 'Saved.';
+        const notificationFailed =
+          notificationStatus === 'failed';
+
+        result.textContent =
+          notificationStatus === 'accepted'
+            ? 'Saved. Customer email accepted.'
+            : notificationStatus === 'already_sent'
+              ? 'Saved. Customer email was already sent.'
+              : notificationStatus === 'already_queued'
+                ? 'Saved. Customer email is already queued.'
+                : notificationStatus === 'failed'
+                  ? 'Saved. Customer email needs attention.'
+                  : 'Saved.';
 
         result.classList.toggle('failed', notificationFailed);
 
@@ -1942,6 +2063,10 @@
             : 'Order saved. Refresh to reload the timeline and filtered results.',
           notificationFailed
         );
+
+        if (notificationFailed) {
+          await loadNotifications();
+        }
       } catch (error) {
         result.textContent =
           `${error.message} The order may have saved before an email failed. Refresh to verify before retrying.`;
@@ -2257,6 +2382,7 @@
       try {
         await loadOrders();
         loadSupplierData();
+        loadNotifications();
         savePassword(adminPassword);
         passwordInput.value = '';
         setNotice('');
@@ -3056,12 +3182,178 @@
       }
     });
 
+    let notifications = [];
+
+    function formatNotificationType(type) {
+      const labels = {
+        processing: 'Processing',
+        partially_shipped: 'Partially Shipped',
+        shipped: 'Shipped',
+        delivered: 'Delivered',
+        canceled: 'Canceled'
+      };
+
+      return labels[type] || type;
+    }
+
+    function formatNotificationStatus(status) {
+      const labels = {
+        pending: 'Pending',
+        sent: 'Sent',
+        failed: 'Failed',
+        canceled: 'Canceled'
+      };
+
+      return labels[status] || status;
+    }
+
+    function renderNotifications() {
+      const container = $('#notifications-list');
+
+      if (!notifications.length) {
+        container.innerHTML =
+          '<p class="muted">No notifications match the current filters.</p>';
+        return;
+      }
+
+      container.innerHTML = notifications
+        .map((notification) => {
+          const order = notification.store_orders || {};
+          const orderNumber =
+            order.order_number || notification.order_id;
+
+          const statusClass =
+            notification.status === 'sent'
+              ? 'sent'
+              : notification.status === 'failed'
+                ? 'failed'
+                : notification.status === 'pending'
+                  ? 'pending'
+                  : '';
+
+          const error = notification.last_error
+            ? `<div class="meta">Error: ${escapeHtml(notification.last_error)}</div>`
+            : '';
+
+          const retryButton =
+            notification.status === 'failed'
+              ? `
+                <button
+                  class="ghost"
+                  type="button"
+                  data-notification-id="${escapeHtml(notification.id)}"
+                  data-action="retry-notification"
+                >
+                  Retry email
+                </button>
+              `
+              : '';
+
+          return `
+            <div class="notification-card ${statusClass}">
+              <strong>
+                ${escapeHtml(orderNumber)} ·
+                ${escapeHtml(formatNotificationType(notification.notification_type))}
+              </strong>
+
+              <div class="meta">
+                ${escapeHtml(notification.customer_email)} ·
+                ${escapeHtml(formatNotificationStatus(notification.status))}
+              </div>
+
+              ${error}
+
+              <div class="actions">
+                ${retryButton}
+              </div>
+            </div>
+          `;
+        })
+        .join('');
+    }
+
+    async function loadNotifications() {
+      try {
+        const params = new URLSearchParams({
+          status: $('#notification-status').value,
+          search: $('#notification-search').value.trim()
+        });
+
+        const response = await api(
+          `/api/admin-notifications?${params}`
+        );
+
+        notifications = Array.isArray(response.notifications)
+          ? response.notifications
+          : [];
+
+        renderNotifications();
+      } catch (error) {
+        setNotice(error.message, true);
+      }
+    }
+
+    $('#notification-status').addEventListener(
+      'change',
+      loadNotifications
+    );
+
+    $('#notification-search').addEventListener('input', () => {
+      clearTimeout(notificationSearchTimer);
+      notificationSearchTimer = setTimeout(loadNotifications, 350);
+    });
+
+    $('#refresh-notifications').addEventListener(
+      'click',
+      loadNotifications
+    );
+
+    $('#notifications-list').addEventListener('click', async (event) => {
+      const button = event.target.closest('button');
+
+      if (!button) return;
+
+      if (button.dataset.action !== 'retry-notification') {
+        return;
+      }
+
+      const notificationId = button.dataset.notificationId;
+
+      if (!notificationId) return;
+
+      if (!window.confirm('Retry this customer status email?')) {
+        return;
+      }
+
+      button.disabled = true;
+      button.textContent = 'Retrying…';
+
+      try {
+        await api('/api/admin-notification-retry', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify({
+            notification_id: notificationId
+          })
+        });
+
+        await loadNotifications();
+        setNotice('Notification retry attempted.');
+      } catch (error) {
+        // A 502 means the retry ran but failed; reload to show the new state.
+        await loadNotifications();
+        setNotice(error.message, true);
+      }
+    });
+
     if (adminPassword) {
       loginButton.disabled = true;
       loginButton.textContent = 'Loading…';
 
       loadOrders()
-        .then(loadSupplierData)
+        .then(() => Promise.all([loadSupplierData(), loadNotifications()]))
         .catch((error) => {
           savePassword('');
           loginError.textContent = error.message;
