@@ -158,7 +158,7 @@ module.exports = async (req, res) => {
         notificationType: notification.notification_type
       });
       const result = await sendEmail({
-        to: notification.customer_email,
+        to: order.customer_email || notification.customer_email,
         from: process.env.ORDER_CONFIRMATION_FROM || 'AltaPure Labs <orders@altapurelabs.com>',
         replyTo: process.env.ADMIN_ORDER_EMAIL || 'altapurelabs@protonmail.com',
         subject: email.subject,
