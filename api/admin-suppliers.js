@@ -1,0 +1,322 @@
+const { clients, checked } = require('../lib/backend');
+
+const UUID_PATTERN =
+  /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+
+const BATCH_STATUSES = [
+  'draft',
+  'sent',
+  'fulfilled',
+  'canceled'
+];
+
+module.exports = async (req, res) => {
+  res.setHeader('Cache-Control', 'no-store');
+  res.setHeader('X-Content-Type-Options', 'nosniff');
+
+  const adminPassword = process.env.ADMIN_ORDERS_PASSWORD;
+
+  if (
+    typeof adminPassword !== 'string' ||
+    adminPassword.length < 32
+  ) {
+    return res.status(503).json({
+      error: 'Supplier tools are not configured.'
+    });
+  }
+
+  const providedPassword = req.headers['x-admin-password'];
+
+  if (!providedPassword) {
+    return res.status(401).json({
+      error: 'Unauthorized.'
+    });
+  }
+
+  if (!['GET', 'POST', 'PATCH'].includes(req.method)) {
+    res.setHeader('Allow', 'GET, POST, PATCH');
+
+    return res.status(405).json({
+      error: 'Method not allowed.'
+    });
+  }
+
+  try {
+    if (req.method === 'GET') {
+      return await listSuppliers(req, res);
+    }
+
+    const contentType = String(
+      req.headers['content-type'] || ''
+    ).split(';')[0].trim().toLowerCase();
+
+    if (contentType !== 'application/json') {
+      throw httpError(415, 'JSON required.');
+    }
+
+    const body = await parseJson(req);
+
+    if (req.method === 'POST') {
+      return await createSupplier(res, body);
+    }
+
+    return await updateSupplier(req, res, body);
+  } catch (error) {
+    const allowed = [400, 404, 409, 413, 415];
+
+    const status = allowed.includes(error.status)
+      ? error.status
+      : 500;
+
+    console.error('Supplier request failed', {
+      method: req.method,
+      name: error.name,
+      code: error.code,
+      status
+    });
+
+    return res.status(status).json({
+      error:
+        status < 500
+          ? error.message
+          : 'Supplier request failed.'
+    });
+  }
+};
+
+function httpError(status, message) {
+  const error = new Error(message);
+  error.status = status;
+  return error;
+}
+
+function cleanText(value, maximumLength, label) {
+  if (value === undefined || value === null) return null;
+
+  if (typeof value !== 'string') {
+    throw httpError(400, `${label} must be text.`);
+  }
+
+  const text = value.trim();
+
+  if (text.length > maximumLength) {
+    throw httpError(
+      400,
+      `${label} is too long. Maximum ${maximumLength} characters.`
+    );
+  }
+
+  return text || null;
+}
+
+async function parseJson(req) {
+  const maximumBytes = 32768;
+  let raw;
+
+  if (req.body !== undefined && req.body !== null) {
+    if (Buffer.isBuffer(req.body)) {
+      raw = req.body.toString('utf8');
+    } else if (typeof req.body === 'string') {
+      raw = req.body;
+    } else {
+      raw = JSON.stringify(req.body);
+    }
+  } else {
+    const chunks = [];
+    let bytes = 0;
+
+    for await (const chunk of req) {
+      const buffer = Buffer.isBuffer(chunk)
+        ? chunk
+        : Buffer.from(chunk);
+
+      bytes += buffer.length;
+
+      if (bytes > maximumBytes) {
+        throw httpError(413, 'Request too large.');
+      }
+
+      chunks.push(buffer);
+    }
+
+    raw = Buffer.concat(chunks).toString('utf8');
+  }
+
+  let body;
+
+  try {
+    body = JSON.parse(raw);
+  } catch {
+    throw httpError(400, 'Invalid JSON.');
+  }
+
+  if (
+    !body ||
+    typeof body !== 'object' ||
+    Array.isArray(body)
+  ) {
+    throw httpError(400, 'A JSON object is required.');
+  }
+
+  return body;
+}
+
+async function listSuppliers(req, res) {
+  const { db } = clients();
+
+  const suppliers = checked(
+    await db
+      .from('suppliers')
+      .select(
+        'id,name,contact_name,email,notes,active,created_at,updated_at'
+      )
+      .order('name', { ascending: true })
+      .limit(200)
+  );
+
+  return res.status(200).json({
+    suppliers
+  });
+}
+
+async function createSupplier(res, body) {
+  const name = cleanText(body.name, 120, 'Supplier name');
+
+  if (!name) {
+    throw httpError(400, 'Supplier name is required.');
+  }
+
+  const email = cleanText(body.email, 254, 'Email');
+
+  if (email && !/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(email)) {
+    throw httpError(400, 'Enter a valid supplier email.');
+  }
+
+  const { db } = clients();
+
+  const existing = checked(
+    await db
+      .from('suppliers')
+      .select('id,name,active')
+      .ilike('name', name)
+      .maybeSingle()
+  );
+
+  if (existing?.active) {
+    throw httpError(409, 'That supplier already exists.');
+  }
+
+  const supplier = checked(
+    await db
+      .from('suppliers')
+      .insert({
+        name,
+        contact_name: cleanText(
+          body.contact_name,
+          120,
+          'Contact name'
+        ),
+        email,
+        notes: cleanText(body.notes, 5000, 'Notes')
+      })
+      .select(
+        'id,name,contact_name,email,notes,active,created_at,updated_at'
+      )
+      .single()
+  );
+
+  return res.status(201).json({
+    supplier
+  });
+}
+
+async function updateSupplier(req, res, body) {
+  const supplierId = body.supplier_id;
+
+  if (
+    typeof supplierId !== 'string' ||
+    !UUID_PATTERN.test(supplierId)
+  ) {
+    throw httpError(400, 'Invalid supplier.');
+  }
+
+  const { db } = clients();
+
+  const previous = checked(
+    await db
+      .from('suppliers')
+      .select('*')
+      .eq('id', supplierId)
+      .maybeSingle()
+  );
+
+  if (!previous) {
+    throw httpError(404, 'Supplier not found.');
+  }
+
+  const updates = {};
+
+  if (body.name !== undefined) {
+    const name = cleanText(body.name, 120, 'Supplier name');
+
+    if (!name) {
+      throw httpError(400, 'Supplier name is required.');
+    }
+
+    updates.name = name;
+  }
+
+  if (body.contact_name !== undefined) {
+    updates.contact_name = cleanText(
+      body.contact_name,
+      120,
+      'Contact name'
+    );
+  }
+
+  if (body.email !== undefined) {
+    const email = cleanText(body.email, 254, 'Email');
+
+    if (
+      email &&
+      !/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(email)
+    ) {
+      throw httpError(400, 'Enter a valid supplier email.');
+    }
+
+    updates.email = email;
+  }
+
+  if (body.notes !== undefined) {
+    updates.notes = cleanText(body.notes, 5000, 'Notes');
+  }
+
+  if (body.active !== undefined) {
+    if (typeof body.active !== 'boolean') {
+      throw httpError(400, 'Active must be true or false.');
+    }
+
+    updates.active = body.active;
+  }
+
+  if (!Object.keys(updates).length) {
+    throw httpError(400, 'No supplier changes were provided.');
+  }
+
+  updates.updated_at = new Date().toISOString();
+
+  const supplier = checked(
+    await db
+      .from('suppliers')
+      .update(updates)
+      .eq('id', supplierId)
+      .select(
+        'id,name,contact_name,email,notes,active,created_at,updated_at'
+      )
+      .single()
+  );
+
+  return res.status(200).json({
+    supplier
+  });
+}
