@@ -202,6 +202,7 @@ function buildEmailData(order, items, session) {
     shippingAddress.country,
   ]
     .filter(Boolean)
+    .map(escapeHtml)
     .join('<br>');
 
   return {
@@ -286,7 +287,7 @@ function customerEmailHtml(data) {
         ${
           data.receiptUrl
             ? `<p style="margin:24px 0 0;">
-                <a href="${data.receiptUrl}" style="color:#1c7a73;">View your Stripe receipt</a>
+                <a href="${escapeHtml(data.receiptUrl)}" style="color:#1c7a73;">View your Stripe receipt</a>
               </p>`
             : ''
         }
