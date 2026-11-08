@@ -33,4 +33,5 @@ jobs:
       - name: Run catalog and frontend tests
         run: node --test tests/*.test.cjs
       - name: Run build
+        if: always()
         run: npm run build
