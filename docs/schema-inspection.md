@@ -82,7 +82,7 @@ FROM pg_catalog.pg_proc p JOIN pg_catalog.pg_namespace n ON n.oid=p.pronamespace
 WHERE p.prosecdef AND n.nspname<>'information_schema' AND n.nspname !~ '^pg_(catalog|toast|temp)(_|$)' ORDER BY 1,2;
 ```
 
-Review every executable definer function's definition, owner, ACL, settings/search_path and dependencies. Also review all other callable routines in the export. Resolve unexpected memberships, SELECT, schema CREATE, database CREATE/TEMP, or unreviewed function access before proceeding. This is deliberately not a public-only check; it includes visible auth/storage/extensions and project-specific schemas.
+Review every executable definer function's definition, owner, ACL, settings/search_path and dependencies. Also review all other callable routines in the export. Resolve unexpected memberships, table/column SELECT, schema CREATE, database CREATE, or unreviewed callable function access before proceeding. Effective schema USAGE may be inherited from PUBLIC (for example, on public); the exporter itself needs no application-schema USAGE, as the disposable test verifies. Effective database TEMP may also be inherited from the database's default PUBLIC ACL; it permits session-temporary objects, not persistent application-table writes, and is not granted directly by this setup. Record that effective TEMP privilege in the preflight review. This is deliberately not a public-only check; it includes visible auth/storage/extensions and project-specific schemas.
 
 ### 3. Login activation (separate action, only after preflight approval)
 
