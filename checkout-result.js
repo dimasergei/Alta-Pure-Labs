@@ -23,13 +23,30 @@
       currency
     }).format(cents / 100);
 
+  const formatStatus = (status) => {
+    const labels = {
+      paid: 'Paid',
+      processing: 'Processing',
+      shipped: 'Shipped',
+      delivered: 'Delivered',
+      canceled: 'Canceled'
+    };
+
+    return labels[status] || 'Paid';
+  };
+
   const showPaid = (data) => {
     title.textContent = 'Payment successful';
     message.textContent =
       'Thank you. Your order has been received and is being processed. A confirmation email is on its way.';
 
-    orderId.textContent = data.order_id || 'Confirmed';
-    paymentStatus.textContent = 'Paid';
+    orderId.textContent =
+      data.order_number || data.order_id || 'Confirmed';
+
+    paymentStatus.textContent = formatStatus(
+      data.fulfillment_status || 'paid'
+    );
+
     orderTotal.textContent = formatMoney(
       data.total_cents,
       data.currency || 'USD'
