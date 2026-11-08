@@ -1,12 +1,78 @@
-(async()=>{
-const el=document.querySelector('#status'), id=new URLSearchParams(location.search).get('session_id');
-if(!id){el.textContent='Missing checkout reference.';return;}
-for(let i=0;i<12;i++){
-  try{const r=await fetch('/api/order-status?session_id='+encodeURIComponent(id));if(!r.ok)throw new Error();const data=await r.json();
-  if(data.status==='paid'){el.textContent='Test payment verified and order saved. Total: '+new Intl.NumberFormat('en-US',{style:'currency',currency:'USD'}).format(data.total_cents/100)+'.';return;}
-  if(['failed','expired'].includes(data.status)){el.textContent='Checkout '+data.status+'. Your cart has been retained.';return;}
-  }catch(e){}
-  await new Promise(r=>setTimeout(r,2000));
-}
-el.textContent='Payment confirmation is still pending. Check Stripe and Supabase before retrying. Your cart has been retained.';
+(async () => {
+  const title = document.querySelector('#confirm-title');
+  const message = document.querySelector('#confirm-message');
+  const details = document.querySelector('#order-details');
+  const orderId = document.querySelector('#order-id');
+  const paymentStatus = document.querySelector('#payment-status');
+  const orderTotal = document.querySelector('#order-total');
+
+  document.querySelector('#year').textContent = new Date().getFullYear();
+
+  const sessionId = new URLSearchParams(location.search).get('session_id');
+
+  if (!sessionId) {
+    title.textContent = 'Missing checkout reference';
+    message.textContent = 'We could not find the checkout session associated with this order.';
+    return;
+  }
+
+  const formatMoney = (cents, currency = 'USD') =>
+    new Intl.NumberFormat('en-US', {
+      style: 'currency',
+      currency,
+    }).format(cents / 100);
+
+  const showPaid = (data) => {
+    title.textContent = 'Payment successful';
+    message.textContent =
+      'Thank you. Your order has been received and is being processed. A confirmation email is on its way.';
+
+    orderId.textContent = data.order_id || 'Confirmed';
+    paymentStatus.textContent = 'Paid';
+    orderTotal.textContent = formatMoney(data.total_cents, data.currency || 'USD');
+
+    details.hidden = false;
+  };
+
+  const showPending = () => {
+    title.textContent = 'Payment confirmation pending';
+    message.textContent =
+      'We are still confirming your payment. Please do not submit the order again. Your cart has been retained.';
+  };
+
+  const showFailed = (status) => {
+    title.textContent = status === 'expired' ? 'Checkout expired' : 'Payment unsuccessful';
+    message.textContent =
+      'Your checkout session is no longer active. Your cart has been retained, so you can return to the shop and try again.';
+  };
+
+  for (let attempt = 0; attempt < 15; attempt += 1) {
+    try {
+      const response = await fetch(
+        `/api/order-status?session_id=${encodeURIComponent(sessionId)}`
+      );
+
+      if (!response.ok) {
+        throw new Error('Status unavailable');
+      }
+
+      const data = await response.json();
+
+      if (data.status === 'paid') {
+        showPaid(data);
+        return;
+      }
+
+      if (data.status === 'failed' || data.status === 'expired') {
+        showFailed(data.status);
+        return;
+      }
+    } catch (error) {
+      // Keep polling; Stripe webhooks can arrive shortly after redirect.
+    }
+
+    await new Promise((resolve) => setTimeout(resolve, 2000));
+  }
+
+  showPending();
 })();
