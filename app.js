@@ -111,10 +111,30 @@ function renderFilters() {
   ).join("");
 }
 
+function productImage(product) {
+  const image = PRODUCT_IMAGES[product.id];
+
+  if (!image) {
+    return "";
+  }
+
+  return `
+    <img
+      class="product-photo"
+      src="${image}"
+      alt="${escapeXml(product.name)}"
+      loading="lazy"
+      onerror="this.style.display='none'"
+    />`;
+}
+
 function productCardMarkup(product) {
   return `
       <article class="card" data-group="${escapeXml(product.group)}">
-        <button class="shot" type="button" data-open="${product.id}" aria-label="View ${escapeXml(product.name)} details">${vialSvg(product)}</button>
+        <button class="shot" type="button" data-open="${product.id}" aria-label="View ${escapeXml(product.name)} details">
+          ${vialSvg(product)}
+          ${productImage(product)}
+        </button>
         <div class="meta">
           <span class="group">${product.group}</span>
           <h3>${product.name}</h3>
@@ -209,7 +229,10 @@ function openProduct(id) {
       <button class="icon-btn" value="cancel" type="submit" aria-label="Close">×</button>
     </header>
     <div class="product-layout">
-      ${vialSvg(product)}
+      <div class="product-photo-wrap">
+        ${vialSvg(product)}
+        ${productImage(product)}
+      </div>
       <div>
         <p>${product.blurb}</p>
         <p class="fine">Wholesale unit price. Labeling and pick-and-pack included. Shipping is not included. Research use only. Not for human consumption.</p>
