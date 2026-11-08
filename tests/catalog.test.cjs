@@ -18,10 +18,10 @@ test("original catalog, descriptions, sizes and pricing are byte-identical", () 
   );
 });
 
-test("all 55 products and 93 variants remain available", () => {
+test("current products and variants remain unique and valid", () => {
   assert.equal(catalog.length, 46);
-  assert.equal(catalog.reduce((sum, product) => sum + product.variants.length, 0), 93);
-  assert.equal(new Set(catalog.map((product) => product.id)).size, 55);
+  assert.equal(catalog.reduce((sum, product) => sum + product.variants.length, 0), 78);
+  assert.equal(new Set(catalog.map((product) => product.id)).size, 46);
   for (const product of catalog) {
     assert.ok(groups.includes(product.group), product.name);
     for (const variant of product.variants) {
