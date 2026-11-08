@@ -3,13 +3,21 @@ const { clients, checked } = require('../lib/backend');
 const ALLOWED_STATUSES = [
   'paid',
   'processing',
+  'awaiting_supplier',
   'shipped',
   'delivered',
-  'canceled'
+  'canceled',
+  'refunded'
 ];
 
 const STATUS_EMAILS = {
   processing: {
+    subject: 'Your AltaPure Labs order is being prepared',
+    heading: 'Your order is being prepared',
+    message:
+      'We received your order and are preparing it for shipment. We will notify you when it ships.'
+  },
+  awaiting_supplier: {
     subject: 'Your AltaPure Labs order is being prepared',
     heading: 'Your order is being prepared',
     message:
@@ -59,8 +67,13 @@ module.exports = async (req, res) => {
   if (req.method === 'GET') {
     try {
       const { db } = clients();
+      const params = new URLSearchParams(req.url.split('?')[1] || '');
 
-      const ordersResponse = await db
+      const status = params.get('status') || 'active';
+      const search = (params.get('search') || '').trim();
+      const archived = params.get('archived') === 'true';
+
+      let query = db
         .from('store_orders')
         .select(
           `
@@ -72,6 +85,10 @@ module.exports = async (req, res) => {
           organization,
           payment_status,
           fulfillment_status,
+          supplier_status,
+          priority,
+          archived,
+          archived_at,
           subtotal_cents,
           shipping_cents,
           total_cents,
@@ -82,18 +99,46 @@ module.exports = async (req, res) => {
           tracking_number,
           shipped_at,
           admin_notes,
+          internal_status_history,
           store_order_items (
+            id,
             product_name,
             variant_size,
             quantity,
-            unit_price_cents
+            unit_price_cents,
+            supplier_sku,
+            supplier_name,
+            lot_number,
+            fulfillment_notes
           )
         `
         )
         .order('created_at', { ascending: false })
-        .limit(100);
+        .limit(200);
 
-      const orders = checked(ordersResponse);
+      if (status === 'archived') {
+        query = query.eq('archived', true);
+      } else if (status !== 'all') {
+        query = query.eq('archived', false);
+
+        if (status !== 'active') {
+          query = query.eq('fulfillment_status', status);
+        }
+      }
+
+      if (search) {
+        query = query.or(
+          [
+            `order_number.ilike.%${search}%`,
+            `customer_name.ilike.%${search}%`,
+            `customer_email.ilike.%${search}%`,
+            `organization.ilike.%${search}%`,
+            `tracking_number.ilike.%${search}%`
+          ].join(',')
+        );
+      }
+
+      const orders = checked(await query);
 
       return res.status(200).json({
         orders
@@ -111,68 +156,11 @@ module.exports = async (req, res) => {
     try {
       const body = await parseJson(req);
 
-      const orderId = body.order_id;
-      const fulfillmentStatus = body.fulfillment_status;
-      const trackingCarrier = body.tracking_carrier || null;
-      const trackingNumber = body.tracking_number || null;
-      const adminNotes = body.admin_notes || null;
-
-      if (
-        typeof orderId !== 'string' ||
-        orderId.length !== 36 ||
-        !ALLOWED_STATUSES.includes(fulfillmentStatus)
-      ) {
-        return res.status(400).json({
-          error: 'Invalid order update.'
-        });
+      if (body.action === 'archive' || body.action === 'unarchive') {
+        return await updateArchiveStatus(req, res, body);
       }
 
-      const { db } = clients();
-
-      const previousOrderResponse = await db
-        .from('store_orders')
-        .select(
-          'id,order_number,customer_email,customer_name,fulfillment_status,tracking_carrier,tracking_number,shipped_at,admin_notes'
-        )
-        .eq('id', orderId)
-        .single();
-
-      const previousOrder = checked(previousOrderResponse);
-
-      const previousStatus = previousOrder.fulfillment_status;
-
-      const updateData = {
-        fulfillment_status: fulfillmentStatus,
-        tracking_carrier: trackingCarrier,
-        tracking_number: trackingNumber,
-        admin_notes: adminNotes
-      };
-
-      if (fulfillmentStatus === 'shipped') {
-        updateData.shipped_at = new Date().toISOString();
-      }
-
-      const response = await db
-        .from('store_orders')
-        .update(updateData)
-        .eq('id', orderId)
-        .select(
-          'id,order_number,customer_email,customer_name,fulfillment_status,tracking_carrier,tracking_number,shipped_at,admin_notes'
-        )
-        .single();
-
-      const updatedOrder = checked(response);
-
-      if (
-        previousStatus !== updatedOrder.fulfillment_status &&
-        updatedOrder.customer_email
-      ) {
-        await sendStatusEmail(updatedOrder, updatedOrder.fulfillment_status);
-      }
-
-      return res.status(200).json({
-        order: updatedOrder
-      });
+      return await updateOrder(req, res, body);
     } catch (error) {
       console.error('Admin order update failed', error.message);
 
@@ -187,6 +175,123 @@ module.exports = async (req, res) => {
     error: 'Method not allowed.'
   });
 };
+
+async function updateArchiveStatus(req, res, body) {
+  const orderIds = body.order_ids;
+
+  if (
+    !Array.isArray(orderIds) ||
+    !orderIds.length ||
+    orderIds.some((id) => typeof id !== 'string' || id.length !== 36)
+  ) {
+    return res.status(400).json({
+      error: 'Invalid order selection.'
+    });
+  }
+
+  const { db } = clients();
+  const archived = body.action === 'archive';
+
+  const response = await db
+    .from('store_orders')
+    .update({
+      archived,
+      archived_at: archived ? new Date().toISOString() : null
+    })
+    .in('id', orderIds)
+    .select('id,order_number,archived,archived_at');
+
+  const updatedOrders = checked(response);
+
+  return res.status(200).json({
+    updated: updatedOrders.length,
+    orders: updatedOrders
+  });
+}
+
+async function updateOrder(req, res, body) {
+  const orderId = body.order_id;
+  const fulfillmentStatus = body.fulfillment_status;
+  const supplierStatus = body.supplier_status || null;
+  const priority = body.priority || 'normal';
+  const trackingCarrier = body.tracking_carrier || null;
+  const trackingNumber = body.tracking_number || null;
+  const adminNotes = body.admin_notes || null;
+
+  if (
+    typeof orderId !== 'string' ||
+    orderId.length !== 36 ||
+    !ALLOWED_STATUSES.includes(fulfillmentStatus) ||
+    !['low', 'normal', 'high'].includes(priority)
+  ) {
+    return res.status(400).json({
+      error: 'Invalid order update.'
+    });
+  }
+
+  const { db } = clients();
+
+  const previousOrderResponse = await db
+    .from('store_orders')
+    .select(
+      'id,order_number,customer_email,customer_name,fulfillment_status,supplier_status,priority,tracking_carrier,tracking_number,shipped_at,admin_notes,internal_status_history'
+    )
+    .eq('id', orderId)
+    .single();
+
+  const previousOrder = checked(previousOrderResponse);
+  const previousStatus = previousOrder.fulfillment_status;
+
+  const updateData = {
+    fulfillment_status: fulfillmentStatus,
+    supplier_status: supplierStatus,
+    priority,
+    tracking_carrier: trackingCarrier,
+    tracking_number: trackingNumber,
+    admin_notes: adminNotes
+  };
+
+  if (fulfillmentStatus === 'shipped') {
+    updateData.shipped_at = new Date().toISOString();
+  }
+
+  const history = Array.isArray(previousOrder.internal_status_history)
+    ? previousOrder.internal_status_history
+    : [];
+
+  if (previousStatus !== fulfillmentStatus) {
+    history.push({
+      from: previousStatus,
+      to: fulfillmentStatus,
+      at: new Date().toISOString(),
+      note: adminNotes || null
+    });
+  }
+
+  updateData.internal_status_history = history;
+
+  const response = await db
+    .from('store_orders')
+    .update(updateData)
+    .eq('id', orderId)
+    .select(
+      'id,order_number,customer_email,customer_name,fulfillment_status,supplier_status,priority,tracking_carrier,tracking_number,shipped_at,admin_notes,internal_status_history'
+    )
+    .single();
+
+  const updatedOrder = checked(response);
+
+  if (
+    previousStatus !== updatedOrder.fulfillment_status &&
+    updatedOrder.customer_email
+  ) {
+    await sendStatusEmail(updatedOrder, updatedOrder.fulfillment_status);
+  }
+
+  return res.status(200).json({
+    order: updatedOrder
+  });
+}
 
 async function parseJson(req) {
   let raw = '';
@@ -310,9 +415,11 @@ function formatStatus(status) {
   const labels = {
     paid: 'Paid',
     processing: 'Processing',
+    awaiting_supplier: 'Awaiting Supplier',
     shipped: 'Shipped',
     delivered: 'Delivered',
-    canceled: 'Canceled'
+    canceled: 'Canceled',
+    refunded: 'Refunded'
   };
 
   return labels[status] || status;
