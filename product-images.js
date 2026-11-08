@@ -5,14 +5,14 @@ const PRODUCT_IMAGES = {
   "tirzepatide": IMAGE_BASE + "TIRZEPATIDE%2010mg-3.webp",
   "semaglutide": IMAGE_BASE + "SEMAGLUTIDE%205mg-2.webp",
   "5-amino-1mq": IMAGE_BASE + "5-AMINO-1MQ%2050mg.webp",
-  "aod-9604": IMAGE_BASE + "aod9604-5mg.webp",
+  "aod-9604": "https://99puritypeptides.com/_next/image?url=https%3A%2F%2Fpub-82f90d490a8048aa9629f0ae3ea6f567.r2.dev%2FProduct%20Images%2FAOD9604%20%205mg.webp&w=1920&q=75",
   "cagrilintide": IMAGE_BASE + "CAGRILINTIDE%2010mg.webp",
   "bpc-157": IMAGE_BASE + "BPC-157%205mg-5.webp",
   "tb-500": IMAGE_BASE + "TB-500%20%205mg-2.webp",
-  "bpc-tb-500": IMAGE_BASE + "bpc-157-tb-500-10-10mg.jpg",
+  "bpc-tb-500": "https://99puritypeptides.com/_next/image?url=https%3A%2F%2Fpub-82f90d490a8048aa9629f0ae3ea6f567.r2.dev%2FProduct%20Images%2FBPC-157%20TB-500%20MIX%205mg%205mg-5.webp&w=1920&q=75",
   "kpv": IMAGE_BASE + "KPV%2010mg.webp",
   "ara-290": IMAGE_BASE + "ARA-290%20%2010mg.webp",
-  "ll-37": IMAGE_BASE + "ll37-5mg.jpg",
+  "ll-37": "https://99puritypeptides.com/_next/image?url=https%3A%2F%2Fpub-82f90d490a8048aa9629f0ae3ea6f567.r2.dev%2FProduct%20Images%2FLL37%205mg.webp&w=3840&q=75",
   "thymosin-alpha-1": IMAGE_BASE + "Thymosin%20Alpha%201mg.webp",
   "ghk-cu": IMAGE_BASE + "GHK-CU%2050mg-1.webp",
   "ahk-cu": IMAGE_BASE + "AHK-CU%2050mg-1.webp",
@@ -33,7 +33,7 @@ const PRODUCT_IMAGES = {
   "dsip": IMAGE_BASE + "DSIP%2010mg.webp",
   "nad": IMAGE_BASE + "nad-plus-500mg-1.webp",
   "epithalon": IMAGE_BASE + "EPITHALON%2010mg.webp",
-  "glutathione": IMAGE_BASE + "glutathione-600mg.webp",
+  "glutathione": "https://99puritypeptides.com/_next/image?url=https%3A%2F%2Fpub-82f90d490a8048aa9629f0ae3ea6f567.r2.dev%2FProduct%20Images%2FGLUTATHIONE%20%20600mg.webp&w=1920&q=75",
   "ss-31": IMAGE_BASE + "SS-31%2010mg-1.webp",
   "mots-c": IMAGE_BASE + "MOTS-C%2010mg-1.webp",
   "b-12": IMAGE_BASE + "b12-10mg.webp",
@@ -44,4 +44,5 @@ const PRODUCT_IMAGES = {
   "vip": IMAGE_BASE + "VIP%2010mg.webp",
   "bac-3": IMAGE_BASE + "BAC%20WATER%203ML.webp",
   "bac-10": IMAGE_BASE + "BAC%20WATER%203ML.webp"
+  "needles": "https://99puritypeptides.com/_next/image?url=https%3A%2F%2Fpub-82f90d490a8048aa9629f0ae3ea6f567.r2.dev%2FProduct%20Images%2F10%20Needles-1.webp&w=3840&q=75"
 };
