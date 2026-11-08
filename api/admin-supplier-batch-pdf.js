@@ -82,7 +82,20 @@ module.exports = async (req, res) => {
         .single()
     );
 
-    const items = (batch.supplier_batch_items || []).map((item) => ({
+    const batchItems = batch.supplier_batch_items || [];
+    const orderIds = [...new Set(batchItems.map((item) => item.order_id).filter(Boolean))];
+
+    if (orderIds.length) {
+      checked(
+        await db
+          .from('store_orders')
+          .update({ supplier_report_generated_at: new Date().toISOString() })
+          .in('id', orderIds)
+          .select('id')
+      );
+    }
+
+    const items = batchItems.map((item) => ({
       order_number: item.store_orders?.order_number,
       order_id: item.order_id,
       product_name: item.product_name,
