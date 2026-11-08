@@ -6,117 +6,93 @@ on:
 permissions:
   contents: read
 
+concurrency:
+  group: schema-inspection-${{ github.ref }}
+  cancel-in-progress: false
+
 jobs:
   export-schema:
-    name: Export and encrypt public schema definitions
+    name: Export catalog metadata and encrypt artifact
     if: github.ref == 'refs/heads/main'
     runs-on: ubuntu-latest
     timeout-minutes: 10
     environment: schema-export-readonly
     steps:
-      - name: Install PostgreSQL client and GnuPG
-        run: |
-          sudo apt-get update
-          sudo apt-get install --yes postgresql-client gnupg
-
-      - name: Export public schema definitions only
+      - uses: actions/checkout@v4
+        with:
+          ref: main
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Install fixed exporter dependency
+        run: python -m pip install "psycopg[binary]==3.2.9"
+      - name: Prepare connection from protected environment secret
         env:
           SUPABASE_READONLY_DB_URL: ${{ secrets.SUPABASE_READONLY_DB_URL }}
         shell: bash
         run: |
           set -euo pipefail
           umask 077
-          if [[ -z "${SUPABASE_READONLY_DB_URL:-}" ]]; then
-            echo "::error::Configure SUPABASE_READONLY_DB_URL in the schema-export-readonly environment."
-            exit 1
-          fi
-
-          export PGPASSFILE="$RUNNER_TEMP/pgpass"
-          trap 'rm -f "$PGPASSFILE" "$RUNNER_TEMP/application-schema.sql"' EXIT
-
-          python3 - <<'PY'
-          import os
-          import re
-          from urllib.parse import urlparse, unquote
-
-          url = urlparse(os.environ["SUPABASE_READONLY_DB_URL"])
-          if url.scheme not in ("postgres", "postgresql"):
-              raise SystemExit("The database URL must use postgres:// or postgresql://.")
-          if not url.hostname or not url.username or not url.password:
-              raise SystemExit("The database URL is incomplete.")
-
-          host = url.hostname
-          port = str(url.port or 5432)
-          database = url.path.lstrip("/") or "postgres"
-          username = unquote(url.username)
-          password = unquote(url.password)
-          fields = [host, port, database, username, password]
-          if any("\n" in value or "\r" in value for value in fields):
-              raise SystemExit("The database URL contains invalid line breaks.")
-          if not re.fullmatch(r"[A-Za-z0-9.-]+", host):
-              raise SystemExit("The database hostname contains unsupported characters.")
-
-          escape = lambda value: value.replace("\\", "\\\\").replace(":", "\\:")
-          with open(os.environ["PGPASSFILE"], "w", encoding="utf-8") as handle:
-              handle.write(":".join(escape(value) for value in fields) + "\n")
-          os.chmod(os.environ["PGPASSFILE"], 0o600)
-
-          env_values = {
-              "PGHOST": host,
-              "PGPORT": port,
-              "PGDATABASE": database,
-              "PGUSER": username,
-              "PGSSLMODE": "require",
-              "PGPASSFILE": os.environ["PGPASSFILE"],
-          }
-          with open(os.environ["GITHUB_ENV"], "a", encoding="utf-8") as handle:
-              for key, value in env_values.items():
-                  handle.write(f"{key}={value}\n")
+          python - <<'PY'
+          import os,re,shlex
+          from urllib.parse import urlparse,unquote
+          parsed=urlparse(os.environ["SUPABASE_READONLY_DB_URL"])
+          if parsed.scheme not in ("postgres","postgresql") or not parsed.hostname or not parsed.username or not parsed.password:
+              raise SystemExit("Database URL is incomplete or invalid.")
+          host=parsed.hostname; port=str(parsed.port or 5432); db=parsed.path.lstrip("/") or "postgres"
+          user=unquote(parsed.username); password=unquote(parsed.password)
+          if not re.fullmatch(r"[A-Za-z0-9.-]+",host) or any("\n" in v or "\r" in v for v in (host,port,db,user,password)):
+              raise SystemExit("Database URL fields are invalid.")
+          pgpass=os.path.join(os.environ["RUNNER_TEMP"],"schema-export.pgpass")
+          esc=lambda v:v.replace("\\","\\\\").replace(":","\\:")
+          with open(pgpass,"w") as f: f.write(":".join(map(esc,(host,port,db,user,password)))+"\n")
+          os.chmod(pgpass,0o600)
+          values={"PGHOST":host,"PGPORT":port,"PGDATABASE":db,"PGUSER":user,"PGPASSFILE":pgpass,"PGSSLMODE":"require"}
+          with open(os.environ["GITHUB_ENV"],"a") as f:
+              for k,v in values.items(): f.write(f"{k}={v}\n")
           PY
-
-          unset SUPABASE_READONLY_DB_URL
-          pg_dump \
-            --schema-only \
-            --schema=public \
-            --format=plain \
-            --no-password \
-            --file="$RUNNER_TEMP/application-schema.sql"
-
-          rm -f "$PGPASSFILE"
-
-      - name: Block export if common credential patterns are present
+      - name: Export fixed PostgreSQL catalog queries only
+        env:
+          SCHEMA_INSPECTION_OUTPUT: ${{ runner.temp }}/application-catalog.json
+        run: |
+          set -euo pipefail
+          python scripts/export_schema.py
+      - name: Screen definitions for common credential patterns
         shell: bash
         run: |
           set -euo pipefail
-          SCHEMA_FILE="$RUNNER_TEMP/application-schema.sql"
-          if grep -Eiq "sk_(live|test)_[A-Za-z0-9]{16,}|rk_(live|test)_[A-Za-z0-9]{16,}|whsec_[A-Za-z0-9]{16,}|sb_secret_[A-Za-z0-9_-]{20,}|eyJ[A-Za-z0-9_-]{30,}|ghp_[A-Za-z0-9]{30,}|github_pat_[A-Za-z0-9_]{30,}|xox[baprs]-[A-Za-z0-9-]{20,}|SG\.[A-Za-z0-9_-]{20,}|AKIA[0-9A-Z]{16}|AIza[0-9A-Za-z_-]{35}|-----BEGIN (RSA |EC |OPENSSH )?PRIVATE KEY-----|postgres(ql)?://[^[:space:]]+" "$SCHEMA_FILE"; then
-            echo "::error::Potential embedded credential detected. Export blocked; inspect securely before sharing."
+          file="$RUNNER_TEMP/application-catalog.json"
+          if grep -Eiq "sk_(live|test)_[A-Za-z0-9]{16,}|rk_(live|test)_[A-Za-z0-9]{16,}|whsec_[A-Za-z0-9]{16,}|sb_secret_[A-Za-z0-9_-]{20,}|eyJ[A-Za-z0-9_-]{30,}|ghp_[A-Za-z0-9]{30,}|github_pat_[A-Za-z0-9_]{30,}|xox[baprs]-[A-Za-z0-9-]{20,}|SG\.[A-Za-z0-9_-]{20,}|AKIA[0-9A-Z]{16}|AIza[0-9A-Za-z_-]{35}|-----BEGIN (RSA |EC |OPENSSH )?PRIVATE KEY-----|postgres(ql)?://[^[:space:]]+" "$file"; then
+            echo "::error::Potential credential pattern detected; export blocked."
             exit 1
           fi
-          echo "Credential-pattern screen passed. It is not a substitute for human review of function bodies."
-
-      - name: Encrypt schema artifact before upload
+          echo "Credential-pattern screen passed; it is precautionary, not a safety guarantee."
+      - name: Encrypt using passphrase file descriptor
         env:
           SCHEMA_EXPORT_PASSPHRASE: ${{ secrets.SCHEMA_EXPORT_PASSPHRASE }}
         shell: bash
         run: |
           set -euo pipefail
+          file="$RUNNER_TEMP/application-catalog.json"
+          encrypted="$RUNNER_TEMP/application-catalog.json.gpg"
+          cleanup() { status=$?; rm -f "$file" "$RUNNER_TEMP/schema-export.pgpass"; if [[ $status -ne 0 ]]; then rm -f "$encrypted"; fi; exit "$status"; }
+          trap cleanup EXIT
           if [[ -z "${SCHEMA_EXPORT_PASSPHRASE:-}" || "${#SCHEMA_EXPORT_PASSPHRASE}" -lt 24 ]]; then
-            echo "::error::Configure a unique SCHEMA_EXPORT_PASSPHRASE of at least 24 characters in the schema-export-readonly environment."
+            echo "::error::Encryption passphrase is missing or too short."
             exit 1
           fi
-          gpg --batch --yes --pinentry-mode loopback \
-            --passphrase "$SCHEMA_EXPORT_PASSPHRASE" \
-            --symmetric --cipher-algo AES256 \
-            --output "$RUNNER_TEMP/application-schema.sql.gpg" \
-            "$RUNNER_TEMP/application-schema.sql"
-          rm -f "$RUNNER_TEMP/application-schema.sql"
-          echo "Schema export encrypted; plaintext will not be uploaded."
-
-      - name: Upload encrypted one-day artifact
+          printf '%s' "$SCHEMA_EXPORT_PASSPHRASE" | gpg --batch --yes --pinentry-mode loopback --passphrase-fd 0 --symmetric --cipher-algo AES256 --output "$encrypted" "$file"
+          unset SCHEMA_EXPORT_PASSPHRASE
+          test -s "$encrypted"
+          echo "Catalog export encrypted."
+      - name: Upload encrypted artifact only
         uses: actions/upload-artifact@v4
         with:
-          name: encrypted-application-schema-review-${{ github.run_id }}
-          path: ${{ runner.temp }}/application-schema.sql.gpg
+          name: encrypted-application-catalog-review-${{ github.run_id }}
+          path: ${{ runner.temp }}/application-catalog.json.gpg
           if-no-files-found: error
           retention-days: 1
+      - name: Remove temporary export material
+        if: always()
+        shell: bash
+        run: rm -f "$RUNNER_TEMP/application-catalog.json" "$RUNNER_TEMP/application-catalog.json.gpg" "$RUNNER_TEMP/schema-export.pgpass"
