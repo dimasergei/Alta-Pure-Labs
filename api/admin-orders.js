@@ -117,6 +117,10 @@ module.exports = async (req, res) => {
 
     const body = await parseJson(req);
 
+    if (body.action === 'supplier_report_generated') {
+      return await updateSupplierReportTimestamp(res, body);
+    }
+
     if (
       body.action === 'archive' ||
       body.action === 'unarchive'
@@ -268,6 +272,30 @@ async function parseJson(req) {
   }
 
   return body;
+}
+
+async function updateSupplierReportTimestamp(res, body) {
+  const orderIds = body.order_ids;
+  if (
+    !Array.isArray(orderIds) ||
+    !orderIds.length ||
+    orderIds.length > 200 ||
+    orderIds.some((id) => typeof id !== 'string' || !UUID_PATTERN.test(id))
+  ) {
+    throw httpError(400, 'Select between 1 and 200 valid orders.');
+  }
+
+  const { db } = clients();
+  const generatedAt = new Date().toISOString();
+  const orders = checked(
+    await db
+      .from('store_orders')
+      .update({ supplier_report_generated_at: generatedAt })
+      .in('id', [...new Set(orderIds)])
+      .select('id,order_number,supplier_report_generated_at')
+  );
+
+  return res.status(200).json({ updated: orders.length, orders });
 }
 
 async function updateArchiveStatus(res, body) {
