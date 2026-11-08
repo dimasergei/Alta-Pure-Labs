@@ -11,3 +11,7 @@ function formatShippingAddress(orderName, address = {}) {
 if (typeof module !== "undefined" && module.exports) {
   module.exports = { formatShippingAddress };
 }
+
+if (typeof window !== "undefined") {
+  window.AltaPureAccountFormat = { formatShippingAddress };
+}
