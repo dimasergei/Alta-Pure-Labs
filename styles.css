@@ -1536,3 +1536,92 @@ dialog::backdrop {
 .footer-back a:hover {
   color: white;
 }
+.faq-cta-centered {
+  text-align: center;
+}
+
+.faq-cta-centered .pill {
+  margin-inline: auto;
+}
+
+.footer {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 28px;
+  text-align: center;
+}
+
+.footer-brand-row {
+  display: flex;
+  justify-content: center;
+}
+
+.footer-policies ul {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  align-items: center;
+  gap: 8px 22px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.footer-policies a {
+  white-space: nowrap;
+  font-size: 13px;
+}
+
+.footer-disclaimer {
+  max-width: 1120px;
+  font-size: 12px;
+  line-height: 1.65;
+  color: rgba(255, 255, 255, 0.72);
+}
+
+.footer-back {
+  display: flex;
+  justify-content: center;
+}
+
+.footer-back a {
+  color: rgba(255, 255, 255, 0.82);
+  font-size: 13px;
+  text-decoration: none;
+}
+
+.footer-back a:hover {
+  color: white;
+}
+
+.shot {
+  position: relative;
+}
+
+.product-photo {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  display: block;
+  background: transparent;
+  z-index: 2;
+}
+
+.product-photo-wrap {
+  position: relative;
+  width: 100%;
+}
+
+.product-photo-wrap svg {
+  width: 100%;
+  height: auto;
+  display: block;
+}
+
+.product-photo-wrap .product-photo {
+  position: absolute;
+  inset: 0;
+}
