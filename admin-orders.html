@@ -2214,7 +2214,7 @@
       updateArchive('unarchive');
     });
 
-    function generateSupplierReport() {
+    async function generateSupplierReport() {
       const orders = loadedOrders.filter((order) =>
         selectedOrders.has(order.id)
       );
@@ -2230,6 +2230,37 @@
 
       if (!report) {
         setNotice('Allow pop-ups to open the supplier report.', true);
+        return;
+      }
+
+      try {
+        const reportResult = await api('/api/admin-orders', {
+          method: 'PATCH',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            action: 'supplier_report_generated',
+            order_ids: orders.map((order) => order.id)
+          })
+        });
+
+        const timestamps = new Map(
+          (reportResult.orders || []).map((order) => [
+            order.id,
+            order.supplier_report_generated_at
+          ])
+        );
+
+        loadedOrders = loadedOrders.map((order) =>
+          timestamps.has(order.id)
+            ? {
+                ...order,
+                supplier_report_generated_at: timestamps.get(order.id)
+              }
+            : order
+        );
+      } catch (error) {
+        report.close();
+        setNotice(error.message, true);
         return;
       }
 
