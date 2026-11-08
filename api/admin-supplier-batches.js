@@ -210,43 +210,38 @@ async function createBatch(res, body) {
 
   const { db } = clients();
 
-  const supplier = checked(
-    await db
-      .from('suppliers')
-      .select('id,name,active')
-      .eq('id', supplierId)
-      .maybeSingle()
+  const result = checked(
+    await db.rpc('create_supplier_batch', {
+      p_supplier_id: supplierId,
+      p_name: name,
+      p_order_ids: uniqueOrderIds
+    })
   );
 
-  if (!supplier || !supplier.active) {
-    throw httpError(404, 'Active supplier not found.');
+  if (!result || !result.batch_id) {
+    throw httpError(500, 'Supplier batch could not be created.');
   }
 
-  const duplicate = checked(
+  const batch = checked(
     await db
       .from('supplier_batches')
-      .select('id')
-      .eq('name', name)
-      .maybeSingle()
-  );
-
-  if (duplicate) {
-    throw httpError(409, 'That batch name is already in use.');
-  }
-
-  const orders = checked(
-    await db
-      .from('store_orders')
       .select(
         `
         id,
-        order_number,
-        payment_status,
-        fulfillment_status,
-        archived,
-        store_order_items (
+        name,
+        status,
+        created_at,
+        updated_at,
+        suppliers (
           id,
-          product_id,
+          name,
+          contact_name,
+          email
+        ),
+        supplier_batch_items (
+          id,
+          order_id,
+          order_item_id,
           product_name,
           variant_size,
           quantity,
@@ -257,83 +252,13 @@ async function createBatch(res, body) {
         )
       `
       )
-      .in('id', uniqueOrderIds)
-  );
-
-  if (orders.length !== uniqueOrderIds.length) {
-    throw httpError(404, 'One or more selected orders no longer exist.');
-  }
-
-  const unavailableOrders = orders.filter(
-    (order) =>
-      order.archived ||
-      !['paid', 'partially_refunded'].includes(order.payment_status) ||
-      !['unfulfilled', 'processing', 'awaiting_supplier'].includes(
-        order.fulfillment_status
-      )
-  );
-
-  if (unavailableOrders.length) {
-    throw httpError(
-      409,
-      'Only active, paid, unfulfilled orders can be added to a new supplier batch.'
-    );
-  }
-
-  const items = [];
-
-  orders.forEach((order) => {
-    const orderItems = Array.isArray(order.store_order_items)
-      ? order.store_order_items
-      : [];
-
-    if (!orderItems.length) {
-      throw httpError(
-        409,
-        `Order ${order.order_number || order.id} has no items.`
-      );
-    }
-
-    orderItems.forEach((item) => {
-      items.push({
-        order_id: order.id,
-        order_item_id: item.id,
-        product_name: item.product_name,
-        variant_size: item.variant_size,
-        quantity: item.quantity,
-        supplier_sku: item.supplier_sku,
-        supplier_name: item.supplier_name,
-        lot_number: item.lot_number,
-        fulfillment_notes: item.fulfillment_notes
-      });
-    });
-  });
-
-  if (!items.length) {
-    throw httpError(409, 'No eligible order items were found.');
-  }
-
-  const batch = checked(
-    await db
-      .from('supplier_batches')
-      .insert({ supplier_id: supplierId, name, status: 'draft' })
-      .select('id,name,status,created_at,updated_at,supplier_id')
+      .eq('id', result.batch_id)
       .single()
   );
 
-  const insertedItems = checked(
-    await db
-      .from('supplier_batch_items')
-      .insert(items.map((item) => ({ ...item, batch_id: batch.id })))
-      .select('*')
-  );
-
   return res.status(201).json({
-    batch: {
-      ...batch,
-      supplier: { id: supplier.id, name: supplier.name }
-    },
-    items: insertedItems
+    batch,
+    items: batch.supplier_batch_items || []
   });
 }
 
