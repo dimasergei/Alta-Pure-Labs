@@ -105,6 +105,7 @@ module.exports = async (req, res) => {
       generatedAt: new Date().toISOString()
     });
 
+    // Record the report only after PDF generation has succeeded.
     if (orderIds.length) {
       checked(
         await db
