@@ -12,14 +12,15 @@
 
   if (!sessionId) {
     title.textContent = 'Missing checkout reference';
-    message.textContent = 'We could not find the checkout session associated with this order.';
+    message.textContent =
+      'We could not find the checkout session associated with this order.';
     return;
   }
 
   const formatMoney = (cents, currency = 'USD') =>
     new Intl.NumberFormat('en-US', {
       style: 'currency',
-      currency,
+      currency
     }).format(cents / 100);
 
   const showPaid = (data) => {
@@ -29,7 +30,10 @@
 
     orderId.textContent = data.order_id || 'Confirmed';
     paymentStatus.textContent = 'Paid';
-    orderTotal.textContent = formatMoney(data.total_cents, data.currency || 'USD');
+    orderTotal.textContent = formatMoney(
+      data.total_cents,
+      data.currency || 'USD'
+    );
 
     details.hidden = false;
   };
@@ -41,7 +45,9 @@
   };
 
   const showFailed = (status) => {
-    title.textContent = status === 'expired' ? 'Checkout expired' : 'Payment unsuccessful';
+    title.textContent =
+      status === 'expired' ? 'Checkout expired' : 'Payment unsuccessful';
+
     message.textContent =
       'Your checkout session is no longer active. Your cart has been retained, so you can return to the shop and try again.';
   };
@@ -68,7 +74,7 @@
         return;
       }
     } catch (error) {
-      // Keep polling; Stripe webhooks can arrive shortly after redirect.
+      // Continue polling while Stripe processes the payment.
     }
 
     await new Promise((resolve) => setTimeout(resolve, 2000));
