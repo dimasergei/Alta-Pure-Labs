@@ -2793,6 +2793,15 @@
                   Download CSV
                 </button>
 
+                <button
+                  class="ghost"
+                  type="button"
+                  data-batch-id="${escapeHtml(batch.id)}"
+                  data-action="download-batch-pdf"
+                >
+                  Download PDF
+                </button>
+
                 ${
                   batch.status === 'draft'
                     ? `
@@ -2849,6 +2858,48 @@
         if (!batch) return;
 
         downloadSupplierBatchCsv(batch);
+        return;
+      }
+
+      if (button.dataset.action === 'download-batch-pdf') {
+        if (!batchId) return;
+
+        button.disabled = true;
+
+        try {
+          // A plain link can't send the admin password header, so fetch it.
+          const response = await fetch(
+            `/api/admin-supplier-batch-pdf?batch_id=${encodeURIComponent(batchId)}`,
+            {
+              cache: 'no-store',
+              headers: { 'x-admin-password': adminPassword }
+            }
+          );
+
+          if (!response.ok) {
+            const data = await response.json().catch(() => ({}));
+            throw new Error(data.error || 'PDF could not be generated.');
+          }
+
+          const blob = await response.blob();
+          const url = URL.createObjectURL(blob);
+          const link = document.createElement('a');
+          const batch = supplierBatches.find((item) => item.id === batchId);
+
+          link.href = url;
+          link.download = `${batch?.name || 'supplier-batch'}.pdf`;
+
+          document.body.appendChild(link);
+          link.click();
+          link.remove();
+
+          setTimeout(() => URL.revokeObjectURL(url), 10000);
+        } catch (error) {
+          setNotice(error.message, true);
+        } finally {
+          button.disabled = false;
+        }
+
         return;
       }
 
