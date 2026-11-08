@@ -24,6 +24,7 @@ const state = {
   sort: "name",
   limit: 12,
   cart: loadCart(),
+  selectedVariants: {},
 };
 
 const $ = (sel) => document.querySelector(sel);
@@ -111,40 +112,47 @@ function renderFilters() {
   ).join("");
 }
 
-function productImage(product) {
-  const image = PRODUCT_IMAGES[product.id];
+function productImageUrl(product, variant = product.variants[0]) {
+  return PRODUCT_IMAGES[product.id]?.[variant.size] || PRODUCT_IMAGE_FALLBACKS[product.id] || "";
+}
 
-  if (!image) {
-    return "";
-  }
+function productImage(product, variant = product.variants[0]) {
+  const image = productImageUrl(product, variant);
+  if (!image) return "";
 
   return `
     <img
       class="product-photo"
       src="${image}"
-      alt="${escapeXml(product.name)}"
+      alt="${escapeXml(`${product.name} ${variant.size} product label`)}"
       loading="lazy"
       onerror="this.style.display='none'"
     />`;
 }
 
 function productCardMarkup(product) {
+  const selectedVariant = product.variants.find((variant) => variant.size === state.selectedVariants[product.id]) || product.variants[0];
   return `
       <article class="card" data-group="${escapeXml(product.group)}">
-        <button class="shot" type="button" data-open="${product.id}" aria-label="View ${escapeXml(product.name)} details">
+        <button class="shot" type="button" data-open="${product.id}" data-size="${escapeXml(selectedVariant.size)}" aria-label="View ${escapeXml(product.name)} ${escapeXml(selectedVariant.size)} details">
           ${vialSvg(product)}
-          ${productImage(product)}
+          ${productImage(product, selectedVariant)}
         </button>
         <div class="meta">
           <span class="group">${product.group}</span>
           <h3>${product.name}</h3>
-          <span class="muted">${product.variants.map((variant) => variant.size).join(" · ")}</span>
+          <label class="variant-select-label">
+            <span class="sr">Choose ${escapeXml(product.name)} dosage</span>
+            <select class="variant-select" data-variant-select="${product.id}" aria-label="Choose ${escapeXml(product.name)} dosage">
+              ${product.variants.map((variant) => `<option value="${escapeXml(variant.size)}" ${variant.size === selectedVariant.size ? "selected" : ""}>${escapeXml(variant.size)}</option>`).join("")}
+            </select>
+          </label>
           <div class="price-row">
             <div>
               <span class="from">From</span>
               <span class="price">${money(fromPrice(product))}</span>
             </div>
-            <button class="add" type="button" data-open="${product.id}" aria-label="Choose ${escapeXml(product.name)}">
+            <button class="add" type="button" data-open="${product.id}" data-size="${escapeXml(selectedVariant.size)}" aria-label="Choose ${escapeXml(product.name)}">
               <svg viewBox="0 0 24 24"><path d="M6 7h15l-1.6 8.2a2 2 0 0 1-2 1.6H9.2a2 2 0 0 1-2-1.6L5.2 4H3"/><circle cx="9" cy="20" r="1.3"/><circle cx="17" cy="20" r="1.3"/></svg>
             </button>
           </div>
@@ -217,21 +225,24 @@ function renderCart() {
   $("#checkout").disabled = state.cart.length === 0;
 }
 
-function openProduct(id) {
+function openProduct(id, selectedSize) {
   const product = CATALOG.find((item) => item.id === id);
   if (!product) return;
+  const selectedVariant = product.variants.find((variant) => variant.size === selectedSize) || product.variants[0];
+  state.selectedVariants[product.id] = selectedVariant.size;
   $("#product-body").innerHTML = `
     <header class="dialog-head">
       <div>
         <p class="product-category">${product.group}</p>
         <h2>${product.name}</h2>
+        <p class="fine">Selected dosage: <strong>${escapeXml(selectedVariant.size)}</strong></p>
       </div>
       <button class="icon-btn" value="cancel" type="submit" aria-label="Close">×</button>
     </header>
     <div class="product-layout">
       <div class="product-photo-wrap">
         ${vialSvg(product)}
-        ${productImage(product)}
+        ${productImage(product, selectedVariant)}
       </div>
       <div>
         <p>${product.blurb}</p>
@@ -240,7 +251,7 @@ function openProduct(id) {
           ${product.variants
             .map(
               (variant, index) => `
-              <div class="variant">
+              <div class="variant" ${variant.size === selectedVariant.size ? 'data-selected="true"' : ""}>
                 <div>
                   <strong>${variant.size}</strong>
                   <span class="muted">per unit</span>
@@ -346,8 +357,32 @@ function init() {
   });
   document.querySelector("main").addEventListener("click", (event) => {
     const opener = event.target.closest("[data-open]");
-    if (opener) openProduct(opener.dataset.open);
+    if (opener) openProduct(opener.dataset.open, opener.dataset.size || state.selectedVariants[opener.dataset.open]);
   });
+  const updateSelectedImage = (event) => {
+    const select = event.target.closest("[data-variant-select]");
+    if (!select) return;
+    const product = CATALOG.find((item) => item.id === select.dataset.variantSelect);
+    const variant = product?.variants.find((item) => item.size === select.value);
+    if (!product || !variant) return;
+    state.selectedVariants[product.id] = variant.size;
+    const card = select.closest(".card");
+    const photo = card?.querySelector(".product-photo");
+    if (photo) {
+      photo.src = productImageUrl(product, variant);
+      photo.alt = `${product.name} ${variant.size} product label`;
+      photo.style.display = "block";
+    }
+    const opener = card?.querySelector(".shot");
+    if (opener) {
+      opener.dataset.size = variant.size;
+      opener.setAttribute("aria-label", `View ${product.name} ${variant.size} details`);
+    }
+    const addControl = card?.querySelector(".add[data-open]");
+    if (addControl) addControl.dataset.size = variant.size;
+  };
+  $("#grid").addEventListener("change", updateSelectedImage);
+  $("#featured-grid").addEventListener("change", updateSelectedImage);
   $("#product-body").addEventListener("click", (event) => {
     const button = event.target.closest("[data-add]");
     if (!button) return;

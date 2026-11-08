@@ -554,6 +554,32 @@ button { border: 0; }
   flex: 1;
 }
 
+.variant-select-label {
+  display: block;
+  margin-top: 2px;
+}
+
+.variant-select {
+  width: 100%;
+  min-height: 40px;
+  padding: 8px 34px 8px 12px;
+  border: 1px solid rgba(20,56,50,.2);
+  border-radius: 2px;
+  color: #143832;
+  background: rgba(255,255,255,.78);
+  font: inherit;
+  font-size: 14px;
+}
+
+.variant-select:focus-visible {
+  outline: 2px solid #143832;
+  outline-offset: 2px;
+}
+
+.variant[data-selected="true"] {
+  outline: 1px solid rgba(20,56,50,.35);
+}
+
 .card .group,
 .card .muted,
 .card .from {
