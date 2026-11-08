@@ -1,380 +1,3026 @@
-const crypto = require('crypto');
-const { clients, checked } = require('../lib/backend');
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <meta name="robots" content="noindex,nofollow">
+  <meta name="referrer" content="no-referrer">
+  <title>Admin Orders — AltaPure Labs</title>
 
-const UUID_PATTERN =
-  /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+  <link
+    rel="icon"
+    href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='14' fill='%23163832'/%3E%3Ctext x='32' y='40' text-anchor='middle' font-size='22' font-family='Arial' fill='white'%3EAP%3C/text%3E%3C/svg%3E"
+  >
 
-const BATCH_STATUSES = ['draft', 'sent', 'fulfilled', 'canceled'];
-
-function passwordMatches(provided, expected) {
-  const a = crypto.createHash('sha256').update(String(provided)).digest();
-  const b = crypto.createHash('sha256').update(expected).digest();
-  return crypto.timingSafeEqual(a, b);
-}
-
-module.exports = async (req, res) => {
-  res.setHeader('Cache-Control', 'no-store');
-  res.setHeader('X-Content-Type-Options', 'nosniff');
-
-  const adminPassword = process.env.ADMIN_ORDERS_PASSWORD;
-
-  if (typeof adminPassword !== 'string' || adminPassword.length < 32) {
-    return res.status(503).json({
-      error: 'Supplier batches are not configured.'
-    });
-  }
-
-  const providedPassword = req.headers['x-admin-password'];
-
-  if (!providedPassword || !passwordMatches(providedPassword, adminPassword)) {
-    return res.status(401).json({ error: 'Unauthorized.' });
-  }
-
-  if (!['GET', 'POST', 'PATCH'].includes(req.method)) {
-    res.setHeader('Allow', 'GET, POST, PATCH');
-    return res.status(405).json({ error: 'Method not allowed.' });
-  }
-
-  try {
-    if (req.method === 'GET') {
-      return await listBatches(req, res);
+  <style>
+    :root {
+      color-scheme: dark;
+      --bg: #0a0e0f;
+      --panel: #111617;
+      --panel-soft: #171e1f;
+      --border: #273132;
+      --text: #e8edeb;
+      --muted: #99a6a2;
+      --teal: #68cbbb;
+      --teal-dark: #17302c;
+      --red: #ffaaaa;
     }
 
-    const contentType = String(
-      req.headers['content-type'] || ''
-    ).split(';')[0].trim().toLowerCase();
-
-    if (contentType !== 'application/json') {
-      throw httpError(415, 'JSON required.');
+    * {
+      box-sizing: border-box;
     }
 
-    const body = await parseJson(req);
-
-    if (req.method === 'POST') {
-      return await createBatch(res, body);
+    [hidden] {
+      display: none !important;
     }
 
-    return await updateBatch(res, body);
-  } catch (error) {
-    const allowed = [400, 404, 409, 413, 415];
-    const status = allowed.includes(error.status) ? error.status : 500;
-
-    console.error('Supplier batch request failed', {
-      method: req.method,
-      name: error.name,
-      code: error.code,
-      status
-    });
-
-    return res.status(status).json({
-      error: status < 500 ? error.message : 'Supplier batch request failed.'
-    });
-  }
-};
-
-function httpError(status, message) {
-  const error = new Error(message);
-  error.status = status;
-  return error;
-}
-
-function cleanText(value, maximumLength, label) {
-  if (value === undefined || value === null) return null;
-
-  if (typeof value !== 'string') {
-    throw httpError(400, `${label} must be text.`);
-  }
-
-  const text = value.trim();
-
-  if (text.length > maximumLength) {
-    throw httpError(
-      400,
-      `${label} is too long. Maximum ${maximumLength} characters.`
-    );
-  }
-
-  return text || null;
-}
-
-async function parseJson(req) {
-  const maximumBytes = 65536;
-  let raw;
-
-  if (req.body !== undefined && req.body !== null) {
-    if (Buffer.isBuffer(req.body)) {
-      raw = req.body.toString('utf8');
-    } else if (typeof req.body === 'string') {
-      raw = req.body;
-    } else {
-      raw = JSON.stringify(req.body);
+    body {
+      margin: 0;
+      background: var(--bg);
+      color: var(--text);
+      font: 14px/1.5 Arial, Helvetica, sans-serif;
     }
-  } else {
-    const chunks = [];
-    let bytes = 0;
 
-    for await (const chunk of req) {
-      const buffer = Buffer.isBuffer(chunk) ? chunk : Buffer.from(chunk);
+    button,
+    input,
+    select,
+    textarea {
+      font: inherit;
+    }
 
-      bytes += buffer.length;
+    button,
+    a,
+    input,
+    select,
+    textarea {
+      -webkit-tap-highlight-color: transparent;
+    }
 
-      if (bytes > maximumBytes) {
-        throw httpError(413, 'Request too large.');
+    button,
+    a {
+      touch-action: manipulation;
+    }
+
+    button {
+      cursor: pointer;
+    }
+
+    button:disabled {
+      opacity: .5;
+      cursor: not-allowed;
+    }
+
+    :focus-visible {
+      outline: 2px solid var(--teal);
+      outline-offset: 3px;
+    }
+
+    a {
+      color: inherit;
+    }
+
+    .admin-page {
+      min-height: 100svh;
+      padding: 28px clamp(14px, 3vw, 40px) 80px;
+    }
+
+    .shell {
+      width: 100%;
+      max-width: 1180px;
+      margin: auto;
+      min-width: 0;
+    }
+
+    .top {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 16px;
+      margin-bottom: 20px;
+    }
+
+    h1 {
+      margin: 0;
+      font-size: 25px;
+      letter-spacing: -.04em;
+    }
+
+    .subtitle {
+      margin: 4px 0 0;
+      color: var(--muted);
+      font-size: 12px;
+    }
+
+    .actions,
+    .bulk-actions,
+    .mini-actions {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+    }
+
+    .ghost,
+    .primary {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      min-height: 38px;
+      padding: 8px 14px;
+      border-radius: 7px;
+      font-weight: 600;
+      font-size: 12px;
+      text-decoration: none;
+      transition: background .15s, border-color .15s;
+    }
+
+    .ghost {
+      border: 1px solid var(--border);
+      background: transparent;
+      color: var(--text);
+    }
+
+    .ghost:hover:not(:disabled) {
+      background: var(--panel-soft);
+      border-color: #465754;
+    }
+
+    .primary {
+      border: 1px solid var(--teal);
+      background: var(--teal);
+      color: #08231e;
+    }
+
+    .primary:hover:not(:disabled) {
+      background: #87ddcf;
+    }
+
+    .login {
+      width: min(420px, 100%);
+      margin: 80px auto 0;
+      padding: 32px;
+      background: var(--panel);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+    }
+
+    .login h2 {
+      margin: 0 0 6px;
+      font-size: 23px;
+      letter-spacing: -.03em;
+    }
+
+    .login p {
+      color: var(--muted);
+      margin: 0 0 24px;
+    }
+
+    .login .primary {
+      width: 100%;
+      margin-top: 16px;
+    }
+
+    .field {
+      display: grid;
+      gap: 7px;
+      min-width: 0;
+      color: var(--muted);
+      font-size: 12px;
+      font-weight: 600;
+    }
+
+    input:not([type="checkbox"]),
+    select,
+    textarea {
+      width: 100%;
+      min-width: 0;
+      padding: 10px 12px;
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      background: #0c1112;
+      color: var(--text);
+    }
+
+    input::placeholder,
+    textarea::placeholder {
+      color: #778681;
+    }
+
+    input:focus,
+    select:focus,
+    textarea:focus {
+      border-color: var(--teal);
+    }
+
+    textarea {
+      min-height: 78px;
+      resize: vertical;
+    }
+
+    .error {
+      color: var(--red) !important;
+      font-size: 13px;
+      margin: 14px 0 0 !important;
+    }
+
+    .controls {
+      display: grid;
+      gap: 12px;
+      min-width: 0;
+      margin-bottom: 14px;
+    }
+
+    .search-wrap {
+      position: relative;
+    }
+
+    .search-wrap input {
+      min-height: 44px;
+      padding-left: 39px;
+    }
+
+    .search-wrap svg {
+      position: absolute;
+      left: 13px;
+      top: 50%;
+      transform: translateY(-50%);
+      width: 17px;
+      height: 17px;
+      fill: none;
+      stroke: var(--muted);
+      stroke-width: 1.7;
+      pointer-events: none;
+    }
+
+    .tabs {
+      display: flex;
+      gap: 6px;
+      overflow-x: auto;
+      padding: 4px 2px 8px;
+    }
+
+    .tab {
+      flex: 0 0 auto;
+      min-height: 34px;
+      padding: 7px 12px;
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      background: transparent;
+      color: var(--muted);
+      font-size: 12px;
+      font-weight: 600;
+    }
+
+    .tab:hover {
+      color: var(--text);
+      border-color: #465754;
+    }
+
+    .tab.active {
+      background: var(--teal-dark);
+      border-color: #315c53;
+      color: var(--teal);
+    }
+
+    .list-tools,
+    .bulkbar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      flex-wrap: wrap;
+      gap: 12px;
+    }
+
+    .list-tools {
+      margin-bottom: 10px;
+      color: var(--muted);
+      font-size: 12px;
+    }
+
+    .select-all {
+      display: inline-flex;
+      align-items: center;
+      gap: 9px;
+      cursor: pointer;
+    }
+
+    input[type="checkbox"] {
+      width: 17px;
+      height: 17px;
+      margin: 0;
+      accent-color: var(--teal);
+      cursor: pointer;
+    }
+
+    .bulkbar {
+      padding: 11px 13px;
+      margin-bottom: 12px;
+      border: 1px solid #315c53;
+      border-radius: 8px;
+      background: #11201d;
+    }
+
+    .bulk-count {
+      font-size: 12px;
+      color: var(--teal);
+    }
+
+    .orders {
+      display: grid;
+      gap: 7px;
+      min-width: 0;
+    }
+
+    .order {
+      min-width: 0;
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      background: var(--panel);
+      overflow: hidden;
+    }
+
+    .order.open {
+      border-color: #3c5952;
+    }
+
+    .order-head {
+      display: grid;
+      grid-template-columns: 18px minmax(0, 1fr);
+      align-items: center;
+      gap: 12px;
+      padding-left: 15px;
+    }
+
+    .order-head:hover {
+      background: var(--panel-soft);
+    }
+
+    .order-toggle {
+      width: 100%;
+      min-width: 0;
+      display: grid;
+      grid-template-columns:
+        minmax(0, 1.2fr)
+        minmax(0, 1fr)
+        88px
+        138px
+        18px;
+      grid-template-areas:
+        "number customer total status chevron";
+      align-items: center;
+      gap: 14px;
+      padding: 14px 15px 14px 0;
+      border: 0;
+      background: transparent;
+      color: inherit;
+      text-align: left;
+    }
+
+    .order-toggle > * {
+      min-width: 0;
+    }
+
+    .number {
+      grid-area: number;
+    }
+
+    .order-number {
+      display: block;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+      font-size: 14px;
+      font-weight: 700;
+    }
+
+    .order-date {
+      display: block;
+      color: var(--muted);
+      font-size: 11px;
+      margin-top: 3px;
+    }
+
+    .customer {
+      grid-area: customer;
+    }
+
+    .customer strong,
+    .customer span {
+      display: block;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+
+    .customer strong {
+      font-size: 13px;
+      font-weight: 600;
+    }
+
+    .customer span {
+      color: var(--muted);
+      font-size: 11px;
+      margin-top: 2px;
+    }
+
+    .total {
+      grid-area: total;
+      text-align: right;
+      white-space: nowrap;
+      font-weight: 700;
+      font-variant-numeric: tabular-nums;
+    }
+
+    .status {
+      grid-area: status;
+      justify-self: end;
+    }
+
+    .badge {
+      display: inline-flex;
+      align-items: center;
+      padding: 4px 9px;
+      border-radius: 5px;
+      font-size: 11px;
+      font-weight: 600;
+      white-space: nowrap;
+      background: #25302e;
+      color: #c5d2ce;
+    }
+
+    .status-paid,
+    .status-delivered {
+      background: #17302c;
+      color: #8ed9c9;
+    }
+
+    .status-processing,
+    .status-awaiting_supplier {
+      background: #352b18;
+      color: #edc88a;
+    }
+
+    .status-shipped {
+      background: #192c42;
+      color: #a1c4ff;
+    }
+
+    .status-canceled,
+    .status-refunded {
+      background: #361f21;
+      color: #f6a8ae;
+    }
+
+    .chevron {
+      grid-area: chevron;
+      color: var(--muted);
+      text-align: center;
+      transition: transform .15s;
+    }
+
+    .order.open .chevron {
+      transform: rotate(180deg);
+    }
+
+    .details {
+      min-width: 0;
+      padding: 20px;
+      border-top: 1px solid var(--border);
+    }
+
+    .details-grid {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+      gap: 24px;
+    }
+
+    .details-grid > * {
+      min-width: 0;
+    }
+
+    .section-title {
+      margin: 0 0 10px;
+      color: var(--muted);
+      font-size: 10px;
+      font-weight: 700;
+      letter-spacing: .1em;
+      text-transform: uppercase;
+    }
+
+    .section-gap {
+      margin-top: 22px;
+    }
+
+    .address {
+      margin: 0;
+      color: var(--muted);
+      font-size: 13px;
+      line-height: 1.7;
+      overflow-wrap: anywhere;
+    }
+
+    .address strong {
+      color: var(--text);
+    }
+
+    .items {
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      background: #0d1213;
+      overflow: hidden;
+    }
+
+    .item {
+      display: flex;
+      align-items: flex-start;
+      justify-content: space-between;
+      gap: 14px;
+      padding: 11px 12px;
+      border-bottom: 1px solid var(--border);
+    }
+
+    .item:last-child {
+      border-bottom: 0;
+    }
+
+    .item > div {
+      min-width: 0;
+      overflow-wrap: anywhere;
+    }
+
+    .item strong {
+      font-size: 12px;
+      white-space: nowrap;
+    }
+
+    .item-name {
+      display: block;
+      font-size: 13px;
+      font-weight: 600;
+    }
+
+    .item-variant {
+      display: block;
+      color: var(--muted);
+      font-size: 11px;
+      margin-top: 3px;
+    }
+
+    .mini-actions {
+      margin-top: 12px;
+    }
+
+    .fulfillment,
+    .timeline {
+      margin-top: 22px;
+      padding-top: 18px;
+      border-top: 1px solid var(--border);
+    }
+
+    .form-grid {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 12px;
+    }
+
+    .full {
+      grid-column: 1 / -1;
+    }
+
+    .save-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      margin-top: 4px;
+    }
+
+    .save-result {
+      font-size: 12px;
+      color: var(--muted);
+      overflow-wrap: anywhere;
+    }
+
+    .save-result.failed {
+      color: var(--red);
+    }
+
+    .save-button {
+      flex: 0 0 auto;
+      min-width: 130px;
+    }
+
+    .hint {
+      margin: 10px 0 0;
+      font-size: 11px;
+      color: var(--muted);
+    }
+
+    .timeline-item {
+      display: grid;
+      grid-template-columns: 130px minmax(0, 1fr);
+      gap: 10px;
+      padding: 7px 0;
+      font-size: 12px;
+      color: var(--muted);
+    }
+
+    .timeline-item span {
+      overflow-wrap: anywhere;
+    }
+
+    .empty {
+      padding: 55px 20px;
+      text-align: center;
+      color: var(--muted);
+      border: 1px dashed var(--border);
+      border-radius: 8px;
+    }
+
+    .notice {
+      min-height: 20px;
+      margin: 10px 0;
+      color: var(--muted);
+      font-size: 12px;
+    }
+
+    .notice.failed {
+      color: var(--red);
+    }
+
+    @media (max-width: 850px) {
+      .order-toggle {
+        grid-template-columns: minmax(0, 1fr) auto 18px;
+        grid-template-areas:
+          "number status chevron"
+          "customer total chevron";
+        gap: 8px 12px;
       }
 
-      chunks.push(buffer);
+      .details-grid {
+        grid-template-columns: minmax(0, 1fr);
+      }
     }
 
-    raw = Buffer.concat(chunks).toString('utf8');
-  }
+    @media (max-width: 520px) {
+      .admin-page {
+        padding-top: 20px;
+      }
 
-  let body;
+      .top {
+        align-items: flex-start;
+        flex-wrap: wrap;
+      }
 
-  try {
-    body = JSON.parse(raw);
-  } catch {
-    throw httpError(400, 'Invalid JSON.');
-  }
+      .order-head {
+        gap: 9px;
+        padding-left: 11px;
+      }
 
-  if (!body || typeof body !== 'object' || Array.isArray(body)) {
-    throw httpError(400, 'A JSON object is required.');
-  }
+      .order-toggle {
+        grid-template-columns: minmax(0, 1fr) auto 16px;
+        grid-template-areas:
+          "number number chevron"
+          "customer customer chevron"
+          "status total total";
+        padding-right: 11px;
+      }
 
-  return body;
-}
+      .status {
+        justify-self: start;
+      }
 
-async function listBatches(req, res) {
-  const { db } = clients();
+      .details {
+        padding: 15px;
+      }
 
-  const batches = checked(
-    await db
-      .from('supplier_batches')
-      .select(
-        `
-        id,
-        name,
-        status,
-        created_at,
-        updated_at,
-        suppliers (
-          id,
-          name,
-          contact_name,
-          email
-        ),
-        supplier_batch_items (
-          id,
-          order_id,
-          order_item_id,
-          product_name,
-          variant_size,
-          quantity,
-          supplier_sku,
-          supplier_name,
-          lot_number,
-          fulfillment_notes
-        )
-      `
-      )
-      .order('created_at', { ascending: false })
-      .limit(50)
-  );
+      .form-grid {
+        grid-template-columns: minmax(0, 1fr);
+      }
 
-  return res.status(200).json({ batches });
-}
+      .timeline-item {
+        grid-template-columns: minmax(0, 1fr);
+        gap: 2px;
+      }
 
-async function createBatch(res, body) {
-  const supplierId = body.supplier_id;
-  const name = cleanText(body.name, 120, 'Batch name');
+      .login {
+        padding: 24px;
+        margin-top: 40px;
+      }
 
-  if (
-    typeof supplierId !== 'string' ||
-    !UUID_PATTERN.test(supplierId) ||
-    !name
-  ) {
-    throw httpError(400, 'Choose a supplier and enter a batch name.');
-  }
+      .save-row {
+        align-items: flex-start;
+        flex-direction: column;
+      }
 
-  const orderIds = body.order_ids;
-
-  if (
-    !Array.isArray(orderIds) ||
-    !orderIds.length ||
-    orderIds.length > 200 ||
-    orderIds.some((id) => typeof id !== 'string' || !UUID_PATTERN.test(id))
-  ) {
-    throw httpError(400, 'Select between 1 and 200 valid orders.');
-  }
-
-  const uniqueOrderIds = [...new Set(orderIds)];
-
-  const { db } = clients();
-
-  const supplier = checked(
-    await db
-      .from('suppliers')
-      .select('id,name,active')
-      .eq('id', supplierId)
-      .maybeSingle()
-  );
-
-  if (!supplier || !supplier.active) {
-    throw httpError(404, 'Active supplier not found.');
-  }
-
-  const duplicate = checked(
-    await db
-      .from('supplier_batches')
-      .select('id')
-      .eq('name', name)
-      .maybeSingle()
-  );
-
-  if (duplicate) {
-    throw httpError(409, 'That batch name is already in use.');
-  }
-
-  const orders = checked(
-    await db
-      .from('store_orders')
-      .select(
-        `
-        id,
-        order_number,
-        payment_status,
-        fulfillment_status,
-        archived,
-        store_order_items (
-          id,
-          product_id,
-          product_name,
-          variant_size,
-          quantity,
-          supplier_sku,
-          supplier_name,
-          lot_number,
-          fulfillment_notes
-        )
-      `
-      )
-      .in('id', uniqueOrderIds)
-  );
-
-  if (orders.length !== uniqueOrderIds.length) {
-    throw httpError(404, 'One or more selected orders no longer exist.');
-  }
-
-  const unavailableOrders = orders.filter(
-    (order) =>
-      order.archived ||
-      !['paid', 'partially_refunded'].includes(order.payment_status) ||
-      !['unfulfilled', 'processing', 'awaiting_supplier'].includes(
-        order.fulfillment_status
-      )
-  );
-
-  if (unavailableOrders.length) {
-    throw httpError(
-      409,
-      'Only active, paid, unfulfilled orders can be added to a new supplier batch.'
-    );
-  }
-
-  const items = [];
-
-  orders.forEach((order) => {
-    const orderItems = Array.isArray(order.store_order_items)
-      ? order.store_order_items
-      : [];
-
-    if (!orderItems.length) {
-      throw httpError(
-        409,
-        `Order ${order.order_number || order.id} has no items.`
-      );
+      .save-button {
+        width: 100%;
+      }
     }
 
-    orderItems.forEach((item) => {
-      items.push({
-        order_id: order.id,
-        order_item_id: item.id,
-        product_name: item.product_name,
-        variant_size: item.variant_size,
-        quantity: item.quantity,
-        supplier_sku: item.supplier_sku,
-        supplier_name: item.supplier_name,
-        lot_number: item.lot_number,
-        fulfillment_notes: item.fulfillment_notes
+    @media (prefers-reduced-motion: reduce) {
+      * {
+        transition: none !important;
+      }
+    }
+
+    .query-controls {
+      display: flex;
+      align-items: flex-end;
+      flex-wrap: wrap;
+      gap: 10px;
+    }
+
+    .query-controls .field {
+      flex: 1 1 145px;
+    }
+
+    .query-controls .ghost {
+      min-height: 40px;
+    }
+
+    .pagination {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      flex-wrap: wrap;
+      gap: 12px;
+      margin-top: 18px;
+      color: var(--muted);
+      font-size: 12px;
+    }
+
+    @media (max-width: 520px) {
+      .query-controls .field {
+        flex-basis: 100%;
+      }
+
+      .query-controls .ghost {
+        width: 100%;
+      }
+    }
+    .list-tools .actions {
+      align-items: center;
+    }
+
+    #csv-scope {
+      width: auto;
+      min-width: 160px;
+      min-height: 38px;
+      padding: 8px 10px;
+      font-size: 12px;
+    }
+
+    @media (max-width: 520px) {
+      .list-tools {
+        align-items: flex-start;
+      }
+
+      .list-tools .actions {
+        width: 100%;
+      }
+
+      #result-summary {
+        flex-basis: 100%;
+      }
+
+      #csv-scope {
+        flex: 1 1 150px;
+      }
+    }
+    .panel {
+      padding: 18px;
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      background: var(--panel);
+    }
+
+    .panel-head h2 {
+      margin: 0;
+      font-size: 17px;
+    }
+
+    .panel-head p,
+    .muted {
+      margin: 4px 0 16px;
+      color: var(--muted);
+      font-size: 12px;
+    }
+
+    .supplier-panel {
+      margin-top: 20px;
+    }
+
+    .supplier-grid {
+      display: grid;
+      grid-template-columns: minmax(260px, 1fr) minmax(280px, 1.2fr);
+      gap: 20px;
+    }
+
+    .supplier-form {
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+
+    .supplier-list h3 {
+      margin: 0 0 10px;
+      font-size: 14px;
+    }
+
+    .batches {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      max-height: 340px;
+      overflow-y: auto;
+    }
+
+    .batch-card {
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 12px;
+      background: var(--panel-soft);
+    }
+
+    .batch-card strong {
+      display: block;
+      margin-bottom: 4px;
+    }
+
+    .batch-card .meta {
+      color: var(--muted);
+      font-size: 12px;
+      margin-bottom: 8px;
+    }
+
+    @media (max-width: 900px) {
+      .supplier-grid {
+        grid-template-columns: 1fr;
+      }
+    }
+  </style>
+</head>
+
+<body>
+  <main class="admin-page">
+    <div class="shell">
+      <section id="login-view" class="login">
+        <h2>Admin access</h2>
+        <p>Sign in to manage orders and fulfillment.</p>
+
+        <form id="login-form">
+          <label class="field" for="admin-password">
+            Admin password
+            <input
+              id="admin-password"
+              type="password"
+              autocomplete="current-password"
+              required
+            >
+          </label>
+
+          <button id="login-button" class="primary" type="submit">
+            View orders
+          </button>
+
+          <p id="login-error" class="error" role="alert" hidden></p>
+        </form>
+      </section>
+
+      <section id="orders-view" hidden>
+        <header class="top">
+          <div>
+            <h1>Orders</h1>
+            <p id="orders-message" class="subtitle">Loading orders…</p>
+          </div>
+
+          <div class="actions">
+            <button id="refresh-button" class="ghost" type="button">
+              Refresh
+            </button>
+            <a class="ghost" href="/">Site</a>
+            <button id="logout-button" class="ghost" type="button">
+              Log out
+            </button>
+          </div>
+        </header>
+
+        <div class="controls">
+          <div class="search-wrap">
+            <svg viewBox="0 0 24 24" aria-hidden="true">
+              <circle cx="11" cy="11" r="6.5"></circle>
+              <path d="M16 16l5 5"></path>
+            </svg>
+
+            <input
+              id="search-input"
+              type="search"
+              aria-label="Search orders"
+              placeholder="Search order, customer, email, organization, or tracking"
+            >
+          </div>
+
+          <div class="query-controls">
+            <label class="field">
+              Date range
+              <select id="date-preset">
+                <option value="all">All dates</option>
+                <option value="today">Today</option>
+                <option value="last7">Last 7 days</option>
+                <option value="month">This month</option>
+                <option value="custom">Custom range</option>
+              </select>
+            </label>
+
+            <label class="field" id="from-date-field" hidden>
+              From
+              <input id="from-date" type="date">
+            </label>
+
+            <label class="field" id="to-date-field" hidden>
+              Through
+              <input id="to-date" type="date">
+            </label>
+
+            <label class="field">
+              Sort
+              <select id="sort-orders">
+                <option value="newest">Newest first</option>
+                <option value="oldest">Oldest first</option>
+                <option value="highest_total">Highest total</option>
+                <option value="oldest_pending">Oldest pending payment</option>
+              </select>
+            </label>
+
+            <label class="field">
+              Priority
+              <select id="priority-filter">
+                <option value="">All priorities</option>
+                <option value="high">High</option>
+                <option value="normal">Normal</option>
+                <option value="low">Low</option>
+              </select>
+            </label>
+
+            <button id="apply-filters" class="ghost" type="button">
+              Apply filters
+            </button>
+          </div>
+
+          <nav id="status-tabs" class="tabs" aria-label="Order filters">
+            <button class="tab active" data-status="active" type="button" aria-pressed="true">Active</button>
+            <button class="tab" data-status="paid" type="button" aria-pressed="false">Paid</button>
+            <button class="tab" data-status="processing" type="button" aria-pressed="false">Processing</button>
+            <button class="tab" data-status="awaiting_supplier" type="button" aria-pressed="false">Awaiting Supplier</button>
+            <button class="tab" data-status="shipped" type="button" aria-pressed="false">Shipped</button>
+            <button class="tab" data-status="delivered" type="button" aria-pressed="false">Delivered</button>
+            <button class="tab" data-status="canceled" type="button" aria-pressed="false">Canceled</button>
+            <button class="tab" data-status="refunded" type="button" aria-pressed="false">Refunded</button>
+            <button class="tab" data-status="archived" type="button" aria-pressed="false">Archived</button>
+            <button class="tab" data-status="all" type="button" aria-pressed="false">All</button>
+          </nav>
+        </div>
+
+        <div class="list-tools">
+          <label class="select-all">
+            <input id="select-all" type="checkbox">
+            Select visible
+          </label>
+
+          <div class="actions">
+            <span id="result-summary">50 orders per page</span>
+
+            <select id="csv-scope" aria-label="CSV export scope">
+              <option value="selected">Selected orders</option>
+              <option value="page">Current page</option>
+              <option value="filtered">All matching orders</option>
+            </select>
+
+            <button id="export-csv" class="ghost" type="button">
+              Export CSV
+            </button>
+
+            <button
+              id="cancel-csv"
+              class="ghost"
+              type="button"
+              hidden
+            >
+              Cancel export
+            </button>
+          </div>
+        </div>
+
+        <div id="bulkbar" class="bulkbar" hidden>
+          <span id="bulk-count" class="bulk-count">0 selected</span>
+
+          <div class="bulk-actions">
+            <button id="generate-pdf" class="ghost" type="button">
+              Supplier report / PDF
+            </button>
+            <button id="archive-selected" class="ghost" type="button">
+              Archive
+            </button>
+            <button id="restore-selected" class="ghost" type="button">
+              Restore
+            </button>
+            <button id="clear-selection" class="ghost" type="button">
+              Clear
+            </button>
+          </div>
+        </div>
+
+        <p id="notice" class="notice" role="status" aria-live="polite"></p>
+        <div id="orders-list" class="orders"></div>
+        <div class="pagination">
+          <span id="page-summary" aria-live="polite"></span>
+
+          <div class="actions">
+            <button id="previous-page" class="ghost" type="button" disabled>
+              Previous
+            </button>
+            <button id="next-page" class="ghost" type="button" disabled>
+              Next
+            </button>
+          </div>
+        </div>
+
+        <section class="panel supplier-panel">
+          <div class="panel-head">
+            <div>
+              <h2>Supplier batches</h2>
+              <p>Create a supplier-ready fulfillment list from selected orders.</p>
+            </div>
+          </div>
+
+          <div class="supplier-grid">
+            <div class="supplier-form">
+              <label class="field">
+                Supplier
+                <select id="batch-supplier">
+                  <option value="">Select supplier</option>
+                </select>
+              </label>
+
+              <label class="field">
+                Batch name
+                <input
+                  id="batch-name"
+                  type="text"
+                  maxlength="120"
+                  placeholder="Example: Peptide batch — November 8"
+                >
+              </label>
+
+              <button
+                id="create-batch"
+                class="ghost"
+                type="button"
+              >
+                Create batch
+              </button>
+            </div>
+
+            <div class="supplier-list">
+              <h3>Recent batches</h3>
+              <div id="supplier-batches" class="batches"></div>
+            </div>
+          </div>
+        </section>
+      </section>
+    </div>
+  </main>
+
+  <script>
+    const $ = (selector) => document.querySelector(selector);
+
+    const passwordInput = $('#admin-password');
+    const loginForm = $('#login-form');
+    const loginButton = $('#login-button');
+    const loginError = $('#login-error');
+    const loginView = $('#login-view');
+    const ordersView = $('#orders-view');
+    const ordersMessage = $('#orders-message');
+    const ordersList = $('#orders-list');
+    const searchInput = $('#search-input');
+    const statusTabs = $('#status-tabs');
+    const bulkbar = $('#bulkbar');
+    const bulkCount = $('#bulk-count');
+    const selectAll = $('#select-all');
+    const refreshButton = $('#refresh-button');
+    const notice = $('#notice');
+
+    const STATUSES = [
+      'unfulfilled',
+      'processing',
+      'awaiting_supplier',
+      'partially_shipped',
+      'shipped',
+      'delivered',
+      'canceled'
+    ];
+
+    const LABELS = {
+      unfulfilled: 'Unfulfilled',
+      processing: 'Processing',
+      awaiting_supplier: 'Awaiting Supplier',
+      partially_shipped: 'Partially Shipped',
+      shipped: 'Shipped',
+      delivered: 'Delivered',
+      canceled: 'Canceled',
+      pending: 'Pending',
+      paid: 'Paid',
+      partially_refunded: 'Partially Refunded',
+      refunded: 'Refunded',
+      failed: 'Failed',
+      expired: 'Expired'
+    };
+
+    let adminPassword = readSavedPassword();
+    let currentStatus = 'active';
+    let currentSearch = '';
+    let selectedOrders = new Set();
+    let loadedOrders = [];
+    let openOrderId = null;
+    let searchTimer;
+    let requestNumber = 0;
+    let saving = false;
+
+    let currentPage = 1;
+    const pageSize = 50;
+
+    let appliedFilters = {
+      sort: 'newest',
+      priority: '',
+      from: '',
+      to: ''
+    };
+
+    let pagination = {
+      page: 1,
+      total: 0,
+      total_pages: 0,
+      has_previous: false,
+      has_next: false
+    };
+
+    function localDateInput(value) {
+      if (!value) return null;
+
+      const parts = value.split('-').map(Number);
+
+      if (parts.length !== 3 || parts.some(Number.isNaN)) {
+        throw new Error('Choose a valid date.');
+      }
+
+      const date = new Date(parts[0], parts[1] - 1, parts[2]);
+
+      if (
+        date.getFullYear() !== parts[0] ||
+        date.getMonth() !== parts[1] - 1 ||
+        date.getDate() !== parts[2]
+      ) {
+        throw new Error('Choose a valid date.');
+      }
+
+      return date;
+    }
+
+    function readDateRange() {
+      const preset = $('#date-preset').value;
+      const now = new Date();
+
+      let start = null;
+      let end = null;
+
+      if (preset === 'today') {
+        start = new Date(
+          now.getFullYear(),
+          now.getMonth(),
+          now.getDate()
+        );
+
+        end = new Date(start);
+        end.setDate(end.getDate() + 1);
+      }
+
+      if (preset === 'last7') {
+        start = new Date(
+          now.getFullYear(),
+          now.getMonth(),
+          now.getDate()
+        );
+
+        start.setDate(start.getDate() - 6);
+
+        end = new Date(
+          now.getFullYear(),
+          now.getMonth(),
+          now.getDate() + 1
+        );
+      }
+
+      if (preset === 'month') {
+        start = new Date(now.getFullYear(), now.getMonth(), 1);
+        end = new Date(
+          now.getFullYear(),
+          now.getMonth(),
+          now.getDate() + 1
+        );
+      }
+
+      if (preset === 'custom') {
+        start = localDateInput($('#from-date').value);
+        end = localDateInput($('#to-date').value);
+
+        if (!start || !end) {
+          throw new Error('Choose both custom dates.');
+        }
+
+        if (start > end) {
+          throw new Error('The end date cannot precede the start date.');
+        }
+
+        // Include the entire selected end date.
+        end.setDate(end.getDate() + 1);
+      }
+
+      return {
+        from: start ? start.toISOString() : '',
+        to: end ? end.toISOString() : ''
+      };
+    }
+
+    function renderPagination() {
+      const total = pagination.total;
+      const first = loadedOrders.length
+        ? (pagination.page - 1) * pageSize + 1
+        : 0;
+
+      const last = loadedOrders.length
+        ? first + loadedOrders.length - 1
+        : 0;
+
+      $('#page-summary').textContent =
+        `${first}–${last} of ${total} matching orders`;
+
+      $('#result-summary').textContent =
+        `${pageSize} orders per page`;
+
+      $('#previous-page').disabled =
+        !pagination.has_previous;
+
+      $('#next-page').disabled =
+        !pagination.has_next;
+    }
+
+    function readSavedPassword() {
+      try {
+        return sessionStorage.getItem('altapure_admin_password') || '';
+      } catch {
+        return '';
+      }
+    }
+
+    function savePassword(value) {
+      try {
+        if (value) {
+          sessionStorage.setItem('altapure_admin_password', value);
+        } else {
+          sessionStorage.removeItem('altapure_admin_password');
+        }
+      } catch {
+        // Login still works without browser storage.
+      }
+    }
+
+    function escapeHtml(value) {
+      return String(value ?? '')
+        .replaceAll('&', '&amp;')
+        .replaceAll('<', '&lt;')
+        .replaceAll('>', '&gt;')
+        .replaceAll('"', '&quot;')
+        .replaceAll("'", '&#39;');
+    }
+
+    function formatStatus(value) {
+      if (!value) return 'Unfulfilled';
+
+      return LABELS[value] ||
+        String(value)
+          .replaceAll('_', ' ')
+          .replace(/\b\w/g, (letter) => letter.toUpperCase());
+    }
+
+    function money(cents, currency = 'USD') {
+      const amount = Number(cents);
+
+      if (!Number.isFinite(amount)) return '—';
+
+      try {
+        return new Intl.NumberFormat('en-US', {
+          style: 'currency',
+          currency: currency || 'USD'
+        }).format(amount / 100);
+      } catch {
+        return (amount / 100).toFixed(2);
+      }
+    }
+
+    function formatDate(value) {
+      if (!value) return '—';
+
+      const date = new Date(value);
+
+      if (Number.isNaN(date.getTime())) return '—';
+
+      return date.toLocaleString('en-US', {
+        month: 'short',
+        day: 'numeric',
+        year: 'numeric',
+        hour: 'numeric',
+        minute: '2-digit'
       });
+    }
+
+    function addressLines(order) {
+      const address = order.shipping_address || {};
+
+      return [
+        order.shipping_name || order.customer_name,
+        address.line1,
+        address.line2,
+        [address.city, address.state, address.postal_code]
+          .filter(Boolean)
+          .join(', '),
+        address.country
+      ].filter(Boolean);
+    }
+
+    function setNotice(message = '', failed = false) {
+      notice.textContent = message;
+      notice.classList.toggle('failed', failed);
+    }
+
+    function hasUnsavedChanges() {
+      return [...ordersList.querySelectorAll('form[data-dirty="true"]')]
+        .length > 0;
+    }
+
+    function allowDiscard() {
+      if (saving) {
+        setNotice('Wait for the current save to finish.', true);
+        return false;
+      }
+
+      return !hasUnsavedChanges() ||
+        window.confirm('Discard your unsaved order changes?');
+    }
+
+    function logout() {
+      csvExportController?.abort();
+
+      requestNumber += 1;
+      clearTimeout(searchTimer);
+      adminPassword = '';
+      savePassword('');
+      passwordInput.value = '';
+      selectedOrders.clear();
+      loadedOrders = [];
+      openOrderId = null;
+      ordersList.replaceChildren();
+      ordersView.hidden = true;
+      loginView.hidden = false;
+    }
+
+    async function api(path, options = {}) {
+      const response = await fetch(path, {
+        ...options,
+        cache: 'no-store',
+        headers: {
+          ...options.headers,
+          'x-admin-password': adminPassword
+        }
+      });
+
+      const data = await response.json().catch(() => ({}));
+
+      if (response.status === 401) {
+        logout();
+        throw new Error('Session rejected. Please sign in again.');
+      }
+
+      if (!response.ok) {
+        throw new Error(data.error || `Request failed (${response.status}).`);
+      }
+
+      return data;
+    }
+
+    async function loadOrders() {
+      const thisRequest = ++requestNumber;
+      ordersMessage.textContent = 'Loading orders…';
+
+      const params = new URLSearchParams({
+        status: currentStatus,
+        search: currentSearch,
+        page: String(currentPage),
+        page_size: String(pageSize),
+        sort: appliedFilters.sort,
+        priority: appliedFilters.priority
+      });
+
+      if (appliedFilters.from) {
+        params.set('from', appliedFilters.from);
+      }
+
+      if (appliedFilters.to) {
+        params.set('to', appliedFilters.to);
+      }
+
+      const data = await api(`/api/admin-orders?${params}`);
+
+      if (thisRequest !== requestNumber) return;
+
+      loadedOrders = Array.isArray(data.orders) ? data.orders : [];
+
+      pagination = data.pagination || {
+        page: currentPage,
+        total: loadedOrders.length,
+        total_pages: loadedOrders.length ? 1 : 0,
+        has_previous: false,
+        has_next: false
+      };
+
+      selectedOrders = new Set(
+        [...selectedOrders].filter((id) =>
+          loadedOrders.some((order) => order.id === id)
+        )
+      );
+
+      if (!loadedOrders.some((order) => order.id === openOrderId)) {
+        openOrderId = null;
+      }
+
+      renderOrders();
+      renderPagination();
+      loginView.hidden = true;
+      ordersView.hidden = false;
+    }
+
+    function renderOrders() {
+      ordersMessage.textContent =
+        `${loadedOrders.length} matching order${loadedOrders.length === 1 ? '' : 's'} · click a row to expand`;
+
+      if (!loadedOrders.length) {
+        ordersList.innerHTML =
+          '<div class="empty">No orders match this view.</div>';
+        updateBulkBar();
+        return;
+      }
+
+      ordersList.innerHTML = loadedOrders.map((order, index) => {
+        const isOpen = openOrderId === order.id;
+        const status = order.fulfillment_status || 'unfulfilled';
+        const badgeClass = STATUSES.includes(status)
+          ? `status-${status}`
+          : '';
+
+        const items = (order.store_order_items || []).map((item) => `
+          <div class="item">
+            <div>
+              <span class="item-name">
+                ${escapeHtml(item.product_name)}
+              </span>
+              <span class="item-variant">
+                ${escapeHtml(item.variant_size)}
+                × ${escapeHtml(item.quantity)}
+                ${
+                  item.supplier_sku
+                    ? ` · SKU: ${escapeHtml(item.supplier_sku)}`
+                    : ''
+                }
+              </span>
+            </div>
+            <strong>
+              ${escapeHtml(money(
+                Number(item.quantity) * Number(item.unit_price_cents),
+                order.currency
+              ))}
+            </strong>
+          </div>
+        `).join('');
+
+        const history = Array.isArray(order.internal_status_history)
+          ? order.internal_status_history
+          : [];
+
+        const timeline = [...history].reverse().map((entry) => `
+          <div class="timeline-item">
+            <span>${escapeHtml(formatDate(entry.at))}</span>
+            <span>
+              ${escapeHtml(formatStatus(entry.from))}
+              → ${escapeHtml(formatStatus(entry.to))}
+            </span>
+          </div>
+        `).join('');
+
+        const statusOptions = STATUSES.includes(status)
+          ? ''
+          : `<option value="${escapeHtml(status)}" selected>
+               ${escapeHtml(formatStatus(status))}
+             </option>`;
+
+        return `
+          <article
+            class="order ${isOpen ? 'open' : ''}"
+            data-order-id="${escapeHtml(order.id)}"
+          >
+            <div class="order-head">
+              <input
+                class="order-select"
+                type="checkbox"
+                aria-label="Select order ${escapeHtml(
+                  order.order_number || order.id
+                )}"
+                ${selectedOrders.has(order.id) ? 'checked' : ''}
+              >
+
+              <button
+                class="order-toggle"
+                type="button"
+                aria-expanded="${isOpen}"
+                aria-controls="order-details-${index}"
+              >
+                <span class="number">
+                  <span
+                    class="order-number"
+                    title="${escapeHtml(order.order_number || order.id)}"
+                  >
+                    ${escapeHtml(order.order_number || order.id)}
+                  </span>
+                  <span class="order-date">
+                    ${escapeHtml(formatDate(order.created_at))}
+                    ${order.archived ? ' · Archived' : ''}
+                  </span>
+                </span>
+
+                <span class="customer">
+                  <strong>${escapeHtml(order.customer_name || 'Customer')}</strong>
+                  <span>${escapeHtml(order.customer_email)}</span>
+                </span>
+
+                <span class="total">
+                  ${escapeHtml(money(order.total_cents, order.currency))}
+                </span>
+
+                <span class="status">
+                  <span class="badge ${badgeClass}">
+                    ${escapeHtml(formatStatus(status))}
+                  </span>
+                </span>
+
+                <span class="chevron" aria-hidden="true">⌄</span>
+              </button>
+            </div>
+
+            <div
+              class="details"
+              id="order-details-${index}"
+              ${isOpen ? '' : 'hidden'}
+            >
+              <div class="details-grid">
+                <div>
+                  <h3 class="section-title">Customer</h3>
+                  <p class="address">
+                    <strong>${escapeHtml(order.customer_name)}</strong><br>
+                    ${escapeHtml(order.customer_email)}<br>
+                    ${escapeHtml(order.organization || '')}
+                  </p>
+
+                  <h3 class="section-title section-gap">Payment</h3>
+                  <p class="address">
+                    ${escapeHtml(formatStatus(order.payment_status))}
+                    · ${escapeHtml(money(
+                      order.total_cents,
+                      order.currency
+                    ))}<br>
+                    Subtotal: ${escapeHtml(money(
+                      order.subtotal_cents,
+                      order.currency
+                    ))}<br>
+                    Shipping: ${escapeHtml(money(
+                      order.shipping_cents,
+                      order.currency
+                    ))}
+                  </p>
+
+                  <h3 class="section-title section-gap">Items</h3>
+                  <div class="items">
+                    ${items || '<div class="item">No items available.</div>'}
+                  </div>
+
+                  <div class="timeline">
+                    <h3 class="section-title">Status timeline</h3>
+                    ${timeline || '<p class="address">No recorded status changes yet.</p>'}
+                  </div>
+                </div>
+
+                <div>
+                  <h3 class="section-title">Ship to</h3>
+                  <p class="address">
+                    ${addressLines(order).map(escapeHtml).join('<br>') ||
+                      'No shipping address saved.'}
+                  </p>
+
+                  <div class="mini-actions">
+                    <button class="ghost" type="button" data-copy="address">
+                      Copy address
+                    </button>
+                    <button
+                      class="ghost"
+                      type="button"
+                      data-copy="tracking"
+                      ${order.tracking_number ? '' : 'disabled'}
+                    >
+                      Copy tracking
+                    </button>
+                  </div>
+
+                  <div class="fulfillment">
+                    <h3 class="section-title">Fulfillment</h3>
+
+                    <form class="form-grid" data-dirty="false">
+                      <label class="field">
+                        Status
+                        <select name="fulfillment_status">
+                          ${statusOptions}
+                          ${STATUSES.map((value) => `
+                            <option
+                              value="${value}"
+                              ${status === value ? 'selected' : ''}
+                            >
+                              ${formatStatus(value)}
+                            </option>
+                          `).join('')}
+                        </select>
+                      </label>
+
+                      <label class="field">
+                        Priority
+                        <select name="priority">
+                          ${['low', 'normal', 'high'].map((value) => `
+                            <option
+                              value="${value}"
+                              ${(order.priority || 'normal') === value
+                                ? 'selected' : ''}
+                            >
+                              ${value.charAt(0).toUpperCase() + value.slice(1)}
+                            </option>
+                          `).join('')}
+                        </select>
+                      </label>
+
+                      <label class="field full">
+                        Supplier status
+                        <input
+                          name="supplier_status"
+                          maxlength="254"
+                          value="${escapeHtml(order.supplier_status || '')}"
+                          placeholder="e.g. Requested, Confirmed, Awaiting tracking"
+                        >
+                      </label>
+
+                      <label class="field">
+                        Carrier
+                        <input
+                          name="tracking_carrier"
+                          maxlength="100"
+                          value="${escapeHtml(order.tracking_carrier || '')}"
+                          placeholder="e.g. USPS"
+                        >
+                      </label>
+
+                      <label class="field">
+                        Tracking number
+                        <input
+                          name="tracking_number"
+                          maxlength="254"
+                          value="${escapeHtml(order.tracking_number || '')}"
+                        >
+                      </label>
+
+                      <label class="field full">
+                        Internal notes
+                        <textarea
+                          name="admin_notes"
+                          maxlength="10000"
+                          rows="3"
+                        >${escapeHtml(order.admin_notes || '')}</textarea>
+                      </label>
+
+                      <div class="save-row full">
+                        <span class="save-result" role="status"></span>
+                        <button class="primary save-button" type="submit">
+                          Save changes
+                        </button>
+                      </div>
+                    </form>
+
+                    <p class="hint">
+                      Status changes may email the customer.
+                      Marking Canceled does not issue a refund.
+                      Marking Refunded does not move money in Stripe.
+                    </p>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </article>
+        `;
+      }).join('');
+
+      updateBulkBar();
+    }
+
+    function updateBulkBar() {
+      bulkbar.hidden = selectedOrders.size === 0;
+      $('#bulk-count').textContent = `${selectedOrders.size} selected`;
+
+      selectAll.disabled = loadedOrders.length === 0;
+      selectAll.checked =
+        loadedOrders.length > 0 &&
+        loadedOrders.every((order) => selectedOrders.has(order.id));
+
+      selectAll.indeterminate =
+        selectedOrders.size > 0 && !selectAll.checked;
+
+      $('#archive-selected').hidden = currentStatus === 'archived';
+      $('#restore-selected').hidden =
+        !loadedOrders.some((order) =>
+          selectedOrders.has(order.id) && order.archived
+        );
+    }
+
+    function applySelection() {
+      ordersList.querySelectorAll('.order-select').forEach((checkbox) => {
+        const id = checkbox.closest('.order').dataset.orderId;
+        checkbox.checked = selectedOrders.has(id);
+      });
+
+      updateBulkBar();
+    }
+
+    ordersList.addEventListener('click', async (event) => {
+      const toggle = event.target.closest('.order-toggle');
+
+      if (toggle) {
+        const article = toggle.closest('.order');
+        const id = article.dataset.orderId;
+        const shouldOpen = openOrderId !== id;
+
+        openOrderId = shouldOpen ? id : null;
+
+        ordersList.querySelectorAll('.order').forEach((item) => {
+          const open = item.dataset.orderId === openOrderId;
+          item.classList.toggle('open', open);
+          item.querySelector('.order-toggle')
+            .setAttribute('aria-expanded', String(open));
+          item.querySelector('.details').hidden = !open;
+        });
+
+        return;
+      }
+
+      const copyButton = event.target.closest('[data-copy]');
+
+      if (!copyButton) return;
+
+      const id = copyButton.closest('.order').dataset.orderId;
+      const order = loadedOrders.find((item) => item.id === id);
+
+      if (!order) return;
+
+      const text = copyButton.dataset.copy === 'address'
+        ? addressLines(order).join('\n')
+        : order.tracking_number || '';
+
+      try {
+        await navigator.clipboard.writeText(text);
+        const original = copyButton.textContent;
+        copyButton.textContent = 'Copied';
+        setTimeout(() => {
+          copyButton.textContent = original;
+        }, 1200);
+      } catch {
+        setNotice('Could not copy. Select and copy the text manually.', true);
+      }
     });
-  });
 
-  if (!items.length) {
-    throw httpError(409, 'No eligible order items were found.');
-  }
+    ordersList.addEventListener('change', (event) => {
+      if (event.target.matches('.order-select')) {
+        const id = event.target.closest('.order').dataset.orderId;
 
-  const batch = checked(
-    await db
-      .from('supplier_batches')
-      .insert({ supplier_id: supplierId, name, status: 'draft' })
-      .select('id,name,status,created_at,updated_at,supplier_id')
-      .single()
-  );
+        if (event.target.checked) {
+          selectedOrders.add(id);
+        } else {
+          selectedOrders.delete(id);
+        }
 
-  const insertedItems = checked(
-    await db
-      .from('supplier_batch_items')
-      .insert(items.map((item) => ({ ...item, batch_id: batch.id })))
-      .select('*')
-  );
+        updateBulkBar();
+      }
 
-  return res.status(201).json({
-    batch: {
-      ...batch,
-      supplier: { id: supplier.id, name: supplier.name }
-    },
-    items: insertedItems
-  });
-}
+      const form = event.target.closest('form');
 
-async function updateBatch(res, body) {
-  const batchId = body.batch_id;
-  const status = body.status;
+      if (form) {
+        form.dataset.dirty = 'true';
+        form.querySelector('.save-result').textContent = 'Unsaved changes';
+      }
+    });
 
-  if (
-    typeof batchId !== 'string' ||
-    !UUID_PATTERN.test(batchId) ||
-    !BATCH_STATUSES.includes(status)
-  ) {
-    throw httpError(400, 'Invalid batch update.');
-  }
+    ordersList.addEventListener('input', (event) => {
+      const form = event.target.closest('form');
 
-  const { db } = clients();
+      if (form) {
+        form.dataset.dirty = 'true';
+        form.querySelector('.save-result').textContent = 'Unsaved changes';
+      }
+    });
 
-  const previous = checked(
-    await db
-      .from('supplier_batches')
-      .select('id,status')
-      .eq('id', batchId)
-      .maybeSingle()
-  );
+    ordersList.addEventListener('submit', async (event) => {
+      const form = event.target.closest('form');
 
-  if (!previous) {
-    throw httpError(404, 'Batch not found.');
-  }
+      if (!form) return;
 
-  if (previous.status === 'fulfilled') {
-    throw httpError(409, 'Fulfilled batches cannot be reopened.');
-  }
+      event.preventDefault();
 
-  const batch = checked(
-    await db
-      .from('supplier_batches')
-      .update({ status, updated_at: new Date().toISOString() })
-      .eq('id', batchId)
-      .select('id,name,status,created_at,updated_at,supplier_id')
-      .single()
-  );
+      if (saving) return;
 
-  return res.status(200).json({ batch });
-}
+      const article = form.closest('.order');
+      const order = loadedOrders.find(
+        (item) => item.id === article.dataset.orderId
+      );
+
+      if (!order) return;
+
+      const data = new FormData(form);
+      const nextStatus = data.get('fulfillment_status');
+
+      if (
+        nextStatus !== order.fulfillment_status &&
+        !window.confirm(
+          `Change ${order.order_number || order.id} to ${
+            formatStatus(nextStatus)
+          }? This may send a customer email.`
+        )
+      ) {
+        return;
+      }
+
+      const button = form.querySelector('.save-button');
+      const result = form.querySelector('.save-result');
+
+      saving = true;
+      button.disabled = true;
+      button.textContent = 'Saving…';
+      result.textContent = '';
+      result.classList.remove('failed');
+
+      try {
+        const saveResponse = await api('/api/admin-orders', {
+          method: 'PATCH',
+          headers: {
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify({
+            order_id: order.id,
+            fulfillment_status: nextStatus,
+            supplier_status: data.get('supplier_status'),
+            priority: data.get('priority'),
+            tracking_carrier: data.get('tracking_carrier'),
+            tracking_number: data.get('tracking_number'),
+            admin_notes: data.get('admin_notes')
+          })
+        });
+
+        form.dataset.dirty = 'false';
+
+        const notificationFailed =
+          saveResponse.notification?.status === 'failed';
+
+        result.textContent = notificationFailed
+          ? 'Order saved. Customer email needs attention.'
+          : 'Saved.';
+
+        result.classList.toggle('failed', notificationFailed);
+
+        /*
+         * Keep edits in other orders intact. Update only this order
+         * locally; Refresh can reload its server-generated timeline.
+         */
+        const updated = {
+          ...order,
+          fulfillment_status: nextStatus,
+          supplier_status: data.get('supplier_status'),
+          priority: data.get('priority'),
+          tracking_carrier: data.get('tracking_carrier'),
+          tracking_number: data.get('tracking_number'),
+          admin_notes: data.get('admin_notes')
+        };
+
+        loadedOrders = loadedOrders.map((item) =>
+          item.id === order.id ? updated : item
+        );
+
+        const badge = article.querySelector('.badge');
+        badge.className = `badge status-${nextStatus}`;
+        badge.textContent = formatStatus(nextStatus);
+
+        setNotice(
+          notificationFailed
+            ? saveResponse.notification.error
+            : 'Order saved. Refresh to reload the timeline and filtered results.',
+          notificationFailed
+        );
+      } catch (error) {
+        result.textContent =
+          `${error.message} The order may have saved before an email failed. Refresh to verify before retrying.`;
+        result.classList.add('failed');
+      } finally {
+        saving = false;
+        button.disabled = false;
+        button.textContent = 'Save changes';
+      }
+    });
+
+    selectAll.addEventListener('change', () => {
+      if (selectAll.checked) {
+        loadedOrders.forEach((order) => selectedOrders.add(order.id));
+      } else {
+        selectedOrders.clear();
+      }
+
+      applySelection();
+    });
+
+    $('#clear-selection').addEventListener('click', () => {
+      selectedOrders.clear();
+      applySelection();
+    });
+
+    async function updateArchive(action) {
+      if (!selectedOrders.size || !allowDiscard()) return;
+
+      const count = selectedOrders.size;
+      const label = action === 'archive' ? 'Archive' : 'Restore';
+
+      if (!window.confirm(
+        `${label} ${count} selected order${count === 1 ? '' : 's'}? ` +
+        'This does not change payment status or send customer emails.'
+      )) {
+        return;
+      }
+
+      const button = action === 'archive'
+        ? $('#archive-selected')
+        : $('#restore-selected');
+
+      button.disabled = true;
+
+      try {
+        await api('/api/admin-orders', {
+          method: 'PATCH',
+          headers: {
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify({
+            action,
+            order_ids: [...selectedOrders]
+          })
+        });
+
+        selectedOrders.clear();
+        await loadOrders();
+        setNotice(`${count} order${count === 1 ? '' : 's'} updated.`);
+      } catch (error) {
+        setNotice(error.message, true);
+      } finally {
+        button.disabled = false;
+      }
+    }
+
+    $('#archive-selected').addEventListener('click', () => {
+      updateArchive('archive');
+    });
+
+    $('#restore-selected').addEventListener('click', () => {
+      updateArchive('unarchive');
+    });
+
+    function generateSupplierReport() {
+      const orders = loadedOrders.filter((order) =>
+        selectedOrders.has(order.id)
+      );
+
+      if (!orders.length) return;
+
+      if (hasUnsavedChanges()) {
+        setNotice('Save order changes before generating a report.', true);
+        return;
+      }
+
+      const report = window.open('', '_blank', 'width=1000,height=850');
+
+      if (!report) {
+        setNotice('Allow pop-ups to open the supplier report.', true);
+        return;
+      }
+
+      const totals = new Map();
+
+      orders.forEach((order) => {
+        (order.store_order_items || []).forEach((item) => {
+          const key = JSON.stringify([
+            item.supplier_name || '',
+            item.supplier_sku || '',
+            item.product_name || '',
+            item.variant_size || ''
+          ]);
+
+          const existing = totals.get(key);
+
+          if (existing) {
+            existing.quantity += Number(item.quantity) || 0;
+          } else {
+            totals.set(key, {
+              ...item,
+              quantity: Number(item.quantity) || 0
+            });
+          }
+        });
+      });
+
+      const reportId = `FUL-${new Date()
+        .toISOString()
+        .replace(/\D/g, '')
+        .slice(0, 14)}`;
+
+      const summaryRows = [...totals.values()].map((item) => `
+        <tr>
+          <td>${escapeHtml(item.product_name)}</td>
+          <td>${escapeHtml(item.variant_size)}</td>
+          <td>${escapeHtml(item.supplier_sku || '—')}</td>
+          <td>${escapeHtml(item.supplier_name || '—')}</td>
+          <td>${escapeHtml(item.quantity)}</td>
+        </tr>
+      `).join('');
+
+      const orderSections = orders.map((order) => `
+        <section class="order-section">
+          <h2>Order ${escapeHtml(order.order_number || order.id)}</h2>
+
+          <p class="meta">
+            Ordered: ${escapeHtml(formatDate(order.created_at))}
+          </p>
+
+          <h3>Ship to</h3>
+          <p>
+            ${addressLines(order).map(escapeHtml).join('<br>')}
+          </p>
+
+          <table>
+            <thead>
+              <tr>
+                <th>Product</th>
+                <th>Size</th>
+                <th>Supplier SKU</th>
+                <th>Quantity</th>
+              </tr>
+            </thead>
+            <tbody>
+              ${(order.store_order_items || []).map((item) => `
+                <tr>
+                  <td>
+                    ${escapeHtml(item.product_name)}
+                    ${
+                      item.fulfillment_notes
+                        ? `<br><small>${escapeHtml(
+                            item.fulfillment_notes
+                          )}</small>`
+                        : ''
+                    }
+                  </td>
+                  <td>${escapeHtml(item.variant_size)}</td>
+                  <td>${escapeHtml(item.supplier_sku || '—')}</td>
+                  <td>${escapeHtml(item.quantity)}</td>
+                </tr>
+              `).join('')}
+            </tbody>
+          </table>
+        </section>
+      `).join('');
+
+      report.document.open();
+      report.document.write(`
+        <!doctype html>
+        <html lang="en">
+        <head>
+          <meta charset="utf-8">
+          <meta name="viewport" content="width=device-width,initial-scale=1">
+          <meta name="referrer" content="no-referrer">
+          <title>${escapeHtml(reportId)} — AltaPure Labs</title>
+          <style>
+            * { box-sizing: border-box; }
+            body {
+              margin: 0 auto;
+              max-width: 1000px;
+              padding: 32px;
+              color: #18221f;
+              background: white;
+              font: 13px/1.5 Arial, sans-serif;
+            }
+            h1 { margin: 0; font-size: 25px; }
+            h2 { font-size: 18px; margin: 28px 0 8px; }
+            h3 { font-size: 13px; margin-bottom: 5px; }
+            .meta { color: #58635e; font-size: 12px; }
+            table {
+              width: 100%;
+              border-collapse: collapse;
+              margin: 14px 0 24px;
+            }
+            th, td {
+              padding: 9px;
+              border: 1px solid #d4dad6;
+              text-align: left;
+              vertical-align: top;
+              overflow-wrap: anywhere;
+            }
+            th { background: #edf2ef; }
+            thead { display: table-header-group; }
+            tr { break-inside: avoid; }
+            .order-section {
+              border-top: 2px solid #d4dad6;
+              margin-top: 28px;
+            }
+            .notice {
+              margin-top: 28px;
+              padding: 14px;
+              border: 1px solid #d4dad6;
+              font-size: 11px;
+            }
+            .print-tools {
+              display: flex;
+              align-items: center;
+              gap: 14px;
+              padding: 14px;
+              margin-bottom: 24px;
+              background: #edf2ef;
+            }
+            button {
+              padding: 10px 16px;
+              cursor: pointer;
+              border: 0;
+              background: #143832;
+              color: white;
+              border-radius: 5px;
+            }
+            @page { margin: 15mm; }
+            @media print {
+              body { padding: 0; max-width: none; }
+              .print-tools { display: none; }
+            }
+          </style>
+        </head>
+        <body>
+          <div class="print-tools">
+            <button id="print-report" type="button">
+              Print / Save as PDF
+            </button>
+            <span>Choose “Save as PDF” in the print dialog.</span>
+          </div>
+
+          <h1>AltaPure Labs</h1>
+          <p class="meta">
+            Supplier fulfillment report<br>
+            Report: ${escapeHtml(reportId)}<br>
+            Generated: ${escapeHtml(formatDate(new Date().toISOString()))}<br>
+            Orders included: ${orders.length}<br>
+            Contact: altapurelabs@protonmail.com
+          </p>
+
+          <h2>Consolidated item quantities</h2>
+          <table>
+            <thead>
+              <tr>
+                <th>Product</th>
+                <th>Size</th>
+                <th>Supplier SKU</th>
+                <th>Supplier</th>
+                <th>Total quantity</th>
+              </tr>
+            </thead>
+            <tbody>${summaryRows}</tbody>
+          </table>
+
+          ${orderSections}
+
+          <div class="notice">
+            Research use only. Materials are supplied for controlled
+            laboratory research and are not for human or veterinary
+            use, ingestion, injection, diagnosis, treatment, or consumption.
+            <br><br>
+            This document contains shipping information.
+            Share only with the supplier responsible for these orders.
+            Retail prices and internal admin notes are intentionally omitted.
+          </div>
+        </body>
+        </html>
+      `);
+      report.document.close();
+
+      report.document.querySelector('#print-report')
+        .addEventListener('click', () => report.print());
+
+      setNotice('Supplier report opened. Use Print / Save as PDF in that window.');
+    }
+
+    $('#generate-pdf').addEventListener('click', generateSupplierReport);
+
+    loginForm.addEventListener('submit', async (event) => {
+      event.preventDefault();
+
+      adminPassword = passwordInput.value;
+      loginError.hidden = true;
+      loginButton.disabled = true;
+      loginButton.textContent = 'Signing in…';
+
+      try {
+        await loadOrders();
+        loadSupplierData();
+        savePassword(adminPassword);
+        passwordInput.value = '';
+        setNotice('');
+      } catch (error) {
+        savePassword('');
+        loginError.textContent = error.message;
+        loginError.hidden = false;
+      } finally {
+        loginButton.disabled = false;
+        loginButton.textContent = 'View orders';
+      }
+    });
+
+    $('#logout-button').addEventListener('click', () => {
+      if (allowDiscard()) logout();
+    });
+
+    refreshButton.addEventListener('click', async () => {
+      if (!allowDiscard()) return;
+
+      refreshButton.disabled = true;
+      refreshButton.textContent = 'Refreshing…';
+
+      try {
+        await loadOrders();
+        setNotice('Orders refreshed.');
+      } catch (error) {
+        setNotice(error.message, true);
+      } finally {
+        refreshButton.disabled = false;
+        refreshButton.textContent = 'Refresh';
+      }
+    });
+
+    statusTabs.addEventListener('click', async (event) => {
+      const tab = event.target.closest('[data-status]');
+
+      if (!tab || !allowDiscard()) return;
+
+      clearTimeout(searchTimer);
+      currentStatus = tab.dataset.status;
+      currentSearch = searchInput.value.trim();
+      selectedOrders.clear();
+
+      statusTabs.querySelectorAll('.tab').forEach((button) => {
+        const active = button === tab;
+        button.classList.toggle('active', active);
+        button.setAttribute('aria-pressed', String(active));
+      });
+
+      try {
+        currentPage = 1;
+        await loadOrders();
+        setNotice('');
+      } catch (error) {
+        setNotice(error.message, true);
+      }
+    });
+
+    searchInput.addEventListener('input', () => {
+      clearTimeout(searchTimer);
+
+      searchTimer = setTimeout(async () => {
+        if (!allowDiscard()) return;
+
+        currentSearch = searchInput.value.trim();
+
+        try {
+          currentPage = 1;
+          await loadOrders();
+          setNotice('');
+        } catch (error) {
+          setNotice(error.message, true);
+        }
+      }, 400);
+    });
+
+    window.addEventListener('beforeunload', (event) => {
+      if (hasUnsavedChanges() || saving) {
+        event.preventDefault();
+        event.returnValue = '';
+      }
+    });
+
+    $('#date-preset').addEventListener('change', () => {
+      const custom = $('#date-preset').value === 'custom';
+
+      $('#from-date-field').hidden = !custom;
+      $('#to-date-field').hidden = !custom;
+    });
+
+    $('#apply-filters').addEventListener('click', async () => {
+      if (!allowDiscard()) return;
+
+      try {
+        const range = readDateRange();
+
+        appliedFilters = {
+          sort: $('#sort-orders').value,
+          priority: $('#priority-filter').value,
+          ...range
+        };
+
+        currentPage = 1;
+        selectedOrders.clear();
+
+        await loadOrders();
+        setNotice('');
+      } catch (error) {
+        setNotice(error.message, true);
+      }
+    });
+
+    async function changePage(direction) {
+      if (!allowDiscard()) return;
+
+      const nextPage = currentPage + direction;
+
+      if (nextPage < 1) return;
+      if (direction > 0 && !pagination.has_next) return;
+
+      const previousPage = currentPage;
+      currentPage = nextPage;
+      selectedOrders.clear();
+
+      try {
+        await loadOrders();
+        setNotice('');
+      } catch (error) {
+        currentPage = previousPage;
+        setNotice(error.message, true);
+      }
+    }
+
+    $('#previous-page').addEventListener('click', () => {
+      changePage(-1);
+    });
+
+    $('#next-page').addEventListener('click', () => {
+      changePage(1);
+    });
+
+    let csvExportRunning = false;
+    let csvExportController = null;
+
+    function csvCell(value) {
+      let text = String(value ?? '');
+
+      /*
+       * Prevent spreadsheet software from interpreting customer-supplied
+       * text as a formula. Quoting alone does not prevent formulas.
+       */
+      if (/^[\s\uFEFF]*[=+\-@]/.test(text)) {
+        text = "'" + text;
+      }
+
+      return `"${text.replaceAll('"', '""')}"`;
+    }
+
+    function buildCsv(orders) {
+      const headers = [
+        'Order Number',
+        'Internal Order ID',
+        'Created At',
+        'Payment Status',
+        'Fulfillment Status',
+        'Archived',
+        'Priority',
+        'Customer Name',
+        'Customer Email',
+        'Organization',
+        'Recipient',
+        'Address Line 1',
+        'Address Line 2',
+        'City',
+        'State',
+        'Postal Code',
+        'Country',
+        'Product ID',
+        'Product',
+        'Variant',
+        'Quantity',
+        'Unit Price Cents',
+        'Line Total Cents',
+        'Currency',
+        'Supplier',
+        'Supplier SKU',
+        'Lot Number',
+        'Carrier',
+        'Tracking Number'
+      ];
+
+      const rows = [headers];
+
+      orders.forEach((order) => {
+        const address = order.shipping_address || {};
+
+        const items = Array.isArray(order.store_order_items) &&
+          order.store_order_items.length
+          ? order.store_order_items
+          : [null];
+
+        items.forEach((item) => {
+          const quantity = item ? Number(item.quantity) : null;
+          const unitPrice = item
+            ? Number(item.unit_price_cents)
+            : null;
+
+          const lineTotal =
+            Number.isFinite(quantity) &&
+            Number.isFinite(unitPrice)
+              ? quantity * unitPrice
+              : '';
+
+          rows.push([
+            order.order_number || order.id,
+            order.id,
+            order.created_at,
+            formatStatus(order.payment_status),
+            formatStatus(order.fulfillment_status),
+            order.archived ? 'Yes' : 'No',
+            order.priority
+              ? order.priority.charAt(0).toUpperCase() +
+                order.priority.slice(1)
+              : 'Normal',
+            order.customer_name,
+            order.customer_email,
+            order.organization,
+            order.shipping_name,
+            address.line1,
+            address.line2,
+            address.city,
+            address.state,
+            address.postal_code,
+            address.country,
+            item?.product_id,
+            item?.product_name,
+            item?.variant_size,
+            item?.quantity,
+            item?.unit_price_cents,
+            lineTotal,
+            String(order.currency || 'usd').toUpperCase(),
+            item?.supplier_name,
+            item?.supplier_sku,
+            item?.lot_number,
+            order.tracking_carrier,
+            order.tracking_number
+          ]);
+        });
+      });
+
+      return '\uFEFF' +
+        rows
+          .map((row) => row.map(csvCell).join(','))
+          .join('\r\n');
+    }
+
+    function downloadCsv(orders, scope) {
+      const content = buildCsv(orders);
+
+      const blob = new Blob([content], {
+        type: 'text/csv;charset=utf-8'
+      });
+
+      const url = URL.createObjectURL(blob);
+      const link = document.createElement('a');
+
+      const timestamp = new Date()
+        .toISOString()
+        .replace(/[:.]/g, '-');
+
+      link.href = url;
+      link.download =
+        `altapure-orders-${scope}-${timestamp}.csv`;
+
+      document.body.appendChild(link);
+      link.click();
+      link.remove();
+
+      setTimeout(() => URL.revokeObjectURL(url), 10000);
+    }
+
+    function exportParameters(snapshot, page) {
+      const params = new URLSearchParams({
+        status: snapshot.status,
+        search: snapshot.search,
+        sort: snapshot.sort,
+        priority: snapshot.priority,
+        page: String(page),
+        page_size: '100'
+      });
+
+      if (snapshot.from) {
+        params.set('from', snapshot.from);
+      }
+
+      if (snapshot.to) {
+        params.set('to', snapshot.to);
+      }
+
+      return params;
+    }
+
+    async function fetchAllMatchingForCsv(snapshot, signal) {
+      const maximumOrders = 10000;
+      const byId = new Map();
+
+      let page = 1;
+
+      while (true) {
+        if (signal.aborted) {
+          throw new DOMException('Export canceled.', 'AbortError');
+        }
+
+        const params = exportParameters(snapshot, page);
+
+        const response = await api(
+          `/api/admin-orders?${params}`,
+          { signal }
+        );
+
+        const orders = Array.isArray(response.orders)
+          ? response.orders
+          : [];
+
+        const meta = response.pagination;
+
+        if (!meta) {
+          throw new Error(
+            'The updated paginated API is required for this export.'
+          );
+        }
+
+        if (meta.total > maximumOrders) {
+          throw new Error(
+            'This browser export supports up to 10,000 orders. Narrow the date range and export again.'
+          );
+        }
+
+        orders.forEach((order) => {
+          byId.set(order.id, order);
+        });
+
+        setNotice(
+          `Preparing CSV: ${byId.size} of approximately ${meta.total} orders…`
+        );
+
+        if (!meta.has_next) break;
+
+        if (!orders.length) {
+          throw new Error(
+            'The export could not finish. Please try again.'
+          );
+        }
+
+        page += 1;
+
+        if (page > 100) {
+          throw new Error(
+            'Export limit reached. Narrow the date range.'
+          );
+        }
+      }
+
+      return [...byId.values()];
+    }
+
+    $('#cancel-csv').addEventListener('click', () => {
+      csvExportController?.abort();
+    });
+
+    $('#export-csv').addEventListener('click', async () => {
+      if (csvExportRunning) return;
+
+      if (saving || hasUnsavedChanges()) {
+        setNotice(
+          'Save your order changes before exporting.',
+          true
+        );
+        return;
+      }
+
+      const scope = $('#csv-scope').value;
+
+      const snapshot = {
+        status: currentStatus,
+        search: currentSearch,
+        ...appliedFilters
+      };
+
+      let orders;
+
+      if (scope === 'selected') {
+        orders = loadedOrders.filter((order) =>
+          selectedOrders.has(order.id)
+        );
+
+        if (!orders.length) {
+          setNotice('Select at least one order first.', true);
+          return;
+        }
+      } else if (scope === 'page') {
+        orders = [...loadedOrders];
+
+        if (!orders.length) {
+          setNotice('There are no orders on this page.', true);
+          return;
+        }
+      } else if (scope !== 'filtered') {
+        return;
+      }
+
+      if (!window.confirm(
+        'Export customer names, email addresses, shipping addresses, and order items to a CSV file? Keep the file private.'
+      )) {
+        return;
+      }
+
+      const button = $('#export-csv');
+      const scopeSelect = $('#csv-scope');
+      const cancelButton = $('#cancel-csv');
+
+      csvExportRunning = true;
+      csvExportController = new AbortController();
+
+      button.disabled = true;
+      button.textContent = 'Exporting…';
+      scopeSelect.disabled = true;
+      cancelButton.hidden = scope !== 'filtered';
+
+      try {
+        if (scope === 'filtered') {
+          orders = await fetchAllMatchingForCsv(
+            snapshot,
+            csvExportController.signal
+          );
+        }
+
+        if (csvExportController.signal.aborted) {
+          throw new DOMException('Export canceled.', 'AbortError');
+        }
+
+        if (!orders.length) {
+          setNotice('No matching orders to export.');
+          return;
+        }
+
+        downloadCsv(orders, scope);
+
+        setNotice(
+          `CSV prepared for ${orders.length} order${
+            orders.length === 1 ? '' : 's'
+          }.`
+        );
+      } catch (error) {
+        setNotice(
+          error.name === 'AbortError'
+            ? 'CSV export canceled.'
+            : error.message,
+          error.name !== 'AbortError'
+        );
+      } finally {
+        csvExportRunning = false;
+        csvExportController = null;
+
+        button.disabled = false;
+        button.textContent = 'Export CSV';
+        scopeSelect.disabled = false;
+        cancelButton.hidden = true;
+      }
+    });
+
+    let suppliers = [];
+    let supplierBatches = [];
+
+    function renderSupplierOptions() {
+      const select = $('#batch-supplier');
+      const current = select.value;
+
+      select.innerHTML =
+        '<option value="">Select supplier</option>';
+
+      suppliers
+        .filter((supplier) => supplier.active)
+        .forEach((supplier) => {
+          const option = document.createElement('option');
+
+          option.value = supplier.id;
+          option.textContent = supplier.name;
+
+          select.appendChild(option);
+        });
+
+      if (suppliers.some((supplier) => supplier.id === current)) {
+        select.value = current;
+      }
+    }
+
+    function renderSupplierBatches() {
+      const container = $('#supplier-batches');
+
+      if (!supplierBatches.length) {
+        container.innerHTML =
+          '<p class="muted">No saved supplier batches yet.</p>';
+        return;
+      }
+
+      container.innerHTML = supplierBatches
+        .map((batch) => {
+          const itemCount = Array.isArray(batch.supplier_batch_items)
+            ? batch.supplier_batch_items.length
+            : 0;
+
+          const supplierName =
+            batch.suppliers?.name || 'Unknown supplier';
+
+          return `
+            <div class="batch-card">
+              <strong>${escapeHtml(batch.name)}</strong>
+              <div class="meta">
+                ${escapeHtml(supplierName)} ·
+                ${itemCount} item${itemCount === 1 ? '' : 's'} ·
+                ${escapeHtml(formatStatus(batch.status))}
+              </div>
+
+              <div class="actions">
+                <button
+                  class="ghost"
+                  type="button"
+                  data-batch-id="${escapeHtml(batch.id)}"
+                  data-batch-name="${escapeHtml(batch.name)}"
+                  data-action="download-batch"
+                >
+                  Download CSV
+                </button>
+
+                ${
+                  batch.status === 'draft'
+                    ? `
+                      <button
+                        class="ghost"
+                        type="button"
+                        data-batch-id="${escapeHtml(batch.id)}"
+                        data-action="mark-batch-sent"
+                      >
+                        Mark sent
+                      </button>
+                    `
+                    : ''
+                }
+              </div>
+            </div>
+          `;
+        })
+        .join('');
+    }
+
+    async function loadSupplierData() {
+      try {
+        const [supplierResponse, batchResponse] = await Promise.all([
+          api('/api/admin-suppliers'),
+          api('/api/admin-supplier-batches')
+        ]);
+
+        suppliers = Array.isArray(supplierResponse.suppliers)
+          ? supplierResponse.suppliers
+          : [];
+
+        supplierBatches = Array.isArray(batchResponse.batches)
+          ? batchResponse.batches
+          : [];
+
+        renderSupplierOptions();
+        renderSupplierBatches();
+      } catch (error) {
+        setNotice(error.message, true);
+      }
+    }
+
+    $('#supplier-batches').addEventListener('click', async (event) => {
+      const button = event.target.closest('button');
+
+      if (!button) return;
+
+      const batchId = button.dataset.batchId;
+
+      if (button.dataset.action === 'download-batch') {
+        const batch = supplierBatches.find((item) => item.id === batchId);
+
+        if (!batch) return;
+
+        downloadSupplierBatchCsv(batch);
+        return;
+      }
+
+      if (button.dataset.action !== 'mark-batch-sent') {
+        return;
+      }
+
+      if (!window.confirm(
+        'Mark this supplier batch as sent? This records that you sent it to the supplier.'
+      )) {
+        return;
+      }
+
+      try {
+        await api('/api/admin-supplier-batches', {
+          method: 'PATCH',
+          headers: {
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify({
+            batch_id: batchId,
+            status: 'sent'
+          })
+        });
+
+        await loadSupplierData();
+        setNotice('Supplier batch marked as sent.');
+      } catch (error) {
+        setNotice(error.message, true);
+      }
+    });
+
+    function downloadSupplierBatchCsv(batch) {
+      const headers = [
+        'Order Number',
+        'Product',
+        'Variant',
+        'Quantity',
+        'Supplier',
+        'Supplier SKU',
+        'Lot Number',
+        'Fulfillment Notes'
+      ];
+
+      const rows = [headers];
+
+      const items = Array.isArray(batch.supplier_batch_items)
+        ? batch.supplier_batch_items
+        : [];
+
+      items.forEach((item) => {
+        rows.push([
+          item.order_number || item.order_id,
+          item.product_name,
+          item.variant_size,
+          item.quantity,
+          item.supplier_name,
+          item.supplier_sku,
+          item.lot_number,
+          item.fulfillment_notes
+        ]);
+      });
+
+      const content =
+        '\uFEFF' +
+        rows
+          .map((row) => row.map(csvCell).join(','))
+          .join('\r\n');
+
+      const blob = new Blob([content], {
+        type: 'text/csv;charset=utf-8'
+      });
+
+      const url = URL.createObjectURL(blob);
+      const link = document.createElement('a');
+
+      link.href = url;
+      link.download = `${batch.name}.csv`;
+
+      document.body.appendChild(link);
+      link.click();
+      link.remove();
+
+      setTimeout(() => URL.revokeObjectURL(url), 10000);
+    }
+
+    $('#create-batch').addEventListener('click', async () => {
+      if (saving || hasUnsavedChanges()) {
+        setNotice(
+          'Save order changes before creating a supplier batch.',
+          true
+        );
+        return;
+      }
+
+      const supplierId = $('#batch-supplier').value;
+      const name = $('#batch-name').value.trim();
+
+      if (!supplierId) {
+        setNotice('Choose a supplier.', true);
+        return;
+      }
+
+      if (!name) {
+        setNotice('Enter a batch name.', true);
+        return;
+      }
+
+      const selectedIds = [...selectedOrders];
+
+      if (!selectedIds.length) {
+        setNotice('Select at least one order first.', true);
+        return;
+      }
+
+      if (!window.confirm(
+        `Create supplier batch “${name}” using ${selectedIds.length} selected order${selectedIds.length === 1 ? '' : 's'}?`
+      )) {
+        return;
+      }
+
+      const button = $('#create-batch');
+
+      button.disabled = true;
+      button.textContent = 'Creating…';
+
+      try {
+        await api('/api/admin-supplier-batches', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify({
+            supplier_id: supplierId,
+            name,
+            order_ids: selectedIds
+          })
+        });
+
+        $('#batch-name').value = '';
+        selectedOrders.clear();
+
+        await Promise.all([
+          loadOrders(),
+          loadSupplierData()
+        ]);
+
+        setNotice('Supplier batch created.');
+      } catch (error) {
+        setNotice(error.message, true);
+      } finally {
+        button.disabled = false;
+        button.textContent = 'Create batch';
+      }
+    });
+
+    if (adminPassword) {
+      loginButton.disabled = true;
+      loginButton.textContent = 'Loading…';
+
+      loadOrders()
+        .then(loadSupplierData)
+        .catch((error) => {
+          savePassword('');
+          loginError.textContent = error.message;
+          loginError.hidden = false;
+        })
+        .finally(() => {
+          loginButton.disabled = false;
+          loginButton.textContent = 'View orders';
+        });
+    }
+  </script>
+</body>
+</html>
