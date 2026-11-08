@@ -1916,7 +1916,7 @@
                     </form>
 
                     <p class="hint">
-                      Status changes may email the customer.
+                      Status or tracking changes may email the customer.
                       Marking Canceled does not issue a refund.
                       Marking Refunded does not move money in Stripe.
                     </p>
@@ -2118,12 +2118,7 @@
          */
         const updated = {
           ...order,
-          fulfillment_status: nextStatus,
-          supplier_status: data.get('supplier_status'),
-          priority: data.get('priority'),
-          tracking_carrier: data.get('tracking_carrier'),
-          tracking_number: data.get('tracking_number'),
-          admin_notes: data.get('admin_notes')
+          ...(saveResponse.order || {})
         };
 
         loadedOrders = loadedOrders.map((item) =>
@@ -3336,6 +3331,8 @@
         processing: 'Processing',
         partially_shipped: 'Partially Shipped',
         shipped: 'Shipped',
+        tracking_updated: 'Tracking Updated',
+        confirmation: 'Order Confirmation',
         delivered: 'Delivered',
         canceled: 'Canceled'
       };
