@@ -1,0 +1,65 @@
+name: Apply Supabase Production Migrations
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: supabase-production-migrations
+  cancel-in-progress: false
+
+jobs:
+  migrate:
+    name: Apply pending production migrations
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Install Supabase CLI
+        uses: supabase/setup-cli@v1
+        with:
+          version: latest
+
+      - name: Validate required secrets
+        shell: bash
+        env:
+          SUPABASE_ACCESS_TOKEN: ${{ secrets.SUPABASE_ACCESS_TOKEN }}
+          SUPABASE_PROJECT_ID: ${{ secrets.SUPABASE_PROJECT_ID }}
+          SUPABASE_DB_PASSWORD: ${{ secrets.SUPABASE_DB_PASSWORD }}
+        run: |
+          set -euo pipefail
+          for name in SUPABASE_ACCESS_TOKEN SUPABASE_PROJECT_ID SUPABASE_DB_PASSWORD; do
+            if [[ -z "${!name:-}" ]]; then
+              echo "::error::Required repository secret $name is not configured."
+              exit 1
+            fi
+          done
+          echo "All required Supabase secrets are configured."
+
+      - name: Link production Supabase project
+        shell: bash
+        env:
+          SUPABASE_ACCESS_TOKEN: ${{ secrets.SUPABASE_ACCESS_TOKEN }}
+          SUPABASE_PROJECT_ID: ${{ secrets.SUPABASE_PROJECT_ID }}
+          SUPABASE_DB_PASSWORD: ${{ secrets.SUPABASE_DB_PASSWORD }}
+        run: |
+          set -euo pipefail
+          supabase link --project-ref "$SUPABASE_PROJECT_ID" --password "$SUPABASE_DB_PASSWORD"
+
+      - name: Push pending migrations and verify remote migration history
+        shell: bash
+        env:
+          SUPABASE_ACCESS_TOKEN: ${{ secrets.SUPABASE_ACCESS_TOKEN }}
+        run: |
+          set -euo pipefail
+
+          echo "=== Applying migrations not yet applied to production ==="
+          supabase db push --remote
+
+          echo "=== Production migration history after db push ==="
+          supabase migration list --remote
+
+          echo "=== Supabase production migration push and verification completed ==="
