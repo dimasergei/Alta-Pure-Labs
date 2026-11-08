@@ -41,3 +41,13 @@ test("profile editing updates only the authenticated user's display name", () =>
   assert.match(account, /readonly aria-readonly="true"/);
   assert.doesNotMatch(account, /updateUser\(\{email:/);
 });
+
+test("Google sign-in is present on account, login, and signup routes", () => {
+  const account = read("account.js");
+  assert.match(account, /function googleOption\(\)[\s\S]*?Continue with Google/);
+  assert.match(account, /function bindGoogle\(\)[\s\S]*?provider:'google'/);
+  assert.match(account, /redirectTo:'https:\/\/altapurelabs\.com\/account'/);
+  assert.match(account, /function login\(error=''\)[\s\S]*?googleOption\(\)[\s\S]*?bindGoogle\(\)/);
+  assert.match(account, /function signup\(error=''\)[\s\S]*?googleOption\(\)[\s\S]*?bindGoogle\(\)/);
+  assert.match(account, /head\('Your account'[\s\S]*?googleOption\(\)[\s\S]*?bindGoogle\(\)/);
+});
