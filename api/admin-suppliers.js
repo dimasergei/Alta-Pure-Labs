@@ -1,14 +1,17 @@
+const crypto = require('crypto');
 const { clients, checked } = require('../lib/backend');
 
 const UUID_PATTERN =
   /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 
-const BATCH_STATUSES = [
-  'draft',
-  'sent',
-  'fulfilled',
-  'canceled'
-];
+const SUPPLIER_COLUMNS =
+  'id,name,contact_name,email,notes,active,created_at,updated_at';
+
+function passwordMatches(provided, expected) {
+  const a = crypto.createHash('sha256').update(String(provided)).digest();
+  const b = crypto.createHash('sha256').update(expected).digest();
+  return crypto.timingSafeEqual(a, b);
+}
 
 module.exports = async (req, res) => {
   res.setHeader('Cache-Control', 'no-store');
@@ -16,10 +19,7 @@ module.exports = async (req, res) => {
 
   const adminPassword = process.env.ADMIN_ORDERS_PASSWORD;
 
-  if (
-    typeof adminPassword !== 'string' ||
-    adminPassword.length < 32
-  ) {
+  if (typeof adminPassword !== 'string' || adminPassword.length < 32) {
     return res.status(503).json({
       error: 'Supplier tools are not configured.'
     });
@@ -27,18 +27,13 @@ module.exports = async (req, res) => {
 
   const providedPassword = req.headers['x-admin-password'];
 
-  if (!providedPassword) {
-    return res.status(401).json({
-      error: 'Unauthorized.'
-    });
+  if (!providedPassword || !passwordMatches(providedPassword, adminPassword)) {
+    return res.status(401).json({ error: 'Unauthorized.' });
   }
 
   if (!['GET', 'POST', 'PATCH'].includes(req.method)) {
     res.setHeader('Allow', 'GET, POST, PATCH');
-
-    return res.status(405).json({
-      error: 'Method not allowed.'
-    });
+    return res.status(405).json({ error: 'Method not allowed.' });
   }
 
   try {
@@ -63,10 +58,7 @@ module.exports = async (req, res) => {
     return await updateSupplier(req, res, body);
   } catch (error) {
     const allowed = [400, 404, 409, 413, 415];
-
-    const status = allowed.includes(error.status)
-      ? error.status
-      : 500;
+    const status = allowed.includes(error.status) ? error.status : 500;
 
     console.error('Supplier request failed', {
       method: req.method,
@@ -76,10 +68,7 @@ module.exports = async (req, res) => {
     });
 
     return res.status(status).json({
-      error:
-        status < 500
-          ? error.message
-          : 'Supplier request failed.'
+      error: status < 500 ? error.message : 'Supplier request failed.'
     });
   }
 };
@@ -126,9 +115,7 @@ async function parseJson(req) {
     let bytes = 0;
 
     for await (const chunk of req) {
-      const buffer = Buffer.isBuffer(chunk)
-        ? chunk
-        : Buffer.from(chunk);
+      const buffer = Buffer.isBuffer(chunk) ? chunk : Buffer.from(chunk);
 
       bytes += buffer.length;
 
@@ -150,11 +137,7 @@ async function parseJson(req) {
     throw httpError(400, 'Invalid JSON.');
   }
 
-  if (
-    !body ||
-    typeof body !== 'object' ||
-    Array.isArray(body)
-  ) {
+  if (!body || typeof body !== 'object' || Array.isArray(body)) {
     throw httpError(400, 'A JSON object is required.');
   }
 
@@ -167,16 +150,12 @@ async function listSuppliers(req, res) {
   const suppliers = checked(
     await db
       .from('suppliers')
-      .select(
-        'id,name,contact_name,email,notes,active,created_at,updated_at'
-      )
+      .select(SUPPLIER_COLUMNS)
       .order('name', { ascending: true })
       .limit(200)
   );
 
-  return res.status(200).json({
-    suppliers
-  });
+  return res.status(200).json({ suppliers });
 }
 
 async function createSupplier(res, body) {
@@ -211,32 +190,21 @@ async function createSupplier(res, body) {
       .from('suppliers')
       .insert({
         name,
-        contact_name: cleanText(
-          body.contact_name,
-          120,
-          'Contact name'
-        ),
+        contact_name: cleanText(body.contact_name, 120, 'Contact name'),
         email,
         notes: cleanText(body.notes, 5000, 'Notes')
       })
-      .select(
-        'id,name,contact_name,email,notes,active,created_at,updated_at'
-      )
+      .select(SUPPLIER_COLUMNS)
       .single()
   );
 
-  return res.status(201).json({
-    supplier
-  });
+  return res.status(201).json({ supplier });
 }
 
 async function updateSupplier(req, res, body) {
   const supplierId = body.supplier_id;
 
-  if (
-    typeof supplierId !== 'string' ||
-    !UUID_PATTERN.test(supplierId)
-  ) {
+  if (typeof supplierId !== 'string' || !UUID_PATTERN.test(supplierId)) {
     throw httpError(400, 'Invalid supplier.');
   }
 
@@ -267,20 +235,13 @@ async function updateSupplier(req, res, body) {
   }
 
   if (body.contact_name !== undefined) {
-    updates.contact_name = cleanText(
-      body.contact_name,
-      120,
-      'Contact name'
-    );
+    updates.contact_name = cleanText(body.contact_name, 120, 'Contact name');
   }
 
   if (body.email !== undefined) {
     const email = cleanText(body.email, 254, 'Email');
 
-    if (
-      email &&
-      !/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(email)
-    ) {
+    if (email && !/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(email)) {
       throw httpError(400, 'Enter a valid supplier email.');
     }
 
@@ -310,13 +271,9 @@ async function updateSupplier(req, res, body) {
       .from('suppliers')
       .update(updates)
       .eq('id', supplierId)
-      .select(
-        'id,name,contact_name,email,notes,active,created_at,updated_at'
-      )
+      .select(SUPPLIER_COLUMNS)
       .single()
   );
 
-  return res.status(200).json({
-    supplier
-  });
+  return res.status(200).json({ supplier });
 }
