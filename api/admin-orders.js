@@ -503,7 +503,7 @@ async function sendStatusEmail(order, notificationType, eventKey) {
 
 function validateCarrier(value) {
   const carrier = optionalText(value, 100, 'Carrier');
-  if (carrier && /[\\u0000-\\u001f\\u007f]/.test(carrier)) throw httpError(400, 'Carrier contains invalid characters.');
+  if (carrier && /[\u0000-\u001f\u007f]/.test(carrier)) throw httpError(400, 'Carrier contains invalid characters.');
   return carrier;
 }
 
@@ -516,137 +516,6 @@ function validateTrackingNumber(value) {
 function sanitizeLogMessage(value) {
   return String(value || 'Unknown error').replace(/(?:sk|rk)_(?:test|live)_[A-Za-z0-9_]+|whsec_[A-Za-z0-9_]+|re_[A-Za-z0-9_]+|sb_secret_[A-Za-z0-9_-]+/g, '[REDACTED]').slice(0, 500);
 }
-function shouldIncludeTracking(order) {
-  return [
-    'partially_shipped',
-    'shipped',
-    'delivered'
-  ].includes(order.fulfillment_status);
-}
-
-function statusEmailText({ order, statusCopy }) {
-  const lines = [
-    'AltaPure Labs',
-    '',
-    statusCopy.heading,
-    statusCopy.message,
-    '',
-    `Order number: ${order.order_number || order.id}`,
-    `Status: ${formatStatus(order.fulfillment_status)}`
-  ];
-
-  if (shouldIncludeTracking(order)) {
-    if (order.tracking_carrier) {
-      lines.push(`Carrier: ${order.tracking_carrier}`);
-    }
-
-    if (order.tracking_number) {
-      lines.push(
-        `Tracking number: ${order.tracking_number}`
-      );
-    }
-  }
-
-  lines.push(
-    '',
-    'Research use only. Not for human or veterinary use, ingestion, injection, diagnosis, treatment, or consumption.'
-  );
-
-  return lines.join('\n');
-}
-
-function statusEmailHtml({ order, statusCopy }) {
-  const orderNumber =
-    order.order_number || order.id;
-
-  const tracking =
-    shouldIncludeTracking(order) &&
-    (order.tracking_carrier || order.tracking_number)
-      ? `
-        <div style="margin-top:24px;padding:18px;background:#f3f5f5;border-radius:10px;">
-          <p style="margin:0 0 8px;">
-            <strong>Tracking information</strong>
-          </p>
-
-          ${
-            order.tracking_carrier
-              ? `
-                <p style="margin:0 0 6px;">
-                  Carrier:
-                  ${escapeHtml(order.tracking_carrier)}
-                </p>
-              `
-              : ''
-          }
-
-          ${
-            order.tracking_number
-              ? `
-                <p style="margin:0;">
-                  Tracking number:
-                  ${escapeHtml(order.tracking_number)}
-                </p>
-              `
-              : ''
-          }
-        </div>
-      `
-      : '';
-
-  return `
-    <div style="font-family:Arial,Helvetica,sans-serif;max-width:620px;margin:0 auto;color:#111314;">
-      <div style="background:#143832;color:#fff;padding:28px 32px;border-radius:12px 12px 0 0;">
-        <h1 style="margin:0;font-size:22px;letter-spacing:.08em;">
-          ALTAPURE LABS
-        </h1>
-
-        <p style="margin:10px 0 0;color:#cfe3de;font-size:14px;">
-          Order update
-        </p>
-      </div>
-
-      <div style="background:#fff;padding:32px;border:1px solid #e5e7eb;border-top:0;">
-        <h2 style="margin:0 0 12px;font-size:24px;">
-          ${escapeHtml(statusCopy.heading)}
-        </h2>
-
-        <p style="margin:0 0 24px;color:#4e5556;">
-          ${escapeHtml(statusCopy.message)}
-        </p>
-
-        <div style="background:#f3f5f5;padding:18px;border-radius:10px;">
-          <p style="margin:0 0 8px;">
-            <strong>Order number:</strong>
-            ${escapeHtml(orderNumber)}
-          </p>
-
-          <p style="margin:0;">
-            <strong>Status:</strong>
-            ${escapeHtml(
-              formatStatus(order.fulfillment_status)
-            )}
-          </p>
-        </div>
-
-        ${tracking}
-
-        <div style="margin-top:32px;padding:18px;background:#f8f4e8;border-radius:10px;">
-          <p style="margin:0;font-size:13px;color:#5f5638;">
-            <strong>Research use only.</strong>
-            Products are supplied for controlled laboratory research
-            and are not for human or veterinary use, ingestion,
-            injection, diagnosis, treatment, or consumption.
-          </p>
-        </div>
-      </div>
-
-      <div style="padding:20px 32px;color:#6b7280;font-size:12px;">
-        AltaPure Labs · Research use only
-      </div>
-    </div>
-  `;
-}
-
 async function sendEmail({
   to,
   from,
