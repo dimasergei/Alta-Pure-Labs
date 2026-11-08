@@ -1,3 +1,4 @@
+const crypto = require('node:crypto');
 const { clients, checked } = require('../lib/backend');
 
 const UUID_PATTERN =
@@ -20,10 +21,12 @@ module.exports = async (req, res) => {
 
   const providedPassword = req.headers['x-admin-password'];
 
-  if (!providedPassword) {
-    return res.status(401).json({
-      error: 'Unauthorized.'
-    });
+  if (
+    typeof providedPassword !== 'string' ||
+    providedPassword.length > 4096 ||
+    !passwordMatches(providedPassword, adminPassword)
+  ) {
+    return res.status(401).json({ error: 'Unauthorized.' });
   }
 
   if (req.method !== 'GET') {
@@ -112,3 +115,9 @@ module.exports = async (req, res) => {
     });
   }
 };
+
+function passwordMatches(provided, expected) {
+  const a = crypto.createHash('sha256').update(provided).digest();
+  const b = crypto.createHash('sha256').update(expected).digest();
+  return crypto.timingSafeEqual(a, b);
+}
