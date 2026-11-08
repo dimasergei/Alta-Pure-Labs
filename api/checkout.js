@@ -120,10 +120,12 @@ module.exports = async (req, res) => {
     }
 
     const orderId = randomUUID();
+    const orderNumber = await createOrderNumber(db);
 
     checked(
       await db.from('store_orders').insert({
         id: orderId,
+        order_number: orderNumber,
         customer_email: b.email.trim(),
         customer_name: b.name.trim(),
         organization: b.org.trim(),
@@ -226,3 +228,30 @@ module.exports = async (req, res) => {
     });
   }
 };
+
+async function createOrderNumber(db) {
+  const characters = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
+  const maxAttempts = 10;
+
+  for (let attempt = 0; attempt < maxAttempts; attempt += 1) {
+    let orderNumber = 'A';
+
+    for (let index = 0; index < 9; index += 1) {
+      orderNumber += characters[
+        Math.floor(Math.random() * characters.length)
+      ];
+    }
+
+    const existing = await db
+      .from('store_orders')
+      .select('id')
+      .eq('order_number', orderNumber)
+      .maybeSingle();
+
+    if (!existing.data) {
+      return orderNumber;
+    }
+  }
+
+  throw new Error('Unable to generate a unique order number.');
+}
