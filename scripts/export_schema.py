@@ -71,7 +71,8 @@ WHERE p.prosecdef AND n.nspname<>'information_schema' AND n.nspname !~ '^pg_(cat
 "dependencies": """SELECT pg_describe_object(d.classid,d.objid,d.objsubid) dependent_object,
 pg_describe_object(d.refclassid,d.refobjid,d.refobjsubid) referenced_object,d.deptype dependency_type
 FROM pg_depend d WHERE d.deptype<>'i' ORDER BY 1,2""",
-"database_privileges": """SELECT datname database_name,has_database_privilege(current_user,oid,'CONNECT') can_connect,
+"database_privileges": """SELECT datname database_name,pg_get_userbyid(datdba) owner_name,datacl::text acl,
+has_database_privilege(current_user,oid,'CONNECT') can_connect,
 has_database_privilege(current_user,oid,'CREATE') can_create,has_database_privilege(current_user,oid,'TEMP') can_temp
 FROM pg_database ORDER BY datname"""
 }
