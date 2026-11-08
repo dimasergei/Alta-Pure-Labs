@@ -1,1 +1,79 @@
-<!doctype html><html lang="en"><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>AltaPure Labs — Test order</title><link rel="stylesheet" href="styles.css"><main style="max-width:700px;margin:80px auto;padding:24px"><h1>Test checkout status</h1><p id="status" role="status">Checking the verified order status…</p><p>This is a test purchase. No real payment or shipment is created.</p><a href="/">Return to catalog</a></main><script src="checkout-result.js"></script></html>
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>Order Confirmation — AltaPure Labs</title>
+  <meta name="robots" content="noindex,nofollow">
+  <link rel="stylesheet" href="styles.css">
+</head>
+
+<body>
+  <header class="topbar">
+    <a class="brand" href="/">
+      <span class="brand-mark" aria-hidden="true"><span></span><span></span><span></span></span>
+      <span class="brand-name">ALTA<span>PURE LABS</span></span>
+    </a>
+
+    <nav class="top-links">
+      <a href="/#shop">Shop</a>
+      <a href="/#faq">FAQ</a>
+      <a href="/#policies">Policies</a>
+    </nav>
+  </header>
+
+  <main class="confirm-page">
+    <div class="confirm-card">
+      <p class="confirm-eyebrow">Order confirmation</p>
+      <h1 id="confirm-title">Checking your order…</h1>
+      <p id="confirm-message" role="status">Please wait while we verify your payment.</p>
+
+      <div id="order-details" hidden>
+        <div class="confirm-summary">
+          <div>
+            <span class="confirm-label">Order number</span>
+            <strong id="order-id">—</strong>
+          </div>
+
+          <div>
+            <span class="confirm-label">Payment status</span>
+            <strong id="payment-status">—</strong>
+          </div>
+
+          <div>
+            <span class="confirm-label">Order total</span>
+            <strong id="order-total">—</strong>
+          </div>
+        </div>
+
+        <div class="confirm-note">
+          A confirmation email has been sent to the address used at checkout. If you do not see it, please check your spam or promotions folder.
+        </div>
+      </div>
+
+      <div class="confirm-actions">
+        <a class="pill pill-dark" href="/#shop">Continue shopping</a>
+        <a class="pill pill-ghost" href="/">Return home</a>
+      </div>
+
+      <p class="confirm-disclaimer">
+        AltaPure Labs products are for controlled laboratory research only. They are not for
+        human or veterinary use, ingestion, injection, diagnosis, treatment, or consumption.
+      </p>
+    </div>
+  </main>
+
+  <footer class="footer">
+    <div class="footer-bottom">
+      <p>© <span id="year"></span> AltaPure Labs. All rights reserved.</p>
+      <p>
+        <a href="/privacy-policy.html">Privacy Policy</a>
+        <a href="/terms-and-conditions.html">Terms &amp; Conditions</a>
+        <a href="/refund-policy.html">Refund Policy</a>
+      </p>
+    </div>
+  </footer>
+
+  <script src="checkout-result.js"></script>
+</body>
+</html>
