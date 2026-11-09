@@ -5,7 +5,7 @@ vm.runInNewContext(fs.readFileSync('products.js', 'utf8') + '\n;globalThis.expor
 fs.mkdirSync('lib', {recursive:true});
 fs.writeFileSync('lib/catalog.json', JSON.stringify(sandbox.exported));
 let html = fs.readFileSync('index.html','utf8');
-if (!html.includes('src="checkout.js"')) {
+if (!html.includes('src="/checkout.js"')) {
   const bodyClose = html.lastIndexOf('</body>');
   if (bodyClose < 0) throw new Error('Cannot install checkout interceptor: </body> not found.');
   html = html.slice(0, bodyClose) + '<script src="checkout.js"></script>\n' + html.slice(bodyClose);
