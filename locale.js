@@ -12,8 +12,8 @@
       searchProducts:"Search products", searchPlaceholder:"Search compounds", categories:"Categories", sortProducts:"Sort products", cart:"Cart", checkout:"Review order",
       orderRequest:"Order request", localSummary:"This is a local order summary. No payment is processed.", name:"Name", email:"Email", organization:"Laboratory or organization",
       researchConfirmation:"I confirm this request is for laboratory research only and not for human consumption.", placeRequest:"Place request",
-      pricesUSD:"Prices in USD", estimateNote:"Display estimate · checkout currency USD", rateUnavailable:"Live rates unavailable · showing USD",
-      displayCurrencyNote:"Displayed currency is an estimate. Checkout currency remains USD.", productSingular:"product", productPlural:"products",
+      pricesUSD:"Prices in USD", estimateNote:"Converted estimate · based on USD prices", rateUnavailable:"Live rates unavailable · showing USD",
+      displayCurrencyNote:"Converted amounts are estimates based on USD catalog prices.", productSingular:"product", productPlural:"products",
       showMore:"Show more products ({count} remaining)", cartEmpty:"Your cart is empty.", openCart:"Open cart", openCartCount:"Open cart, {count} items",
       each:"each", decrease:"Decrease", increase:"Increase", quantity:"Quantity", selectedDosage:"Selected dosage", perUnit:"per unit", add:"Add",
       subtotal:"Subtotal", shippingNotIncluded:"Shipping not included.", All:"All", "GLP-1 & Metabolic":"GLP-1 & Metabolic",
@@ -30,7 +30,7 @@
       orderRequest:"Demande de commande", localSummary:"Ceci est un récapitulatif local. Aucun paiement n’est traité.", name:"Nom", email:"Courriel", organization:"Laboratoire ou organisme",
       researchConfirmation:"Je confirme que cette demande concerne uniquement la recherche en laboratoire et non la consommation humaine.", placeRequest:"Envoyer la demande",
       pricesUSD:"Prix en USD", estimateNote:"Estimation d’affichage · devise de paiement USD", rateUnavailable:"Taux en direct indisponibles · affichage en USD",
-      displayCurrencyNote:"La devise affichée est indicative. La devise de paiement reste le USD.", productSingular:"produit", productPlural:"produits",
+      displayCurrencyNote:"Les montants convertis sont indicatifs et basés sur les prix du catalogue en USD.", productSingular:"produit", productPlural:"produits",
       showMore:"Afficher plus de produits ({count} restants)", cartEmpty:"Votre panier est vide.", openCart:"Ouvrir le panier", openCartCount:"Ouvrir le panier, {count} articles",
       each:"chacun", decrease:"Diminuer", increase:"Augmenter", quantity:"Quantité", selectedDosage:"Format sélectionné", perUnit:"par unité", add:"Ajouter",
       subtotal:"Sous-total", shippingNotIncluded:"Expédition non incluse.", All:"Tout", "GLP-1 & Metabolic":"GLP-1 et métabolisme",
@@ -46,8 +46,8 @@
       searchProducts:"Buscar productos", searchPlaceholder:"Buscar compuestos", categories:"Categorías", sortProducts:"Ordenar productos", cart:"Carrito", checkout:"Revisar pedido",
       orderRequest:"Solicitud de pedido", localSummary:"Este es un resumen local. No se procesa ningún pago.", name:"Nombre", email:"Correo electrónico", organization:"Laboratorio u organización",
       researchConfirmation:"Confirmo que esta solicitud es únicamente para investigación de laboratorio y no para consumo humano.", placeRequest:"Enviar solicitud",
-      pricesUSD:"Precios en USD", estimateNote:"Estimación de visualización · moneda de pago USD", rateUnavailable:"Tipos de cambio no disponibles · mostrando USD",
-      displayCurrencyNote:"La moneda mostrada es estimada. La moneda de pago sigue siendo USD.", productSingular:"producto", productPlural:"productos",
+      pricesUSD:"Precios en USD", estimateNote:"Estimación convertida · precios base en USD", rateUnavailable:"Tipos de cambio no disponibles · mostrando USD",
+      displayCurrencyNote:"Los importes convertidos son estimaciones basadas en los precios del catálogo en USD.", productSingular:"producto", productPlural:"productos",
       showMore:"Mostrar más productos ({count} restantes)", cartEmpty:"Su carrito está vacío.", openCart:"Abrir carrito", openCartCount:"Abrir carrito, {count} artículos",
       each:"cada uno", decrease:"Disminuir", increase:"Aumentar", quantity:"Cantidad", selectedDosage:"Tamaño seleccionado", perUnit:"por unidad", add:"Añadir",
       subtotal:"Subtotal", shippingNotIncluded:"Envío no incluido.", All:"Todos", "GLP-1 & Metabolic":"GLP-1 y metabolismo",
@@ -66,7 +66,7 @@
   const status = () => {
     const node = document.querySelector("#currency-status");
     if (!node) return;
-    node.textContent = currency === "USD" ? t("pricesUSD","Prices in USD") : ratesLoaded ? t("estimateNote","Display estimate · checkout currency USD") : t("rateUnavailable","Live rates unavailable · showing USD");
+    node.textContent = currency === "USD" ? t("pricesUSD","Prices in USD") : ratesLoaded ? t("estimateNote","Converted estimate · based on USD prices") : t("rateUnavailable","Live rates unavailable · showing USD");
   };
   const apply = () => {
     document.documentElement.lang = language;
