@@ -19,4 +19,4 @@ html = html.replace('Place request <span', 'Continue to secure checkout <span');
 html = html.replace('Continue to test payment <span', 'Continue to secure checkout <span');
 html = html.replaceAll('Shipping billed separately.', 'US shipping: $25 per order. Prices in USD.');
 fs.writeFileSync('index.html',html);
-console.log('Generated server catalog and installed test checkout script.');
+console.log('Generated server catalog and installed Stripe checkout script.');
