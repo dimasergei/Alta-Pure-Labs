@@ -1874,7 +1874,10 @@
                   ${escapeHtml(money(order.total_cents, order.currency))}
                 </span>
 
-                <span class="status">
+                <span class="status order-status-stack">
+                  <span class="badge status-${escapeHtml(order.payment_status || 'pending')}">
+                    ${escapeHtml(formatStatus(order.payment_status || 'pending'))}
+                  </span>
                   <span class="badge ${badgeClass}">
                     ${escapeHtml(formatStatus(status))}
                   </span>
