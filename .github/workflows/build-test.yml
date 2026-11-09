@@ -89,6 +89,14 @@ jobs:
         env:
           PGPASSWORD: postgres
         run: psql -X -v ON_ERROR_STOP=1 -h 127.0.0.1 -p 5434 -U postgres -d postgres -f tests/fixtures/enterprise-inventory-schema-checks.sql
+      - name: Verify atomic inventory reservations on disposable PostgreSQL 17
+        env:
+          PGPASSWORD: postgres
+        run: psql -X -v ON_ERROR_STOP=1 -h 127.0.0.1 -p 5434 -U postgres -d postgres -f tests/fixtures/enterprise-atomic-reservation-checks.sql
+      - name: Test concurrent last-unit reservations in two database sessions
+        env:
+          PGPASSWORD: postgres
+        run: bash tests/fixtures/enterprise-atomic-reservation-race.sh
       - uses: actions/setup-python@v5
         with:
           python-version: "3.12"
