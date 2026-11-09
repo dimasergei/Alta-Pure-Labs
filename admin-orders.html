@@ -3225,6 +3225,9 @@
 
           const supplierName =
             batch.suppliers?.name || 'Unknown supplier';
+          const itemSummary = (batch.supplier_batch_items || []).map((item) =>
+            `${item.product_name} ${item.variant_size || ''} × ${item.quantity}`
+          ).join(' · ');
 
           return `
             <div class="batch-card">
@@ -3236,7 +3239,7 @@
               </div>
 
               <div class="meta">
-                Order reference: ${escapeHtml([...new Set((batch.supplier_batch_items || []).map((item) => item.order_id))].join(', ') || '—')}
+                Orders: ${escapeHtml([...new Set((batch.supplier_batch_items || []).map((item) => item.store_orders?.order_number || item.order_id))].join(', ') || '—')}
                 · Created ${escapeHtml(formatDate(batch.created_at))}
                 · ${batch.archived_at ? 'Archived' : 'Active'}
               </div>
