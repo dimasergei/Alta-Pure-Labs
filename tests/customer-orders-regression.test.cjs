@@ -52,7 +52,7 @@ let lastSelect;
 const db = {
   auth: {
     async getUser(token) {
-      assert.equal(token, 'test-session-token');
+      assert.equal(token, 'test-session-token-12345');
       return { data: { user: currentUser }, error: null };
     }
   },
