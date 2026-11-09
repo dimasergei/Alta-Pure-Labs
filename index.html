@@ -14,13 +14,13 @@
 <body>
   <div id="gate" class="gate" hidden>
     <div class="gate-card">
-      <h2>Age verification</h2>
-      <p class="research-notice">Research purposes only</p>
-      <p>The products in this catalog are strictly for in-vitro laboratory research. They are <strong>not</strong> for human consumption, supplements, or drugs.</p>
-      <p>By continuing, you confirm you are 21 or older and that you will use these materials for laboratory research only.</p>
-      <button id="gate-yes" class="pill pill-dark" type="button">I am 21 or older <span aria-hidden="true">→</span></button>
-      <button id="gate-no" class="pill pill-ghost" type="button">Under 21</button>
-      <p id="gate-block" class="gate-block" hidden>This catalog is limited to adults 21 and older.</p>
+      <h2 data-i18n="ageVerificationTitle">Age verification</h2>
+      <p class="research-notice" data-i18n="ageGateNotice">Research purposes only</p>
+      <p data-i18n="ageGateCopy">The products in this catalog are strictly for in-vitro laboratory research. They are <strong>not</strong> for human consumption, supplements, or drugs.</p>
+      <p data-i18n="ageGateConfirmAge">By continuing, you confirm you are 21 or older and that you will use these materials for laboratory research only.</p>
+      <button id="gate-yes" class="pill pill-dark" type="button"><span data-i18n="ageGateYes">I am 21 or older</span> <span aria-hidden="true">→</span></button>
+      <button id="gate-no" class="pill pill-ghost" type="button"><span data-i18n="ageGateNo">Under 21</span></button>
+      <p id="gate-block" class="gate-block" hidden data-i18n="ageGateBlocked">This catalog is limited to adults 21 and older.</p>
     </div>
   </div>
 
@@ -96,14 +96,14 @@
       <div class="spotlight">
         <div class="spotlight-art"><img src="assets/glass-detail.webp" alt="Illustrative close-up of laboratory vials in warm light" loading="lazy" /></div>
         <div class="spotlight-copy">
-          <h2 id="spotlight-title">Small vial.<br>Full details.</h2>
-          <p id="spotlight-description">BPC-157, from the Healing &amp; Recovery selection. See every listed size and its exact per-unit price.</p>
+          <h2 id="spotlight-title"><span data-i18n="spotlightTitleA">Small vial.</span><br><span data-i18n="spotlightTitleB">Full details.</span></h2>
+          <p id="spotlight-description" data-i18n="spotlightDescription">BPC-157, from the Healing &amp; Recovery selection. See every listed size and its exact per-unit price.</p>
           <div class="spotlight-product">
             <div>
               <strong id="spotlight-name">Catalog selection</strong>
               <span id="spotlight-price" class="muted"></span>
             </div>
-            <button id="spotlight-open" class="pill pill-light" type="button" data-open="">View BPC-157</button>
+            <button id="spotlight-open" class="pill pill-light" type="button" data-open=""><span data-i18n="spotlightView">View BPC-157</span></button>
           </div>
         </div>
       </div>
@@ -140,184 +140,184 @@
 
     <section id="policy" class="policy">
       <div>
-        <h2>Clear prices. No guesswork.</h2>
-        <p>Compare available sizes and per-unit prices across the catalog. Pick-and-pack is included; shipping is billed separately. Listings are for laboratory research only and are not for human or animal use.</p>
+        <h2 data-i18n="policyTitle">Clear prices. No guesswork.</h2>
+        <p data-i18n="policyDescription">Compare available sizes and per-unit prices across the catalog. Pick-and-pack is included; shipping is billed separately. Listings are for laboratory research only and are not for human or animal use.</p>
       </div>
-      <a class="pill pill-light" href="#shop">Explore the catalog <span aria-hidden="true">→</span></a>
+      <a class="pill pill-light" href="#shop"><span data-i18n="policyExplore">Explore the catalog</span> <span aria-hidden="true">→</span></a>
     </section>
 
     <section class="faq-section" id="faq-section">
       <div class="section-heading">
-        <p class="eyebrow">(faqs)</p>
-        <h2>Common questions about research peptides, ordering, and lab standards</h2>
+        <p class="eyebrow" data-i18n="faqEyebrow">(faqs)</p>
+        <h2 data-i18n="faqHeading">Common questions about research peptides, ordering, and lab standards</h2>
       </div>
 
       <div class="faq-numbered">
         <div class="faq-row">
           <span class="faq-number">01</span>
           <details>
-            <summary>What research peptides are available from AltaPure Labs?</summary>
-            <p>AltaPure Labs offers a curated selection of research-grade peptides, small molecules, and related laboratory materials. Browse the catalog by category, search by product name, or review individual product pages for available sizes and pricing.</p>
+            <summary data-i18n="faqQ01">What research peptides are available from AltaPure Labs?</summary>
+            <p data-i18n="faqA01">AltaPure Labs offers a curated selection of research-grade peptides, small molecules, and related laboratory materials. Browse the catalog by category, search by product name, or review individual product pages for available sizes and pricing.</p>
           </details>
         </div>
 
         <div class="faq-row">
           <span class="faq-number">02</span>
           <details>
-            <summary>Are all products tested for purity and quality?</summary>
-            <p>Our products are supplied with quality and purity testing where applicable. Product-specific documentation and testing details may vary by item and lot. Review the product listing or contact us before ordering if documentation is required for your research program.</p>
+            <summary data-i18n="faqQ02">Are all products tested for purity and quality?</summary>
+            <p data-i18n="faqA02">Our products are supplied with quality and purity testing where applicable. Product-specific documentation and testing details may vary by item and lot. Review the product listing or contact us before ordering if documentation is required for your research program.</p>
           </details>
         </div>
 
         <div class="faq-row">
           <span class="faq-number">03</span>
           <details>
-            <summary>What purity levels are standard for research peptides?</summary>
-            <p>Many research peptides are supplied at high analytical purity, though the exact specification depends on the compound, format, and lot. Review the product-specific information and available documentation before ordering. Purity levels may vary by product and lot.</p>
+            <summary data-i18n="faqQ03">What purity levels are standard for research peptides?</summary>
+            <p data-i18n="faqA03">Many research peptides are supplied at high analytical purity, though the exact specification depends on the compound, format, and lot. Review the product-specific information and available documentation before ordering. Purity levels may vary by product and lot.</p>
           </details>
         </div>
 
         <div class="faq-row">
           <span class="faq-number">04</span>
           <details>
-            <summary>How do I interpret a Certificate of Analysis?</summary>
-            <p>A Certificate of Analysis, or COA, provides lot-specific analytical information, which may include identity and purity testing. Review the lot number, test methods, reported results, and storage information. Contact us if you need documentation before placing an order.</p>
+            <summary data-i18n="faqQ04">How do I interpret a Certificate of Analysis?</summary>
+            <p data-i18n="faqA04">A Certificate of Analysis, or COA, provides lot-specific analytical information, which may include identity and purity testing. Review the lot number, test methods, reported results, and storage information. Contact us if you need documentation before placing an order.</p>
           </details>
         </div>
 
         <div class="faq-row">
           <span class="faq-number">05</span>
           <details>
-            <summary>Do you offer custom peptide synthesis?</summary>
-            <p>Custom synthesis requests may be considered for qualified laboratory and research needs. Contact us with the compound, requested quantity, intended in-vitro application, and any required specifications. Requests are subject to review and availability.</p>
+            <summary data-i18n="faqQ05">Do you offer custom peptide synthesis?</summary>
+            <p data-i18n="faqA05">Custom synthesis requests may be considered for qualified laboratory and research needs. Contact us with the compound, requested quantity, intended in-vitro application, and any required specifications. Requests are subject to review and availability.</p>
           </details>
         </div>
 
         <div class="faq-row">
           <span class="faq-number">06</span>
           <details>
-            <summary>What are proper storage instructions?</summary>
-            <p>Store materials according to the guidance supplied with the product and any applicable documentation. Keep containers sealed and protected from unnecessary heat, moisture, and light where appropriate. Storage requirements can vary by compound.</p>
+            <summary data-i18n="faqQ06">What are proper storage instructions?</summary>
+            <p data-i18n="faqA06">Store materials according to the guidance supplied with the product and any applicable documentation. Keep containers sealed and protected from unnecessary heat, moisture, and light where appropriate. Storage requirements can vary by compound.</p>
           </details>
         </div>
 
         <div class="faq-row">
           <span class="faq-number">07</span>
           <details>
-            <summary>How should lyophilized peptides be reconstituted?</summary>
-            <p>Reconstitute lyophilized materials using appropriate laboratory procedures, clean equipment, and a solvent or buffer suitable for the intended in-vitro application. Avoid unnecessary moisture exposure and repeated temperature changes. Follow your laboratory protocol and product documentation.</p>
+            <summary data-i18n="faqQ07">How should lyophilized peptides be reconstituted?</summary>
+            <p data-i18n="faqA07">Reconstitute lyophilized materials using appropriate laboratory procedures, clean equipment, and a solvent or buffer suitable for the intended in-vitro application. Avoid unnecessary moisture exposure and repeated temperature changes. Follow your laboratory protocol and product documentation.</p>
           </details>
         </div>
 
         <div class="faq-row">
           <span class="faq-number">08</span>
           <details>
-            <summary>What is the shelf life of research peptides?</summary>
-            <p>Shelf life depends on the compound, formulation, storage conditions, and lot-specific documentation. Use the storage and stability information supplied with the product. Do not use material beyond any applicable expiration or stability period.</p>
+            <summary data-i18n="faqQ08">What is the shelf life of research peptides?</summary>
+            <p data-i18n="faqA08">Shelf life depends on the compound, formulation, storage conditions, and lot-specific documentation. Use the storage and stability information supplied with the product. Do not use material beyond any applicable expiration or stability period.</p>
           </details>
         </div>
 
         <div class="faq-row">
           <span class="faq-number">09</span>
           <details>
-            <summary>Can peptides be damaged during shipping or storage?</summary>
-            <p>Yes. Temperature changes, humidity, physical damage, and improper storage can affect some materials. Inspect your order on receipt and contact us within 48 hours if it arrives damaged, incorrect, or compromised.</p>
+            <summary data-i18n="faqQ09">Can peptides be damaged during shipping or storage?</summary>
+            <p data-i18n="faqA09">Yes. Temperature changes, humidity, physical damage, and improper storage can affect some materials. Inspect your order on receipt and contact us within 48 hours if it arrives damaged, incorrect, or compromised.</p>
           </details>
         </div>
 
         <div class="faq-row">
           <span class="faq-number">10</span>
           <details>
-            <summary>Should peptides be aliquoted after reconstitution?</summary>
-            <p>For laboratory workflows that require repeated use, aliquoting prepared solutions into smaller portions may reduce repeated freeze-thaw exposure. Follow the product documentation and your laboratory’s approved procedures.</p>
+            <summary data-i18n="faqQ10">Should peptides be aliquoted after reconstitution?</summary>
+            <p data-i18n="faqA10">For laboratory workflows that require repeated use, aliquoting prepared solutions into smaller portions may reduce repeated freeze-thaw exposure. Follow the product documentation and your laboratory’s approved procedures.</p>
           </details>
         </div>
 
         <div class="faq-row">
           <span class="faq-number">11</span>
           <details>
-            <summary>Do you offer bulk discounts?</summary>
-            <p>Bulk and institutional pricing may be available for qualifying orders. Contact us with the product, quantity, organization, and intended laboratory application. Pricing and availability are subject to review.</p>
+            <summary data-i18n="faqQ11">Do you offer bulk discounts?</summary>
+            <p data-i18n="faqA11">Bulk and institutional pricing may be available for qualifying orders. Contact us with the product, quantity, organization, and intended laboratory application. Pricing and availability are subject to review.</p>
           </details>
         </div>
 
         <div class="faq-row">
           <span class="faq-number">12</span>
           <details>
-            <summary>Can I order products in different quantities?</summary>
-            <p>Available package sizes and quantities are shown on each product listing. If you need a quantity that is not listed, contact us before placing an order. Requests may be accommodated subject to availability and compliance review.</p>
+            <summary data-i18n="faqQ12">Can I order products in different quantities?</summary>
+            <p data-i18n="faqA12">Available package sizes and quantities are shown on each product listing. If you need a quantity that is not listed, contact us before placing an order. Requests may be accommodated subject to availability and compliance review.</p>
           </details>
         </div>
 
         <div class="faq-row">
           <span class="faq-number">13</span>
           <details>
-            <summary>Are COAs available before ordering?</summary>
-            <p>Available COAs and product documentation may be provided on request before an order is placed. Contact us with the product name, size, and intended laboratory application. Documentation availability and lot-specific details may vary.</p>
+            <summary data-i18n="faqQ13">Are COAs available before ordering?</summary>
+            <p data-i18n="faqA13">Available COAs and product documentation may be provided on request before an order is placed. Contact us with the product name, size, and intended laboratory application. Documentation availability and lot-specific details may vary.</p>
           </details>
         </div>
 
         <div class="faq-row">
           <span class="faq-number">14</span>
           <details>
-            <summary>How do I find a specific peptide?</summary>
-            <p>Use the catalog search bar or category filters to locate a product. You can also browse the full catalog and sort results by name or price. Contact us if you cannot find a specific item.</p>
+            <summary data-i18n="faqQ14">How do I find a specific peptide?</summary>
+            <p data-i18n="faqA14">Use the catalog search bar or category filters to locate a product. You can also browse the full catalog and sort results by name or price. Contact us if you cannot find a specific item.</p>
           </details>
         </div>
 
         <div class="faq-row">
           <span class="faq-number">15</span>
           <details>
-            <summary>What information is included on product pages?</summary>
-            <p>Product pages may include the product name, category, available sizes, per-unit pricing, research-use notice, and other product-specific details. Review the listing carefully before adding an item to your cart.</p>
+            <summary data-i18n="faqQ15">What information is included on product pages?</summary>
+            <p data-i18n="faqA15">Product pages may include the product name, category, available sizes, per-unit pricing, research-use notice, and other product-specific details. Review the listing carefully before adding an item to your cart.</p>
           </details>
         </div>
 
         <div class="faq-row">
           <span class="faq-number">16</span>
           <details>
-            <summary>Are products manufactured in the USA?</summary>
-            <p>Manufacturing and sourcing details vary by product. AltaPure Labs does not make blanket origin claims. Review the product listing and contact us before ordering if sourcing or origin documentation is important for your research program.</p>
+            <summary data-i18n="faqQ16">Are products manufactured in the USA?</summary>
+            <p data-i18n="faqA16">Manufacturing and sourcing details vary by product. AltaPure Labs does not make blanket origin claims. Review the product listing and contact us before ordering if sourcing or origin documentation is important for your research program.</p>
           </details>
         </div>
 
         <div class="faq-row">
           <span class="faq-number">17</span>
           <details>
-            <summary>What does “Research Use Only” mean?</summary>
-            <p>“Research Use Only” means a product is supplied for controlled laboratory research. It is not intended for human or veterinary use, ingestion, injection, diagnosis, treatment, or consumption.</p>
+            <summary data-i18n="faqQ17">What does “Research Use Only” mean?</summary>
+            <p data-i18n="faqA17">“Research Use Only” means a product is supplied for controlled laboratory research. It is not intended for human or veterinary use, ingestion, injection, diagnosis, treatment, or consumption.</p>
           </details>
         </div>
 
         <div class="faq-row">
           <span class="faq-number">18</span>
           <details>
-            <summary>Do research peptides require special handling?</summary>
-            <p>Yes. Use appropriate personal protective equipment, work in a suitable laboratory environment, and follow your institution’s chemical-hygiene and safety procedures. Review all available product documentation before handling a material.</p>
+            <summary data-i18n="faqQ18">Do research peptides require special handling?</summary>
+            <p data-i18n="faqA18">Yes. Use appropriate personal protective equipment, work in a suitable laboratory environment, and follow your institution’s chemical-hygiene and safety procedures. Review all available product documentation before handling a material.</p>
           </details>
         </div>
 
         <div class="faq-row">
           <span class="faq-number">19</span>
           <details>
-            <summary>Can I use these products outside research?</summary>
-            <p>No. AltaPure Labs products are sold for in-vitro laboratory research only. They are not for human or veterinary use, ingestion, injection, diagnosis, treatment, or any non-research application.</p>
+            <summary data-i18n="faqQ19">Can I use these products outside research?</summary>
+            <p data-i18n="faqA19">No. AltaPure Labs products are sold for in-vitro laboratory research only. They are not for human or veterinary use, ingestion, injection, diagnosis, treatment, or any non-research application.</p>
           </details>
         </div>
 
         <div class="faq-row">
           <span class="faq-number">20</span>
           <details>
-            <summary>Are these products FDA approved?</summary>
-            <p>No. AltaPure Labs products are not approved by the FDA or other regulatory agencies for the diagnosis, treatment, cure, or prevention of any disease. They are supplied for laboratory research only and are not intended for human or veterinary use.</p>
+            <summary data-i18n="faqQ20">Are these products FDA approved?</summary>
+            <p data-i18n="faqA20">No. AltaPure Labs products are not approved by the FDA or other regulatory agencies for the diagnosis, treatment, cure, or prevention of any disease. They are supplied for laboratory research only and are not intended for human or veterinary use.</p>
           </details>
         </div>
       </div>
 
       <div class="faq-cta faq-cta-centered">
-        <h2>Ready to elevate your research.</h2>
-        <p>Explore the AltaPure Labs catalog and review available research compounds, sizes, and pricing.</p>
-        <a class="pill pill-dark" href="#shop">Explore Catalog</a>
+        <h2 data-i18n="faqCtaTitle">Ready to elevate your research.</h2>
+        <p data-i18n="faqCtaDescription">Explore the AltaPure Labs catalog and review available research compounds, sizes, and pricing.</p>
+        <a class="pill pill-dark" href="#shop" data-i18n="faqCtaButton">Explore Catalog</a>
       </div>
     </section>
   </main>
