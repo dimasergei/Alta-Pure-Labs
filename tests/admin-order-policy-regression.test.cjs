@@ -18,7 +18,7 @@ require.cache[backendPath].exports = {
 require.cache[queryPath].exports = {
   listAdminOrders: async (db, params) => {
     assert.equal(db, receivedDb);
-    assert.equal(params.get('status'), 'all');
+    assert.equal(params.get('status'), null);
     return { orders: [{ order_number: 'ALTA-ADMIN-1', admin_notes: 'internal' }] };
   }
 };
