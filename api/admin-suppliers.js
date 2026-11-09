@@ -2,6 +2,7 @@ const crypto = require('crypto');
 const { clients, checked } = require('../lib/backend');
 const { createClient } = require('@supabase/supabase-js');
 const { loadOverview } = require('../lib/operations-overview');
+const { loadInventory } = require('../lib/enterprise-inventory-query');
 
 const UUID_PATTERN =
   /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
@@ -41,6 +42,11 @@ module.exports = async (req, res) => {
   try {
     if (req.method === 'GET') {
       const params = new URL(req.url || '/api/admin-suppliers', 'https://admin.internal').searchParams;
+      if (params.get('inventory') === '1') {
+        const { db } = clients();
+        const result = await loadInventory(db);
+        return res.status(200).json(result);
+      }
       if (params.get('overview') === '1') {
         if (!process.env.SUPABASE_URL || !process.env.SUPABASE_SERVICE_ROLE_KEY) {
           return res.status(503).json({ error: 'Operational overview unavailable.' });
