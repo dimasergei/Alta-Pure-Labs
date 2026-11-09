@@ -8,7 +8,7 @@ let html = fs.readFileSync('index.html','utf8');
 if (!html.includes('src="/checkout.js"')) {
   const bodyClose = html.lastIndexOf('</body>');
   if (bodyClose < 0) throw new Error('Cannot install checkout interceptor: </body> not found.');
-  html = html.slice(0, bodyClose) + '<script src="checkout.js"></script>\n' + html.slice(bodyClose);
+  html = html.slice(0, bodyClose) + '<script src="/checkout.js"></script>\n' + html.slice(bodyClose);
 }
 if (!fs.existsSync('checkout.js')) {
   throw new Error('Cannot build storefront: checkout.js is missing from the project root.');
