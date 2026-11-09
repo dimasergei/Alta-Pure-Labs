@@ -63,4 +63,28 @@
  }
  if(intakeForm)intakeForm.addEventListener('submit',event=>{event.preventDefault();submitIntake(false);});
  if(saveButton)saveButton.addEventListener('click',()=>submitIntake(true));
+ const coaForm=document.getElementById('coa-intake-form');
+ if(coaForm)coaForm.addEventListener('submit',async event=>{
+  event.preventDefault();
+  const field=id=>document.getElementById(id);
+  const pass=field('coa-admin-password'),out=field('coa-intake-status');
+  const button=coaForm.querySelector('button');button.disabled=true;
+  try{
+   const report={
+    lot_id:field('coa-lot-id').value.trim(),
+    report_id:field('coa-report-id').value.trim(),
+    lab_name:field('coa-lab-name').value.trim(),
+    source_url:field('coa-source-url').value.trim()
+   };
+   const response=await fetch('/api/admin-suppliers',{method:'POST',cache:'no-store',
+    headers:{'x-admin-password':pass.value,'content-type':'application/json'},
+    body:JSON.stringify({action:'intake_supplier_coa_reference',report})});
+   const result=await response.json();
+   if(!response.ok)throw Error(response.status===401?'Admin password not accepted.':
+    'Reference not saved: '+String(result.reason||'Validation failed'));
+   out.textContent='Reference recorded as PENDING and UNPUBLISHED. No COA verified.';
+   coaForm.reset();
+  }catch(error){out.textContent=error.message;}
+  finally{pass.value='';button.disabled=false;}
+ });
 })();
