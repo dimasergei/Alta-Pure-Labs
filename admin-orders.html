@@ -972,7 +972,7 @@
     <div class="shell">
       <section id="login-view" class="login">
         <div class="admin-login-brand">
-          <span class="admin-brand-mark" aria-hidden="true">A</span>
+          <span class="admin-brand-mark" aria-hidden="true"><span></span><span></span><span></span></span>
           <span><strong>AltaPure Labs</strong><small>ADMIN</small></span>
         </div>
         <h2>Admin access</h2>
@@ -1000,7 +1000,7 @@
       <section id="orders-view" hidden>
         <div class="admin-brandbar">
           <a class="admin-brand" href="/" aria-label="AltaPure Labs home">
-            <span class="admin-brand-mark" aria-hidden="true">A</span>
+            <span class="admin-brand-mark" aria-hidden="true"><span></span><span></span><span></span></span>
             <span class="admin-brand-copy">
               <span class="admin-brand-name">AltaPure Labs</span>
               <span class="admin-brand-label">ADMIN</span>
@@ -1448,6 +1448,8 @@
     let appliedFilters = {
       sort: 'newest',
       priority: '',
+      paymentStatus: '',
+      fulfillmentStatus: '',
       from: '',
       to: ''
     };
