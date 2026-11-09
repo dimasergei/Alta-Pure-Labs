@@ -6,7 +6,7 @@
 
 ## Current storefront inventory and disclosure basis
 
-The repository `main/products.js` contains 46 catalog records / 84 variants: 43 records in the `injectables` category, two BAC Water records and one needles record. The project PDF separately references an 83-row `product_manifest.csv`, which was not available in the accessible files and has not been reconciled with the current catalog.
+The repository `main/products.js` contains 46 catalog records / 84 variants: 43 records in the `injectables` category, two BAC Water records and one needles record. The uploaded `product_manifest.csv` contains 83 numbered rows and has been reconciled against the storefront inventory: 81 injectable variants and both BAC Water variants match; the storefront additionally contains Needles 31G 5/16\" (10-pack), which is absent from the CSV. The source CSV was not modified. The provider disclosure must use the complete current storefront inventory, including this additional needles variant.
 
 The exact catalog must be disclosed to every provider. Do not relabel the business as a supplement, cosmetics, or generic laboratory supply merchant if that does not accurately describe the products and business model. The provider must confirm in writing which individual SKUs and product presentations are accepted.
 
