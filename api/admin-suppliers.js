@@ -3,6 +3,8 @@ const { clients, checked } = require('../lib/backend');
 const { createClient } = require('@supabase/supabase-js');
 const { loadOverview } = require('../lib/operations-overview');
 const { loadInventory } = require('../lib/enterprise-inventory-query');
+const { normalizeInventoryIntake } = require('../lib/inventory-intake');
+const { skuKey } = require('../lib/commerce-eligibility');
 
 const UUID_PATTERN =
   /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
@@ -71,6 +73,23 @@ module.exports = async (req, res) => {
     const body = await parseJson(req);
 
     if (req.method === 'POST') {
+      if (body.action === 'preview_inventory_import') {
+        if (Buffer.byteLength(JSON.stringify(body), 'utf8') > 32768) {
+          throw httpError(413, 'Request too large.');
+        }
+        if (!Array.isArray(body.rows) || body.rows.length > 100) {
+          throw httpError(400, 'Provide at most 100 inventory rows.');
+        }
+        const { db } = clients();
+        const supplierRecords = checked(await db.from('suppliers').select('id').eq('active',true).limit(200));
+        const catalog = require('../lib/catalog.json');
+        const catalogSkuKeys = catalog.flatMap(product =>
+          product.variants.map(variant => skuKey(product.id, variant.size)).filter(Boolean));
+        const result = normalizeInventoryIntake(body.rows,{
+          supplierIds:supplierRecords.map(s=>s.id),catalogSkuKeys
+        });
+        return res.status(200).json({ ...result, saved:false, can_sell:false });
+      }
       return await createSupplier(res, body);
     }
 
