@@ -7,6 +7,7 @@ const { normalizeInventoryIntake } = require('../lib/inventory-intake');
 const { inventoryDb } = require('../lib/inventory-db');
 const { inventoryIntake } = require('../lib/inventory-admin-intake');
 const { intakeReport } = require('../lib/coa-admin-intake');
+const { changeReportStatus } = require('../lib/coa-review');
 
 const UUID_PATTERN =
   /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
@@ -75,6 +76,14 @@ module.exports = async (req, res) => {
     const body = await parseJson(req);
 
     if (req.method === 'POST') {
+      if (body.action === 'review_coa_reject' || body.action === 'review_coa_withdraw') {
+        const result = await changeReportStatus(inventoryDb(),{
+          report_id:body.report_id,
+          action:body.action==='review_coa_reject'?'reject':'withdraw',
+          reason:body.reason
+        });
+        return res.status(result.ok?200:409).json(result);
+      }
       if (body.action === 'intake_supplier_coa_reference') {
         const result = await intakeReport(inventoryDb(),body.report);
         return res.status(result.ok ? 201 : 400).json(result);

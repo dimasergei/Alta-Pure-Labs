@@ -87,4 +87,28 @@
   }catch(error){out.textContent=error.message;}
   finally{pass.value='';button.disabled=false;}
  });
+ const reviewForm=document.getElementById('coa-review-form');
+ if(reviewForm)reviewForm.addEventListener('submit',async event=>{
+  event.preventDefault();
+  const field=id=>document.getElementById(id);
+  const pass=field('coa-review-password'),out=field('coa-review-status');
+  const button=reviewForm.querySelector('button');button.disabled=true;
+  try{
+   if(!field('coa-review-confirm').checked)throw Error('Confirmation required.');
+   const action=field('coa-review-action').value;
+   const response=await fetch('/api/admin-suppliers',{method:'POST',cache:'no-store',
+    headers:{'x-admin-password':pass.value,'content-type':'application/json'},
+    body:JSON.stringify({
+      action:action==='reject'?'review_coa_reject':'review_coa_withdraw',
+      report_id:field('coa-review-id').value.trim(),
+      reason:field('coa-review-reason').value.trim()
+    })});
+   const result=await response.json();
+   if(!response.ok)throw Error(response.status===401?'Admin password not accepted.':
+    'Report unchanged: '+String(result.reason||'Request rejected'));
+   out.textContent='Report status changed to '+result.report.status+'. Publication revoked.';
+   reviewForm.reset();
+  }catch(error){out.textContent=error.message;}
+  finally{pass.value='';button.disabled=false;}
+ });
 })();
