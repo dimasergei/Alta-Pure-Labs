@@ -1,0 +1,21 @@
+'use strict';
+const test=require('node:test');
+const assert=require('node:assert/strict');
+const fs=require('node:fs');
+const path=require('node:path');
+const root=path.resolve(__dirname,'../supabase/migrations');
+test('production inventory migrations are versioned in exact remote order',()=>{
+ const files=fs.readdirSync(root);
+ const initial='20261109225035_enterprise_inventory_quality_foundation.sql';
+ const correction='20261109225045_enterprise_inventory_event_append_only_privileges.sql';
+ assert.ok(files.includes(initial));
+ assert.ok(files.includes(correction));
+ assert.ok(initial<correction);
+ const sql=fs.readFileSync(path.join(root,initial),'utf8');
+ const fix=fs.readFileSync(path.join(root,correction),'utf8');
+ assert.match(sql,/create table if not exists public\.enterprise_inventory_lots/);
+ assert.match(sql,/create table if not exists public\.enterprise_quality_documents/);
+ assert.match(sql,/create table if not exists public\.enterprise_inventory_events/);
+ assert.match(fix,/revoke update, delete, truncate, references, trigger/);
+ assert.match(fix,/grant select, insert/);
+});
