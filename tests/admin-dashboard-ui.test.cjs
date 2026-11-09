@@ -51,3 +51,9 @@ test('notification history supports pagination and related batch references', ()
   assert.match(notificationApi, /\.range\(offset, offset \+ limit - 1\)/);
   assert.match(notificationApi, /batch_references/);
 });
+
+test('admin dashboard inline JavaScript parses successfully', () => {
+  const script = html.match(/<script>([\\s\\S]*?)<\\/script>/);
+  assert.ok(script, 'admin page script exists');
+  assert.doesNotThrow(() => new Function(script[1]));
+});
