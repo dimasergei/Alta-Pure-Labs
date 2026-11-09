@@ -30,8 +30,8 @@ module.exports = async (req, res) => {
     return res.status(401).json({ error: 'Unauthorized.' });
   }
 
-  if (!['GET', 'POST', 'PATCH'].includes(req.method)) {
-    res.setHeader('Allow', 'GET, POST, PATCH');
+  if (!['GET', 'POST', 'PATCH', 'DELETE'].includes(req.method)) {
+    res.setHeader('Allow', 'GET, POST, PATCH, DELETE');
     return res.status(405).json({ error: 'Method not allowed.' });
   }
 
@@ -52,6 +52,10 @@ module.exports = async (req, res) => {
 
     if (req.method === 'POST') {
       return await createBatch(res, body);
+    }
+
+    if (req.method === 'DELETE') {
+      return await deleteBatch(res, body);
     }
 
     return await updateBatch(res, body);
@@ -264,42 +268,46 @@ async function createBatch(res, body) {
 
 async function updateBatch(res, body) {
   const batchId = body.batch_id;
-  const status = body.status;
-
-  if (
-    typeof batchId !== 'string' ||
-    !UUID_PATTERN.test(batchId) ||
-    !BATCH_STATUSES.includes(status)
-  ) {
+  if (typeof batchId !== 'string' || !UUID_PATTERN.test(batchId)) {
     throw httpError(400, 'Invalid batch update.');
   }
-
   const { db } = clients();
-
-  const previous = checked(
-    await db
-      .from('supplier_batches')
-      .select('id,status')
-      .eq('id', batchId)
-      .maybeSingle()
-  );
-
-  if (!previous) {
-    throw httpError(404, 'Batch not found.');
-  }
-
+  const previous = checked(await db.from('supplier_batches')
+    .select('id,status,archived_at').eq('id', batchId).maybeSingle());
+  if (!previous) throw httpError(404, 'Batch not found.');
   if (previous.status === 'fulfilled') {
-    throw httpError(409, 'Fulfilled batches cannot be reopened.');
+    throw httpError(409, 'Fulfilled batches cannot be changed or reopened.');
   }
-
-  const batch = checked(
-    await db
-      .from('supplier_batches')
-      .update({ status, updated_at: new Date().toISOString() })
-      .eq('id', batchId)
-      .select('id,name,status,created_at,updated_at,supplier_id')
-      .single()
-  );
-
+  const updates = { updated_at: new Date().toISOString() };
+  if (body.name !== undefined) {
+    const name = cleanText(body.name, 120, 'Batch name');
+    if (!name) throw httpError(400, 'Batch name is required.');
+    updates.name = name;
+  }
+  if (body.status !== undefined) {
+    if (!BATCH_STATUSES.includes(body.status)) throw httpError(400, 'Invalid batch status.');
+    updates.status = body.status;
+  }
+  if (body.archived !== undefined) {
+    if (typeof body.archived !== 'boolean') throw httpError(400, 'Archived must be true or false.');
+    if (body.archived && ['sent', 'fulfilled'].includes(previous.status)) {
+      throw httpError(409, 'Sent or fulfilled batches cannot be archived through this action. Preserve their operational history.');
+    }
+    updates.archived_at = body.archived ? new Date().toISOString() : null;
+  }
+  if (Object.keys(updates).length === 1) throw httpError(400, 'No batch changes were provided.');
+  const batch = checked(await db.from('supplier_batches').update(updates)
+    .eq('id', batchId).select('id,name,status,created_at,updated_at,supplier_id,archived_at').single());
   return res.status(200).json({ batch });
+}
+
+async function deleteBatch(res, body) {
+  const batchId = body.batch_id;
+  if (typeof batchId !== 'string' || !UUID_PATTERN.test(batchId)) {
+    throw httpError(400, 'Invalid batch.');
+  }
+  const { db } = clients();
+  const result = checked(await db.rpc('admin_delete_supplier_batch', { p_batch_id: batchId }));
+  if (!result || result.deleted !== true) throw httpError(500, 'Batch deletion was not confirmed.');
+  return res.status(200).json({ deleted: true, batch_id: batchId, audit_id: result.audit_id });
 }
