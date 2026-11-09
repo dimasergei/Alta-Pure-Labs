@@ -19,3 +19,14 @@ test('production inventory migrations are versioned in exact remote order',()=>{
  assert.match(fix,/revoke update, delete, truncate, references, trigger/);
  assert.match(fix,/grant select, insert/);
 });
+
+test('atomic reservation migration is recorded with remote Supabase version',()=>{
+ const file='20261109231123_enterprise_atomic_inventory_reservation.sql';
+ assert.ok(fs.readdirSync(root).includes(file));
+ const sql=fs.readFileSync(path.join(root,file),'utf8');
+ assert.match(sql,/security invoker/);
+ assert.match(sql,/revoke all on function public\.enterprise_reserve_inventory/);
+ assert.match(sql,/grant execute on function public\.enterprise_reserve_inventory/);
+ assert.match(sql,/and on_hand - reserved - damaged >= p_quantity/);
+ assert.match(sql,/insert into public\.enterprise_inventory_events/);
+});
