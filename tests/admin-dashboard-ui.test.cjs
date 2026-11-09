@@ -60,9 +60,9 @@ test('admin dashboard inline JavaScript parses successfully', () => {
 
 
 test('archived batches show archived state and a working restore action', () => {
-  assert.match(batchApi, /updated_at,\\s*archived_at,\\s*suppliers/);
-  assert.match(html, /batch\\.archived_at \\? 'Archived' : 'Active'/);
+  assert.match(batchApi, /updated_at,\s*archived_at,\s*suppliers/);
+  assert.match(html, /batch\.archived_at \? 'Archived' : 'Active'/);
   assert.match(html, /data-action="restore-batch"/);
   assert.match(html, /const archived = action === 'archive-batch'/);
-  assert.match(html, /body: JSON\\.stringify\\(\\{ batch_id: batchId, archived \\}\\)/);
+  assert.match(html, /body: JSON\.stringify\(\{ batch_id: batchId, archived \}\)/);
 });
