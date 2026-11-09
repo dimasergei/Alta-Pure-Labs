@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html lang="en"><head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Bulk Research Catalog | AltaPure Labs</title>
+<meta name="description" content="Explore research catalog quantities and prepare non-binding bulk inquiries. Online ordering is paused.">
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="/styles.css">
+<style>
+.bulk-main{background:var(--surface);min-height:80vh;padding:clamp(40px,6vw,90px) var(--gutter)}
+.bulk-wrap{max-width:1200px;margin:auto}.bulk-kicker{color:var(--teal);font-weight:700;letter-spacing:.16em;text-transform:uppercase;font-size:12px}
+.bulk-main h1{font-size:clamp(40px,6vw,76px);margin:8px 0 20px}.bulk-lead{max-width:760px;color:var(--muted)}
+.bulk-tools{display:flex;flex-wrap:wrap;gap:12px;margin:28px 0}.bulk-tools input,.bulk-tools select{padding:14px;border:1px solid #cbd5d1;background:white;min-width:220px;flex:1}
+.bulk-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(min(100%,270px),1fr));gap:16px}
+.bulk-card{padding:22px;background:#fff;border:1px solid #dae3df;border-radius:8px}
+.bulk-card h2{font-size:23px;margin:8px 0}.bulk-card p{font-size:13px;color:var(--muted)}
+.bulk-card label{display:grid;gap:6px;font-size:13px;font-weight:600;margin:10px 0}
+.bulk-card select,.bulk-card input{padding:10px;border:1px solid #cbd5d1;background:white;width:100%}
+.bulk-card button{padding:11px 16px;background:var(--forest);color:white;border-radius:30px;margin-top:8px}
+.bulk-summary{background:white;border:1px solid #dce4e0;border-radius:8px;padding:24px;margin:28px 0}
+.bulk-summary ul{padding-left:20px}.bulk-summary li{margin:5px 0}.bulk-summary strong{font-size:22px}
+.bulk-note{font-size:13px;color:var(--muted);max-width:850px}
+.bulk-footer{background:var(--forest);color:white;padding:30px var(--gutter)}
+</style></head><body>
+<div class="announce"><p>Research use only. Online ordering is paused while payment options are updated.</p></div>
+<header class="topbar">
+<a class="brand" href="/" aria-label="AltaPure Labs home"><span class="brand-mark" aria-hidden="true"><span></span><span></span><span></span></span><span class="brand-name">ALTA<span>PURE LABS</span></span></a>
+<nav class="top-links" aria-label="Primary"><a href="/#shop">Catalog</a><a href="/coas.html">COAs</a><a href="/account">Account</a></nav>
+</header>
+<main class="bulk-main"><div class="bulk-wrap">
+<p class="bulk-kicker">Institutional research inquiries</p><h1>Bulk research catalog</h1>
+<p class="bulk-lead">Build a non-binding quantity worksheet from our listed research catalog. This is not an offer, stock confirmation, or checkout. Discounts, supply and delivery are subject to separate written review. No orders can be placed here.</p>
+<div class="bulk-tools"><input id="bulk-search" type="search" aria-label="Search products" placeholder="Search compounds and categories"><select id="bulk-category" aria-label="Filter category"><option value="">All categories</option></select></div>
+<p id="bulk-count" role="status">Loading catalog…</p><div id="bulk-grid" class="bulk-grid"></div>
+<section class="bulk-summary" aria-labelledby="bulk-summary-title"><h2 id="bulk-summary-title">Quantity worksheet</h2><p id="bulk-empty">Select quantities to prepare a worksheet. No order is created.</p><ul id="bulk-lines"></ul><p id="bulk-total"></p><button id="bulk-clear" class="pill pill-dark" type="button">Clear worksheet</button><p class="bulk-note">Illustrative USD catalog prices only. No bulk discounts, taxes, shipping, duties or payment fees are included. Availability and eligibility are unverified. Do not use this worksheet as a purchase order or invoice.</p></section>
+</div></main>
+<footer class="bulk-footer">AltaPure Labs · Research use only · <a href="/research-use-policy.html">Research Use Policy</a> · <a href="/">Return to catalog</a></footer>
+<script src="/products.js"></script><script src="/bulk-preview.js" defer></script>
+</body></html>
