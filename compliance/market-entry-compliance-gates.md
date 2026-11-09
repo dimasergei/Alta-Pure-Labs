@@ -6,7 +6,7 @@
 
 ## Why this gate exists
 
-The project record describes 83 numbered product/strength entries in a product manifest, with examples including retatrutide, tirzepatide, semaglutide, BPC-157, TB-500, blends, NAD+, glutathione and BAC Water. The manifest itself was not available during this review. These examples are not a complete SKU inventory and do not establish the legal classification, stock status, purity, intended use, or approval of any item.
+The project PDF references an 83-row numbered product/strength `product_manifest.csv`. Separately, the current repository `main` branch `products.js` contains **46 catalog product records and 84 sellable variants**: 43 injectable-category records, two BAC Water records and one needles record. These are different counts from different sources; they have not been reconciled. The manifest CSV itself was not available during this review. The repository catalog list is reproduced below as an inventory for review, not as evidence of stock, identity, purity, intended use, legality or approval.
 
 A "Research Use Only" label is not a general exemption from medicines, import, sale, advertising, or product-safety laws. Do not turn on worldwide shipping or accept orders from a jurisdiction until both the exact SKU and the destination have a documented approval basis.
 
@@ -20,6 +20,61 @@ A "Research Use Only" label is not a general exemption from medicines, import, s
 | Australia | TGA states unapproved peptide products generally cannot be imported or supplied unless a valid exemption, approval or authority applies. The Personal Importation Scheme does not permit commercial supply or public advertising. | **HOLD unapproved peptide SKUs.** Only enable a SKU/destination after the applicable ARTG, exemption, approval or authority and importer/supplier requirements are documented. |
 | European Union / EEA | No SKU-specific or member-state-specific legal determination was completed in this pass. | **HOLD** until counsel verifies EU and destination-member-state requirements, including medicinal-product classification, authorisation, importation, distribution and advertising. |
 | All other destinations | No country-specific review has been completed. | **HOLD by default.** No blanket worldwide-shipping setting. Review each destination and SKU before allowlisting. |
+
+## Repository catalog inventory to classify
+
+Source: `products.js` on `main` (read during this review). All 43 records in the `injectables` category are **HOLD pending SKU-specific regulatory review**. The two BAC Water variants and needles are not peptide drugs by name, but their regulatory classification, product presentation, claims, import requirements and carrier rules must be reviewed separately; they are not automatically approved.
+
+| Catalog record | Variants in current repository | Initial review state |
+|---|---|---|
+| Retatrutide | 10, 15, 20, 30, 40, 60 mg | HOLD |
+| Tirzepatide | 10, 20, 30, 40, 60 mg | HOLD |
+| Semaglutide | 10, 20, 30 mg | HOLD |
+| 5-Amino-1MQ | 10, 50 mg | HOLD |
+| AOD-9604 | 5, 10 mg | HOLD |
+| Cagrilintide | 5, 10 mg | HOLD |
+| BPC-157 | 5, 10 mg | HOLD |
+| TB-500 | 5, 10 mg | HOLD |
+| BPC/TB-500 | 10/10, 15/15 mg | HOLD |
+| KPV | 5, 10 mg | HOLD |
+| ARA-290 | 10 mg | HOLD |
+| LL-37 | 5, 10 mg | HOLD |
+| Thymosin Alpha-1 | 10 mg | HOLD |
+| GHK-Cu | 50, 100 mg | HOLD |
+| AHK-Cu | 50, 100 mg | HOLD |
+| Glow | 70 mg | HOLD |
+| KLOW | 80 mg | HOLD |
+| Snap8 | 10 mg | HOLD |
+| CJC-1295 No DAC | 5, 10 mg | HOLD |
+| CJC-1295 W/DAC | 5, 10 mg | HOLD |
+| CJC/Ipamorelin | 10/10 mg | HOLD |
+| Ipamorelin | 5, 10 mg | HOLD |
+| Sermorelin | 5, 10 mg | HOLD |
+| Tesamorelin | 10, 20 mg | HOLD |
+| Tesa/IPA | 5/5 mg | HOLD |
+| Semax | 5, 10 mg | HOLD |
+| Selank | 5, 10 mg | HOLD |
+| Semax/Selank | 10/10 mg | HOLD |
+| Adamax | 10 mg | HOLD |
+| Pinealon | 10 mg | HOLD |
+| DSIP | 5, 10 mg | HOLD |
+| NAD+ | 500, 1000 mg | HOLD |
+| Epithalon | 10, 50 mg | HOLD |
+| Glutathione | 600, 1500 mg | HOLD |
+| SS-31 | 10, 50 mg | HOLD |
+| MOTS-C | 10, 20, 40 mg | HOLD |
+| B-12 | 10 mg | HOLD |
+| Melanotan II | 10 mg | HOLD |
+| Melanotan 1 | 10 mg | HOLD |
+| PT-141 | 10 mg | HOLD |
+| Kisspeptin | 5, 10 mg | HOLD |
+| Oxytocin | 5, 10 mg | HOLD |
+| VIP | 5, 10 mg | HOLD |
+| BAC Water (3 mL) | 3 mL | SEPARATE REVIEW |
+| BAC Water (10 mL) | 10 mL | SEPARATE REVIEW |
+| Needles 31G 5/16" | 10-pack | SEPARATE REVIEW |
+
+The current code's 43 injectable records include products Health Canada specifically identifies in its public peptide advisories, including retatrutide, tirzepatide, semaglutide, BPC-157, TB-500, MOTS-C, NAD+, and others. The advisories do not by themselves settle every product's classification in every country; they are a clear reason not to infer that RUO labeling or a global destination selector authorizes sale.
 
 ## SKU evidence required before allowlisting
 
@@ -63,4 +118,4 @@ If an item is not approved, block it before payment and display a neutral availa
 
 ## Review limits and next input needed
 
-This is a planning gate, not a legal opinion or regulator decision. The complete 83-row `product_manifest.csv` referenced by the project record was not present in the accessible project files during this review. The next product-level review requires that exact manifest plus current supplier, label, claims, intended-use and fulfillment-origin records. No product has been approved by this document.
+This is a planning gate, not a legal opinion or regulator decision. The 83-row `product_manifest.csv` referenced by the project PDF was not present in the accessible project files during this review. The current repository catalog was reviewed separately (46 records / 84 variants). Reconcile the actual manifest against `products.js`, then attach current supplier, label, claims, intended-use and fulfillment-origin records for each sellable variant. No product has been approved by this document.
