@@ -73,6 +73,10 @@
     document.querySelectorAll("[data-i18n]").forEach((node) => { node.textContent = t(node.dataset.i18n,node.textContent); });
     document.querySelectorAll("[data-i18n-placeholder]").forEach((node) => { node.placeholder = t(node.dataset.i18nPlaceholder,node.placeholder); });
     document.querySelectorAll("[data-i18n-aria]").forEach((node) => node.setAttribute("aria-label",t(node.dataset.i18nAria,node.getAttribute("aria-label"))));
+    const faqLink = document.querySelector('.top-links a[href="#faq-section"]');
+    if (faqLink) faqLink.textContent = t("faq", "FAQ");
+    const submitLabel = document.querySelector("#checkout-form button[type=submit]");
+    if (submitLabel && language !== "en" && submitLabel.firstChild) submitLabel.firstChild.textContent = t("placeRequest", "Place request") + " ";
     const lang = document.querySelector("#language-select"), curr = document.querySelector("#currency-select");
     if (lang) lang.value = language;
     if (curr) curr.value = currency;
