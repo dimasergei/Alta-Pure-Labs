@@ -1647,3 +1647,20 @@ dialog::backdrop {
     grid-template-columns: 1fr;
   }
 }
+
+/* Currency and language controls */
+.locale-controls { display:flex; align-items:center; gap:9px; color:#fff; }
+.locale-control { display:grid; gap:1px; color:#cbd3cf; font-size:9px; line-height:1.2; letter-spacing:.08em; text-transform:uppercase; }
+.locale-control select { min-width:76px; max-width:100px; padding:5px 22px 5px 7px; border:1px solid #53625e; border-radius:4px; background:#1b2523; color:#fff; font-size:11px; letter-spacing:0; text-transform:none; }
+.locale-status { max-width:118px; color:#a8b0a5; font-size:9px; line-height:1.25; }
+@media (max-width:1100px) { .locale-status { display:none; } }
+@media (max-width:860px) {
+  .topbar { align-items:flex-start; }
+  .top-actions { align-items:center; margin-left:auto; flex-wrap:wrap; justify-content:flex-end; }
+  .locale-controls { order:2; width:100%; justify-content:flex-end; }
+}
+@media (max-width:700px) {
+  .top-actions { width:100%; justify-content:space-between; }
+  .locale-controls { order:0; width:auto; justify-content:flex-start; }
+  .locale-control select { min-width:70px; }
+}

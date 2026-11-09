@@ -28,7 +28,8 @@ const state = {
 };
 
 const $ = (sel) => document.querySelector(sel);
-const money = (n) => `$${n.toFixed(0)}`;
+const money = (n) => typeof window !== "undefined" && window.AltaLocale ? window.AltaLocale.formatMoney(n) : `${n.toFixed(0)}`;
+const translate = (key, fallback) => typeof window !== "undefined" && window.AltaLocale ? window.AltaLocale.t(key, fallback) : fallback;
 
 function loadCart() {
   try {
@@ -108,7 +109,7 @@ function visibleProducts() {
 
 function renderFilters() {
   $("#filters").innerHTML = GROUPS.map(
-    (group) => `<button class="chip" type="button" role="tab" aria-selected="${group === state.group}" data-group="${escapeXml(group)}">${group}</button>`
+    (group) => `<button class="chip" type="button" role="tab" aria-selected="${group === state.group}" data-group="${escapeXml(group)}">${escapeXml(translate(group, group))}</button>`
   ).join("");
 }
 
@@ -178,7 +179,7 @@ function renderSpotlight() {
 
 function renderGrid() {
   const items = visibleProducts();
-  const noun = items.length === 1 ? "product" : "products";
+  const noun = items.length === 1 ? translate("productSingular", "product") : translate("productPlural", "products");
   $("#result-count").textContent = `${items.length} ${noun}`;
   if (!items.length) {
     $("#grid").innerHTML = `<p class="empty">No products match that search.</p>`;
@@ -187,7 +188,7 @@ function renderGrid() {
   }
   $("#grid").innerHTML = items.slice(0, state.limit).map(productCardMarkup).join("");
   $("#show-more").hidden = state.limit >= items.length;
-  $("#show-more").textContent = `Show more products (${items.length - state.limit} remaining)`;
+  $("#show-more").textContent = translate("showMore", `Show more products ({count} remaining)`).replace("{count}", String(items.length - state.limit));
 }
 
 function renderCartCount() {
@@ -195,13 +196,13 @@ function renderCartCount() {
   const badge = $("#cart-count");
   badge.hidden = count === 0;
   badge.textContent = String(count);
-  $("#open-cart").setAttribute("aria-label", count ? `Open cart, ${count} items` : "Open cart");
+  $("#open-cart").setAttribute("aria-label", count ? translate("openCartCount", "Open cart, {count} items").replace("{count}", String(count)) : translate("openCart", "Open cart"));
 }
 
 function renderCart() {
   const lines = $("#cart-lines");
   if (!state.cart.length) {
-    lines.innerHTML = `<p class="muted">Your cart is empty.</p>`;
+    lines.innerHTML = `<p class="muted">${translate("cartEmpty", "Your cart is empty.")}</p>`;
   } else {
     lines.innerHTML = state.cart
       .map(
@@ -209,12 +210,12 @@ function renderCart() {
         <div class="cart-line">
           <div>
             <strong>${line.name}</strong>
-            <span class="muted">${line.size} · ${money(line.price)} each</span>
+            <span class="muted">${line.size} · ${money(line.price)} ${translate("each", "each")}</span>
           </div>
           <div class="qty">
-            <button type="button" data-dec="${line.key}" aria-label="Decrease">−</button>
-            <input value="${line.qty}" aria-label="Quantity" readonly />
-            <button type="button" data-inc="${line.key}" aria-label="Increase">+</button>
+            <button type="button" data-dec="${line.key}" aria-label="${translate("decrease", "Decrease")}">−</button>
+            <input value="${line.qty}" aria-label="${translate("quantity", "Quantity")}" readonly />
+            <button type="button" data-inc="${line.key}" aria-label="${translate("increase", "Increase")}">+</button>
           </div>
         </div>`
       )
@@ -235,7 +236,7 @@ function openProduct(id, selectedSize) {
       <div>
         <p class="product-category">${product.group}</p>
         <h2>${product.name}</h2>
-        <p class="fine">Selected dosage: <strong>${escapeXml(selectedVariant.size)}</strong></p>
+        <p class="fine">${translate("selectedDosage", "Selected dosage")}: <strong>${escapeXml(selectedVariant.size)}</strong></p>
       </div>
       <button class="icon-btn" value="cancel" type="submit" aria-label="Close">×</button>
     </header>
@@ -254,10 +255,10 @@ function openProduct(id, selectedSize) {
               <div class="variant" ${variant.size === selectedVariant.size ? 'data-selected="true"' : ""}>
                 <div>
                   <strong>${variant.size}</strong>
-                  <span class="muted">per unit</span>
+                  <span class="muted">${translate("perUnit", "per unit")}</span>
                 </div>
                 <strong>${money(variant.price)}</strong>
-                <button class="pill pill-dark" type="button" data-add="${product.id}" data-index="${index}">Add</button>
+                <button class="pill pill-dark" type="button" data-add="${product.id}" data-index="${index}">${translate("add", "Add")}</button>
               </div>`
             )
             .join("")}
@@ -295,8 +296,9 @@ function renderCheckoutSummary() {
     ${state.cart
       .map((line) => `<div class="line"><span>${line.name} · ${line.size} × ${line.qty}</span><strong>${money(line.price * line.qty)}</strong></div>`)
       .join("")}
-    <div class="totals"><span>Subtotal</span><strong>${money(total)}</strong></div>
-    <p class="fine">Shipping not included.</p>`;
+    <div class="totals"><span>${translate("subtotal", "Subtotal")}</span><strong>${money(total)}</strong></div>
+    <p class="fine">${translate("shippingNotIncluded", "Shipping not included.")}</p>
+    <p class="fine">${translate("displayCurrencyNote", "Displayed currency is an estimate. Checkout currency remains USD.")}</p>`;
 }
 
 function initGate() {
@@ -321,6 +323,11 @@ function init() {
   renderGrid();
   renderCartCount();
   initGate();
+  if (window.AltaLocale) window.AltaLocale.onChange(() => {
+    renderFilters(); renderFeatured(); renderSpotlight(); renderGrid(); renderCartCount();
+    if ($("#cart-dialog").open) renderCart();
+    if ($("#checkout-dialog").open) renderCheckoutSummary();
+  });
 
   $("#filters").addEventListener("click", (event) => {
     const button = event.target.closest("[data-group]");
