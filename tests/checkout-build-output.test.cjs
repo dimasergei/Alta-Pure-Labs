@@ -24,7 +24,7 @@ test('storefront build emits the Stripe checkout interceptor and preserves Live-
 
     const builtHtml = fs.readFileSync(path.join(tempRoot, 'index.html'), 'utf8');
     const builtCheckoutPath = path.join(tempRoot, 'checkout.js');
-    assert.match(builtHtml, /<script src="checkout\.js"><\/script>/);
+    assert.match(builtHtml, /<script src="\/checkout\.js"><\/script>/);
     assert.ok(fs.existsSync(builtCheckoutPath), 'checkout.js must be present beside the built HTML');
 
     const interceptor = fs.readFileSync(builtCheckoutPath, 'utf8');
