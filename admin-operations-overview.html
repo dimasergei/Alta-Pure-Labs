@@ -1,0 +1,20 @@
+<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="robots" content="noindex,nofollow"><meta name="referrer" content="no-referrer"><title>Operations Overview — AltaPure Labs</title><link rel="stylesheet" href="/admin-dashboard.css"><style>
+:root{--bg:#0a0e0f;--panel:#111617;--border:#273132;--text:#e8edeb;--muted:#99a6a2;--teal:#68cbbb}
+body{margin:0;background:var(--bg);color:var(--text);font:14px/1.5 "Plus Jakarta Sans",Arial,sans-serif}
+main{max-width:1120px;margin:auto;padding:clamp(20px,5vw,65px)}
+h1{font-size:clamp(30px,4vw,50px);letter-spacing:-.04em}a{color:var(--teal)}.muted{color:var(--muted)}
+form{display:flex;flex-wrap:wrap;gap:12px;align-items:end;margin:28px 0}
+label{display:grid;gap:8px;min-width:min(100%,300px)}input{padding:13px;background:#fff;color:#101314;border:0;border-radius:5px;font:inherit}
+button{background:var(--teal);color:#0a0e0f;padding:13px 20px;border:0;border-radius:5px;font:inherit;font-weight:700;cursor:pointer}
+button:disabled{opacity:.5}.metrics{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:14px;margin:24px 0}
+.metric{border:1px solid var(--border);background:var(--panel);padding:20px;border-radius:8px}
+.metric strong{display:block;font-size:34px;letter-spacing:-.05em}.metric span{color:var(--muted);font-size:13px}
+.note{padding:18px;border:1px solid var(--border);background:var(--panel)}
+</style></head><body><main>
+<p class="muted">ALTA PURE LABS · INTERNAL OPERATIONS</p><h1>Operations overview</h1>
+<p class="muted">Read-only operational counts from the existing order, supplier and notification database. No customer names, emails, addresses, wholesale costs or order records are displayed.</p>
+<p><a href="/admin-orders.html">Back to Orders / Batches / Notifications</a></p>
+<form id="overview-login"><label>Admin password<input id="admin-secret" type="password" autocomplete="off" required minlength="32" aria-label="Admin password"></label><button id="refresh" type="submit">Load live counts</button></form>
+<p id="overview-status" role="status" aria-live="polite">Enter your admin password to load live counts.</p>
+<section id="overview-results" hidden><h2>Operational snapshot</h2><div id="overview-metrics" class="metrics"></div><p id="overview-updated" class="muted"></p><p class="note">These are record counts, not financial KPIs or proof of fulfilled deliveries. A paid status does not prove settlement, and a shipped status does not prove carrier delivery. Checkout activation is controlled separately.</p></section>
+</main><script src="/admin-operations-overview.js" defer></script></body></html>
