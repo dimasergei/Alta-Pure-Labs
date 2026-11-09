@@ -83,6 +83,22 @@ BEGIN
   END LOOP;
 END $$;
 
+-- Exercise actual service_role DML against each protected internal table.
+SET ROLE service_role;
+INSERT INTO public.order_status_notifications(id) VALUES ('00000000-0000-4000-8000-000000000001');
+UPDATE public.order_status_notifications SET id='00000000-0000-4000-8000-000000000002';
+DELETE FROM public.order_status_notifications;
+INSERT INTO public.suppliers(id) VALUES ('00000000-0000-4000-8000-000000000003');
+UPDATE public.suppliers SET id='00000000-0000-4000-8000-000000000004';
+DELETE FROM public.suppliers;
+INSERT INTO public.supplier_batches(id) VALUES ('00000000-0000-4000-8000-000000000005');
+UPDATE public.supplier_batches SET id='00000000-0000-4000-8000-000000000006';
+DELETE FROM public.supplier_batches;
+INSERT INTO public.supplier_batch_items(id) VALUES ('00000000-0000-4000-8000-000000000007');
+UPDATE public.supplier_batch_items SET id='00000000-0000-4000-8000-000000000008';
+DELETE FROM public.supplier_batch_items;
+RESET ROLE;
+
 \i supabase/rollback/20261108100000_revoke_internal_table_browser_privileges.rollback.sql
 
 DO $$
