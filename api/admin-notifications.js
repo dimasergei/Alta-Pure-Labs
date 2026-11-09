@@ -79,7 +79,7 @@ module.exports = async (req, res) => {
         store_orders (
           order_number,
           customer_name
-        )
+        , { count: 'exact' })
       `
       )
       .order('created_at', { ascending: false });
@@ -99,16 +99,11 @@ module.exports = async (req, res) => {
     }
 
     const limit = Math.min(100, Math.max(1, Number(params.get('limit')) || 50));
-    const offset = Math.max(0, Number(params.get('offset')) || 0);
+    const requestedOffset = Number(params.get('offset')) || 0;
+    const offset = Number.isSafeInteger(requestedOffset) && requestedOffset >= 0
+      ? Math.min(requestedOffset, 100000)
+      : 0;
     const { data: pageRows, error: pageError, count } = await query
-      .select(
-        `
-        id, order_id, customer_email, notification_type, status, attempts,
-        last_error, provider_message_id, created_at, updated_at, sent_at,
-        store_orders (order_number, customer_name)
-        `,
-        { count: 'exact' }
-      )
       .range(offset, offset + limit - 1);
     if (pageError) throw pageError;
     const notifications = pageRows || [];
