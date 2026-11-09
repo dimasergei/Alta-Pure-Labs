@@ -6,7 +6,7 @@
 
 ## Why this gate exists
 
-The project PDF references an 83-row numbered product/strength `product_manifest.csv`. Separately, the current repository `main` branch `products.js` contains **46 catalog product records and 84 sellable variants**: 43 injectable-category records, two BAC Water records and one needles record. These are different counts from different sources; they have not been reconciled. The manifest CSV itself was not available during this review. The repository catalog list is reproduced below as an inventory for review, not as evidence of stock, identity, purity, intended use, legality or approval.
+The uploaded numbered `product_manifest.csv` contains **83 rows**. It was compared row-by-row by product and dosage against the current repository `main` branch `products.js`, which contains **46 catalog product records and 84 sellable variants**: 43 injectable-category records, two BAC Water records and one needles record. **All 81 injectable variants and both BAC Water variants match. The sole discrepancy is the storefront's `Needles 31G 5/16\"` 10-pack variant (`10pk`), which is present in `products.js` but absent from the 83-row CSV.** The CSV's row order differs from the storefront order; no other product/dosage discrepancy was found. The source CSV was not modified. The repository catalog list is reproduced below as an inventory for review, not as evidence of stock, identity, purity, intended use, legality or approval.
 
 A "Research Use Only" label is not a general exemption from medicines, import, sale, advertising, or product-safety laws. Do not turn on worldwide shipping or accept orders from a jurisdiction until both the exact SKU and the destination have a documented approval basis.
 
@@ -78,7 +78,7 @@ The current code's 43 injectable records include products Health Canada specific
 
 ## SKU evidence required before allowlisting
 
-Create one record for every manifest row / sellable variant. Do not infer one strength or formulation's status from another.
+Create one record for every sellable variant. Reconcile the 83 manifest rows plus the omitted needles 10-pack storefront variant before treating the manifest as a complete SKU register. Do not infer one strength or formulation's status from another.
 
 Required fields:
 - Exact SKU, compound/ingredient, strength, formulation, route/presentation, and product claims.
@@ -118,4 +118,4 @@ If an item is not approved, block it before payment and display a neutral availa
 
 ## Review limits and next input needed
 
-This is a planning gate, not a legal opinion or regulator decision. The 83-row `product_manifest.csv` referenced by the project PDF was not present in the accessible project files during this review. The current repository catalog was reviewed separately (46 records / 84 variants). Reconcile the actual manifest against `products.js`, then attach current supplier, label, claims, intended-use and fulfillment-origin records for each sellable variant. No product has been approved by this document.
+This is a planning gate, not a legal opinion or regulator decision. The uploaded 83-row `product_manifest.csv` has now been reconciled against `products.js`: 83 product/dosage entries match, and the storefront has one additional variant, Needles 31G 5/16\" (10-pack). Add or otherwise account for that omitted variant in the canonical SKU register after confirming it is intended to be part of the manifest. Next, attach current supplier, label, claims, intended-use and fulfillment-origin records for each sellable variant. No product has been approved by this document.
