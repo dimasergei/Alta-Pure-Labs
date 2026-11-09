@@ -28,8 +28,8 @@ const state = {
 };
 
 const $ = (sel) => document.querySelector(sel);
-const money = (n) => window.AltaLocale ? window.AltaLocale.formatMoney(n) : `$${n.toFixed(0)}`;
-const translate = (key, fallback) => window.AltaLocale ? window.AltaLocale.t(key, fallback) : fallback;
+const money = (n) => typeof window !== "undefined" && window.AltaLocale ? window.AltaLocale.formatMoney(n) : `${n.toFixed(0)}`;
+const translate = (key, fallback) => typeof window !== "undefined" && window.AltaLocale ? window.AltaLocale.t(key, fallback) : fallback;
 
 function loadCart() {
   try {
