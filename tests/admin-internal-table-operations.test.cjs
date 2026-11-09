@@ -87,3 +87,22 @@ test.after(() => {
   delete process.env.ADMIN_ORDERS_PASSWORD;
   require.cache[backendPath].exports = originalBackend;
 });
+
+
+test('supplier batch GET includes archived_at so archived state survives reload', async () => {
+  process.env.ADMIN_ORDERS_PASSWORD = password;
+  const archivedAt = '2026-11-08T12:34:56.000Z';
+  currentRows = [{
+    id: 'batch-archived',
+    name: 'Archived fixture',
+    status: 'draft',
+    archived_at: archivedAt,
+    supplier_batch_items: []
+  }];
+  calls.length = 0;
+  const result = await invoke(batches, 'GET', '/api/admin-supplier-batches');
+  assert.equal(result.statusCode, 200);
+  assert.equal(result.body.batches[0].archived_at, archivedAt);
+  const read = calls.find(c => c.table === 'supplier_batches' && c.operation === 'select');
+  assert.match(read.columns, /archived_at/);
+});
