@@ -16,6 +16,12 @@
   availabilityNotice.className='fine';
   availabilityNotice.setAttribute('role','status');
   reviewButton.insertAdjacentElement('afterend',availabilityNotice);
+  const announce=document.querySelector('.announce');
+  const pageNotice=document.createElement('p');
+  pageNotice.id='checkout-paused-banner';
+  pageNotice.setAttribute('role','status');
+  pageNotice.hidden=true;
+  if(announce)announce.append(pageNotice);
   const formSubmit=form.querySelector('[type="submit"]');
   const showAvailability=()=>{
     const enabled=window.AltaCheckoutEnabled===true;
@@ -24,11 +30,14 @@
     if(enabled){
       reviewButton.innerHTML=originalReviewMarkup;
       availabilityNotice.textContent='';
+      pageNotice.hidden=true;
     }else{
       const lang=window.AltaLocale?.language || 'en';
       const copy=pausedCopy[lang]||pausedCopy.en;
       reviewButton.textContent=copy.button;
       availabilityNotice.textContent=copy.notice;
+      pageNotice.textContent=copy.notice;
+      pageNotice.hidden=false;
     }
   };
   showAvailability();
