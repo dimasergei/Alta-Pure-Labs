@@ -92,7 +92,7 @@ function response() {
 }
 async function request(url) {
   const res = response();
-  await handler({ method: 'GET', url, headers: { authorization: 'Bearer test-session-token' } }, res);
+  await handler({ method: 'GET', url, headers: { authorization: 'Bearer test-session-token-12345' } }, res);
   return res;
 }
 
