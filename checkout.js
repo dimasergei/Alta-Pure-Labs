@@ -1,6 +1,51 @@
 (() => {
   const form=document.querySelector('#checkout-form');
   if(!form) return;
+  // Default to disabled, including while availability is loading or unreachable.
+  window.AltaCheckoutEnabled = false;
+  const reviewButton=document.querySelector('#checkout');
+  if(!reviewButton)return;
+  const originalReviewMarkup=reviewButton.innerHTML;
+  const pausedCopy={
+    en:{button:'Checkout temporarily unavailable',notice:'Online ordering is paused while we update payment options.'},
+    fr:{button:'Paiement temporairement indisponible',notice:'Les commandes en ligne sont suspendues pendant la mise à jour des modes de paiement.'},
+    es:{button:'Pago temporalmente no disponible',notice:'Los pedidos en línea están suspendidos mientras actualizamos los métodos de pago.'}
+  };
+  const availabilityNotice=document.createElement('p');
+  availabilityNotice.id='checkout-availability';
+  availabilityNotice.className='fine';
+  availabilityNotice.setAttribute('role','status');
+  reviewButton.insertAdjacentElement('afterend',availabilityNotice);
+  const announce=document.querySelector('.announce');
+  const pageNotice=document.createElement('p');
+  pageNotice.id='checkout-paused-banner';
+  pageNotice.setAttribute('role','status');
+  pageNotice.hidden=true;
+  if(announce)announce.append(pageNotice);
+  const formSubmit=form.querySelector('[type="submit"]');
+  const showAvailability=()=>{
+    const enabled=window.AltaCheckoutEnabled===true;
+    reviewButton.disabled=!enabled || !state.cart.length;
+    if(formSubmit)formSubmit.disabled=!enabled;
+    if(enabled){
+      reviewButton.innerHTML=originalReviewMarkup;
+      availabilityNotice.textContent='';
+      pageNotice.hidden=true;
+    }else{
+      const lang=window.AltaLocale?.language || 'en';
+      const copy=pausedCopy[lang]||pausedCopy.en;
+      reviewButton.textContent=copy.button;
+      availabilityNotice.textContent=copy.notice;
+      pageNotice.textContent=copy.notice;
+      pageNotice.hidden=false;
+    }
+  };
+  showAvailability();
+  if(window.AltaLocale?.onChange)window.AltaLocale.onChange(showAvailability);
+  fetch('/api/checkout-status',{cache:'no-store'})
+    .then(response=>response.ok?response.json():null)
+    .then(result=>{window.AltaCheckoutEnabled=result?.enabled===true;showAvailability();})
+    .catch(()=>{window.AltaCheckoutEnabled=false;showAvailability();});
   const message=document.createElement('p'); message.setAttribute('role','status'); form.append(message);
   const showShipping=()=>{
     const summary=document.querySelector('#checkout-summary');
@@ -10,6 +55,10 @@
   let busy=false;
   form.addEventListener('submit',async event=>{
     event.preventDefault();event.stopImmediatePropagation();
+    if(window.AltaCheckoutEnabled!==true){
+      message.textContent='Online checkout is currently unavailable.';
+      return;
+    }
     if(busy||!form.reportValidity())return;
     busy=true;const button=form.querySelector('[type="submit"]');button.disabled=true;message.textContent='Opening secure Stripe checkout…';
     try{
