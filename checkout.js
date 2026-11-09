@@ -19,7 +19,7 @@
   const formSubmit=form.querySelector('[type="submit"]');
   const showAvailability=()=>{
     const enabled=window.AltaCheckoutEnabled===true;
-    reviewButton.disabled=!enabled || !window.state?.cart?.length;
+    reviewButton.disabled=!enabled || !state.cart.length;
     if(formSubmit)formSubmit.disabled=!enabled;
     if(enabled){
       reviewButton.innerHTML=originalReviewMarkup;
