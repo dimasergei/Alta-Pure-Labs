@@ -12,7 +12,7 @@
  form.addEventListener('submit',async e=>{
   e.preventDefault();panel.hidden=true;metrics.replaceChildren();button.disabled=true;status.textContent='Loading live counts…';
   try{
-   const response=await fetch('/api/admin-operations-overview',{method:'GET',cache:'no-store',headers:{'x-admin-password':input.value}});
+   const response=await fetch('/api/admin-suppliers?overview=1',{method:'GET',cache:'no-store',headers:{'x-admin-password':input.value}});
    if(!response.ok)throw Error(response.status===401?'Admin password not accepted.':'Operational data is temporarily unavailable.');
    const data=await response.json();
    if(!data||typeof data.counts!=='object')throw Error('Invalid response.');
