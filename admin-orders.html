@@ -3295,6 +3295,8 @@
     }
 
     async function loadSupplierData() {
+      $('#supplier-batches').innerHTML = '<p class="muted">Loading batches…</p>';
+      $('#supplier-directory-list').innerHTML = '<p class="muted">Loading suppliers…</p>';
       try {
         const [supplierResponse, batchResponse] = await Promise.all([
           api('/api/admin-suppliers'),
@@ -3313,6 +3315,8 @@
         renderSupplierBatches();
         renderSupplierDirectory();
       } catch (error) {
+        $('#supplier-batches').innerHTML = '<p class="error" role="alert">Batches could not be loaded. Use Refresh to try again.</p>';
+        $('#supplier-directory-list').innerHTML = '<p class="error" role="alert">Suppliers could not be loaded.</p>';
         setNotice(error.message, true);
       }
     }
@@ -3696,6 +3700,7 @@
     }
 
     async function loadNotifications() {
+      $('#notifications-list').innerHTML = '<p class="muted">Loading notifications…</p>';
       try {
         const params = new URLSearchParams({
           status: $('#notification-status').value,
@@ -3712,12 +3717,15 @@
           ? response.notifications
           : [];
         notificationPagination = response.pagination || { total: notifications.length, has_previous: false, has_next: false };
-        $('#notification-page-summary').textContent = `${notificationOffset + 1}–${notificationOffset + notifications.length} of ${notificationPagination.total} notifications`;
+        const firstNotification = notifications.length ? notificationOffset + 1 : 0;
+        const lastNotification = notificationOffset + notifications.length;
+        $('#notification-page-summary').textContent = `${firstNotification}–${lastNotification} of ${notificationPagination.total} notifications`;
         $('#notification-previous').disabled = !notificationPagination.has_previous;
         $('#notification-next').disabled = !notificationPagination.has_next;
 
         renderNotifications();
       } catch (error) {
+        $('#notifications-list').innerHTML = '<p class="error" role="alert">Notification history is unavailable. Refresh to try again.</p>';
         setNotice(error.message, true);
       }
     }
