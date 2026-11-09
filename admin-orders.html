@@ -1266,6 +1266,16 @@
               <div id="supplier-batches" class="batches"></div>
             </div>
           </div>
+
+          <div class="supplier-directory">
+            <div class="panel-head">
+              <div>
+                <h2>Suppliers</h2>
+                <p>Manage supplier contact details and availability.</p>
+              </div>
+            </div>
+            <div id="supplier-directory-list" class="supplier-directory-list" aria-live="polite"></div>
+          </div>
         </section>
 
         </section>
@@ -3025,6 +3035,69 @@
     let suppliers = [];
     let supplierBatches = [];
 
+    function renderSupplierDirectory() {
+      const container = $('#supplier-directory-list');
+      if (!suppliers.length) {
+        container.innerHTML = '<p class="muted">No suppliers have been added yet.</p>';
+        return;
+      }
+      container.innerHTML = suppliers.map((supplier) => {
+        const batchCount = supplierBatches.filter((batch) => batch.supplier_id === supplier.id || batch.suppliers?.id === supplier.id).length;
+        return `
+          <article class="supplier-directory-card">
+            <div class="supplier-directory-main">
+              <strong>${escapeHtml(supplier.name)}</strong>
+              <span>${escapeHtml(supplier.contact_name || 'No contact name')} · ${escapeHtml(supplier.email || 'No email')}</span>
+              <small>${batchCount} associated batch${batchCount === 1 ? '' : 'es'} · ${supplier.active ? 'Active' : 'Archived'}</small>
+            </div>
+            <div class="actions">
+              <button class="ghost" type="button" data-supplier-id="${escapeHtml(supplier.id)}" data-action="edit-supplier">Edit</button>
+              ${supplier.active
+                ? `<button class="ghost" type="button" data-supplier-id="${escapeHtml(supplier.id)}" data-action="archive-supplier">Archive</button>`
+                : `<button class="ghost" type="button" data-supplier-id="${escapeHtml(supplier.id)}" data-action="restore-supplier">Restore</button>`}
+              <button class="ghost danger-action" type="button" data-supplier-id="${escapeHtml(supplier.id)}" data-action="delete-supplier">Delete</button>
+            </div>
+          </article>`;
+      }).join('');
+    }
+
+    $('#supplier-directory-list').addEventListener('click', async (event) => {
+      const button = event.target.closest('button[data-action]');
+      if (!button) return;
+      const supplier = suppliers.find((item) => item.id === button.dataset.supplierId);
+      if (!supplier) return;
+      const action = button.dataset.action;
+      let payload = { supplier_id: supplier.id };
+      if (action === 'edit-supplier') {
+        const name = window.prompt('Supplier name', supplier.name);
+        if (name === null) return;
+        const contact_name = window.prompt('Contact name', supplier.contact_name || '');
+        if (contact_name === null) return;
+        const email = window.prompt('Supplier email', supplier.email || '');
+        if (email === null) return;
+        payload = { ...payload, name: name.trim(), contact_name: contact_name.trim(), email: email.trim() };
+      } else if (action === 'archive-supplier' || action === 'restore-supplier') {
+        const active = action === 'restore-supplier';
+        if (!window.confirm(`${active ? 'Restore' : 'Archive'} supplier “${supplier.name}”?`)) return;
+        payload.active = active;
+      } else if (action === 'delete-supplier') {
+        if (!window.confirm(`Permanently delete supplier “${supplier.name}”? This is allowed only when no batch references it.`)) return;
+        try {
+          await api('/api/admin-suppliers', { method: 'DELETE', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) });
+          await loadSupplierData();
+          setNotice('Supplier deleted.');
+        } catch (error) { setNotice(error.message, true); }
+        return;
+      } else return;
+      button.disabled = true;
+      try {
+        await api('/api/admin-suppliers', { method: 'PATCH', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) });
+        await loadSupplierData();
+        setNotice(action === 'edit-supplier' ? 'Supplier updated.' : 'Supplier status updated.');
+      } catch (error) { setNotice(error.message, true); }
+      finally { button.disabled = false; }
+    });
+
     function renderSupplierOptions() {
       const select = $('#batch-supplier');
       const current = select.value;
@@ -3180,6 +3253,7 @@
 
         renderSupplierOptions();
         renderSupplierBatches();
+        renderSupplierDirectory();
       } catch (error) {
         setNotice(error.message, true);
       }
