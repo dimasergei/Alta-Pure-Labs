@@ -36,8 +36,8 @@ begin
    raise exception 'Inventory event ledger must be append-only for service role';
  end if;
 end $$;
-insert into public.suppliers(id,name) values
- ('10000000-0000-4000-8000-000000000001','Fixture supplier');
+insert into public.suppliers(id) values
+ ('10000000-0000-4000-8000-000000000001');
 -- Default quarantine; no automatic release or public COA.
 insert into public.enterprise_inventory_lots(
  supplier_id,sku_key,lot_number,fulfillment_site,on_hand
