@@ -275,8 +275,9 @@ async function updateBatch(res, body) {
   const previous = checked(await db.from('supplier_batches')
     .select('id,status,archived_at').eq('id', batchId).maybeSingle());
   if (!previous) throw httpError(404, 'Batch not found.');
-  if (previous.status === 'fulfilled') {
-    throw httpError(409, 'Fulfilled batches cannot be changed or reopened.');
+  if (previous.status === 'fulfilled' &&
+      (body.name !== undefined || body.status !== undefined)) {
+    throw httpError(409, 'Fulfilled batches cannot be renamed or have their status changed.');
   }
   const updates = { updated_at: new Date().toISOString() };
   if (body.name !== undefined) {
@@ -290,9 +291,6 @@ async function updateBatch(res, body) {
   }
   if (body.archived !== undefined) {
     if (typeof body.archived !== 'boolean') throw httpError(400, 'Archived must be true or false.');
-    if (body.archived && ['sent', 'fulfilled'].includes(previous.status)) {
-      throw httpError(409, 'Sent or fulfilled batches cannot be archived through this action. Preserve their operational history.');
-    }
     updates.archived_at = body.archived ? new Date().toISOString() : null;
   }
   if (Object.keys(updates).length === 1) throw httpError(400, 'No batch changes were provided.');
