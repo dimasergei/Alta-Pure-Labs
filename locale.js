@@ -29,7 +29,7 @@
       searchProducts:"Rechercher des produits", searchPlaceholder:"Rechercher des composés", categories:"Catégories", sortProducts:"Trier les produits", cart:"Panier", checkout:"Vérifier la commande",
       orderRequest:"Demande de commande", localSummary:"Ceci est un récapitulatif local. Aucun paiement n’est traité.", name:"Nom", email:"Courriel", organization:"Laboratoire ou organisme",
       researchConfirmation:"Je confirme que cette demande concerne uniquement la recherche en laboratoire et non la consommation humaine.", placeRequest:"Envoyer la demande",
-      pricesUSD:"Prix en USD", estimateNote:"Estimation d’affichage · devise de paiement USD", rateUnavailable:"Taux en direct indisponibles · affichage en USD",
+      pricesUSD:"Prix en USD", estimateNote:"Estimation convertie · prix de base en USD", rateUnavailable:"Taux en direct indisponibles · affichage en USD",
       displayCurrencyNote:"Les montants convertis sont indicatifs et basés sur les prix du catalogue en USD.", productSingular:"produit", productPlural:"produits",
       showMore:"Afficher plus de produits ({count} restants)", cartEmpty:"Votre panier est vide.", openCart:"Ouvrir le panier", openCartCount:"Ouvrir le panier, {count} articles",
       each:"chacun", decrease:"Diminuer", increase:"Augmenter", quantity:"Quantité", selectedDosage:"Format sélectionné", perUnit:"par unité", add:"Ajouter",
