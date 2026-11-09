@@ -36,6 +36,18 @@ th,td{padding:13px 15px;border-bottom:1px solid var(--border)}th{color:var(--mut
 <button type="submit">Record pending reference</button>
 </form><p id="coa-intake-status" role="status" aria-live="polite"></p>
 </section>
+<section class="notice" aria-labelledby="coa-review-title">
+<h2 id="coa-review-title">Quality document rejection &amp; withdrawal</h2>
+<p class="muted">Revoke publication eligibility for an existing report. Rejection is for pending reports; withdrawal is for pending or previously verified reports. This action does not release inventory or approve a document. Verification and publication require independent evidence review.</p>
+<form id="coa-review-form" style="display:grid;max-width:760px;gap:12px">
+<label>Quality report UUID<input id="coa-review-id" required maxlength="36"></label>
+<label>Action<select id="coa-review-action" required><option value="reject">Reject pending report</option><option value="withdraw">Withdraw report</option></select></label>
+<label>Reason (at least 12 characters)<textarea id="coa-review-reason" required minlength="12" maxlength="500" rows="3"></textarea></label>
+<label>Admin password<input id="coa-review-password" type="password" required minlength="32" autocomplete="off"></label>
+<label style="display:flex;align-items:center;gap:8px"><input id="coa-review-confirm" type="checkbox" required>I understand this will revoke publication eligibility.</label>
+<button type="submit">Confirm report status change</button>
+</form><p id="coa-review-status" role="status" aria-live="polite"></p>
+</section>
 <section id="inventory-content" hidden>
 <h2>Inventory lots</h2><div class="table-wrap"><table><thead><tr><th>SKU</th><th>Lot</th><th>Site</th><th>Status</th><th>On hand</th><th>Reserved</th><th>Damaged</th></tr></thead><tbody id="inventory-lots"></tbody></table></div>
 <h2>Quality reports</h2><div class="table-wrap"><table><thead><tr><th>Report</th><th>Laboratory</th><th>Status</th><th>Publication</th></tr></thead><tbody id="inventory-reports"></tbody></table></div>
