@@ -76,6 +76,8 @@ Source: `products.js` on `main` (read during this review). All 43 records in the
 
 The current code's 43 injectable records include products Health Canada specifically identifies in its public peptide advisories, including retatrutide, tirzepatide, semaglutide, BPC-157, TB-500, MOTS-C, NAD+, and others. The advisories do not by themselves settle every product's classification in every country; they are a clear reason not to infer that RUO labeling or a global destination selector authorizes sale.
 
+The route-level starting template is [`compliance/shipping-lane-register-template.csv`](./shipping-lane-register-template.csv), with instructions in [`compliance/shipping-lane-register-readme.md`](./shipping-lane-register-readme.md). It starts with 84 placeholder SKU rows and `DENY` decisions. Duplicate a row for each exact destination + fulfillment origin/site + shipping service under review; incomplete or unlisted lanes remain denied.
+
 ## Working SKU evidence register
 
 A fillable register now exists at [`compliance/sku-evidence-register.csv`](./sku-evidence-register.csv), with instructions in [`compliance/sku-evidence-register-readme.md`](./sku-evidence-register-readme.md). It contains one row for each of the 84 exact sellable variants from `main/products.js`; 83 match the uploaded manifest and the needles 10-pack is flagged as absent. The register captures supplier/manufacturer, formulation, lot-specific COA and quality testing, labeling and claims, intended use, origin/destination classification, importer/exporter, fulfillment, carrier and reviewer evidence. Every row starts as `HOLD` or `SEPARATE REVIEW`; blank evidence fields are intentional. This is a diligence worksheet, not a product approval or shipping allowlist.
