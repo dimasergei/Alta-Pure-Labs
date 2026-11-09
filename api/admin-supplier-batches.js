@@ -70,8 +70,9 @@ module.exports = async (req, res) => {
       status
     });
 
-    return res.status(status).json({
-      error: status < 500 ? error.message : 'Supplier batch request failed.'
+    const safe = publicBatchError(error);
+    return res.status(safe.status || status).json({
+      error: safe.message
     });
   }
 };
@@ -312,4 +313,39 @@ async function deleteBatch(res, body) {
   const result = checked(await db.rpc('admin_delete_supplier_batch', { p_batch_id: batchId }));
   if (!result || result.deleted !== true) throw httpError(500, 'Batch deletion was not confirmed.');
   return res.status(200).json({ deleted: true, batch_id: batchId, audit_id: result.audit_id });
+}
+
+function publicBatchError(error) {
+  const message = String(error?.message || '');
+  if (/already assigned to an active supplier batch/i.test(message)) {
+    return {
+      status: 409,
+      message: 'One or more selected items are already assigned to another active batch. Refresh the orders and batches, then select only unbatched orders.'
+    };
+  }
+  if (/only paid orders|only unfulfilled orders|archived orders cannot be added|has no items/i.test(message)) {
+    return {
+      status: 409,
+      message: 'One or more selected orders are no longer eligible. Refresh the order list and select paid, unarchived orders that still need fulfillment.'
+    };
+  }
+  if (/active supplier not found/i.test(message)) {
+    return {
+      status: 409,
+      message: 'The selected supplier is inactive or unavailable. Restore it or choose an active supplier.'
+    };
+  }
+  if (/batch name is already in use/i.test(message)) {
+    return {
+      status: 409,
+      message: 'That batch name is already in use. Choose a different name.'
+    };
+  }
+  if (error?.status && error.status < 500) {
+    return { status: error.status, message: message || 'Check the submitted batch details and try again.' };
+  }
+  return {
+    status: 500,
+    message: 'Batch creation failed. Refresh the dashboard and check the batch list before retrying, so you do not create a duplicate.'
+  };
 }
