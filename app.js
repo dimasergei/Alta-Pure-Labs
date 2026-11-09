@@ -223,7 +223,7 @@ function renderCart() {
   }
   const total = state.cart.reduce((sum, line) => sum + line.price * line.qty, 0);
   $("#cart-total").textContent = money(total);
-  $("#checkout").disabled = state.cart.length === 0;
+  $("#checkout").disabled = state.cart.length === 0 || window.AltaCheckoutEnabled !== true;
 }
 
 function openProduct(id, selectedSize) {
