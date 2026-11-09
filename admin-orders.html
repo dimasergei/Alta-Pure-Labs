@@ -1079,6 +1079,33 @@
             </label>
 
             <label class="field">
+              Payment status
+              <select id="payment-filter">
+                <option value="">All payment statuses</option>
+                <option value="pending">Pending</option>
+                <option value="paid">Paid</option>
+                <option value="failed">Failed</option>
+                <option value="expired">Expired</option>
+                <option value="partially_refunded">Partially refunded</option>
+                <option value="refunded">Refunded</option>
+              </select>
+            </label>
+
+            <label class="field">
+              Fulfillment status
+              <select id="fulfillment-filter">
+                <option value="">All fulfillment statuses</option>
+                <option value="unfulfilled">Unfulfilled</option>
+                <option value="processing">Processing</option>
+                <option value="awaiting_supplier">Awaiting supplier</option>
+                <option value="partially_shipped">Partially shipped</option>
+                <option value="shipped">Shipped</option>
+                <option value="delivered">Delivered</option>
+                <option value="canceled">Canceled</option>
+              </select>
+            </label>
+
+            <label class="field">
               Priority
               <select id="priority-filter">
                 <option value="">All priorities</option>
@@ -1689,7 +1716,9 @@
         page: String(currentPage),
         page_size: String(pageSize),
         sort: appliedFilters.sort,
-        priority: appliedFilters.priority
+        priority: appliedFilters.priority,
+        payment_status: appliedFilters.paymentStatus,
+        fulfillment_status: appliedFilters.fulfillmentStatus
       });
 
       if (appliedFilters.from) {
@@ -2660,6 +2689,8 @@
         appliedFilters = {
           sort: $('#sort-orders').value,
           priority: $('#priority-filter').value,
+          paymentStatus: $('#payment-filter').value,
+          fulfillmentStatus: $('#fulfillment-filter').value,
           ...range
         };
 
