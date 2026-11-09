@@ -18,7 +18,7 @@ test("storefront exposes currency and language selectors in the header", () => {
 test("currency conversion uses live USD-based rates and safely falls back to USD", () => {
   assert.match(locale, /api\.frankfurter\.dev\/v1\/latest\?base=USD/);
   assert.match(locale, /rates = \{USD:1\}/);
-  assert.match(locale, /checkout currency USD/);
+  assert.match(locale, /based on USD prices/);
   assert.match(locale, /ap-currency/);
   assert.match(locale, /ap-language/);
 });
