@@ -1340,7 +1340,14 @@
             </div>
           </div>
 
-          <div id="notifications-list" class="notifications"></div>
+          <div id="notifications-list" class="notifications" aria-live="polite"></div>
+          <div class="notification-pagination">
+            <span id="notification-page-summary" class="muted" aria-live="polite"></span>
+            <div class="actions">
+              <button id="notification-previous" class="ghost" type="button" disabled>Previous</button>
+              <button id="notification-next" class="ghost" type="button" disabled>Next</button>
+            </div>
+          </div>
         </section>
       </section>
     </div>
@@ -3569,6 +3576,8 @@
     });
 
     let notifications = [];
+    let notificationOffset = 0;
+    let notificationPagination = { total: 0, has_previous: false, has_next: false };
 
     function formatNotificationType(type) {
       const labels = {
@@ -3619,6 +3628,11 @@
                   ? 'pending'
                   : '';
 
+          const batchReferences = (notification.batch_references || []).map((batch) => `${batch.name} (${batch.status})`).join(', ');
+          const batchLine = batchReferences
+            ? `<div class="meta">Batch: ${escapeHtml(batchReferences)}</div>`
+            : '<div class="meta">Batch: —</div>';
+
           const error = notification.last_error
             ? `<div class="meta">Error: ${escapeHtml(notification.last_error)}</div>`
             : '';
@@ -3649,6 +3663,8 @@
                 ${escapeHtml(formatNotificationStatus(notification.status))}
               </div>
 
+              ${batchLine}
+              <div class="meta">Created: ${escapeHtml(formatDate(notification.created_at))}</div>
               ${error}
 
               <div class="actions">
@@ -3664,7 +3680,9 @@
       try {
         const params = new URLSearchParams({
           status: $('#notification-status').value,
-          search: $('#notification-search').value.trim()
+          search: $('#notification-search').value.trim(),
+          limit: '50',
+          offset: String(notificationOffset)
         });
 
         const response = await api(
@@ -3674,6 +3692,10 @@
         notifications = Array.isArray(response.notifications)
           ? response.notifications
           : [];
+        notificationPagination = response.pagination || { total: notifications.length, has_previous: false, has_next: false };
+        $('#notification-page-summary').textContent = `${notificationOffset + 1}–${notificationOffset + notifications.length} of ${notificationPagination.total} notifications`;
+        $('#notification-previous').disabled = !notificationPagination.has_previous;
+        $('#notification-next').disabled = !notificationPagination.has_next;
 
         renderNotifications();
       } catch (error) {
@@ -3681,13 +3703,24 @@
       }
     }
 
-    $('#notification-status').addEventListener(
-      'change',
-      loadNotifications
-    );
+    $('#notification-status').addEventListener('change', () => {
+      notificationOffset = 0;
+      loadNotifications();
+    });
+
+    $('#notification-previous').addEventListener('click', () => {
+      notificationOffset = Math.max(0, notificationOffset - 50);
+      loadNotifications();
+    });
+    $('#notification-next').addEventListener('click', () => {
+      if (!notificationPagination.has_next) return;
+      notificationOffset += 50;
+      loadNotifications();
+    });
 
     $('#notification-search').addEventListener('input', () => {
       clearTimeout(notificationSearchTimer);
+      notificationOffset = 0;
       notificationSearchTimer = setTimeout(loadNotifications, 350);
     });
 
