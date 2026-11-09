@@ -3534,6 +3534,17 @@
         return;
       }
 
+      const selectedRows = loadedOrders.filter((order) => selectedIds.includes(order.id));
+      const eligibleRows = selectedRows.filter((order) =>
+        ['paid', 'partially_refunded'].includes(order.payment_status) &&
+        ['unfulfilled', 'processing', 'awaiting_supplier'].includes(order.fulfillment_status || 'unfulfilled') &&
+        !order.archived
+      );
+      if (eligibleRows.length !== selectedIds.length) {
+        setNotice('One or more selected orders are not eligible. Only paid, unarchived, unfulfilled/processing orders can be batched.', true);
+        return;
+      }
+
       if (!window.confirm(
         `Create supplier batch “${name}” using ${selectedIds.length} selected order${selectedIds.length === 1 ? '' : 's'}?`
       )) {
