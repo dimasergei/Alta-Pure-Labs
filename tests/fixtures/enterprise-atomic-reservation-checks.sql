@@ -38,19 +38,19 @@ begin
  if (select count(*) from public.enterprise_inventory_events where event_kind='reserve')<>1 then
   raise exception 'Expected exactly one reservation event';
  end if;
-end $;
+end $$;
 -- Test actual invocation as the isolated service_role (not the postgres owner).
 set role service_role;
 select public.enterprise_reserve_inventory(id,1,'fixture-atomic-0004','fixture-service')
 from public.enterprise_inventory_lots where lot_number='FIXTURE-LOT-1';
 reset role;
-do $
+do $$
 declare n int;
 begin
  select reserved into n from public.enterprise_inventory_lots where lot_number='FIXTURE-LOT-1';
  if n<>7 then raise exception 'Service role reservation did not commit'; end if;
-end $;
-do $
+end $$;
+do $$
 begin
  if has_function_privilege('anon',
    'public.enterprise_reserve_inventory(uuid,integer,text,text)','EXECUTE')
