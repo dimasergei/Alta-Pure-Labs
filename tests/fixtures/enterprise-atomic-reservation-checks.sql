@@ -1,6 +1,6 @@
 \set ON_ERROR_STOP on
 -- Disposable PostgreSQL 17 only; production SQL is never executed here.
-\i tests/fixtures/enterprise-inventory-schema-checks.sql
+-- Requires enterprise-inventory-schema-checks.sql already executed on the same disposable database.
 \i tests/fixtures/enterprise-atomic-reservation.sql
 
 -- Mimic Supabase's service_role BYPASSRLS attribute in the isolated fixture.
