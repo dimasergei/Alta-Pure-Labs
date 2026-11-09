@@ -55,7 +55,7 @@ test('inventory intake preview is authenticated and cannot write inventory',asyn
  const ui=fs.readFileSync(path.join(root,'admin-inventory.js'),'utf8');
  assert.match(source,/preview_inventory_import/);
  assert.match(source,/normalizeInventoryIntake/);
- assert.match(source,/saved:false, can_sell:false/);
+ assert.match(source,/inventoryIntake\(inventoryDb\(\), body\.rows, commit\)/);
  assert.match(ui,/Nothing saved/);
  assert.doesNotMatch(ui,/localStorage|sessionStorage|innerHTML\s*=/);
 });

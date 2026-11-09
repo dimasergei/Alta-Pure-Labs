@@ -35,23 +35,32 @@
  const intakePassword=document.getElementById('intake-password');
  const intakeStatus=document.getElementById('intake-status');
  const intakeResults=document.getElementById('intake-results');
- if(intakeForm)intakeForm.addEventListener('submit',async event=>{
-  event.preventDefault();intakeResults.replaceChildren();
-  const button=intakeForm.querySelector('button');button.disabled=true;
+ const saveButton=document.getElementById('intake-save');
+ const confirm=document.getElementById('intake-confirm');
+ async function submitIntake(commit){
+  intakeResults.replaceChildren();
+  const button=intakeForm.querySelector('button[type="submit"]');
+  button.disabled=true;saveButton.disabled=true;
   try{
    const rows=JSON.parse(intakeJson.value);
-   if(!Array.isArray(rows)||rows.length<1||rows.length>100)throw Error('Enter a JSON array of 1 to 100 records.');
+   if(!Array.isArray(rows)||rows.length!==1)throw Error('Enter a JSON array containing exactly one lot.');
+   if(commit&&!confirm.checked)throw Error('Confirm quarantine-only import before saving.');
    const response=await fetch('/api/admin-suppliers',{method:'POST',cache:'no-store',
     headers:{'x-admin-password':intakePassword.value,'content-type':'application/json'},
-    body:JSON.stringify({action:'preview_inventory_import',rows})});
-   if(!response.ok)throw Error(response.status===401?'Admin password not accepted.':'Inventory preview unavailable.');
+    body:JSON.stringify({action:commit?'commit_inventory_intake':'preview_inventory_import',
+      confirm_quarantine_only:commit&&confirm.checked,rows})});
    const result=await response.json();
-   intakeStatus.textContent=(result.accepted?.length||0)+' accepted for quarantine preview; '+
-    (result.rejected?.length||0)+' rejected. Nothing saved.';
+   if(!response.ok&&response.status===401)throw Error('Admin password not accepted.');
+   if(!response.ok&&response.status>=500)throw Error('Inventory service unavailable.');
+   intakeStatus.textContent=result.saved?'One lot saved in quarantine. Not available for sale.':
+    (result.accepted?.length||0)+' valid for quarantine; '+(result.rejected?.length||0)+' rejected. Nothing saved.';
    for(const rejection of result.rejected||[]){
     intakeResults.append(make('p','Row '+(rejection.index+1)+': '+rejection.reason));
    }
+   if(result.saved){intakeJson.value='';confirm.checked=false;}
   }catch(error){intakeStatus.textContent=error.message;}
-  finally{intakePassword.value='';button.disabled=false;}
- });
+  finally{intakePassword.value='';button.disabled=false;saveButton.disabled=false;}
+ }
+ if(intakeForm)intakeForm.addEventListener('submit',event=>{event.preventDefault();submitIntake(false);});
+ if(saveButton)saveButton.addEventListener('click',()=>submitIntake(true));
 })();

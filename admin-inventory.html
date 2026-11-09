@@ -16,11 +16,13 @@ th,td{padding:13px 15px;border-bottom:1px solid var(--border)}th{color:var(--mut
 <form id="inventory-form"><label>Admin password<input id="inventory-password" type="password" autocomplete="off" minlength="32" required></label><button type="submit">Load records</button></form>
 <p id="inventory-status" role="status" aria-live="polite">Enter your admin password to view inventory records.</p>
 <section class="notice" aria-labelledby="intake-title"><h2 id="intake-title">Supplier inventory intake preview</h2>
-<p class="muted">Paste up to 100 JSON records for validation. This preview never saves, releases or publishes inventory.</p>
+<p class="muted">Paste exactly one supplier lot JSON record. Preview first, then explicitly save it to quarantine. Saving never releases or publishes inventory.</p>
 <form id="intake-form" style="display:block"><label style="display:grid;max-width:850px">Inventory JSON
 <textarea id="intake-json" rows="7" maxlength="32768" style="width:100%;padding:14px;font:13px/1.5 monospace" placeholder='[{"supplier_id":"...","sku_key":"...","lot_number":"...","fulfillment_site":"...","on_hand":0,"supplier_evidence_reference":"...","composition_confirmed":true,"strength_confirmed":true}]'></textarea></label>
 <label>Admin password<input id="intake-password" type="password" autocomplete="off" required minlength="32"></label>
-<button type="submit">Validate only</button></form>
+<button type="submit">Validate only</button>
+<label style="display:flex;gap:8px;align-items:center;max-width:680px"><input id="intake-confirm" type="checkbox">I confirm this supplier record is accurate and understand it will be saved in quarantine, not offered for sale.</label>
+<button id="intake-save" type="button">Save one lot to quarantine</button></form>
 <p id="intake-status" role="status" aria-live="polite"></p><div id="intake-results"></div></section>
 <section id="inventory-content" hidden>
 <h2>Inventory lots</h2><div class="table-wrap"><table><thead><tr><th>SKU</th><th>Lot</th><th>Site</th><th>Status</th><th>On hand</th><th>Reserved</th><th>Damaged</th></tr></thead><tbody id="inventory-lots"></tbody></table></div>
