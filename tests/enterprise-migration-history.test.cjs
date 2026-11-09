@@ -30,3 +30,13 @@ test('atomic reservation migration is recorded with remote Supabase version',()=
  assert.match(sql,/and on_hand - reserved - damaged >= p_quantity/);
  assert.match(sql,/insert into public\.enterprise_inventory_events/);
 });
+
+test('atomic reservation cancellation migration matches remote history',()=>{
+ const file='20261109231602_enterprise_atomic_reservation_cancellation.sql';
+ assert.ok(fs.readdirSync(root).includes(file));
+ const sql=fs.readFileSync(path.join(root,file),'utf8');
+ assert.match(sql,/security invoker/);
+ assert.match(sql,/for update/);
+ assert.match(sql,/revoke all on function public\.enterprise_cancel_reservation/);
+ assert.match(sql,/grant execute on function public\.enterprise_cancel_reservation/);
+});
