@@ -136,7 +136,7 @@ async function sendOrderEmails(db, orderId, session) {
   if (orderResponse.error) throw orderResponse.error;
   const order = orderResponse.data;
   if (!order) throw new Error('Order not found after payment.');
-  const itemsResponse = await db.from('store_order_items').select('*').eq('order_id', orderId).order('created_at', { ascending: true });
+  const itemsResponse = await db.from('store_order_items').select('*').eq('order_id', orderId);
   if (itemsResponse.error) throw itemsResponse.error;
   const items = itemsResponse.data || [];
   const customerEmail = order.customer_email;
