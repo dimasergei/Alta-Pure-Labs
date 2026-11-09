@@ -79,8 +79,9 @@ module.exports = async (req, res) => {
         store_orders (
           order_number,
           customer_name
-        , { count: 'exact' })
-      `
+        )
+      `,
+      { count: 'exact' }
       )
       .order('created_at', { ascending: false });
 
