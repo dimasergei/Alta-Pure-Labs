@@ -161,6 +161,7 @@ async function listBatches(req, res) {
         status,
         created_at,
         updated_at,
+        archived_at,
         suppliers (
           id,
           name,
