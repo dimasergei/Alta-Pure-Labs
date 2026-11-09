@@ -98,7 +98,7 @@
   };
   const formatMoney = (amount) => {
     const code = ratesLoaded && rates[currency] ? currency : "USD";
-    return new Intl.NumberFormat({en:"en-US",fr:"fr-CA",es:"es-ES"}[language],{style:"currency",currency:code,maximumFractionDigits:2}).format(amount*rates[code]);
+    return new Intl.NumberFormat(locales[language],{style:"currency",currency:code,maximumFractionDigits:2}).format(amount*rates[code]);
   };
   const setCurrency = async (next) => {
     if (!currencies.includes(next)) return;
@@ -111,4 +111,11 @@
   if(currencySelect){currencySelect.value=currency;currencySelect.addEventListener("change",(event)=>setCurrency(event.target.value));}
   if(languageSelect){languageSelect.value=language;languageSelect.addEventListener("change",(event)=>setLanguage(event.target.value));}
   apply();
+  if (currency !== "USD") {
+    loadRates().then((loaded) => {
+      if (!loaded) { currency = "USD"; write("ap-currency", currency); }
+      apply();
+      notify();
+    });
+  }
 })();
