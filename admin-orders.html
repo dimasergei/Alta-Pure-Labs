@@ -12,6 +12,11 @@
     href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='14' fill='%23163832'/%3E%3Ctext x='32' y='40' text-anchor='middle' font-size='22' font-family='Arial' fill='white'%3EAP%3C/text%3E%3C/svg%3E"
   >
 
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/admin-dashboard.css">
+
   <style>
     :root {
       color-scheme: dark;
@@ -966,6 +971,10 @@
   <main class="admin-page">
     <div class="shell">
       <section id="login-view" class="login">
+        <div class="admin-login-brand">
+          <span class="admin-brand-mark" aria-hidden="true"><span></span><span></span><span></span></span>
+          <span><strong>AltaPure Labs</strong><small>ADMIN</small></span>
+        </div>
         <h2>Admin access</h2>
         <p>Sign in to manage orders and fulfillment.</p>
 
@@ -989,7 +998,22 @@
       </section>
 
       <section id="orders-view" hidden>
-        <header class="top">
+        <div class="admin-brandbar">
+          <a class="admin-brand" href="/" aria-label="AltaPure Labs home">
+            <span class="admin-brand-mark" aria-hidden="true"><span></span><span></span><span></span></span>
+            <span class="admin-brand-copy">
+              <span class="admin-brand-name">AltaPure Labs</span>
+              <span class="admin-brand-label">ADMIN</span>
+            </span>
+          </a>
+          <nav class="admin-nav" aria-label="Admin sections">
+            <button class="admin-nav-link is-active" type="button" data-admin-view="orders" aria-current="page">Orders</button>
+            <button class="admin-nav-link" type="button" data-admin-view="batches">Batches</button>
+            <button class="admin-nav-link" type="button" data-admin-view="notifications">Notifications</button>
+          </nav>
+        </div>
+        <header class="top admin-section-heading">
+
           <div>
             <h1>Orders</h1>
             <p id="orders-message" class="subtitle">Loading orders…</p>
@@ -1006,6 +1030,7 @@
           </div>
         </header>
 
+        <section id="admin-orders-section" class="admin-view-section">
         <div class="controls">
           <div class="search-wrap">
             <svg viewBox="0 0 24 24" aria-hidden="true">
@@ -1050,6 +1075,33 @@
                 <option value="oldest">Oldest first</option>
                 <option value="highest_total">Highest total</option>
                 <option value="oldest_pending">Oldest pending payment</option>
+              </select>
+            </label>
+
+            <label class="field">
+              Payment status
+              <select id="payment-filter">
+                <option value="">All payment statuses</option>
+                <option value="pending">Pending</option>
+                <option value="paid">Paid</option>
+                <option value="failed">Failed</option>
+                <option value="expired">Expired</option>
+                <option value="partially_refunded">Partially refunded</option>
+                <option value="refunded">Refunded</option>
+              </select>
+            </label>
+
+            <label class="field">
+              Fulfillment status
+              <select id="fulfillment-filter">
+                <option value="">All fulfillment statuses</option>
+                <option value="unfulfilled">Unfulfilled</option>
+                <option value="processing">Processing</option>
+                <option value="awaiting_supplier">Awaiting supplier</option>
+                <option value="partially_shipped">Partially shipped</option>
+                <option value="shipped">Shipped</option>
+                <option value="delivered">Delivered</option>
+                <option value="canceled">Canceled</option>
               </select>
             </label>
 
@@ -1146,6 +1198,9 @@
           </div>
         </div>
 
+        </section>
+
+        <section id="admin-batches-section" class="admin-view-section" hidden>
         <section class="panel supplier-panel">
           <div class="panel-head">
             <div>
@@ -1238,8 +1293,21 @@
               <div id="supplier-batches" class="batches"></div>
             </div>
           </div>
+
+          <div class="supplier-directory">
+            <div class="panel-head">
+              <div>
+                <h2>Suppliers</h2>
+                <p>Manage supplier contact details and availability.</p>
+              </div>
+            </div>
+            <div id="supplier-directory-list" class="supplier-directory-list" aria-live="polite"></div>
+          </div>
         </section>
 
+        </section>
+
+        <section id="admin-notifications-section" class="admin-view-section" hidden>
         <section class="panel notification-panel">
           <div class="panel-head">
             <div>
@@ -1272,7 +1340,14 @@
             </div>
           </div>
 
-          <div id="notifications-list" class="notifications"></div>
+          <div id="notifications-list" class="notifications" aria-live="polite"></div>
+          <div class="notification-pagination">
+            <span id="notification-page-summary" class="muted" aria-live="polite"></span>
+            <div class="actions">
+              <button id="notification-previous" class="ghost" type="button" disabled>Previous</button>
+              <button id="notification-next" class="ghost" type="button" disabled>Next</button>
+            </div>
+          </div>
         </section>
       </section>
     </div>
@@ -1296,6 +1371,39 @@
     const selectAll = $('#select-all');
     const refreshButton = $('#refresh-button');
     const notice = $('#notice');
+
+    const adminViews = {
+      orders: $('#admin-orders-section'),
+      batches: $('#admin-batches-section'),
+      notifications: $('#admin-notifications-section')
+    };
+
+    function setAdminView(view) {
+      if (!Object.prototype.hasOwnProperty.call(adminViews, view)) return;
+      for (const [name, section] of Object.entries(adminViews)) {
+        section.hidden = name !== view;
+      }
+      document.querySelectorAll('[data-admin-view]').forEach((button) => {
+        const active = button.dataset.adminView === view;
+        button.classList.toggle('is-active', active);
+        if (active) button.setAttribute('aria-current', 'page');
+        else button.removeAttribute('aria-current');
+      });
+      const heading = $('.admin-section-heading h1');
+      const subtitle = $('.admin-section-heading .subtitle');
+      const copy = {
+        orders: ['Orders', 'Review payments and manage fulfillment.'],
+        batches: ['Batches', 'Manage supplier batches and supplier records.'],
+        notifications: ['Notifications', 'Review customer email delivery and retries.']
+      }[view];
+      heading.textContent = copy[0];
+      subtitle.textContent = copy[1];
+    }
+
+    document.querySelectorAll('[data-admin-view]').forEach((button) => {
+      button.addEventListener('click', () => setAdminView(button.dataset.adminView));
+    });
+
 
     const STATUSES = [
       'unfulfilled',
@@ -1340,6 +1448,8 @@
     let appliedFilters = {
       sort: 'newest',
       priority: '',
+      paymentStatus: '',
+      fulfillmentStatus: '',
       from: '',
       to: ''
     };
@@ -1615,7 +1725,9 @@
         page: String(currentPage),
         page_size: String(pageSize),
         sort: appliedFilters.sort,
-        priority: appliedFilters.priority
+        priority: appliedFilters.priority,
+        payment_status: appliedFilters.paymentStatus,
+        fulfillment_status: appliedFilters.fulfillmentStatus
       });
 
       if (appliedFilters.from) {
@@ -1762,7 +1874,10 @@
                   ${escapeHtml(money(order.total_cents, order.currency))}
                 </span>
 
-                <span class="status">
+                <span class="status order-status-stack">
+                  <span class="badge status-${escapeHtml(order.payment_status || 'pending')}">
+                    ${escapeHtml(formatStatus(order.payment_status || 'pending'))}
+                  </span>
                   <span class="badge ${badgeClass}">
                     ${escapeHtml(formatStatus(status))}
                   </span>
@@ -2586,6 +2701,8 @@
         appliedFilters = {
           sort: $('#sort-orders').value,
           priority: $('#priority-filter').value,
+          paymentStatus: $('#payment-filter').value,
+          fulfillmentStatus: $('#fulfillment-filter').value,
           ...range
         };
 
@@ -2961,6 +3078,71 @@
     let suppliers = [];
     let supplierBatches = [];
 
+    function renderSupplierDirectory() {
+      const container = $('#supplier-directory-list');
+      if (!suppliers.length) {
+        container.innerHTML = '<p class="muted">No suppliers have been added yet.</p>';
+        return;
+      }
+      container.innerHTML = suppliers.map((supplier) => {
+        const batchCount = supplierBatches.filter((batch) => batch.supplier_id === supplier.id || batch.suppliers?.id === supplier.id).length;
+        return `
+          <article class="supplier-directory-card">
+            <div class="supplier-directory-main">
+              <strong>${escapeHtml(supplier.name)}</strong>
+              <span>${escapeHtml(supplier.contact_name || 'No contact name')} · ${escapeHtml(supplier.email || 'No email')}</span>
+              <small>${batchCount} associated batch${batchCount === 1 ? '' : 'es'} · ${supplier.active ? 'Active' : 'Archived'}</small>
+            </div>
+            <div class="actions">
+              <button class="ghost" type="button" data-supplier-id="${escapeHtml(supplier.id)}" data-action="edit-supplier">Edit</button>
+              ${supplier.active
+                ? `<button class="ghost" type="button" data-supplier-id="${escapeHtml(supplier.id)}" data-action="archive-supplier">Archive</button>`
+                : `<button class="ghost" type="button" data-supplier-id="${escapeHtml(supplier.id)}" data-action="restore-supplier">Restore</button>`}
+              <button class="ghost danger-action" type="button" data-supplier-id="${escapeHtml(supplier.id)}" data-action="delete-supplier">Delete</button>
+            </div>
+          </article>`;
+      }).join('');
+    }
+
+    $('#supplier-directory-list').addEventListener('click', async (event) => {
+      const button = event.target.closest('button[data-action]');
+      if (!button) return;
+      const supplier = suppliers.find((item) => item.id === button.dataset.supplierId);
+      if (!supplier) return;
+      const action = button.dataset.action;
+      let payload = { supplier_id: supplier.id };
+      if (action === 'edit-supplier') {
+        const name = window.prompt('Supplier name', supplier.name);
+        if (name === null) return;
+        const contact_name = window.prompt('Contact name', supplier.contact_name || '');
+        if (contact_name === null) return;
+        const email = window.prompt('Supplier email', supplier.email || '');
+        if (email === null) return;
+        const notes = window.prompt('Supplier notes / details', supplier.notes || '');
+        if (notes === null) return;
+        payload = { ...payload, name: name.trim(), contact_name: contact_name.trim(), email: email.trim(), notes: notes.trim() };
+      } else if (action === 'archive-supplier' || action === 'restore-supplier') {
+        const active = action === 'restore-supplier';
+        if (!window.confirm(`${active ? 'Restore' : 'Archive'} supplier “${supplier.name}”?`)) return;
+        payload.active = active;
+      } else if (action === 'delete-supplier') {
+        if (!window.confirm(`Permanently delete supplier “${supplier.name}”? This is allowed only when no batch references it.`)) return;
+        try {
+          await api('/api/admin-suppliers', { method: 'DELETE', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) });
+          await loadSupplierData();
+          setNotice('Supplier deleted.');
+        } catch (error) { setNotice(error.message, true); }
+        return;
+      } else return;
+      button.disabled = true;
+      try {
+        await api('/api/admin-suppliers', { method: 'PATCH', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) });
+        await loadSupplierData();
+        setNotice(action === 'edit-supplier' ? 'Supplier updated.' : 'Supplier status updated.');
+      } catch (error) { setNotice(error.message, true); }
+      finally { button.disabled = false; }
+    });
+
     function renderSupplierOptions() {
       const select = $('#batch-supplier');
       const current = select.value;
@@ -3048,6 +3230,9 @@
 
           const supplierName =
             batch.suppliers?.name || 'Unknown supplier';
+          const itemSummary = (batch.supplier_batch_items || []).map((item) =>
+            `${item.product_name} ${item.variant_size || ''} × ${item.quantity}`
+          ).join(' · ');
 
           return `
             <div class="batch-card">
@@ -3058,7 +3243,19 @@
                 ${escapeHtml(formatStatus(batch.status))}
               </div>
 
+              <div class="meta">
+                Orders: ${escapeHtml([...new Set((batch.supplier_batch_items || []).map((item) => item.store_orders?.order_number || item.order_id))].join(', ') || '—')}
+                · Created ${escapeHtml(formatDate(batch.created_at))}
+                · ${batch.archived_at ? 'Archived' : 'Active'}
+              </div>
               <div class="actions">
+                <button class="ghost" type="button" data-batch-id="${escapeHtml(batch.id)}" data-action="rename-batch" ${batch.status === 'fulfilled' || batch.archived_at ? 'disabled' : ''}>Rename</button>
+                ${!batch.archived_at
+                  ? '<button class="ghost" type="button" data-batch-id="' + escapeHtml(batch.id) + '" data-action="archive-batch">Archive</button>'
+                  : batch.archived_at ? '<button class="ghost" type="button" data-batch-id="' + escapeHtml(batch.id) + '" data-action="restore-batch">Restore</button>' : ''}
+                ${batch.status === 'draft' || batch.status === 'canceled'
+                  ? '<button class="ghost danger-action" type="button" data-batch-id="' + escapeHtml(batch.id) + '" data-action="delete-batch">Delete</button>'
+                  : ''}
                 <button
                   class="ghost"
                   type="button"
@@ -3100,6 +3297,8 @@
     }
 
     async function loadSupplierData() {
+      $('#supplier-batches').innerHTML = '<p class="muted">Loading batches…</p>';
+      $('#supplier-directory-list').innerHTML = '<p class="muted">Loading suppliers…</p>';
       try {
         const [supplierResponse, batchResponse] = await Promise.all([
           api('/api/admin-suppliers'),
@@ -3116,7 +3315,10 @@
 
         renderSupplierOptions();
         renderSupplierBatches();
+        renderSupplierDirectory();
       } catch (error) {
+        $('#supplier-batches').innerHTML = '<p class="error" role="alert">Batches could not be loaded. Use Refresh to try again.</p>';
+        $('#supplier-directory-list').innerHTML = '<p class="error" role="alert">Suppliers could not be loaded.</p>';
         setNotice(error.message, true);
       }
     }
@@ -3127,6 +3329,38 @@
       if (!button) return;
 
       const batchId = button.dataset.batchId;
+      const action = button.dataset.action;
+      if (action === 'rename-batch') {
+        const batch = supplierBatches.find((item) => item.id === batchId);
+        const name = window.prompt('Batch name', batch?.name || '');
+        if (name === null || !name.trim()) return;
+        try {
+          await api('/api/admin-supplier-batches', { method: 'PATCH', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ batch_id: batchId, name: name.trim() }) });
+          await loadSupplierData();
+          setNotice('Batch name updated.');
+        } catch (error) { setNotice(error.message, true); }
+        return;
+      }
+      if (action === 'archive-batch' || action === 'restore-batch') {
+        const archived = action === 'archive-batch';
+        if (!window.confirm(`${archived ? 'Archive' : 'Restore'} this batch? Its order and fulfillment records will not be changed.`)) return;
+        try {
+          await api('/api/admin-supplier-batches', { method: 'PATCH', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ batch_id: batchId, archived }) });
+          await loadSupplierData();
+          setNotice(archived ? 'Batch archived.' : 'Batch restored.');
+        } catch (error) { setNotice(error.message, true); }
+        return;
+      }
+      if (action === 'delete-batch') {
+        const batch = supplierBatches.find((item) => item.id === batchId);
+        if (!window.confirm(`Permanently delete draft/canceled batch “${batch?.name || ''}”? An audit snapshot will be retained. Orders and fulfillment records will not be deleted or changed.`)) return;
+        try {
+          await api('/api/admin-supplier-batches', { method: 'DELETE', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ batch_id: batchId }) });
+          await loadSupplierData();
+          setNotice('Batch deleted. Its audit record was retained.');
+        } catch (error) { setNotice(error.message, true); }
+        return;
+      }
 
       if (button.dataset.action === 'download-batch') {
         try {
@@ -3314,6 +3548,17 @@
         return;
       }
 
+      const selectedRows = loadedOrders.filter((order) => selectedIds.includes(order.id));
+      const eligibleRows = selectedRows.filter((order) =>
+        ['paid', 'partially_refunded'].includes(order.payment_status) &&
+        ['unfulfilled', 'processing', 'awaiting_supplier'].includes(order.fulfillment_status || 'unfulfilled') &&
+        !order.archived
+      );
+      if (eligibleRows.length !== selectedIds.length) {
+        setNotice('One or more selected orders are not eligible. Only paid, unarchived, unfulfilled/processing orders can be batched.', true);
+        return;
+      }
+
       if (!window.confirm(
         `Create supplier batch “${name}” using ${selectedIds.length} selected order${selectedIds.length === 1 ? '' : 's'}?`
       )) {
@@ -3356,6 +3601,8 @@
     });
 
     let notifications = [];
+    let notificationOffset = 0;
+    let notificationPagination = { total: 0, has_previous: false, has_next: false };
 
     function formatNotificationType(type) {
       const labels = {
@@ -3406,6 +3653,11 @@
                   ? 'pending'
                   : '';
 
+          const batchReferences = (notification.batch_references || []).map((batch) => `${batch.name} (${batch.status})`).join(', ');
+          const batchLine = batchReferences
+            ? `<div class="meta">Batch: ${escapeHtml(batchReferences)}</div>`
+            : '<div class="meta">Batch: —</div>';
+
           const error = notification.last_error
             ? `<div class="meta">Error: ${escapeHtml(notification.last_error)}</div>`
             : '';
@@ -3436,6 +3688,8 @@
                 ${escapeHtml(formatNotificationStatus(notification.status))}
               </div>
 
+              ${batchLine}
+              <div class="meta">Created: ${escapeHtml(formatDate(notification.created_at))}</div>
               ${error}
 
               <div class="actions">
@@ -3448,10 +3702,13 @@
     }
 
     async function loadNotifications() {
+      $('#notifications-list').innerHTML = '<p class="muted">Loading notifications…</p>';
       try {
         const params = new URLSearchParams({
           status: $('#notification-status').value,
-          search: $('#notification-search').value.trim()
+          search: $('#notification-search').value.trim(),
+          limit: '50',
+          offset: String(notificationOffset)
         });
 
         const response = await api(
@@ -3461,20 +3718,38 @@
         notifications = Array.isArray(response.notifications)
           ? response.notifications
           : [];
+        notificationPagination = response.pagination || { total: notifications.length, has_previous: false, has_next: false };
+        const firstNotification = notifications.length ? notificationOffset + 1 : 0;
+        const lastNotification = notificationOffset + notifications.length;
+        $('#notification-page-summary').textContent = `${firstNotification}–${lastNotification} of ${notificationPagination.total} notifications`;
+        $('#notification-previous').disabled = !notificationPagination.has_previous;
+        $('#notification-next').disabled = !notificationPagination.has_next;
 
         renderNotifications();
       } catch (error) {
+        $('#notifications-list').innerHTML = '<p class="error" role="alert">Notification history is unavailable. Refresh to try again.</p>';
         setNotice(error.message, true);
       }
     }
 
-    $('#notification-status').addEventListener(
-      'change',
-      loadNotifications
-    );
+    $('#notification-status').addEventListener('change', () => {
+      notificationOffset = 0;
+      loadNotifications();
+    });
+
+    $('#notification-previous').addEventListener('click', () => {
+      notificationOffset = Math.max(0, notificationOffset - 50);
+      loadNotifications();
+    });
+    $('#notification-next').addEventListener('click', () => {
+      if (!notificationPagination.has_next) return;
+      notificationOffset += 50;
+      loadNotifications();
+    });
 
     $('#notification-search').addEventListener('input', () => {
       clearTimeout(notificationSearchTimer);
+      notificationOffset = 0;
       notificationSearchTimer = setTimeout(loadNotifications, 350);
     });
 

@@ -31,8 +31,8 @@ module.exports = async (req, res) => {
     return res.status(401).json({ error: 'Unauthorized.' });
   }
 
-  if (!['GET', 'POST', 'PATCH'].includes(req.method)) {
-    res.setHeader('Allow', 'GET, POST, PATCH');
+  if (!['GET', 'POST', 'PATCH', 'DELETE'].includes(req.method)) {
+    res.setHeader('Allow', 'GET, POST, PATCH, DELETE');
     return res.status(405).json({ error: 'Method not allowed.' });
   }
 
@@ -53,6 +53,10 @@ module.exports = async (req, res) => {
 
     if (req.method === 'POST') {
       return await createSupplier(res, body);
+    }
+
+    if (req.method === 'DELETE') {
+      return await deleteSupplier(res, body);
     }
 
     return await updateSupplier(req, res, body);
@@ -199,6 +203,25 @@ async function createSupplier(res, body) {
   );
 
   return res.status(201).json({ supplier });
+}
+
+
+async function deleteSupplier(res, body) {
+  const supplierId = body.supplier_id;
+  if (typeof supplierId !== 'string' || !UUID_PATTERN.test(supplierId)) {
+    throw httpError(400, 'Invalid supplier.');
+  }
+  const { db } = clients();
+  const supplier = checked(await db.from('suppliers')
+    .select('id,name').eq('id', supplierId).maybeSingle());
+  if (!supplier) throw httpError(404, 'Supplier not found.');
+  const references = checked(await db.from('supplier_batches')
+    .select('id').eq('supplier_id', supplierId).limit(1));
+  if (references.length) {
+    throw httpError(409, 'This supplier is referenced by a batch. Archive it instead or reassign its batches first.');
+  }
+  checked(await db.from('suppliers').delete().eq('id', supplierId));
+  return res.status(200).json({ deleted: true, supplier_id: supplierId });
 }
 
 async function updateSupplier(req, res, body) {

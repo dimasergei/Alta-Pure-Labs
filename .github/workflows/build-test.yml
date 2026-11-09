@@ -72,10 +72,15 @@ jobs:
           psql -X -v ON_ERROR_STOP=1 -h 127.0.0.1 -p 5433 -U postgres -d postgres -f supabase/migrations/20261108020000_admin_supplier_batch_function.sql
           psql -X -v ON_ERROR_STOP=1 -h 127.0.0.1 -p 5433 -U postgres -d postgres -c "GRANT EXECUTE ON FUNCTION public.create_supplier_batch(uuid, text, uuid[]) TO anon, authenticated, postgres, service_role"
           psql -X -v ON_ERROR_STOP=1 -h 127.0.0.1 -p 5433 -U postgres -d postgres -f supabase/migrations/20261108060000_restrict_supplier_batch_execution.sql
+          psql -X -v ON_ERROR_STOP=1 -h 127.0.0.1 -p 5433 -U postgres -d postgres -f supabase/migrations/20261108130000_admin_dashboard_lifecycle_safety.sql
       - name: Verify supplier-batch ACLs and valid backend creation
         env:
           PGPASSWORD: postgres
         run: psql -X -v ON_ERROR_STOP=1 -h 127.0.0.1 -p 5433 -U postgres -d postgres -f tests/fixtures/supplier-batch-security-checks.sql
+      - name: Verify admin batch lifecycle safeguards in disposable database
+        env:
+          PGPASSWORD: postgres
+        run: psql -X -v ON_ERROR_STOP=1 -h 127.0.0.1 -p 5433 -U postgres -d postgres -f tests/fixtures/admin-dashboard-lifecycle.sql
       - name: Run disposable PostgreSQL 17 security migration tests
         env:
           PGPASSWORD: postgres

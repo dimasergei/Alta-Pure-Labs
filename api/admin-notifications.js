@@ -80,10 +80,10 @@ module.exports = async (req, res) => {
           order_number,
           customer_name
         )
-      `
+      `,
+      { count: 'exact' }
       )
-      .order('created_at', { ascending: false })
-      .limit(100);
+      .order('created_at', { ascending: false });
 
     if (statusFilter !== 'all') {
       query = query.eq('status', statusFilter);
@@ -99,10 +99,42 @@ module.exports = async (req, res) => {
       );
     }
 
-    const notifications = checked(await query);
+    const limit = Math.min(100, Math.max(1, Number(params.get('limit')) || 50));
+    const requestedOffset = Number(params.get('offset')) || 0;
+    const offset = Number.isSafeInteger(requestedOffset) && requestedOffset >= 0
+      ? Math.min(requestedOffset, 100000)
+      : 0;
+    const { data: pageRows, error: pageError, count } = await query
+      .range(offset, offset + limit - 1);
+    if (pageError) throw pageError;
+    const notifications = pageRows || [];
+    const orderIds = [...new Set(notifications.map((item) => item.order_id).filter(Boolean))];
+    let batchRows = [];
+    if (orderIds.length) {
+      batchRows = checked(await db.from('supplier_batch_items')
+        .select('order_id,supplier_batches(id,name,status,archived_at)')
+        .in('order_id', orderIds));
+    }
+    const batchesByOrder = new Map();
+    for (const row of batchRows || []) {
+      if (!row.supplier_batches) continue;
+      const list = batchesByOrder.get(row.order_id) || [];
+      if (!list.some((batch) => batch.id === row.supplier_batches.id)) list.push(row.supplier_batches);
+      batchesByOrder.set(row.order_id, list);
+    }
+    for (const notification of notifications) {
+      notification.batch_references = batchesByOrder.get(notification.order_id) || [];
+    }
 
     return res.status(200).json({
-      notifications
+      notifications,
+      pagination: {
+        offset,
+        limit,
+        total: count || 0,
+        has_previous: offset > 0,
+        has_next: offset + notifications.length < (count || 0)
+      }
     });
   } catch (error) {
     console.error('Notification queue lookup failed', {
