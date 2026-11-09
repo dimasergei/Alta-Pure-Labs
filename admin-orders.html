@@ -3233,7 +3233,7 @@
               </div>
               <div class="actions">
                 <button class="ghost" type="button" data-batch-id="${escapeHtml(batch.id)}" data-action="rename-batch" ${batch.status === 'fulfilled' || batch.archived_at ? 'disabled' : ''}>Rename</button>
-                ${!batch.archived_at && batch.status === 'draft'
+                ${!batch.archived_at
                   ? '<button class="ghost" type="button" data-batch-id="' + escapeHtml(batch.id) + '" data-action="archive-batch">Archive</button>'
                   : batch.archived_at ? '<button class="ghost" type="button" data-batch-id="' + escapeHtml(batch.id) + '" data-action="restore-batch">Restore</button>' : ''}
                 ${batch.status === 'draft' || batch.status === 'canceled'
