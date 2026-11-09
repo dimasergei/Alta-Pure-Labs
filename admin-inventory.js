@@ -30,4 +30,28 @@
   }catch(error){status.textContent=error.message;}
   finally{password.value='';button.disabled=false;}
  });
+ const intakeForm=document.getElementById('intake-form');
+ const intakeJson=document.getElementById('intake-json');
+ const intakePassword=document.getElementById('intake-password');
+ const intakeStatus=document.getElementById('intake-status');
+ const intakeResults=document.getElementById('intake-results');
+ if(intakeForm)intakeForm.addEventListener('submit',async event=>{
+  event.preventDefault();intakeResults.replaceChildren();
+  const button=intakeForm.querySelector('button');button.disabled=true;
+  try{
+   const rows=JSON.parse(intakeJson.value);
+   if(!Array.isArray(rows)||rows.length<1||rows.length>100)throw Error('Enter a JSON array of 1 to 100 records.');
+   const response=await fetch('/api/admin-suppliers',{method:'POST',cache:'no-store',
+    headers:{'x-admin-password':intakePassword.value,'content-type':'application/json'},
+    body:JSON.stringify({action:'preview_inventory_import',rows})});
+   if(!response.ok)throw Error(response.status===401?'Admin password not accepted.':'Inventory preview unavailable.');
+   const result=await response.json();
+   intakeStatus.textContent=(result.accepted?.length||0)+' accepted for quarantine preview; '+
+    (result.rejected?.length||0)+' rejected. Nothing saved.';
+   for(const rejection of result.rejected||[]){
+    intakeResults.append(make('p','Row '+(rejection.index+1)+': '+rejection.reason));
+   }
+  }catch(error){intakeStatus.textContent=error.message;}
+  finally{intakePassword.value='';button.disabled=false;}
+ });
 })();
