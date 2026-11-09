@@ -176,7 +176,8 @@ async function listBatches(req, res) {
           supplier_sku,
           supplier_name,
           lot_number,
-          fulfillment_notes
+          fulfillment_notes,
+          store_orders (order_number)
         )
       `
       )
