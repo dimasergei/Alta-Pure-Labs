@@ -13,6 +13,8 @@ function builder(table) {
     select(columns) { state.columns = columns; return this; },
     order() { return this; },
     limit() { return this; },
+    range() { return this; },
+    in(column, value) { state.filters[column] = value; return this; },
     eq(column, value) { state.filters[column] = value; return this; },
     ilike(column, value) { state.filters[column] = value; return this; },
     or(value) { state.or = value; return this; },
