@@ -12,6 +12,11 @@
     href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='14' fill='%23163832'/%3E%3Ctext x='32' y='40' text-anchor='middle' font-size='22' font-family='Arial' fill='white'%3EAP%3C/text%3E%3C/svg%3E"
   >
 
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/admin-dashboard.css">
+
   <style>
     :root {
       color-scheme: dark;
@@ -966,6 +971,10 @@
   <main class="admin-page">
     <div class="shell">
       <section id="login-view" class="login">
+        <div class="admin-login-brand">
+          <span class="admin-brand-mark" aria-hidden="true">A</span>
+          <span><strong>AltaPure Labs</strong><small>ADMIN</small></span>
+        </div>
         <h2>Admin access</h2>
         <p>Sign in to manage orders and fulfillment.</p>
 
@@ -989,7 +998,22 @@
       </section>
 
       <section id="orders-view" hidden>
-        <header class="top">
+        <div class="admin-brandbar">
+          <a class="admin-brand" href="/" aria-label="AltaPure Labs home">
+            <span class="admin-brand-mark" aria-hidden="true">A</span>
+            <span class="admin-brand-copy">
+              <span class="admin-brand-name">AltaPure Labs</span>
+              <span class="admin-brand-label">ADMIN</span>
+            </span>
+          </a>
+          <nav class="admin-nav" aria-label="Admin sections">
+            <button class="admin-nav-link is-active" type="button" data-admin-view="orders" aria-current="page">Orders</button>
+            <button class="admin-nav-link" type="button" data-admin-view="batches">Batches</button>
+            <button class="admin-nav-link" type="button" data-admin-view="notifications">Notifications</button>
+          </nav>
+        </div>
+        <header class="top admin-section-heading">
+
           <div>
             <h1>Orders</h1>
             <p id="orders-message" class="subtitle">Loading orders…</p>
@@ -1006,6 +1030,7 @@
           </div>
         </header>
 
+        <section id="admin-orders-section" class="admin-view-section">
         <div class="controls">
           <div class="search-wrap">
             <svg viewBox="0 0 24 24" aria-hidden="true">
@@ -1146,6 +1171,9 @@
           </div>
         </div>
 
+        </section>
+
+        <section id="admin-batches-section" class="admin-view-section" hidden>
         <section class="panel supplier-panel">
           <div class="panel-head">
             <div>
@@ -1240,6 +1268,9 @@
           </div>
         </section>
 
+        </section>
+
+        <section id="admin-notifications-section" class="admin-view-section" hidden>
         <section class="panel notification-panel">
           <div class="panel-head">
             <div>
@@ -1296,6 +1327,39 @@
     const selectAll = $('#select-all');
     const refreshButton = $('#refresh-button');
     const notice = $('#notice');
+
+    const adminViews = {
+      orders: $('#admin-orders-section'),
+      batches: $('#admin-batches-section'),
+      notifications: $('#admin-notifications-section')
+    };
+
+    function setAdminView(view) {
+      if (!Object.prototype.hasOwnProperty.call(adminViews, view)) return;
+      for (const [name, section] of Object.entries(adminViews)) {
+        section.hidden = name !== view;
+      }
+      document.querySelectorAll('[data-admin-view]').forEach((button) => {
+        const active = button.dataset.adminView === view;
+        button.classList.toggle('is-active', active);
+        if (active) button.setAttribute('aria-current', 'page');
+        else button.removeAttribute('aria-current');
+      });
+      const heading = $('.admin-section-heading h1');
+      const subtitle = $('.admin-section-heading .subtitle');
+      const copy = {
+        orders: ['Orders', 'Review payments and manage fulfillment.'],
+        batches: ['Batches', 'Manage supplier batches and supplier records.'],
+        notifications: ['Notifications', 'Review customer email delivery and retries.']
+      }[view];
+      heading.textContent = copy[0];
+      subtitle.textContent = copy[1];
+    }
+
+    document.querySelectorAll('[data-admin-view]').forEach((button) => {
+      button.addEventListener('click', () => setAdminView(button.dataset.adminView));
+    });
+
 
     const STATUSES = [
       'unfulfilled',
