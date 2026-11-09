@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1">
 <title>Certificates of Analysis | AltaPure Labs</title>
-<meta name="description" content="Browse verified batch-specific research documentation published by AltaPure Labs.">
+<meta name="description" content="Review verified batch-specific research documentation and clearly labeled COA interface demonstrations.">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
@@ -20,7 +20,7 @@
 .coa-card a{display:inline-block;margin:8px 16px 0 0;color:var(--teal);font-weight:700;text-decoration:underline}
 .coa-empty{padding:30px;border:1px solid #dce4e0;background:#fff;color:var(--muted)}
 .coa-note{max-width:750px;margin:28px 0;color:var(--muted);font-size:13px}
-.coa-footer{padding:28px var(--gutter);background:var(--forest);color:#fff;font-size:13px}
+.coa-demo{margin:44px 0 12px;padding:24px;border:2px dashed #9ca9a3;background:#f5f7f5}.coa-demo h2{font-size:clamp(23px,3vw,34px);margin:8px 0}.coa-demo .coa-card{background:#fff;border-style:dashed}.coa-demo-label{font-size:12px;letter-spacing:.08em;text-transform:uppercase;font-weight:800;color:#5b4b24}.coa-demo-note{font-size:13px;color:#555}.coa-footer{padding:28px var(--gutter);background:var(--forest);color:#fff;font-size:13px}
 </style>
 </head>
 <body>
@@ -37,8 +37,16 @@
 <input id="coa-search" class="coa-search" type="search" placeholder="Product, lot, laboratory or report ID" autocomplete="off">
 <p id="coa-count" role="status" aria-live="polite">Loading verified certificates…</p>
 <div id="coa-results" class="coa-grid"></div>
+<section class="coa-demo" aria-labelledby="coa-demo-title">
+<p class="coa-demo-label">DEMONSTRATION ONLY · NOT LABORATORY DOCUMENTATION</p>
+<h2 id="coa-demo-title">Example COA layout</h2>
+<p>These are fictional interface examples using product names from the AltaPure catalog. They are not supplier reports, not tested batches, and not evidence of purity, identity, safety or inventory availability.</p>
+<div id="coa-demo-results" class="coa-grid"></div>
+<p id="coa-demo-status" class="coa-demo-note" role="status">Loading interface examples…</p>
+</section>
 <p class="coa-note">Research use only. Documents describe the specified tested lot, not other lots or any authorization for human or veterinary use. Regulatory and shipping eligibility is assessed separately.</p>
 </div></main>
 <footer class="coa-footer"><p>© AltaPure Labs · Research use only · <a href="/research-use-policy.html">Research Use Policy</a> · <a href="/">Return to catalog</a></p></footer>
 <script src="/coa-library.js" defer></script>
+<script src="/coa-demo.js" defer></script>
 </body></html>
