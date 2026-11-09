@@ -3195,7 +3195,19 @@
                 ${escapeHtml(formatStatus(batch.status))}
               </div>
 
+              <div class="meta">
+                Order reference: ${escapeHtml([...new Set((batch.supplier_batch_items || []).map((item) => item.order_id))].join(', ') || '—')}
+                · Created ${escapeHtml(formatDate(batch.created_at))}
+                · ${batch.archived_at ? 'Archived' : 'Active'}
+              </div>
               <div class="actions">
+                <button class="ghost" type="button" data-batch-id="${escapeHtml(batch.id)}" data-action="rename-batch" ${batch.status === 'fulfilled' || batch.archived_at ? 'disabled' : ''}>Rename</button>
+                ${!batch.archived_at && batch.status === 'draft'
+                  ? '<button class="ghost" type="button" data-batch-id="' + escapeHtml(batch.id) + '" data-action="archive-batch">Archive</button>'
+                  : batch.archived_at ? '<button class="ghost" type="button" data-batch-id="' + escapeHtml(batch.id) + '" data-action="restore-batch">Restore</button>' : ''}
+                ${batch.status === 'draft' || batch.status === 'canceled'
+                  ? '<button class="ghost danger-action" type="button" data-batch-id="' + escapeHtml(batch.id) + '" data-action="delete-batch">Delete</button>'
+                  : ''}
                 <button
                   class="ghost"
                   type="button"
@@ -3265,6 +3277,38 @@
       if (!button) return;
 
       const batchId = button.dataset.batchId;
+      const action = button.dataset.action;
+      if (action === 'rename-batch') {
+        const batch = supplierBatches.find((item) => item.id === batchId);
+        const name = window.prompt('Batch name', batch?.name || '');
+        if (name === null || !name.trim()) return;
+        try {
+          await api('/api/admin-supplier-batches', { method: 'PATCH', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ batch_id: batchId, name: name.trim() }) });
+          await loadSupplierData();
+          setNotice('Batch name updated.');
+        } catch (error) { setNotice(error.message, true); }
+        return;
+      }
+      if (action === 'archive-batch' || action === 'restore-batch') {
+        const archived = action === 'archive-batch';
+        if (!window.confirm(`${archived ? 'Archive' : 'Restore'} this batch? Its order and fulfillment records will not be changed.`)) return;
+        try {
+          await api('/api/admin-supplier-batches', { method: 'PATCH', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ batch_id: batchId, archived }) });
+          await loadSupplierData();
+          setNotice(archived ? 'Batch archived.' : 'Batch restored.');
+        } catch (error) { setNotice(error.message, true); }
+        return;
+      }
+      if (action === 'delete-batch') {
+        const batch = supplierBatches.find((item) => item.id === batchId);
+        if (!window.confirm(`Permanently delete draft/canceled batch “${batch?.name || ''}”? An audit snapshot will be retained. Orders and fulfillment records will not be deleted or changed.`)) return;
+        try {
+          await api('/api/admin-supplier-batches', { method: 'DELETE', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ batch_id: batchId }) });
+          await loadSupplierData();
+          setNotice('Batch deleted. Its audit record was retained.');
+        } catch (error) { setNotice(error.message, true); }
+        return;
+      }
 
       if (button.dataset.action === 'download-batch') {
         try {
