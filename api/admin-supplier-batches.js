@@ -283,6 +283,9 @@ async function updateBatch(res, body) {
   if (body.name !== undefined) {
     const name = cleanText(body.name, 120, 'Batch name');
     if (!name) throw httpError(400, 'Batch name is required.');
+    const duplicate = checked(await db.from('supplier_batches')
+      .select('id').ilike('name', name).neq('id', batchId).maybeSingle());
+    if (duplicate) throw httpError(409, 'A batch with that name already exists.');
     updates.name = name;
   }
   if (body.status !== undefined) {
