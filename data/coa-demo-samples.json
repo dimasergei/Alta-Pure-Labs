@@ -1,0 +1,38 @@
+[
+  {
+    "sku_key": "retatrutide-10mg",
+    "product": "Retatrutide 10mg",
+    "status": "sample_only",
+    "lot": "DEMO-NOT-A-REAL-LOT",
+    "lab_name": null,
+    "report_id": null,
+    "document_url": null
+  },
+  {
+    "sku_key": "tirzepatide-10mg",
+    "product": "Tirzepatide 10mg",
+    "status": "sample_only",
+    "lot": "DEMO-NOT-A-REAL-LOT",
+    "lab_name": null,
+    "report_id": null,
+    "document_url": null
+  },
+  {
+    "sku_key": "bpc-157-10mg",
+    "product": "BPC-157 10mg",
+    "status": "sample_only",
+    "lot": "DEMO-NOT-A-REAL-LOT",
+    "lab_name": null,
+    "report_id": null,
+    "document_url": null
+  },
+  {
+    "sku_key": "nad-500mg",
+    "product": "NAD+ 500mg",
+    "status": "sample_only",
+    "lot": "DEMO-NOT-A-REAL-LOT",
+    "lab_name": null,
+    "report_id": null,
+    "document_url": null
+  }
+]
