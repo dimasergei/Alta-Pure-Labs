@@ -12,7 +12,7 @@ begin
  -- A quarantined lot must never be reservable.
  begin
   perform public.enterprise_reserve_inventory(v_lot,1,'fixture-atomic-0001','fixture-admin');
-  raise exception 'Quarantine reservation unexpectedly succeeded';
+  raise exception 'Quarantine reservation unexpectedly succeeded' using errcode='22000';
  exception when sqlstate 'P0001' then null;
  end;
  update public.enterprise_inventory_lots set status='released',
@@ -25,7 +25,7 @@ begin
  if v_reserved<>6 then raise exception 'Expected 6 reserved, got %',v_reserved; end if;
  begin
   perform public.enterprise_reserve_inventory(v_lot,5,'fixture-atomic-0003','fixture-admin');
-  raise exception 'Oversell unexpectedly succeeded';
+  raise exception 'Oversell unexpectedly succeeded' using errcode='22000';
  exception when sqlstate 'P0001' then null;
  end;
  begin
