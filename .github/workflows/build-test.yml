@@ -43,6 +43,18 @@ jobs:
           --health-interval 5s
           --health-timeout 5s
           --health-retries 10
+      security-postgres:
+        image: postgres:17
+        env:
+          POSTGRES_PASSWORD: postgres
+          POSTGRES_DB: postgres
+        ports:
+          - 5434:5432
+        options: >-
+          --health-cmd "pg_isready -U postgres -d postgres"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 10
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
@@ -64,6 +76,10 @@ jobs:
         env:
           PGPASSWORD: postgres
         run: psql -X -v ON_ERROR_STOP=1 -h 127.0.0.1 -p 5433 -U postgres -d postgres -f tests/fixtures/supplier-batch-security-checks.sql
+      - name: Run disposable PostgreSQL 17 security migration tests
+        env:
+          PGPASSWORD: postgres
+        run: psql -X -v ON_ERROR_STOP=1 -h 127.0.0.1 -p 5434 -U postgres -d postgres -f tests/fixtures/security-migrations-1-and-3.sql
       - uses: actions/setup-python@v5
         with:
           python-version: "3.12"
