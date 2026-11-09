@@ -25,7 +25,7 @@
   </div>
 
   <div class="announce">
-    <p>Research use only. Pick-and-pack included. Shipping billed separately.</p>
+    <p data-i18n="announcement">Research use only. Pick-and-pack included. Shipping billed separately.</p>
   </div>
 
   <header class="topbar">
@@ -34,12 +34,17 @@
       <span class="brand-name">ALTA<span>PURE LABS</span></span>
     </a>
     <nav class="top-links" aria-label="Primary">
-      <a href="#featured">Featured</a>
-      <a href="#shop">Catalog</a>
-      <a href="#faq-section">FAQ</a>
-      <a href="/account">Account</a>
+      <a href="#featured" data-i18n="featured">Featured</a>
+      <a href="#shop" data-i18n="catalog">Catalog</a>
+      <a href="#faq-section" data-i18n="faq">FAQ</a>
+      <a href="/account" data-i18n="account">Account</a>
     </nav>
     <div class="top-actions">
+      <div class="locale-controls" aria-label="Store preferences">
+        <label class="locale-control"><span data-i18n="currency">Currency</span><select id="currency-select" aria-label="Currency"><option value="USD">USD $</option><option value="CAD">CAD $</option><option value="EUR">EUR €</option><option value="GBP">GBP £</option><option value="AUD">AUD $</option></select></label>
+        <label class="locale-control"><span data-i18n="language">Language</span><select id="language-select" aria-label="Language"><option value="en">English</option><option value="fr">Français</option><option value="es">Español</option></select></label>
+        <span id="currency-status" class="locale-status" aria-live="polite">Prices in USD</span>
+      </div>
       <button id="open-search" class="icon-btn" type="button" aria-label="Focus search">
         <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="11" cy="11" r="6.5"/><path d="M16 16l5 5"/></svg>
       </button>
@@ -58,21 +63,21 @@
       <img class="hero-image" src="assets/hero-lab.webp" alt="Illustrative laboratory vials in amber studio light" fetchpriority="high" />
       <div class="hero-stage">
         <div class="hero-copy">
-          <h1><span>Research, all</span><span>in one place.</span></h1>
-          <p>Research compounds and laboratory supplies. Explore the AltaPure catalog with clear, per-unit pricing.</p>
+          <h1><span data-i18n="heroTitle1">Research, all</span><span data-i18n="heroTitle2">in one place.</span></h1>
+          <p data-i18n="heroDescription">Research compounds and laboratory supplies. Explore the AltaPure catalog with clear, per-unit pricing.</p>
           <div class="hero-actions">
-            <a class="pill pill-light" href="#shop" data-select-group="GLP-1 &amp; Metabolic">Shop compounds</a>
+            <a class="pill pill-light" href="#shop" data-select-group="GLP-1 &amp; Metabolic" data-i18n="shopCompounds">Shop compounds</a>
           </div>
         </div>
-        <p class="hero-bottom">Laboratory research only. Not for human or animal use.</p>
+        <p class="hero-bottom" data-i18n="heroDisclaimer">Laboratory research only. Not for human or animal use.</p>
       </div>
     </section>
 
     <section class="research-showcase" aria-labelledby="research-title">
       <div class="showcase-copy">
-        <h2 id="research-title">A closer look at research.</h2>
-        <p>Explore peptides and compounds across the current catalog. Compare available sizes, then build your research request.</p>
-        <a class="text-link" href="#shop">Explore the catalog <span aria-hidden="true">↗</span></a>
+        <h2 id="research-title" data-i18n="researchTitle">A closer look at research.</h2>
+        <p data-i18n="researchDescription">Explore peptides and compounds across the current catalog. Compare available sizes, then build your research request.</p>
+        <a class="text-link" href="#shop"><span data-i18n="exploreCatalog">Explore the catalog</span> <span aria-hidden="true">↗</span></a>
       </div>
       <img src="assets/research-vials.webp" alt="Illustrative arrangement of clear laboratory sample vials" loading="lazy" />
     </section>
@@ -80,9 +85,9 @@
     <section id="featured" class="featured">
       <div class="section-heading">
         <div>
-          <h2>Featured compounds.</h2>
+          <h2 data-i18n="featuredTitle">Featured compounds.</h2>
         </div>
-        <a class="text-link" href="#shop">View all products <span aria-hidden="true">→</span></a>
+        <a class="text-link" href="#shop"><span data-i18n="viewAllProducts">View all products</span> <span aria-hidden="true">→</span></a>
       </div>
       <div id="featured-grid" class="grid featured-grid"></div>
     </section>
@@ -107,21 +112,21 @@
     <section id="shop" class="shop">
       <div class="shop-head">
         <div>
-          <h2>Research catalog</h2>
+          <h2 data-i18n="researchCatalog">Research catalog</h2>
         </div>
         <p class="shop-note" id="result-count"></p>
       </div>
 
       <div class="toolbar">
-        <div class="filters" id="filters" role="tablist" aria-label="Categories"></div>
+        <div class="filters" id="filters" role="tablist" aria-label="Categories" data-i18n-aria="categories"></div>
         <label class="search">
-          <span class="sr">Search products</span>
+          <span class="sr" data-i18n="searchProducts">Search products</span>
           <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="11" cy="11" r="6.5"/><path d="M16 16l5 5"/></svg>
-          <input id="search" type="search" placeholder="Search compounds" autocomplete="off" />
+          <input id="search" type="search" placeholder="Search compounds" data-i18n-placeholder="searchPlaceholder" autocomplete="off" />
         </label>
         <label class="sort">
           <span class="sr">Sort</span>
-          <select id="sort" aria-label="Sort products">
+          <select id="sort" aria-label="Sort products" data-i18n-aria="sortProducts">
             <option value="name">Name</option>
             <option value="price-asc">Price · low</option>
             <option value="price-desc">Price · high</option>
@@ -353,7 +358,7 @@
   <dialog id="cart-dialog">
     <form method="dialog" class="dialog-body cart-body">
       <header class="dialog-head">
-        <h2>Cart</h2>
+        <h2 data-i18n="cart">Cart</h2>
         <button class="icon-btn" value="cancel" type="submit" aria-label="Close cart">×</button>
       </header>
       <div id="cart-lines"></div>
@@ -363,7 +368,7 @@
           <strong id="cart-total">$0</strong>
         </div>
         <p class="fine">Shipping is not included. Research use only.</p>
-        <button id="checkout" class="pill pill-dark" type="button">Review order <span aria-hidden="true">→</span></button>
+        <button id="checkout" class="pill pill-dark" type="button"><span data-i18n="checkout">Review order</span> <span aria-hidden="true">→</span></button>
       </footer>
     </form>
   </dialog>
@@ -371,25 +376,26 @@
   <dialog id="checkout-dialog">
     <form class="dialog-body" id="checkout-form">
       <header class="dialog-head">
-        <h2>Order request</h2>
+        <h2 data-i18n="orderRequest">Order request</h2>
         <button class="icon-btn" type="button" id="close-checkout" aria-label="Close checkout">×</button>
       </header>
-      <p class="fine">This is a local order summary. No payment is processed.</p>
-      <label>Name <input name="name" required autocomplete="name" /></label>
-      <label>Email <input name="email" type="email" required autocomplete="email" /></label>
-      <label>Laboratory or organization <input name="org" required /></label>
+      <p class="fine" data-i18n="localSummary">This is a local order summary. No payment is processed.</p>
+      <label><span data-i18n="name">Name</span> <input name="name" required autocomplete="name" /></label>
+      <label><span data-i18n="email">Email</span> <input name="email" type="email" required autocomplete="email" /></label>
+      <label><span data-i18n="organization">Laboratory or organization</span> <input name="org" required /></label>
       <label class="check">
         <input type="checkbox" name="research" required />
-        I confirm this request is for laboratory research only and not for human consumption.
+        <span data-i18n="researchConfirmation">I confirm this request is for laboratory research only and not for human consumption.</span>
       </label>
       <div id="checkout-summary"></div>
-      <button class="pill pill-dark" type="submit">Place request <span aria-hidden="true">→</span></button>
+      <button class="pill pill-dark" type="submit"><span data-i18n="placeRequest">Place request</span> <span aria-hidden="true">→</span></button>
     </form>
   </dialog>
 
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script src="product-images.js"></script>
   <script src="products.js"></script>
+  <script src="locale.js"></script>
   <script src="app.js"></script>
 </body>
 </html>
