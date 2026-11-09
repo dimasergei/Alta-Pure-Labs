@@ -142,12 +142,12 @@ input::placeholder, textarea::placeholder { color:#87918e !important; }
 html, body { min-height:100%; background:#061311 !important; }
 body { color:#f4f8f6 !important; }
 body::before {
-  content:""; position:fixed; inset:0; z-index:-1; pointer-events:none;
+  content:""; position:fixed; inset:0; z-index:0; pointer-events:none;
   background:
     linear-gradient(180deg,rgba(3,18,16,.76),rgba(3,18,16,.86)),
     url("/assets/hero-lab.webp") center center / cover no-repeat;
 }
-.admin-page { position:relative; isolation:isolate; min-height:100svh; padding-top:28px !important; }
+.admin-page { position:relative; z-index:1; isolation:isolate; min-height:100svh; padding-top:28px !important; }
 .shell { max-width:1180px !important; }
 .admin-brandbar {
   position:relative; display:flex; align-items:center; justify-content:flex-start;
