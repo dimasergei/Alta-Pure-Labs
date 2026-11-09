@@ -19,7 +19,7 @@ begin
   evidence_reference='fixture-reviewed-coa', reviewed_by='fixture-quality-lead',
   reviewed_at=now() where id=v_lot;
  -- Exercise the same invoker path with the fixture's service-role grants.
- v_event:public.enterprise_reserve_inventory(v_lot,6,'fixture-atomic-0002','fixture-admin');
+ v_event:=public.enterprise_reserve_inventory(v_lot,6,'fixture-atomic-0002','fixture-admin');
  if v_event is null then raise exception 'No event returned'; end if;
  select reserved into v_reserved from public.enterprise_inventory_lots where id=v_lot;
  if v_reserved<>6 then raise exception 'Expected 6 reserved, got %',v_reserved; end if;
