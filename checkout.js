@@ -4,14 +4,14 @@
   const message=document.createElement('p'); message.setAttribute('role','status'); form.append(message);
   const showShipping=()=>{
     const summary=document.querySelector('#checkout-summary');
-    if(summary) {const p=summary.querySelector('p.fine'); if(p)p.textContent='USD. US shipping: $25 per order, added at checkout. Test mode only.';}
+    if(summary) {const p=summary.querySelector('p.fine'); if(p)p.textContent='USD. US shipping: $25 per order, added at checkout.';}
   };
   document.querySelector('#checkout').addEventListener('click',showShipping);
   let busy=false;
   form.addEventListener('submit',async event=>{
     event.preventDefault();event.stopImmediatePropagation();
     if(busy||!form.reportValidity())return;
-    busy=true;const button=form.querySelector('[type="submit"]');button.disabled=true;message.textContent='Opening secure test checkout…';
+    busy=true;const button=form.querySelector('[type="submit"]');button.disabled=true;message.textContent='Opening secure Stripe checkout…';
     try{
       const data=new FormData(form);
       const headers={'Content-Type':'application/json'};
