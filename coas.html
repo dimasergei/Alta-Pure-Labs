@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Certificates of Analysis | AltaPure Labs</title>
+<meta name="description" content="Browse verified batch-specific research documentation published by AltaPure Labs.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="/styles.css">
+<style>
+.coa-page{min-height:70vh;padding:clamp(48px,7vw,100px) var(--gutter);background:var(--surface)}
+.coa-wrap{max-width:1120px;margin:auto}.coa-eyebrow{font-size:12px;font-weight:700;letter-spacing:.17em;text-transform:uppercase;color:var(--teal)}
+.coa-page h1{font-size:clamp(36px,6vw,76px);margin:12px 0 24px}.coa-intro{max-width:730px;color:var(--muted)}
+.coa-search{display:block;width:100%;max-width:640px;background:#fff;border:1px solid #ccd5d1;padding:15px 18px;margin:30px 0}
+.coa-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,320px),1fr));gap:18px}
+.coa-card{padding:24px;background:#fff;border:1px solid #dce4e0}.coa-card h2{font-size:22px;margin:10px 0}
+.coa-card dl{display:grid;grid-template-columns:100px 1fr;gap:8px;font-size:14px}
+.coa-card dt{font-weight:700}.coa-card dd{margin:0;overflow-wrap:anywhere}
+.coa-card a{display:inline-block;margin:8px 16px 0 0;color:var(--teal);font-weight:700;text-decoration:underline}
+.coa-empty{padding:30px;border:1px solid #dce4e0;background:#fff;color:var(--muted)}
+.coa-note{max-width:750px;margin:28px 0;color:var(--muted);font-size:13px}
+.coa-footer{padding:28px var(--gutter);background:var(--forest);color:#fff;font-size:13px}
+</style>
+</head>
+<body>
+<div class="announce"><p>Research use only. Online ordering is currently paused.</p></div>
+<header class="topbar">
+<a class="brand" href="/" aria-label="AltaPure Labs home"><span class="brand-mark" aria-hidden="true"><span></span><span></span><span></span></span><span class="brand-name">ALTA<span>PURE LABS</span></span></a>
+<nav class="top-links" aria-label="Primary"><a href="/#shop">Catalog</a><a href="/#faq-section">FAQ</a><a href="/account">Account</a></nav>
+</header>
+<main class="coa-page"><div class="coa-wrap">
+<p class="coa-eyebrow">Quality documentation</p>
+<h1>Certificates of Analysis</h1>
+<p class="coa-intro">Search published, batch-specific laboratory documents by product, SKU, lot or report ID. Only reports reviewed and approved for publication are displayed. A missing report does not mean a product has passed testing.</p>
+<label for="coa-search"><strong>Search verified certificates</strong></label>
+<input id="coa-search" class="coa-search" type="search" placeholder="Product, lot, laboratory or report ID" autocomplete="off">
+<p id="coa-count" role="status" aria-live="polite">Loading verified certificates…</p>
+<div id="coa-results" class="coa-grid"></div>
+<p class="coa-note">Research use only. Documents describe the specified tested lot, not other lots or any authorization for human or veterinary use. Regulatory and shipping eligibility is assessed separately.</p>
+</div></main>
+<footer class="coa-footer"><p>© AltaPure Labs · Research use only · <a href="/research-use-policy.html">Research Use Policy</a> · <a href="/">Return to catalog</a></p></footer>
+<script src="/coa-library.js" defer></script>
+</body></html>
