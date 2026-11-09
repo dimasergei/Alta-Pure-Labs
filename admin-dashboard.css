@@ -26,9 +26,13 @@ body {
 }
 .admin-brand { display:flex; align-items:center; gap:11px; text-decoration:none; min-width:0; }
 .admin-brand-mark {
-  width:38px; height:38px; border-radius:12px; display:grid; place-items:center;
-  background:#143832; color:#fff; font-size:20px; font-weight:800;
+  width:29px; height:30px; display:flex; align-items:flex-end; gap:3px;
+  transform:skewY(-22deg); flex:0 0 auto;
 }
+.admin-brand-mark span { display:block; width:7px; background:#1c7a73; }
+.admin-brand-mark span:nth-child(1) { height:14px; opacity:.58; }
+.admin-brand-mark span:nth-child(2) { height:22px; }
+.admin-brand-mark span:nth-child(3) { height:29px; opacity:.76; }
 .admin-brand-copy { display:grid; gap:1px; }
 .admin-brand-name { color:#143832; font-size:15px; font-weight:800; letter-spacing:-.045em; }
 .admin-brand-label { color:#687370; font-size:9px; font-weight:800; letter-spacing:.17em; }
