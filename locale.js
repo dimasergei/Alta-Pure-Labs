@@ -76,7 +76,11 @@
     const faqLink = document.querySelector('.top-links a[href="#faq-section"]');
     if (faqLink) faqLink.textContent = t("faq", "FAQ");
     const submitLabel = document.querySelector("#checkout-form button[type=submit]");
-    if (submitLabel && language !== "en" && submitLabel.firstChild) submitLabel.firstChild.textContent = t("placeRequest", "Place request") + " ";
+    if (submitLabel && submitLabel.firstChild) {
+      const defaultLabel = submitLabel.dataset.defaultLabel || submitLabel.firstChild.textContent.trim();
+      submitLabel.dataset.defaultLabel = defaultLabel;
+      submitLabel.firstChild.textContent = (language === "en" ? defaultLabel : t("placeRequest", "Place request")) + " ";
+    }
     const lang = document.querySelector("#language-select"), curr = document.querySelector("#currency-select");
     if (lang) lang.value = language;
     if (curr) curr.value = currency;
