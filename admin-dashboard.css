@@ -26,13 +26,13 @@ body {
 }
 .admin-brand { display:flex; align-items:center; gap:11px; text-decoration:none; min-width:0; }
 .admin-brand-mark {
-  width:29px; height:30px; display:flex; align-items:flex-end; gap:3px;
+  width:25px; height:28px; display:flex; align-items:center; gap:3px;
   transform:skewY(-22deg); flex:0 0 auto;
 }
-.admin-brand-mark span { display:block; width:7px; background:#1c7a73; }
-.admin-brand-mark span:nth-child(1) { height:14px; opacity:.58; }
-.admin-brand-mark span:nth-child(2) { height:22px; }
-.admin-brand-mark span:nth-child(3) { height:29px; opacity:.76; }
+.admin-brand-mark span { display:block; width:6px; background:#e5e4d9; }
+.admin-brand-mark span:nth-child(1) { height:13px; opacity:.58; }
+.admin-brand-mark span:nth-child(2) { height:21px; }
+.admin-brand-mark span:nth-child(3) { height:28px; opacity:.76; }
 .admin-brand-copy { display:grid; gap:1px; }
 .admin-brand-name { color:#143832; font-size:15px; font-weight:800; letter-spacing:-.045em; }
 .admin-brand-label { color:#687370; font-size:9px; font-weight:800; letter-spacing:.17em; }
@@ -157,7 +157,7 @@ body::before {
 .admin-header-left { display:flex; align-items:center; gap:22px; min-width:0; }
 .admin-brand { gap:10px; }
 .admin-brand-mark { width:29px; height:30px; }
-.admin-brand-mark span { background:#7dd2c6; }
+/* The mark dimensions and color intentionally match the storefront .brand-mark. */
 .admin-brand-name { color:#f4f8f6 !important; font-size:16px; font-weight:700; }
 .admin-brand-label { color:#a8b9b3 !important; }
 .admin-nav {
