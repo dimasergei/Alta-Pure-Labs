@@ -3118,7 +3118,9 @@
         if (contact_name === null) return;
         const email = window.prompt('Supplier email', supplier.email || '');
         if (email === null) return;
-        payload = { ...payload, name: name.trim(), contact_name: contact_name.trim(), email: email.trim() };
+        const notes = window.prompt('Supplier notes / details', supplier.notes || '');
+        if (notes === null) return;
+        payload = { ...payload, name: name.trim(), contact_name: contact_name.trim(), email: email.trim(), notes: notes.trim() };
       } else if (action === 'archive-supplier' || action === 'restore-supplier') {
         const active = action === 'restore-supplier';
         if (!window.confirm(`${active ? 'Restore' : 'Archive'} supplier “${supplier.name}”?`)) return;
