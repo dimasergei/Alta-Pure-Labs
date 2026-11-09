@@ -40,3 +40,22 @@ test('inventory UI is read-only, uses existing dark theme and clears credentials
  assert.match(js,/password\.value=''/);
  assert.doesNotMatch(js,/localStorage|sessionStorage|innerHTML\s*=/);
 });
+
+test('inventory intake preview is authenticated and cannot write inventory',async()=>{
+ const previous=process.env.ADMIN_ORDERS_PASSWORD;
+ process.env.ADMIN_ORDERS_PASSWORD='fixture-admin-password-that-is-long-enough-123';
+ try{
+  const res=response();
+  await adminHandler({method:'POST',url:'/api/admin-suppliers',
+   headers:{'content-type':'application/json'},
+   body:{action:'preview_inventory_import',rows:[]}},res);
+  assert.equal(res.code,401);
+ }finally{if(previous===undefined)delete process.env.ADMIN_ORDERS_PASSWORD;else process.env.ADMIN_ORDERS_PASSWORD=previous;}
+ const source=fs.readFileSync(path.join(root,'api/admin-suppliers.js'),'utf8');
+ const ui=fs.readFileSync(path.join(root,'admin-inventory.js'),'utf8');
+ assert.match(source,/preview_inventory_import/);
+ assert.match(source,/normalizeInventoryIntake/);
+ assert.match(source,/saved:false, can_sell:false/);
+ assert.match(ui,/Nothing saved/);
+ assert.doesNotMatch(ui,/localStorage|sessionStorage|innerHTML\s*=/);
+});
