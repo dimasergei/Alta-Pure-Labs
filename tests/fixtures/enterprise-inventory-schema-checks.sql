@@ -12,7 +12,9 @@ create table if not exists public.suppliers (
  name text not null
 );
 \i tests/fixtures/enterprise-inventory-schema.sql
--- Reapplication should be idempotent.
+-- Simulate Supabase's existing default service_role table grants, then verify migration corrects them.
+grant update, delete on public.enterprise_inventory_events to service_role;
+-- Reapplication should be idempotent and remove excessive service-role rights.
 \i tests/fixtures/enterprise-inventory-schema.sql
 do $$
 declare t text;
