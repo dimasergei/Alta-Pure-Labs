@@ -2,16 +2,16 @@
 \set ON_ERROR_STOP on
 
 insert into public.suppliers (id, name, active)
-values ('10000000-0000-4000-8000-000000000001', 'Lifecycle Test Supplier', true);
+values ('50000000-0000-4000-8000-000000000001', 'Lifecycle Test Supplier', true);
 
 insert into public.store_orders (id, order_number, fulfillment_status, payment_status, archived)
-values ('20000000-0000-4000-8000-000000000001', 'ALTA-LIFECYCLE-1', 'unfulfilled', 'paid', false);
+values ('60000000-0000-4000-8000-000000000001', 'ALTA-LIFECYCLE-1', 'unfulfilled', 'paid', false);
 
 insert into public.store_order_items (
   id, order_id, product_name, variant_size, quantity
 ) values (
-  '30000000-0000-4000-8000-000000000001',
-  '20000000-0000-4000-8000-000000000001',
+  '70000000-0000-4000-8000-000000000001',
+  '60000000-0000-4000-8000-000000000001',
   'Lifecycle Test Item', 'Test size', 1
 );
 
@@ -26,9 +26,9 @@ declare
   v_duplicate_rejected boolean := false;
 begin
   v_first := public.create_supplier_batch(
-    '10000000-0000-4000-8000-000000000001',
+    '50000000-0000-4000-8000-000000000001',
     'Lifecycle Batch One',
-    array['20000000-0000-4000-8000-000000000001']::uuid[]
+    array['60000000-0000-4000-8000-000000000001']::uuid[]
   );
   v_first_id := (v_first->>'batch_id')::uuid;
 
@@ -37,8 +37,8 @@ begin
       batch_id, order_id, order_item_id, product_name, quantity
     ) values (
       v_first_id,
-      '20000000-0000-4000-8000-000000000001',
-      '30000000-0000-4000-8000-000000000001',
+      '60000000-0000-4000-8000-000000000001',
+      '70000000-0000-4000-8000-000000000001',
       'Duplicate assignment',
       1
     );
@@ -59,9 +59,9 @@ begin
   where id = v_first_id;
 
   v_second := public.create_supplier_batch(
-    '10000000-0000-4000-8000-000000000001',
+    '50000000-0000-4000-8000-000000000001',
     'Lifecycle Batch Two',
-    array['20000000-0000-4000-8000-000000000001']::uuid[]
+    array['60000000-0000-4000-8000-000000000001']::uuid[]
   );
   v_second_id := (v_second->>'batch_id')::uuid;
 
@@ -79,7 +79,7 @@ begin
 
   select count(*) into v_order_count
   from public.store_orders
-  where id = '20000000-0000-4000-8000-000000000001';
+  where id = '60000000-0000-4000-8000-000000000001';
 
   if v_order_count <> 1 then
     raise exception 'Batch deletion unexpectedly removed the related order.';
