@@ -1,0 +1,23 @@
+<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="robots" content="noindex,nofollow"><meta name="referrer" content="no-referrer"><title>Inventory & Quality — AltaPure Labs</title><link rel="stylesheet" href="/admin-dashboard.css"><style>
+:root{--bg:#0a0e0f;--panel:#111617;--border:#273132;--text:#e8edeb;--muted:#99a6a2;--teal:#68cbbb}
+body{margin:0;background:var(--bg);color:var(--text);font:14px/1.5 "Plus Jakarta Sans",Arial,sans-serif}
+main{max-width:1160px;margin:auto;padding:clamp(20px,5vw,60px)}h1{font-size:clamp(30px,4vw,48px)}
+a{color:var(--teal)}.muted{color:var(--muted)}form{display:flex;flex-wrap:wrap;gap:12px;align-items:end;margin:25px 0}
+label{display:grid;gap:8px;min-width:min(100%,300px)}input{padding:13px;background:white;border:0;border-radius:5px}
+button{padding:13px 20px;background:var(--teal);color:#0a0e0f;border:0;border-radius:5px;font-weight:700;cursor:pointer}
+button:disabled{opacity:.5}.table-wrap{overflow-x:auto;background:var(--panel);border:1px solid var(--border);margin:20px 0}
+table{width:100%;border-collapse:collapse;text-align:left;min-width:660px}
+th,td{padding:13px 15px;border-bottom:1px solid var(--border)}th{color:var(--muted);font-size:12px}
+.notice{padding:18px;background:var(--panel);border:1px solid var(--border)}
+</style></head><body><main>
+<p class="muted">ALTA PURE LABS · INTERNAL QUALITY</p><h1>Inventory &amp; quality</h1>
+<p class="muted">Read-only inventory and laboratory report metadata. No inventory imports, quality approvals, sales or shipments can be performed here.</p>
+<p><a href="/admin-orders.html">Orders / Batches / Notifications</a> · <a href="/admin-operations-overview.html">Operations overview</a></p>
+<form id="inventory-form"><label>Admin password<input id="inventory-password" type="password" autocomplete="off" minlength="32" required></label><button type="submit">Load records</button></form>
+<p id="inventory-status" role="status" aria-live="polite">Enter your admin password to view inventory records.</p>
+<section id="inventory-content" hidden>
+<h2>Inventory lots</h2><div class="table-wrap"><table><thead><tr><th>SKU</th><th>Lot</th><th>Site</th><th>Status</th><th>On hand</th><th>Reserved</th><th>Damaged</th></tr></thead><tbody id="inventory-lots"></tbody></table></div>
+<h2>Quality reports</h2><div class="table-wrap"><table><thead><tr><th>Report</th><th>Laboratory</th><th>Status</th><th>Publication</th></tr></thead><tbody id="inventory-reports"></tbody></table></div>
+<p class="notice">Inventory is not an authorization to sell. Lot release, COA publication and shipping eligibility require separate documented review. Only the latest 100 records per section are shown.</p>
+</section>
+</main><script src="/admin-inventory.js" defer></script></body></html>
