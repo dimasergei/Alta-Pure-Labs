@@ -24,6 +24,18 @@ th,td{padding:13px 15px;border-bottom:1px solid var(--border)}th{color:var(--mut
 <label style="display:flex;gap:8px;align-items:center;max-width:680px"><input id="intake-confirm" type="checkbox">I confirm this supplier record is accurate and understand it will be saved in quarantine, not offered for sale.</label>
 <button id="intake-save" type="button">Save one lot to quarantine</button></form>
 <p id="intake-status" role="status" aria-live="polite"></p><div id="intake-results"></div></section>
+<section class="notice" aria-labelledby="coa-intake-title">
+<h2 id="coa-intake-title">Supplier COA reference intake</h2>
+<p class="muted">Record a supplier's actual HTTPS report link against an existing lot. This stores a <strong>pending, unpublished reference only</strong>. No file is copied, no laboratory results are verified, and no product is released.</p>
+<form id="coa-intake-form" style="display:grid;max-width:760px;gap:12px">
+<label>Inventory lot UUID<input id="coa-lot-id" type="text" required maxlength="36" placeholder="Existing inventory lot UUID"></label>
+<label>Supplier report ID<input id="coa-report-id" type="text" required maxlength="120"></label>
+<label>Laboratory name (as stated by source)<input id="coa-lab-name" type="text" required maxlength="180"></label>
+<label>Source report HTTPS URL<input id="coa-source-url" type="url" required maxlength="450" placeholder="https://supplier.example/report.pdf"></label>
+<label>Admin password<input id="coa-admin-password" type="password" required autocomplete="off" minlength="32"></label>
+<button type="submit">Record pending reference</button>
+</form><p id="coa-intake-status" role="status" aria-live="polite"></p>
+</section>
 <section id="inventory-content" hidden>
 <h2>Inventory lots</h2><div class="table-wrap"><table><thead><tr><th>SKU</th><th>Lot</th><th>Site</th><th>Status</th><th>On hand</th><th>Reserved</th><th>Damaged</th></tr></thead><tbody id="inventory-lots"></tbody></table></div>
 <h2>Quality reports</h2><div class="table-wrap"><table><thead><tr><th>Report</th><th>Laboratory</th><th>Status</th><th>Publication</th></tr></thead><tbody id="inventory-reports"></tbody></table></div>
