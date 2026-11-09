@@ -999,13 +999,26 @@
 
       <section id="orders-view" hidden>
         <div class="admin-brandbar">
-          <a class="admin-brand" href="/" aria-label="AltaPure Labs home">
-            <span class="admin-brand-mark" aria-hidden="true"><span></span><span></span><span></span></span>
-            <span class="admin-brand-copy">
-              <span class="admin-brand-name">AltaPure Labs</span>
-              <span class="admin-brand-label">ADMIN</span>
-            </span>
-          </a>
+          <div class="admin-header-left">
+            <a class="admin-brand" href="/" aria-label="AltaPure Labs home">
+              <span class="admin-brand-mark" aria-hidden="true"><span></span><span></span><span></span></span>
+              <span class="admin-brand-copy">
+                <span class="admin-brand-name">AltaPure Labs</span>
+                <span class="admin-brand-label">ADMIN</span>
+              </span>
+            </a>
+            <div class="admin-utilities" aria-label="Admin utilities">
+              <button id="refresh-button" class="admin-icon-button" type="button" aria-label="Refresh orders" title="Refresh orders">
+                <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M20 7v5h-5M4 17v-5h5"/><path d="M5.6 9A7 7 0 0 1 18 6l2 6M4 12l2 6a7 7 0 0 0 12.4-3"/></svg>
+              </button>
+              <a class="admin-icon-button" href="/" aria-label="Open storefront" title="Open storefront">
+                <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M3 12h18M12 3a14 14 0 0 1 0 18M12 3a14 14 0 0 0 0 18"/></svg>
+              </a>
+              <button id="logout-button" class="admin-icon-button" type="button" aria-label="Log out" title="Log out">
+                <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M10 17l5-5-5-5M15 12H3"/><path d="M12 3h6a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-6"/></svg>
+              </button>
+            </div>
+          </div>
           <nav class="admin-nav" aria-label="Admin sections">
             <button class="admin-nav-link is-active" type="button" data-admin-view="orders" aria-current="page">Orders</button>
             <button class="admin-nav-link" type="button" data-admin-view="batches">Batches</button>
@@ -1013,125 +1026,99 @@
           </nav>
         </div>
         <header class="top admin-section-heading">
-
           <div>
             <h1>Orders</h1>
             <p id="orders-message" class="subtitle">Loading orders…</p>
-          </div>
-
-          <div class="actions">
-            <button id="refresh-button" class="ghost" type="button">
-              Refresh
-            </button>
-            <a class="ghost" href="/">Site</a>
-            <button id="logout-button" class="ghost" type="button">
-              Log out
-            </button>
           </div>
         </header>
 
         <section id="admin-orders-section" class="admin-view-section">
         <div class="controls">
-          <div class="search-wrap">
-            <svg viewBox="0 0 24 24" aria-hidden="true">
-              <circle cx="11" cy="11" r="6.5"></circle>
-              <path d="M16 16l5 5"></path>
-            </svg>
-
-            <input
-              id="search-input"
-              type="search"
-              aria-label="Search orders"
-              placeholder="Search order, customer, email, organization, or tracking"
-            >
+          <div class="orders-toolbar">
+            <div class="search-wrap">
+              <svg viewBox="0 0 24 24" aria-hidden="true">
+                <circle cx="11" cy="11" r="6.5"></circle>
+                <path d="M16 16l5 5"></path>
+              </svg>
+              <input id="search-input" type="search" aria-label="Search orders" placeholder="Search orders…">
+            </div>
+            <div class="orders-toolbar-actions">
+              <button id="filters-toggle" class="ghost filters-toggle" type="button" aria-expanded="false" aria-controls="orders-filter-panel">
+                Filters <span id="active-filter-count" class="filter-count" aria-label="0 active filters">0</span>
+                <svg viewBox="0 0 20 20" aria-hidden="true"><path d="m5 7 5 5 5-5"/></svg>
+              </button>
+              <label class="sort-control" for="sort-orders">
+                <span class="sr-only">Sort orders</span>
+                <select id="sort-orders">
+                  <option value="newest">Newest first</option>
+                  <option value="oldest">Oldest first</option>
+                  <option value="highest_total">Highest total</option>
+                  <option value="oldest_pending">Oldest pending payment</option>
+                </select>
+              </label>
+            </div>
           </div>
-
-          <div class="query-controls">
-            <label class="field">
-              Date range
-              <select id="date-preset">
-                <option value="all">All dates</option>
-                <option value="today">Today</option>
-                <option value="last7">Last 7 days</option>
-                <option value="month">This month</option>
-                <option value="custom">Custom range</option>
-              </select>
-            </label>
-
-            <label class="field" id="from-date-field" hidden>
-              From
-              <input id="from-date" type="date">
-            </label>
-
-            <label class="field" id="to-date-field" hidden>
-              Through
-              <input id="to-date" type="date">
-            </label>
-
-            <label class="field">
-              Sort
-              <select id="sort-orders">
-                <option value="newest">Newest first</option>
-                <option value="oldest">Oldest first</option>
-                <option value="highest_total">Highest total</option>
-                <option value="oldest_pending">Oldest pending payment</option>
-              </select>
-            </label>
-
-            <label class="field">
-              Payment status
-              <select id="payment-filter">
-                <option value="">All payment statuses</option>
-                <option value="pending">Pending</option>
-                <option value="paid">Paid</option>
-                <option value="failed">Failed</option>
-                <option value="expired">Expired</option>
-                <option value="partially_refunded">Partially refunded</option>
-                <option value="refunded">Refunded</option>
-              </select>
-            </label>
-
-            <label class="field">
-              Fulfillment status
-              <select id="fulfillment-filter">
-                <option value="">All fulfillment statuses</option>
-                <option value="unfulfilled">Unfulfilled</option>
-                <option value="processing">Processing</option>
-                <option value="awaiting_supplier">Awaiting supplier</option>
-                <option value="partially_shipped">Partially shipped</option>
-                <option value="shipped">Shipped</option>
-                <option value="delivered">Delivered</option>
-                <option value="canceled">Canceled</option>
-              </select>
-            </label>
-
-            <label class="field">
-              Priority
-              <select id="priority-filter">
-                <option value="">All priorities</option>
-                <option value="high">High</option>
-                <option value="normal">Normal</option>
-                <option value="low">Low</option>
-              </select>
-            </label>
-
-            <button id="apply-filters" class="ghost" type="button">
-              Apply filters
-            </button>
-          </div>
-
-          <nav id="status-tabs" class="tabs" aria-label="Order filters">
-            <button class="tab active" data-status="active" type="button" aria-pressed="true">Active</button>
-            <button class="tab" data-status="paid" type="button" aria-pressed="false">Paid</button>
-            <button class="tab" data-status="processing" type="button" aria-pressed="false">Processing</button>
-            <button class="tab" data-status="awaiting_supplier" type="button" aria-pressed="false">Awaiting Supplier</button>
-            <button class="tab" data-status="shipped" type="button" aria-pressed="false">Shipped</button>
-            <button class="tab" data-status="delivered" type="button" aria-pressed="false">Delivered</button>
-            <button class="tab" data-status="canceled" type="button" aria-pressed="false">Canceled</button>
-            <button class="tab" data-status="refunded" type="button" aria-pressed="false">Refunded</button>
-            <button class="tab" data-status="archived" type="button" aria-pressed="false">Archived</button>
-            <button class="tab" data-status="all" type="button" aria-pressed="false">All</button>
-          </nav>
+          <p id="applied-filter-summary" class="applied-filter-summary" aria-live="polite">Active orders</p>
+          <section id="orders-filter-panel" class="filter-panel" aria-label="Order filters" hidden>
+            <div class="filter-grid">
+              <label class="field">
+                Date range
+                <select id="date-preset">
+                  <option value="all">All dates</option>
+                  <option value="today">Today</option>
+                  <option value="last7">Last 7 days</option>
+                  <option value="month">This month</option>
+                  <option value="custom">Custom range</option>
+                </select>
+              </label>
+              <label class="field" id="from-date-field" hidden>From<input id="from-date" type="date"></label>
+              <label class="field" id="to-date-field" hidden>Through<input id="to-date" type="date"></label>
+              <label class="field">
+                Payment status
+                <select id="payment-filter">
+                  <option value="">All payment statuses</option>
+                  <option value="pending">Pending</option><option value="paid">Paid</option>
+                  <option value="failed">Failed</option><option value="expired">Expired</option>
+                  <option value="partially_refunded">Partially refunded</option><option value="refunded">Refunded</option>
+                </select>
+              </label>
+              <label class="field">
+                Fulfillment status
+                <select id="fulfillment-filter">
+                  <option value="">All fulfillment statuses</option>
+                  <option value="unfulfilled">Unfulfilled</option><option value="processing">Processing</option>
+                  <option value="awaiting_supplier">Awaiting supplier</option><option value="partially_shipped">Partially shipped</option>
+                  <option value="shipped">Shipped</option><option value="delivered">Delivered</option><option value="canceled">Canceled</option>
+                </select>
+              </label>
+              <label class="field">
+                Priority
+                <select id="priority-filter">
+                  <option value="">All priorities</option>
+                  <option value="high">High</option><option value="normal">Normal</option><option value="low">Low</option>
+                </select>
+              </label>
+            </div>
+            <div class="filter-status-row">
+              <span class="filter-group-label">Order view</span>
+              <nav id="status-tabs" class="tabs" aria-label="Order view">
+                <button class="tab active" data-status="active" type="button" aria-pressed="true">Active</button>
+                <button class="tab" data-status="paid" type="button" aria-pressed="false">Paid</button>
+                <button class="tab" data-status="processing" type="button" aria-pressed="false">Processing</button>
+                <button class="tab" data-status="awaiting_supplier" type="button" aria-pressed="false">Awaiting Supplier</button>
+                <button class="tab" data-status="shipped" type="button" aria-pressed="false">Shipped</button>
+                <button class="tab" data-status="delivered" type="button" aria-pressed="false">Delivered</button>
+                <button class="tab" data-status="canceled" type="button" aria-pressed="false">Canceled</button>
+                <button class="tab" data-status="refunded" type="button" aria-pressed="false">Refunded</button>
+                <button class="tab" data-status="archived" type="button" aria-pressed="false">Archived</button>
+                <button class="tab" data-status="all" type="button" aria-pressed="false">All</button>
+              </nav>
+            </div>
+            <div class="filter-footer">
+              <button id="reset-filters" class="ghost" type="button">Reset</button>
+              <button id="apply-filters" class="primary" type="button">Apply filters</button>
+            </div>
+          </section>
         </div>
 
         <div class="list-tools">
@@ -1370,6 +1357,10 @@
     const bulkCount = $('#bulk-count');
     const selectAll = $('#select-all');
     const refreshButton = $('#refresh-button');
+    const filtersToggle = $('#filters-toggle');
+    const filterPanel = $('#orders-filter-panel');
+    const activeFilterCount = $('#active-filter-count');
+    const appliedFilterSummary = $('#applied-filter-summary');
     const notice = $('#notice');
 
     const adminViews = {
@@ -1453,6 +1444,39 @@
       from: '',
       to: ''
     };
+
+    function updateAppliedFilterSummary() {
+      const filters = [];
+      if (currentStatus !== 'active') {
+        const activeTab = statusTabs.querySelector(`[data-status="${currentStatus}"]`);
+        filters.push(activeTab?.textContent.trim() || currentStatus);
+      }
+      if (appliedFilters.from || appliedFilters.to) filters.push('Date range');
+      if (appliedFilters.paymentStatus) filters.push(`Payment: ${LABELS[appliedFilters.paymentStatus] || appliedFilters.paymentStatus}`);
+      if (appliedFilters.fulfillmentStatus) filters.push(`Fulfillment: ${LABELS[appliedFilters.fulfillmentStatus] || appliedFilters.fulfillmentStatus}`);
+      if (appliedFilters.priority) filters.push(`Priority: ${appliedFilters.priority}`);
+      const count = filters.length;
+      activeFilterCount.textContent = String(count);
+      activeFilterCount.setAttribute('aria-label', `${count} active filters`);
+      appliedFilterSummary.textContent = filters.length ? `Applied: ${filters.join(' · ')}` : 'Active orders · No additional filters';
+    }
+
+    function syncFilterControls() {
+      $('#sort-orders').value = appliedFilters.sort;
+      $('#payment-filter').value = appliedFilters.paymentStatus;
+      $('#fulfillment-filter').value = appliedFilters.fulfillmentStatus;
+      $('#priority-filter').value = appliedFilters.priority;
+      if (!appliedFilters.from && !appliedFilters.to) {
+        $('#date-preset').value = 'all';
+      }
+      updateAppliedFilterSummary();
+    }
+
+    filtersToggle.addEventListener('click', () => {
+      const expanded = filtersToggle.getAttribute('aria-expanded') === 'true';
+      filtersToggle.setAttribute('aria-expanded', String(!expanded));
+      filterPanel.hidden = expanded;
+    });
 
     let pagination = {
       page: 1,
@@ -1764,6 +1788,7 @@
 
       renderOrders();
       renderPagination();
+      updateAppliedFilterSummary();
       loginView.hidden = true;
       ordersView.hidden = false;
     }
@@ -2622,7 +2647,8 @@
       if (!allowDiscard()) return;
 
       refreshButton.disabled = true;
-      refreshButton.textContent = 'Refreshing…';
+      refreshButton.setAttribute('aria-label', 'Refreshing orders');
+      refreshButton.title = 'Refreshing orders';
 
       try {
         await loadOrders();
@@ -2631,7 +2657,8 @@
         setNotice(error.message, true);
       } finally {
         refreshButton.disabled = false;
-        refreshButton.textContent = 'Refresh';
+        refreshButton.setAttribute('aria-label', 'Refresh orders');
+        refreshButton.title = 'Refresh orders';
       }
     });
 
@@ -2651,6 +2678,7 @@
         button.setAttribute('aria-pressed', String(active));
       });
 
+      updateAppliedFilterSummary();
       try {
         currentPage = 1;
         await loadOrders();
@@ -2685,7 +2713,39 @@
       }
     });
 
-    $('#date-preset').addEventListener('change', () => {
+    $('#sort-orders').addEventListener('change', async () => {
+      if (!allowDiscard()) return;
+      appliedFilters.sort = $('#sort-orders').value;
+      currentPage = 1;
+      try { await loadOrders(); } catch (error) { setNotice(error.message, true); }
+    });
+
+    $('#reset-filters').addEventListener('click', async () => {
+      if (!allowDiscard()) return;
+      currentStatus = 'active';
+      appliedFilters = { sort: 'newest', priority: '', paymentStatus: '', fulfillmentStatus: '', from: '', to: '' };
+      $('#date-preset').value = 'all';
+      $('#from-date').value = '';
+      $('#to-date').value = '';
+      $('#from-date-field').hidden = true;
+      $('#to-date-field').hidden = true;
+      $('#payment-filter').value = '';
+      $('#fulfillment-filter').value = '';
+      $('#priority-filter').value = '';
+      $('#sort-orders').value = 'newest';
+      statusTabs.querySelectorAll('.tab').forEach((button) => {
+        const active = button.dataset.status === 'active';
+        button.classList.toggle('active', active);
+        button.setAttribute('aria-pressed', String(active));
+      });
+      currentPage = 1;
+      selectedOrders.clear();
+      updateAppliedFilterSummary();
+      try { await loadOrders(); setNotice('Filters reset to the default Active view.'); }
+      catch (error) { setNotice(error.message, true); }
+    });
+
+        $('#date-preset').addEventListener('change', () => {
       const custom = $('#date-preset').value === 'custom';
 
       $('#from-date-field').hidden = !custom;
@@ -2710,6 +2770,7 @@
         selectedOrders.clear();
 
         await loadOrders();
+        updateAppliedFilterSummary();
         setNotice('');
       } catch (error) {
         setNotice(error.message, true);
