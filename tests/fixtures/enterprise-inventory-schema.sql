@@ -75,5 +75,6 @@ revoke all on public.enterprise_inventory_events from public, anon, authenticate
 
 grant select, insert, update, delete on public.enterprise_inventory_lots to service_role;
 grant select, insert, update, delete on public.enterprise_quality_documents to service_role;
+revoke update, delete, truncate, references, trigger on public.enterprise_inventory_events from service_role;
 grant select, insert on public.enterprise_inventory_events to service_role;
 -- Intentionally no UPDATE/DELETE on inventory events for service_role.
