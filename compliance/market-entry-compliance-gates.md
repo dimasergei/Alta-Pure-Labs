@@ -76,6 +76,10 @@ Source: `products.js` on `main` (read during this review). All 43 records in the
 
 The current code's 43 injectable records include products Health Canada specifically identifies in its public peptide advisories, including retatrutide, tirzepatide, semaglutide, BPC-157, TB-500, MOTS-C, NAD+, and others. The advisories do not by themselves settle every product's classification in every country; they are a clear reason not to infer that RUO labeling or a global destination selector authorizes sale.
 
+## Working SKU evidence register
+
+A fillable register now exists at [`compliance/sku-evidence-register.csv`](./sku-evidence-register.csv), with instructions in [`compliance/sku-evidence-register-readme.md`](./sku-evidence-register-readme.md). It contains one row for each of the 84 exact sellable variants from `main/products.js`; 83 match the uploaded manifest and the needles 10-pack is flagged as absent. The register captures supplier/manufacturer, formulation, lot-specific COA and quality testing, labeling and claims, intended use, origin/destination classification, importer/exporter, fulfillment, carrier and reviewer evidence. Every row starts as `HOLD` or `SEPARATE REVIEW`; blank evidence fields are intentional. This is a diligence worksheet, not a product approval or shipping allowlist.
+
 ## SKU evidence required before allowlisting
 
 Create one record for every sellable variant. Reconcile the 83 manifest rows plus the omitted needles 10-pack storefront variant before treating the manifest as a complete SKU register. Do not infer one strength or formulation's status from another.
