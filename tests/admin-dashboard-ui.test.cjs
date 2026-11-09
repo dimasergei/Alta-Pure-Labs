@@ -70,7 +70,7 @@ test('archived batches show archived state and a working restore action', () => 
 test('orders filters are a single accessible collapsed disclosure with all order views inside', () => {
   assert.match(html, /id="filters-toggle"[^>]*aria-expanded="false"[^>]*aria-controls="orders-filter-panel"/);
   assert.match(html, /id="orders-filter-panel"[^>]*hidden/);
-  const panel = html.match(/<section id="orders-filter-panel"[\\s\\S]*?<\\/section>/);
+  const panel = html.match(/<section id="orders-filter-panel"[\s\S]*?<\/section>/);
   assert.ok(panel);
   for (const status of ['active', 'paid', 'processing', 'awaiting_supplier', 'shipped', 'delivered', 'canceled', 'refunded', 'archived', 'all']) {
     assert.match(panel[0], new RegExp('data-status="' + status + '"'));
@@ -85,12 +85,12 @@ test('header utility controls are accessible icon buttons and navigation remains
   assert.match(html, /id="refresh-button"[^>]*aria-label="Refresh orders"[^>]*title="Refresh orders"/);
   assert.match(html, /class="admin-icon-button" href="\/" aria-label="Open storefront" title="Open storefront"/);
   assert.match(html, /id="logout-button"[^>]*aria-label="Log out"[^>]*title="Log out"/);
-  assert.match(css, /\.admin-nav[\\s\\S]*?left:50%[\\s\\S]*?transform:translate\\(-50%,-50%\\)/);
+  assert.match(css, /\.admin-nav[\s\S]*?left:50%[\s\S]*?transform:translate\(-50%,-50%\)/);
   assert.match(css, /\.admin-icon-button:focus-visible/);
 });
 
 test('dashboard uses the homepage laboratory background and preserves light-surface contrast tokens', () => {
-  assert.match(css, /url\\("\/assets\/hero-lab\\.webp"\\)/);
-  assert.match(css, /--admin-ink:\\s*#101817/);
-  assert.match(css, /\.admin-view-section \.order-toggle[\\s\\S]*?color:#111817/);
+  assert.match(css, /url\("\/assets\/hero-lab\.webp"\)/);
+  assert.match(css, /--admin-ink:\s*#101817/);
+  assert.match(css, /\.admin-view-section \.order-toggle[\s\S]*?color:#111817/);
 });
