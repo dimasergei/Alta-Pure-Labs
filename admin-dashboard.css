@@ -124,3 +124,8 @@ input::placeholder, textarea::placeholder { color:#87918e !important; }
 
 .notification-pagination { display:flex; align-items:center; justify-content:space-between; gap:12px; margin-top:14px; }
 @media(max-width:520px) { .notification-pagination { align-items:flex-start; flex-direction:column; } .notification-pagination .actions { width:100%; } .notification-pagination button { flex:1; } }
+
+.order-status-stack { display:flex; flex-direction:column; align-items:flex-end; gap:5px; }
+.status-pending, .status-expired { background:#fff4df !important; color:#81560d !important; }
+.status-failed { background:#fbeaea !important; color:#963b3b !important; }
+.status-partially_refunded { background:#f4eefb !important; color:#684a8e !important; }
