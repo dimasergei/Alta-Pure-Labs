@@ -78,6 +78,10 @@ The current code's 43 injectable records include products Health Canada specific
 
 The route-level starting template is [`compliance/shipping-lane-register-template.csv`](./shipping-lane-register-template.csv), with instructions in [`compliance/shipping-lane-register-readme.md`](./shipping-lane-register-readme.md). It starts with 84 placeholder SKU rows and `DENY` decisions. Duplicate a row for each exact destination + fulfillment origin/site + shipping service under review; incomplete or unlisted lanes remain denied.
 
+## Supplier source-document assessment
+
+The supplied one-page `99Purity-Wholesale-PickPack.pdf` is a catalog/pricing sheet, not a supplier qualification or batch quality dossier. The assessment at [`compliance/supplier-document-intake-assessment.md`](./supplier-document-intake-assessment.md) records the visible claims, missing legal/manufacturer identity and lot evidence, unsubstantiated “Made in the U.S.A.” footer claim, exact supplier-document requests, and the nine capsule listings that remain outside the storefront inventory and current SKU register.
+
 ## Working SKU evidence register
 
 A fillable register now exists at [`compliance/sku-evidence-register.csv`](./sku-evidence-register.csv), with instructions in [`compliance/sku-evidence-register-readme.md`](./sku-evidence-register-readme.md). It contains one row for each of the 84 exact sellable variants from `main/products.js`; 83 match the uploaded manifest and the needles 10-pack is flagged as absent. The register captures supplier/manufacturer, formulation, lot-specific COA and quality testing, labeling and claims, intended use, origin/destination classification, importer/exporter, fulfillment, carrier and reviewer evidence. Every row starts as `HOLD` or `SEPARATE REVIEW`; blank evidence fields are intentional. This is a diligence worksheet, not a product approval or shipping allowlist.
