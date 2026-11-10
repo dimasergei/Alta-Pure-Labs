@@ -74,3 +74,13 @@ No competitor merchant key, account or private checkout session is used.
 
 ## Rollback
 Keep gateway accounts, attempts, receipts and events. Disable native provider flags before rolling back code. Never clear an unknown attempt just to try the card again. Reconcile in the actual provider first. Existing invoice notification recovery and legacy Stripe obligations are unchanged.
+
+## Release verification resumed November 10, 2026
+- PR #58 was still open at implementation head `8f2fca6a8ae9776ac2f884d3ee0f3855eba68a27`; all six CI workflows passed. Production was still `4174c3c47d03c43256d0f2db5776b6b5362652fc`, deployment `dpl_86ngkSH8W5wGRhaZUZaEggpWGmFd` (READY).
+- Production already had `20261110164316_native_gateway_checkout`. Its recorded SQL matches this migration apart from a trailing blank line; all four deployed function bodies match. The repository filename and disposable fixture now use that exact recorded version. Do not reapply the former `20261110160106` filename.
+- Verified the three gateway tables have RLS, no anon/authenticated SELECT, service-role SELECT only, restricted mutation RPCs, the invoice-status guard and the single-attempt/transaction unique indexes. No native route or attempt existed. This verification created no production records.
+- Tightened NMI refund matching to require the original sale transaction AND order reference. Added signed-callback regression coverage and fixed malformed multibyte PayerURL account signatures to fail with 401.
+- Run the full source test suite **before** the build, as CI does. The build generates and replaces tracked frontend sources; old source-layout assertions do not describe the built storefront. Run native tests again after the full build. Do not commit generated storefront changes from a verification build.
+- Local browser checks used the actual built payment/admin assets with isolated fake auth, API and component fixtures. Checked disabled/unknown payment blocking, consent, confirmed response, crypto form, private setup diagnostics and logout. These are not real gateway tests; mobile, actual wallets and 3DS still require provider acceptance testing.
+- Vercel has no NMI/PayerURL credentials or activation flags. This release cannot activate either gateway without actual account configuration and an approved route.
+- Existing email threads were checked without sending duplicates. RFG is awaiting written NMI/fee/Relay/sandbox answers and added a 1% payout fee to its indicative quote. MOBOPAY requested a call at 1-844-411-1011 ext 101. PeptideApprove has no reply in the thread; no PayerURL account email was found.

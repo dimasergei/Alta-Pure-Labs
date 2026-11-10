@@ -6,7 +6,40 @@ const env={NMI_ENABLED:'true',NMI_MODE:'live',NMI_API_KEY:'fixture-api-secret',N
 const attempt={id,invoice_id:invoice,amount_cents:4900,currency:'USD',provider:'nmi',operation:'sale'};
 const transaction={id:'tx12345',amount:'49.00',currency:'USD',response:'1',status:'pendingsettlement',order_details:{order_id:id},actions:[{id:'ac1',type:'sale',amount:'49.00',success:true,response:'1'}]};
 const bill={first_name:'Fixture',last_name:'Researcher',address1:'1 Test Street',city:'Test City',state:'NY',zip:'10001',country:'US'};
+test('NMI refunds must match the original sale order and transaction, not just its amount',()=>{
+ const refund={...attempt,id:invoice,operation:'refund'},sale={...attempt,provider_transaction_id:transaction.id};
+ const full={...transaction,actions:[{id:'refund-1',type:'refund',success:true,response:'1',amount:'49.00'}]};
+ assert.equal(p.nmiResult(full,refund,'refund',sale).outcome,'refunded');
+ assert.equal(p.nmiResult(full,refund,'refund').outcome,'review');
+ assert.equal(p.nmiResult({...full,id:'another-payment'},refund,'refund',sale).error,'transaction_reference_mismatch');
+ assert.equal(p.nmiResult({...full,order_details:{order_id:'another-order'}},refund,'refund',sale).error,'order_reference_mismatch');
+ assert.equal(p.nmiResult({...transaction,id:'another-payment'},sale).error,'transaction_reference_mismatch');
+});
+test('malformed multibyte crypto identity returns authentication failure, not a buffer exception',()=>{
+ const authorization='Bearer '+Buffer.from('é'.repeat(env.PAYERURL_PUBLIC_KEY.length)+':'+ '0'.repeat(64)).toString('base64');
+ assert.throws(()=>p.verifyPayer({},authorization,env),e=>e.status===401);
+});
+test('native migration and disposable fixture use the already-applied production version',()=>{
+ const name='20261110164316_native_gateway_checkout.sql';
+ assert.ok(fs.existsSync('supabase/migrations/'+name));
+ assert.equal(fs.existsSync('supabase/migrations/20261110160106_native_gateway_checkout.sql'),false);
+ assert.ok(fs.readFileSync('tests/fixtures/native-gateway-checks.sql','utf8').includes(name));
+});
 function response(){return{code:200,body:null,setHeader(){},status(n){this.code=n;return this;},json(b){this.body=b;return this;}};}
+test('signed refund callbacks reconcile against the original sale identity',async()=>{
+ const c=config.configuration('nmi',env),sale={...attempt,state:'paid',account_tag:c.account_tag,mode:'live',provider_transaction_id:transaction.id};
+ const refund={...sale,id:uid,operation:'refund',state:'started',provider_transaction_id:null};
+ for(const wrongOrder of [false,true]){
+  let recorded;
+  const db={from(){const filters={};return{select(){return this;},eq(k,v){filters[k]=v;return this;},async maybeSingle(){return{data:filters.operation==='refund'?refund:sale};}};},rpc:async(name,args)=>{recorded=args;return{data:{state:'review'}};}};
+  const event={event_id:'refund-event-'+wrongOrder,event_type:'transaction.refund.success',event_body:{merchant:{id:'1234'},features:{is_test_mode:false},order_id:id,transaction_id:transaction.id}};
+  const raw=Buffer.from(JSON.stringify(event)),nonce='fixture-refund';
+  const signature='t='+nonce+',s='+crypto.createHmac('sha256',env.NMI_WEBHOOK_KEY).update(nonce+'.').update(raw).digest('hex');
+  await g.webhook(db,'nmi-webhook',raw,{headers:{'webhook-signature':signature}},env,async()=>({ok:true,json:async()=>({...transaction,order_details:{order_id:wrongOrder?'unrelated-sale':id},actions:[{type:'refund',success:true,response:'1',amount:'49.00'}]})}));
+  assert.equal(recorded.p_id,refund.id);
+  assert.equal(recorded.p_outcome,wrongOrder?'review':'refunded');
+ }
+});
 test('native sources parse and legacy default stays retired',async()=>{for(const f of ['native-pay.js','admin-gateways.js','native-gateway-build.cjs'])assert.doesNotThrow(()=>new vm.Script(fs.readFileSync(f,'utf8')));const r=response();await require('../api/checkout')({method:'POST',url:'/api/checkout',headers:{},body:{}},r);assert.equal(r.code,503);assert.equal(require('../api/checkout').config.api.bodyParser,false);});
 test('credentials do not imply activation; sandbox cannot activate on production',()=>{assert.equal(config.configuration('nmi',{}).ready,false);assert.equal(config.configuration('nmi',env).ready,true);assert.equal(config.configuration('nmi',{...env,NMI_ENABLED:'false'}).ready,false);assert.equal(config.configuration('nmi',{...env,NMI_MODE:'sandbox'}).ready,false);assert.equal(config.configuration('nmi',{...env,NMI_MODE:'sandbox',VERCEL_ENV:'preview'}).ready,true);assert.equal(JSON.stringify(config.publicStatus(env)).includes('fixture-api-secret'),false);});
 test('crypto requires the specifically confirmed protocol and callback units',()=>{assert.equal(config.configuration('payerurl',env).ready,true);assert.equal(config.configuration('payerurl',{...env,PAYERURL_PROTOCOL:'guess'}).ready,false);assert.equal(config.configuration('payerurl',{...env,PAYERURL_CALLBACK_UNIT:''}).ready,false);assert.equal(config.configuration('payerurl',{...env,PAYERURL_CHECKOUT_HOST:'evil.example'}).ready,false);});
@@ -14,7 +47,7 @@ test('NMI sale sends authoritative amount and token only',()=>{const body=p.nmiS
 test('NMI transport uses official host and raw merchant Authorization with no retries',async()=>{let calls=0;await p.nmiRequest('/sale','POST',{amount:49},env,async(url,opts)=>{calls++;assert.equal(url,'https://secure.nmi.com/api/v5/payments/sale');assert.equal(opts.headers.Authorization,'fixture-api-secret');assert.equal(opts.redirect,'error');return{ok:true,json:async()=>transaction};});assert.equal(calls,1);await assert.rejects(p.nmiRequest('/sale','POST',{},env,async()=>{calls++;throw Error('timeout');}));assert.equal(calls,2);});
 test('NMI approved amount, currency and order must all match',()=>{assert.equal(p.nmiResult(transaction,attempt).outcome,'approved');assert.equal(p.nmiResult({...transaction,amount:'48.99'},attempt).outcome,'review');assert.equal(p.nmiResult({...transaction,currency:'CAD'},attempt).outcome,'review');assert.equal(p.nmiResult({...transaction,order_details:{order_id:'other'}},attempt).outcome,'review');assert.equal(p.nmiResult({...transaction,response:'2'},attempt).outcome,'declined');assert.equal(p.nmiResult({...transaction,response:'2',order_details:{order_id:'other'}},attempt).outcome,'review');});
 test('unknown processor states are not promoted to paid',()=>{for(const status of ['pending','failed','unknown','inFlight'])assert.notEqual(p.nmiResult({...transaction,status},attempt).outcome,'approved');assert.equal(p.nmiResult({},attempt).outcome,'unknown');assert.throws(()=>p.cents('49.0001'));assert.throws(()=>p.cents('1e2'));});
-test('refund reconciliation requires confirmed full refund actions',()=>{const partial={...transaction,actions:[{type:'refund',success:true,response:'1',amount:'10.00'}]};assert.equal(p.nmiResult(partial,attempt,'refund').outcome,'review');const full={...transaction,actions:[{type:'refund',success:true,response:'1',amount:'49.00'}]};assert.equal(p.nmiResult(full,attempt,'refund').outcome,'refunded');});
+test('refund reconciliation requires confirmed full refund actions',()=>{const partial={...transaction,actions:[{type:'refund',success:true,response:'1',amount:'10.00'}]};assert.equal(p.nmiResult(partial,{...attempt,id:invoice},'refund',{...attempt,provider_transaction_id:transaction.id}).outcome,'review');const full={...transaction,actions:[{type:'refund',success:true,response:'1',amount:'49.00'}]};assert.equal(p.nmiResult(full,{...attempt,id:invoice},'refund',{...attempt,provider_transaction_id:transaction.id}).outcome,'refunded');});
 test('NMI callback uses exact raw bytes and checks merchant/environment',()=>{const event={event_id:'fixture-event',event_type:'transaction.sale.success',event_body:{merchant:{id:'1234'},features:{is_test_mode:false},order_id:id}};const raw=Buffer.from(JSON.stringify(event,null,2)),nonce='nonce_fixture';const signature='t='+nonce+',s='+crypto.createHmac('sha256',env.NMI_WEBHOOK_KEY).update(nonce+'.').update(raw).digest('hex');assert.equal(p.verifyNmi(raw,signature,env).event_id,'fixture-event');assert.throws(()=>p.verifyNmi(Buffer.from(JSON.stringify(event)),signature,env));assert.throws(()=>p.verifyNmi(raw,signature,{...env,NMI_MERCHANT_ID:'different'}));assert.throws(()=>p.verifyNmi(raw,signature,{...env,NMI_MODE:'sandbox'}));});
 test('raw callbacks reject oversized buffers and parsed objects',async()=>{await assert.rejects(g.rawBody({body:Buffer.alloc(65537)}),e=>e.status===413);await assert.rejects(g.rawBody({body:{event_id:'forged'}}),e=>e.status===400);});
 test('PayerURL PHP-compatible signature preserves raw scalar values',()=>{assert.equal(p.signedQuery({z:'a b~!*',amount:4900,currency:'usd'}),'amount=4900&currency=usd&z=a+b%7E%21%2A');assert.throws(()=>p.signedQuery({x:{nested:'bad'}}));});
