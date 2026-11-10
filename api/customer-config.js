@@ -2,6 +2,7 @@
 module.exports=async(req,res)=>{
  res.setHeader('Cache-Control','no-store');res.setHeader('X-Content-Type-Options','nosniff');
  const url=new URL(req.url||'/api/customer-config','https://account.internal');
+ if(url.searchParams.has('commerce'))return require('../lib/manual-commerce').handle(req,res,url.searchParams);
  if(url.searchParams.has('admin_operations'))return require('../lib/admin-operations').handle(req,res,url.searchParams);
  if(req.method==='GET'&&url.searchParams.get('workspace')==='requests'){
   try{return await require('../lib/request-operations').customerRequests(req,res,require('../lib/inventory-db').inventoryDb());}
