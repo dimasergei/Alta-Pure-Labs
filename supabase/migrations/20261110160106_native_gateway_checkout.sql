@@ -23,6 +23,7 @@ create table public.commerce_gateway_attempts(
 );
 create unique index gateway_one_active_sale on public.commerce_gateway_attempts(invoice_id) where operation='sale' and state<>'declined';
 create unique index gateway_one_refund on public.commerce_gateway_attempts(invoice_id) where operation='refund';
+create unique index gateway_single_verified_transaction on public.commerce_gateway_attempts(provider,account_tag,provider_transaction_id,operation) where state in ('paid','refunded');
 create index gateway_provider_transaction on public.commerce_gateway_attempts(provider,provider_transaction_id);
 create table public.commerce_gateway_events(
  provider text not null, event_key text not null, attempt_id uuid not null references public.commerce_gateway_attempts(id),
@@ -108,7 +109,7 @@ begin
  select * into a from public.commerce_gateway_attempts where id=p_id for update;
  select * into prior from public.commerce_gateway_events where provider=a.provider and event_key=p_event;
  if found then
-  if prior.attempt_id<>a.id or prior.outcome<>p_outcome or prior.provider_transaction_id is distinct from p_transaction then raise exception 'Gateway event conflict' using errcode='23505'; end if;
+  if prior.attempt_id<>a.id or prior.outcome<>p_outcome or prior.provider_transaction_id is distinct from p_transaction or prior.amount_cents is distinct from p_amount or prior.currency is distinct from p_currency then raise exception 'Gateway event conflict' using errcode='23505'; end if;
   return jsonb_build_object('id',a.id,'state',a.state,'invoice_status',i.status,'replayed',true);
  end if;
  insert into public.commerce_gateway_events(provider,event_key,attempt_id,outcome,amount_cents,currency,provider_transaction_id)
