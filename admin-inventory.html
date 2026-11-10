@@ -11,7 +11,7 @@ th,td{padding:13px 15px;border-bottom:1px solid var(--border)}th{color:var(--mut
 .notice{padding:18px;background:var(--panel);border:1px solid var(--border)}
 </style></head><body><main>
 <p class="muted">ALTA PURE LABS · INTERNAL QUALITY</p><h1>Inventory &amp; quality</h1>
-<p class="muted">Read-only inventory and laboratory report metadata. No inventory imports, quality approvals, sales or shipments can be performed here.</p>
+<p class="muted">Internal inventory and laboratory report metadata. Authorized admins may save one supplier lot into quarantine and record pending COA references, or reject/withdraw reports. This console cannot verify certificates, release inventory, authorize sales, or ship products.</p>
 <p><a href="/admin-orders.html">Orders / Batches / Notifications</a> · <a href="/admin-operations-overview.html">Operations overview</a></p>
 <form id="inventory-form"><label>Admin password<input id="inventory-password" type="password" autocomplete="off" minlength="32" required></label><button type="submit">Load records</button></form>
 <p id="inventory-status" role="status" aria-live="polite">Enter your admin password to view inventory records.</p>
@@ -38,7 +38,7 @@ th,td{padding:13px 15px;border-bottom:1px solid var(--border)}th{color:var(--mut
 </section>
 <section class="notice" aria-labelledby="coa-review-title">
 <h2 id="coa-review-title">Quality document rejection &amp; withdrawal</h2>
-<p class="muted">Revoke publication eligibility for an existing report. Rejection is for pending reports; withdrawal is for pending or previously verified reports. This action does not release inventory or approve a document. Verification and publication require independent evidence review.</p>
+<p class="muted">Revoke publication eligibility for an existing report. Rejection is for pending reports; withdrawal is for pending or previously verified reports. Each action receives a unique audit reference; the shared admin password does not identify an individual reviewer. This action does not release inventory or approve a document. Verification and publication require independent evidence review.</p>
 <form id="coa-review-form" style="display:grid;max-width:760px;gap:12px">
 <label>Quality report UUID<input id="coa-review-id" required maxlength="36"></label>
 <label>Action<select id="coa-review-action" required><option value="reject">Reject pending report</option><option value="withdraw">Withdraw report</option></select></label>
