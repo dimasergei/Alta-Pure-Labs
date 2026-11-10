@@ -1,27 +1,24 @@
 {
-  "buildCommand": "npm run build",
-  "outputDirectory": ".",
-  "functions": {
-    "api/checkout.js": { "includeFiles": "lib/catalog.json" },
-    "api/customer-config.js": { "includeFiles": "lib/catalog.json" }
-  },
-  "rewrites": [
-    { "source": "/account", "destination": "/account.html" },
-    { "source": "/account/:path*", "destination": "/account.html" },
-    { "source": "/my-account", "destination": "/account.html" },
-    { "source": "/my-account/:path*", "destination": "/account.html" },
-    { "source": "/shop", "destination": "/storefront-v2.html" },
-    { "source": "/product/:slug", "destination": "/storefront-v2.html" },
-    { "source": "/research-builder", "destination": "/storefront-v2.html" },
-    { "source": "/bulk-orders", "destination": "/storefront-v2.html" },
-    { "source": "/memberships", "destination": "/storefront-v2.html" },
-    { "source": "/rewards", "destination": "/storefront-v2.html" },
-    { "source": "/offers", "destination": "/storefront-v2.html" },
-    { "source": "/coas", "destination": "/storefront-v2.html" },
-    { "source": "/about", "destination": "/storefront-v2.html" },
-    { "source": "/contact", "destination": "/storefront-v2.html" },
-    { "source": "/partner-program", "destination": "/storefront-v2.html" },
-    { "source": "/track-order", "destination": "/storefront-v2.html" }
-  ],
-  "git": { "deploymentEnabled": false }
+ "buildCommand":"npm run build",
+ "outputDirectory":"public-build",
+ "functions":{"api/checkout.js":{"includeFiles":"lib/catalog.json"},"api/customer-config.js":{"includeFiles":"lib/catalog.json"}},
+ "rewrites":[
+  {"source":"/account","destination":"/account.html"},
+  {"source":"/account/:path*","destination":"/account.html"},
+  {"source":"/my-account","destination":"/account.html"},
+  {"source":"/my-account/:path*","destination":"/account.html"},
+  {"source":"/shop","destination":"/shop.html"},
+  {"source":"/product/:slug","destination":"/product/:slug.html"},
+  {"source":"/research-builder","destination":"/research-builder.html"},
+  {"source":"/bulk-orders","destination":"/bulk-orders.html"},
+  {"source":"/memberships","destination":"/memberships.html"},
+  {"source":"/rewards","destination":"/rewards.html"},
+  {"source":"/offers","destination":"/offers.html"},
+  {"source":"/coas","destination":"/coas.html"},
+  {"source":"/about","destination":"/about.html"},
+  {"source":"/contact","destination":"/contact.html"},
+  {"source":"/partner-program","destination":"/partner-program.html"},
+  {"source":"/track-order","destination":"/track-order.html"}
+ ],
+ "git":{"deploymentEnabled":false}
 }
