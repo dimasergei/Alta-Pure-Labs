@@ -2,13 +2,17 @@
 
 Reviewed November 10, 2026 against deployed main `9d6725c03777e6fd1dd3c4cebad35b71ba63099b` and the customer's open NeuroLabs checkout. This updates the pre-integration backlog; it does not certify merchant approval or real payment settlement.
 
+## Current follow-up status
+
+PR #61 is deployed at `9a8496ea6911b7439b20819f28c938cf7bc21b24`. See [supplier-wallet-release.md](supplier-wallet-release.md) for the current supplier selection, wallet correction, exact NeuroLabs shipping observation and remaining merchant-account blocker. The older intake below is superseded where it asks for facts already supplied: sandbox is created and tested; Interac and Relay instructions are saved privately; the three suppliers are selected; tax work is deferred. No live account approval is established.
+
 ## What is already installed
 
 NMI Payment Component and REST v5, PayerURL server-created invoices and signed callbacks, durable attempts, duplicate-charge protection, reconciliation, full NMI refunds, private gateway administration and customer payment pages are deployed. The recorded native migration is `20261110164316_native_gateway_checkout`; do not apply the earlier filename again.
 
 Manual invoice pricing/acceptance, prepaid nonrenewing passes, server-side member/volume discounts, transactional invoice email and its signed retry worker are also installed. Existing Stripe history and manual fulfillment remain intact.
 
-Production inspection found no configured receiving routes, gateway accounts or native attempts. No live card or crypto activation is established. There are two supplier records but no loaded inventory lots or quality documents; records alone do not establish stock or fulfillment readiness.
+Production inspection found no configured receiving routes, gateway accounts or native attempts. No live card or crypto activation is established. There are now three selected supplier records and separate public reference COAs; no report has been assigned to an AltaPure fulfilled lot. Records alone do not establish stock or fulfillment readiness.
 
 ## Updated NeuroLabs comparison
 
@@ -27,15 +31,15 @@ NeuroLabs also showed shipping/delivery steps, a final summary and consent contr
 ## Practical order of work
 
 1. Complete the existing card-processor review. Ask for a decision on the exact catalog, Canadian entity, merchant/settlement identity, countries, currencies and annual passes. Confirm NMI Component/v5 support, sandbox access and full fees before a paid application or contract. An approved hosted invoice can use the existing hosted-provider route while native account testing finishes.
-2. Create an owner-controlled NMI sandbox through https://guide.nmi.com/app/magic-login?mode=signup. NMI's free testing environment is available before live approval. Owner completes signup/terms. Keep test keys and fake data isolated from production. Enable sandbox processing only in that isolated test environment.
+2. The owner-controlled sandbox is already created. Real sandbox sale, decline and full refund tests passed in the isolated harness; keep its keys and fixture data out of production. Continue wallet, 3DS and callback testing after account access is restored.
 3. Configure and test the actual account using `native-gateway-activation.md`. Store keys only in protected hosting settings. Verify sale, decline, authentication/wallet behavior, callback replay, timeout reconciliation and full refund. Configure Apple Pay's provider-issued verification file/domain registration before offering it.
-4. If crypto is wanted, the owner completes https://dash.payerurl.com/register. The observed form requires an email, Telegram emergency contact and a password. The owner chooses the receiving/custody arrangement and approves applicable fees. Confirm the adapter protocol and callback amount unit with that account; do not guess or substitute another PayerURL API contract.
-5. Configure bank-confirmed Interac/transfer instructions in `/admin-payments.html`. The missing information is exact registered receiving name, permitted business use and incoming-payment instructions. Knowing a support/receiving email does not establish the bank account's registered payee or Autodeposit status. Never request an online-banking password.
+4. PayerURL registration and email confirmation are complete, but its dashboard returns 401 for the confirmed address. Resolve the existing account with support or owner password recovery; do not create another account or configure unverified credentials.
+5. Interac recipient/Autodeposit and Relay domestic USD wire details are saved as private inactive drafts. The legal seller/receiving owner has been identified. Preserve these fallbacks; prioritize approved card/wallet activation.
 6. Once the account passes testing, register its approved route in `/admin-gateways.html`. Perform a separately owner-authorized low-value live payment/refund and reconcile the actual settlement. Verify customer confirmation delivery and manual fulfillment acknowledgment/tracking.
 
 ## Existing processor threads
 
-Gmail was rechecked before any further outreach. RFG is obtaining written NMI, fee, Relay and sandbox answers. Its no-cost pre-check belongs to the existing file. MOBOPAY requested a phone call. PeptideApprove has no approval reply. No new duplicate application or outreach was sent during this follow-up.
+Gmail was rechecked before any further outreach. RFG is obtaining written NMI, fee, Relay and sandbox answers. Its no-cost pre-check belongs to the existing file. MOBOPAY has since confirmed no NMI, Apple Pay or Google Pay; its settlement offering is stablecoin-only. PeptideApprove has no approval reply. No new duplicate application or outreach was sent during this follow-up.
 
 The RFG pre-check requires truthful processing history and projections. Do not infer those from test orders. A public marketing eligibility statement is not written approval of this merchant.
 

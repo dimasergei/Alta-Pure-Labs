@@ -1,0 +1,61 @@
+{
+  "reviewed_at": "2026-11-10",
+  "scope": "Supplier reference material only. These reports are not assigned to AltaPure inventory or fulfilled orders. Delivery times are planning estimates, not confirmed shipping quotes.",
+  "suppliers": [
+    {
+      "id": "yourpeptidebrand",
+      "name": "YourPeptideBrand",
+      "origin_country": "US",
+      "origin_region": "",
+      "handling_max_days": 2,
+      "handling_note": "Supplier advertises dispatch within 24–48 hours. Confirm business-day cutoff and availability for the order.",
+      "domestic_transit": null,
+      "international_transit": null,
+      "service_note": "Carrier, transit time and price are confirmed with the supplier for the destination.",
+      "shipping_source": "https://yourpeptidebrand.com/launch-a-peptide-store-in-14-days/",
+      "coa_library": "https://yourpeptidebrand.com/coa-library/",
+      "reports": [{
+        "product": "BPC-157 5mg",
+        "lot": "BC5",
+        "report_date": "2026-09-26",
+        "publisher": "Purity Analytics LLC; performing laboratory listed as Bioviridian Inc.",
+        "url": "https://verify.purityanalytics.com/coa/coa_ec4f8614326e9371f9b77397b5e9d022"
+      }]
+    },
+    {
+      "id": "99puritypeptides",
+      "name": "99PurityPeptides",
+      "origin_country": "US",
+      "origin_region": "",
+      "handling_max_days": 3,
+      "handling_note": "Published processing estimate: 1–3 business days.",
+      "domestic_transit": {"min": 3, "max": 7},
+      "international_transit": {"min": 7, "max": 15},
+      "service_note": "Standard, expedited or temperature-controlled service as applicable. Carrier and price depend on the confirmed order; international customs can add time.",
+      "shipping_source": "https://99puritypeptides.com/shipping-policy",
+      "coa_library": "https://99puritypeptides.com/certificates",
+      "reports": [{
+        "product": "BPC-157 5mg",
+        "lot": "KIZN072426",
+        "report_date": "2026-08-03",
+        "publisher": "Optiq Health Labs; report client: Wholesale Peptide Supply",
+        "url": "https://pub-82f90d490a8048aa9629f0ae3ea6f567.r2.dev/COA/BPC-157%205mg%20KIZN072426.pdf"
+      }]
+    },
+    {
+      "id": "peptidedropship",
+      "name": "PeptideDropship",
+      "origin_country": "US",
+      "origin_region": "CA",
+      "handling_max_days": 1,
+      "handling_note": "Supplier advertises 24-hour California fulfillment; confirm cutoff and stock.",
+      "domestic_transit": {"min": 2, "max": 2},
+      "international_transit": null,
+      "service_note": "Advertised two-day US delivery is a planning estimate. Confirm carrier, exact service, shipping charge and destination coverage.",
+      "shipping_source": "https://peptidedropship.com/",
+      "coa_library": "https://peptidedropship.com/contact/",
+      "reports": [],
+      "coa_note": "Obtain the original batch report through the supplier; no report is published here yet."
+    }
+  ]
+}

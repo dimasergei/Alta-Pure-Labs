@@ -1,6 +1,7 @@
 (() => {
  'use strict';const $=id=>document.getElementById(id),make=(tag,text)=>{const e=document.createElement(tag);if(text!==undefined)e.textContent=String(text);return e;};
  let password='',methods=[],current=null,tab='orders',preview=null;
+ $('pay-issue-form').addEventListener('input',()=>{preview=null;$('pay-preview-result').textContent='Details changed. Preview the updated invoice before issuing it.';});
  const money=(c,code='USD')=>new Intl.NumberFormat('en-US',{style:'currency',currency:code||'USD'}).format((c||0)/100);
  const cents=v=>{if(!/^\d+(\.\d{1,2})?$/.test(String(v)))throw Error('Enter monetary amounts with at most two decimals.');return Math.round(Number(v)*100);};
  async function api(view,body){const q=new URLSearchParams({commerce:'admin',view});if(view==='detail')q.set('id',body.id);const isPost=!!body&&view!=='detail';const r=await fetch('/api/customer-config?'+q,{method:isPost?'POST':'GET',cache:'no-store',headers:{'x-admin-password':password,...(isPost?{'Content-Type':'application/json'}:{})},...(isPost?{body:JSON.stringify(body)}:{})});const result=await r.json();if(!r.ok){if(r.status===401)logout();throw Error(result.error||'Request failed.');}return result;}

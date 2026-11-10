@@ -6,7 +6,9 @@
  section.innerHTML=`<h3>Delivery and tax review</h3><p>Use the supplier’s actual shipping quote. Confirm the tax treatment for the delivery terms and destination before issuing a payable invoice.</p>
  ${field('Legal seller','dt_seller','text','maxlength="180" value="1001517614 ONTARIO INC."')}
  <div class="ops-two">${field('Tax destination country code','dt_country','text','maxlength="2"')}${field('Tax destination state / province','dt_region','text','maxlength="80"')}</div>
- <fieldset id="dt-delivery"><legend>Quoted delivery</legend><div class="ops-two">${field('Dispatch country code','dt_origin','text','maxlength="2" value="US"')}${field('Dispatch state / province','dt_origin_region','text','maxlength="80"')}</div>
+ <fieldset id="dt-delivery"><legend>Quoted delivery</legend>
+ <label>Supplier planning estimate<select name="dt_supplier"><option value="">Loading supplier profiles…</option></select></label><button type="button" id="dt-apply-supplier" disabled>Use supplier estimate</button><p id="dt-supplier-note" role="status">Estimates do not confirm a carrier, rate, available lot or destination eligibility. Confirm those details before issuing the invoice.</p>
+ <div class="ops-two">${field('Dispatch country code','dt_origin','text','maxlength="2" value="US"')}${field('Dispatch state / province','dt_origin_region','text','maxlength="80"')}</div>
  <div class="ops-two">${field('Carrier','dt_carrier','text','maxlength="100"')}${field('Service','dt_service','text','maxlength="100"')}</div>
  ${field('Supplier/carrier quote reference (private)','dt_quote','text','maxlength="400"')}${field('Quote valid until','dt_expiry','datetime-local')}
  <div class="ops-two">${field('Handling: maximum business days','dt_handling','number','min="0" max="60"')}${field('Transit: minimum business days','dt_min','number','min="1" max="90"')}${field('Transit: maximum business days','dt_max','number','min="1" max="120"')}</div>
@@ -24,6 +26,20 @@
  <label><input type="checkbox" name="dt_confirmed"> The shipping quote and tax treatment are complete for this exact invoice.</label>`;
  form.querySelector('[name="review_note"]').closest('label').before(section);
  form.elements.tax.readOnly=true;form.elements.tax.value='';form.elements.tax.placeholder='Calculated on preview';
+ let suppliers=[];
+ fetch('/data/supplier-references.json').then(r=>{if(!r.ok)throw Error();return r.json();}).then(data=>{
+  suppliers=data.suppliers;const select=form.elements.dt_supplier;select.replaceChildren(new Option('Choose a supplier',''));
+  for(const supplier of suppliers)select.add(new Option(supplier.name,supplier.id));document.getElementById('dt-apply-supplier').disabled=false;
+ }).catch(()=>{document.getElementById('dt-supplier-note').textContent='Supplier profiles unavailable. Enter the actual supplier quote manually.';});
+ document.getElementById('dt-apply-supplier').onclick=()=>{
+  const supplier=suppliers.find(s=>s.id===form.elements.dt_supplier.value);if(!supplier)return;
+  const country=form.elements.dt_country.value.trim().toUpperCase(),transit=country==='US'?supplier.domestic_transit:country?supplier.international_transit:null;
+  const values={dt_origin:supplier.origin_country,dt_origin_region:supplier.origin_region,dt_handling:supplier.handling_max_days,dt_min:transit?.min??'',dt_max:transit?.max??'',dt_carrier:'',dt_service:'',dt_quote:'',dt_expiry:'',dt_route:'',dt_duties:'',dt_importer:'',shipping:''};
+  for(const [key,value]of Object.entries(values))form.elements[key].value=value;
+  form.elements.dt_confirmed.checked=false;
+  document.getElementById('dt-supplier-note').textContent=supplier.name+': '+supplier.handling_note+' '+supplier.service_note+' Source: '+supplier.shipping_source+' Confirm or replace these estimates using the actual quote. Previous shipping quote cleared.';
+  form.dispatchEvent(new Event('input',{bubbles:true}));
+ };
  function changed(){document.getElementById('dt-canada').hidden=form.elements.dt_mode.value!=='canada_taxable_goods';}
  form.elements.dt_mode.addEventListener('change',changed);changed();
  const value=name=>form.elements[name].value.trim();const number=name=>value(name)===''?null:Number(value(name));
