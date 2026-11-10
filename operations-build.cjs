@@ -29,7 +29,11 @@ fs.rmSync(out,{recursive:true,force:true});fs.mkdirSync(out,{recursive:true});
 for(const entry of fs.readdirSync(root,{withFileTypes:true}))if(entry.isFile()&&/\.(html|css|js)$/.test(entry.name))fs.copyFileSync(entry.name,path.join(out,entry.name));
 function copyImages(dir){if(!fs.existsSync(dir))return;for(const entry of fs.readdirSync(dir,{withFileTypes:true})){const src=path.join(dir,entry.name);if(entry.isDirectory())copyImages(src);else if(/\.(png|jpe?g|webp|svg|gif|ico)$/i.test(entry.name)){fs.mkdirSync(path.dirname(path.join(out,src)),{recursive:true});fs.copyFileSync(src,path.join(out,src));}}}
 copyImages('assets');copyImages('ALTA_83_curved_label_photos');
-fs.mkdirSync(path.join(out,'data'),{recursive:true});for(const file of ['verified-coas.json','storefront-programs.json','coa-demo-samples.json'])if(fs.existsSync('data/'+file))fs.copyFileSync('data/'+file,path.join(out,'data',file));
+fs.mkdirSync(path.join(out,'data'),{recursive:true});for(const file of ['verified-coas.json','storefront-programs.json','coa-demo-samples.json','supplier-references.json'])if(fs.existsSync('data/'+file))fs.copyFileSync('data/'+file,path.join(out,'data',file));
+// Only the genuine provider-issued Apple Pay association file may be published here.
+// Do not copy an entire hidden directory or generate a substitute verification file.
+const appleAssociation='.well-known/apple-developer-merchantid-domain-association';
+if(fs.existsSync(appleAssociation)){fs.mkdirSync(path.join(out,'.well-known'),{recursive:true});fs.copyFileSync(appleAssociation,path.join(out,appleAssociation));}
 const shell=fs.readFileSync('storefront-v2.html','utf8');
 function page(html,url,title,description,main,structured){html=html.replace(/<title>[\s\S]*?<\/title>/,'<title>'+esc(title)+'</title>');html=html.replace(/<meta name="description"[^>]*>/,'<meta name="description" content="'+esc(description)+'">');html=html.replace('</head>','<link rel="canonical" href="'+esc(base+url)+'"><meta property="og:title" content="'+esc(title)+'"><meta property="og:description" content="'+esc(description)+'"><meta property="og:url" content="'+esc(base+url)+'"><meta property="og:type" content="website">'+(structured?'<script type="application/ld+json">'+JSON.stringify(structured).replace(/</g,'\\u003c')+'</script>':'')+'</head>');if(main)html=html.replace(/<main id="ap-main">[\s\S]*?<\/main>/,'<main id="ap-main">'+main+'</main>');return html;}
 const routes={

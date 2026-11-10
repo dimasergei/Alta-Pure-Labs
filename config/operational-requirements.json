@@ -1,7 +1,7 @@
 {
   "version": 2,
   "reviewed_at": "2026-11-10",
-  "baseline_commit": "9d6725c03777e6fd1dd3c4cebad35b71ba63099b",
+  "baseline_commit": "9a8496ea6911b7439b20819f28c938cf7bc21b24",
   "checkout_live": false,
   "requirements": [
     {
@@ -33,15 +33,15 @@
       "title": "Native checkout and reconciliation",
       "state": "implemented_provider_testing_required",
       "owner": "Engineering / Processor",
-      "next": "NMI Component/v5 and PayerURL adapters are deployed. Complete account-specific sandbox/callback/refund tests, configure protected credentials and register an approved route in /admin-gateways.html. See docs/payment-activation-next-steps.md.",
+      "next": "NMI sandbox sale, decline and full refund passed; wallet identifiers corrected. Obtain approved live merchant credentials, provider-issued Apple Pay association file/domain registration, and actual wallet/callback/settlement tests. PayerURL remains blocked by account login 401.",
       "done_when": "Approved account scope and real provider tests pass; an owner-authorized live payment, notification, refund and settlement reconcile exactly once."
     },
     {
       "id": "supplier",
       "title": "Supplier and fulfillment terms",
-      "state": "external_dependency",
+      "state": "selected_manual_fulfillment",
       "owner": "Owner / Supplier",
-      "next": "Keep fulfillment manual. Confirm actual availability, cost, origin, delivery, returns and recall contact per accepted order; record supplier acknowledgment and tracking. A supplier API is not required.",
+      "next": "Use YourPeptideBrand, 99PurityPeptides or PeptideDropship. Their private supplier records and published planning estimates are configured. Confirm availability, actual quote and supplier acknowledgment for each manually submitted order.",
       "done_when": "Signed fulfillment terms and a tested submission/acknowledgment/tracking cycle for an approved order."
     },
     {
@@ -57,23 +57,23 @@
       "title": "Lot-specific COAs and recalls",
       "state": "data_and_integration_required",
       "owner": "Supplier / Quality reviewer",
-      "next": "Obtain authentic reports, independent verification, reviewer attribution, publish/revoke synchronization and order-lot mapping.",
+      "next": "Supplier reference reports are published separately in /coas. Obtain the authentic report for the purchased/fulfilled lot and complete verified order-lot mapping; examples do not certify AltaPure inventory.",
       "done_when": "An order identifies its exact lot and authentic report; withdrawal removes public eligibility and identifies affected orders."
     },
     {
       "id": "shipping",
       "title": "Rates and eligible destinations",
-      "state": "external_dependency",
+      "state": "supplier_estimates_configured",
       "owner": "Owner / Carrier / Engineering",
-      "next": "Keep owner-reviewed delivery and destination eligibility before invoicing. Instant cart checkout needs confirmed origin, service/rate rules, packaging limits and tax/duties handling.",
+      "next": "Use selected-supplier planning presets; replace or confirm them against the exact order quote. Carrier, price, destination eligibility and customs timing are not inferred from NeuroLabs rates.",
       "done_when": "Every accepted cart receives a valid route and shipping charge before payment; no worldwide default."
     },
     {
       "id": "tax",
       "title": "Tax, accounting and legal entity",
-      "state": "external_dependency",
+      "state": "owner_deferred",
       "owner": "Owner / Accountant",
-      "next": "Confirm seller of record, bank settlement identity, registrations, invoice fields, collection/remittance rules, bookkeeping and currency policy.",
+      "next": "Owner deferred further tax configuration. Existing invoice review is preserved; no zero-tax default is implied. Seller is 1001517614 ONTARIO INC.; remaining registration and accounting details stay pending.",
       "done_when": "Representative orders/refunds reconcile to processor payouts and tax reports using confirmed obligations."
     },
     {
