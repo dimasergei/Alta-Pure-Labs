@@ -5,6 +5,9 @@ do $$ begin
  if not exists(select 1 from pg_roles where rolname='authenticated') then create role authenticated nologin; end if;
  if not exists(select 1 from pg_roles where rolname='service_role') then create role service_role nologin; end if;
 end $$;
+-- Supabase service_role has BYPASSRLS; reproduce that in this disposable database.
+-- Table DML grants remain independently restricted and are tested below.
+alter role service_role bypassrls;
 \i supabase/migrations/20261110023756_customer_request_operations.sql
 set role service_role;
 do $$
