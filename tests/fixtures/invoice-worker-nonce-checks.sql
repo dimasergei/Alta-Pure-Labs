@@ -1,6 +1,6 @@
 \set ON_ERROR_STOP on
 -- Run after invoice-notification-checks.sql in disposable PostgreSQL only.
-\i supabase/migrations/20261110061534_signed_invoice_worker.sql
+\i supabase/migrations/20261110061802_signed_invoice_worker.sql
 set role service_role;
 do $$ declare n uuid:=gen_random_uuid(); begin
  if not public.commerce_consume_notification_job(n,now()) then raise exception 'Fresh nonce rejected'; end if;

@@ -1,7 +1,7 @@
 \set ON_ERROR_STOP on
 -- Disposable DB only. No real recipient or payment.
 \i tests/fixtures/manual-invoice-commerce-checks.sql
-\i supabase/migrations/20261110055901_invoice_notification_outbox.sql
+\i supabase/migrations/20261110061306_invoice_notification_outbox.sql
 set role service_role;
 do $$
 declare i uuid:='50000000-0000-4000-8000-000000000001'; u uuid:='60000000-0000-4000-8000-000000000001';
