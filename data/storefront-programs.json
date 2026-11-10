@@ -1,0 +1,15 @@
+{
+  "version": 1,
+  "checkout_enabled": false,
+  "membership_billing_enabled": false,
+  "subscription_billing_enabled": false,
+  "rewards_redemption_enabled": false,
+  "partner_payouts_enabled": false,
+  "active_offers": [],
+  "cart_incentive": null,
+  "membership_tiers": [
+    { "id": "member", "name": "Member", "status": "available", "price_cents": 0, "features": ["Customer account", "Order history and tracking", "Saved research lists", "Profile management"] },
+    { "id": "vip", "name": "Alta VIP", "status": "not_open", "price_cents": null, "features": ["Member workspace", "Member pricing workspace", "Rewards activity workspace", "Enrollment updates"] },
+    { "id": "elite", "name": "Alta Elite", "status": "not_open", "price_cents": null, "features": ["VIP workspace", "Store-credit workspace", "Research planning tools", "Enrollment updates"] }
+  ]
+}
