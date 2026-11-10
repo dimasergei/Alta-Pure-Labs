@@ -2,7 +2,7 @@
 -- Isolated PostgreSQL only. No merchant or payment in this fixture is real.
 \i tests/fixtures/invoice-notification-checks.sql
 \i supabase/migrations/20261110074742_payment_provider_options.sql
-\i supabase/migrations/20261110160106_native_gateway_checkout.sql
+\i supabase/migrations/20261110164316_native_gateway_checkout.sql
 set role service_role;
 do $$
 declare m uuid:='90000000-0000-4000-8000-000000000001';u uuid:='90000000-0000-4000-8000-000000000002';
