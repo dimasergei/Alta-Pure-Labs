@@ -6,7 +6,7 @@ do $$ begin
  if not exists(select 1 from pg_roles where rolname='service_role') then create role service_role nologin bypassrls; end if;
 end $$;
 alter role service_role bypassrls;
-\i supabase/migrations/20261110033523_manual_invoice_commerce.sql
+\i supabase/migrations/20261110040926_manual_invoice_commerce.sql
 set role service_role;
 do $$
 declare m uuid:='30000000-0000-4000-8000-000000000001';
