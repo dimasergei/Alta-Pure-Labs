@@ -2,21 +2,26 @@
   "buildCommand": "npm run build",
   "outputDirectory": ".",
   "functions": {
-    "api/checkout.js": {
-      "includeFiles": "lib/catalog.json"
-    }
+    "api/checkout.js": { "includeFiles": "lib/catalog.json" },
+    "api/customer-config.js": { "includeFiles": "lib/catalog.json" }
   },
   "rewrites": [
-    {
-      "source": "/account",
-      "destination": "/account.html"
-    },
-    {
-      "source": "/account/:path*",
-      "destination": "/account.html"
-    }
+    { "source": "/account", "destination": "/account.html" },
+    { "source": "/account/:path*", "destination": "/account.html" },
+    { "source": "/my-account", "destination": "/account.html" },
+    { "source": "/my-account/:path*", "destination": "/account.html" },
+    { "source": "/shop", "destination": "/storefront-v2.html" },
+    { "source": "/product/:slug", "destination": "/storefront-v2.html" },
+    { "source": "/research-builder", "destination": "/storefront-v2.html" },
+    { "source": "/bulk-orders", "destination": "/storefront-v2.html" },
+    { "source": "/memberships", "destination": "/storefront-v2.html" },
+    { "source": "/rewards", "destination": "/storefront-v2.html" },
+    { "source": "/offers", "destination": "/storefront-v2.html" },
+    { "source": "/coas", "destination": "/storefront-v2.html" },
+    { "source": "/about", "destination": "/storefront-v2.html" },
+    { "source": "/contact", "destination": "/storefront-v2.html" },
+    { "source": "/partner-program", "destination": "/storefront-v2.html" },
+    { "source": "/track-order", "destination": "/storefront-v2.html" }
   ],
-  "git": {
-    "deploymentEnabled": false
-  }
+  "git": { "deploymentEnabled": false }
 }
