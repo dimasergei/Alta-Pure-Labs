@@ -17,6 +17,6 @@
  $('pay-login').addEventListener('submit',()=>{password=$('pay-password').value;load();},true);
  $('pay-methods-tab').addEventListener('click',load);$('pay-refresh').addEventListener('click',load);
  form.addEventListener('submit',()=>{select.disabled=false;select.value=form.dataset.provider||select.value;if(!form.elements.id.value)form.elements.id.value=crypto.randomUUID();},true);
- new MutationObserver(()=>{if($('pay-method-result').textContent.startsWith('Saved.')){delete form.dataset.provider;select.disabled=false;load();}}).observe($('pay-method-result'),{childList:true,subtree:true});
+ new MutationObserver(()=>{if(/^(Saved\.|Private draft saved\.)/.test($('pay-method-result').textContent)){delete form.dataset.provider;select.disabled=false;load();}}).observe($('pay-method-result'),{childList:true,subtree:true});
  $('pay-logout').addEventListener('click',()=>{password='';methods=[];definitions=[];cards.replaceChildren();status.textContent='Signed out.';guide.textContent='';form.reset();delete form.dataset.provider;select.disabled=false;});
 })();

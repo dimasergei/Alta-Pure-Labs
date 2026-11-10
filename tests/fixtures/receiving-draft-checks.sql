@@ -1,6 +1,6 @@
 \set ON_ERROR_STOP on
 -- Run after native-gateway-checks.sql in its isolated database.
-\i supabase/migrations/20261110190000_receiving_method_drafts.sql
+\i supabase/migrations/20261110181709_receiving_method_drafts.sql
 set role service_role;
 do $$
 declare v_id uuid:=gen_random_uuid(); p jsonb; n integer;
