@@ -101,6 +101,10 @@ jobs:
         env:
           PGPASSWORD: postgres
         run: psql -X -v ON_ERROR_STOP=1 -h 127.0.0.1 -p 5434 -U postgres -d postgres -f tests/fixtures/enterprise-atomic-cancellation-checks.sql
+      - name: Verify atomic COA review audit on disposable PostgreSQL
+        env:
+          PGPASSWORD: postgres
+        run: psql -X -v ON_ERROR_STOP=1 -h 127.0.0.1 -p 5434 -U postgres -d postgres -f tests/fixtures/enterprise-coa-review-audit-checks.sql
       - uses: actions/setup-python@v5
         with:
           python-version: "3.12"
