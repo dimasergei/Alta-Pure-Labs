@@ -1,0 +1,36 @@
+name: Operational request database tests
+on:
+  pull_request:
+  push:
+    branches: [main]
+permissions:
+  contents: read
+jobs:
+  request-transactions:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    services:
+      postgres:
+        image: postgres:17
+        env:
+          POSTGRES_PASSWORD: postgres
+          POSTGRES_DB: postgres
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U postgres -d postgres"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 10
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+        with:
+          persist-credentials: false
+      - name: Verify request persistence, leases, replay, optimistic locking and role isolation
+        env:
+          PGPASSWORD: postgres
+        run: psql -X -v ON_ERROR_STOP=1 -h 127.0.0.1 -U postgres -d postgres -f tests/fixtures/customer-request-operations-checks.sql
+      - name: Verify two concurrent sessions cannot claim the same notification
+        env:
+          PGPASSWORD: postgres
+        run: bash tests/fixtures/customer-request-race.sh

@@ -1,8 +1,12 @@
 'use strict';
 module.exports=async(req,res)=>{
- res.setHeader('Cache-Control','no-store');
- res.setHeader('X-Content-Type-Options','nosniff');
- // Reuse an existing function slot: the authenticated account-config GET remains unchanged.
+ res.setHeader('Cache-Control','no-store');res.setHeader('X-Content-Type-Options','nosniff');
+ const url=new URL(req.url||'/api/customer-config','https://account.internal');
+ if(url.searchParams.has('admin_operations'))return require('../lib/admin-operations').handle(req,res,url.searchParams);
+ if(req.method==='GET'&&url.searchParams.get('workspace')==='requests'){
+  try{return await require('../lib/request-operations').customerRequests(req,res,require('../lib/inventory-db').inventoryDb());}
+  catch(e){return res.status([400,401].includes(e.status)?e.status:503).json({error:e.status===400?e.message:'Requests are temporarily unavailable.'});}
+ }
  if(req.method==='POST')return require('../lib/site-inquiry').handleInquiry(req,res);
  if(req.method!=='GET'){res.setHeader('Allow','GET, POST');return res.status(405).end();}
  const supabaseUrl=process.env.SUPABASE_URL||'',anonKey=process.env.SUPABASE_ANON_KEY||process.env.SUPABASE_PUBLISHABLE_KEY||'';
