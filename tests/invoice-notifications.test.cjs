@@ -1,6 +1,6 @@
 'use strict';
 const test=require('node:test'),assert=require('node:assert/strict'),fs=require('node:fs'),vm=require('node:vm');
-const mail=require('../lib/invoice-notifications'),entry=require('../lib/manual-commerce-integrated'),base=require('../lib/manual-commerce');
+const mail=require('../lib/invoice-notifications'),entry=require('../lib/manual-commerce-integrated'),base=require('../lib/multi-payment-commerce');
 const id='10000000-0000-4000-8000-000000000001',nid='20000000-0000-4000-8000-000000000001';
 const env={RESEND_API_KEY:'fixture-only',ORDER_CONFIRMATION_FROM:'AltaPure <orders@example.test>',ADMIN_ORDER_EMAIL:'team@example.test',ADMIN_ORDERS_PASSWORD:'x'.repeat(40),SITE_URL:'https://altapurelabs.com',COMMERCE_NOTIFICATION_JOB_SECRET:'w'.repeat(48)};
 const notification={id:nid,invoice_id:id,audience:'customer',event_action:'issued',snapshot:{id,customer_email:'owner@example.test',customer_name:'<script>bad</script>',status:'issued',kind:'goods',total_cents:12900,currency:'USD',expires_at:'2026-12-01T00:00:00Z',event_at:'2026-11-10T00:00:00Z',payment_instructions:'BANK-PRIVATE-SHOULD-NOT-APPEAR'}};
