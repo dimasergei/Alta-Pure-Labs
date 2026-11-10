@@ -29,4 +29,6 @@ jobs:
       - name: Verify native attempts, payment replay, membership and refund
         env:
           PGPASSWORD: postgres
-        run: psql -X -v ON_ERROR_STOP=1 -h 127.0.0.1 -U postgres -d postgres -f tests/fixtures/native-gateway-checks.sql
+        run: |
+          psql -X -v ON_ERROR_STOP=1 -h 127.0.0.1 -U postgres -d postgres -f tests/fixtures/native-gateway-checks.sql
+          psql -X -v ON_ERROR_STOP=1 -h 127.0.0.1 -U postgres -d postgres -f tests/fixtures/receiving-draft-checks.sql

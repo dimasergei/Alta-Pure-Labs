@@ -84,3 +84,12 @@ Keep gateway accounts, attempts, receipts and events. Disable native provider fl
 - Local browser checks used the actual built payment/admin assets with isolated fake auth, API and component fixtures. Checked disabled/unknown payment blocking, consent, confirmed response, crypto form, private setup diagnostics and logout. These are not real gateway tests; mobile, actual wallets and 3DS still require provider acceptance testing.
 - Vercel has no NMI/PayerURL credentials or activation flags. This release cannot activate either gateway without actual account configuration and an approved route.
 - Existing email threads were checked without sending duplicates. RFG is awaiting written NMI/fee/Relay/sandbox answers and added a 1% payout fee to its indicative quote. MOBOPAY requested a call at 1-844-411-1011 ext 101. PeptideApprove has no reply in the thread; no PayerURL account email was found.
+
+
+## Account-specific sandbox evidence — 10 November 2026
+
+The owner's NMI sandbox credentials were tested using the actual Payment Component and application payment adapter with disposable in-memory invoices, without connecting to the production database. A tokenized USD 1.00 sale succeeded, authenticated transaction retrieval confirmed it, and a full USD 1.00 refund returned a separate transaction ID. NMI returned a negative refund amount and refund action on the child transaction. The adapter now persists and reconciles that child ID, binding it to the original sale order, exact amount and currency. An unsettled live sale is rejected before claiming a refund; void handling still needs separate provider verification.
+
+A USD 0.50 sandbox transaction produced the expected decline and the customer page displayed that no paid order was created. The sandbox required the merchant's own email address in the test billing fixture. Approved sandbox attempts grant no production entitlement.
+
+These checks establish sale, decline, query and full-refund response compatibility for this sandbox. They do not establish live merchant approval, signed provider webhook delivery, 3DS, Apple/Google Pay, PayerURL acceptance or real funds settlement. The PayerURL portal continued returning 401 despite the account-registration email; no crypto credentials were invented or enabled.
