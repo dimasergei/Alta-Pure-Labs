@@ -19,7 +19,21 @@ test('withdrawal calls the atomic audited RPC with a reason',async()=>{
  assert.equal(r.report.publication_approved,false);
  assert.equal(x.calls[0].name,'enterprise_review_quality_document');
  assert.equal(x.calls[0].args.p_reason,'Supplier revoked the published report');
+ assert.match(x.calls[0].args.p_actor_reference,/^admin-shared-key-request:[0-9a-f-]{36}$/);
+ assert.equal(r.review_reference,x.calls[0].args.p_actor_reference);
 });
+test('independent review actions have distinct server-issued audit references',async()=>{
+ const x=mockDb();
+ const input={report_id:id,action:'withdraw',reason:'Confirmed supplier recall notice'};
+ const one=await changeReportStatus(x.db,input);
+ const two=await changeReportStatus(x.db,input);
+ assert.equal(one.ok,true);
+ assert.equal(two.ok,true);
+ assert.notEqual(one.review_reference,two.review_reference);
+ assert.notEqual(x.calls[0].args.p_actor_reference,x.calls[1].args.p_actor_reference);
+ assert.equal(x.calls[0].args.p_actor_reference.includes('admin-quality-console'),false);
+});
+
 test('rejection uses the same atomic RPC and never grants publication',async()=>{
  const x=mockDb({status:'rejected'});
  const r=await changeReportStatus(x.db,{report_id:id,action:'reject',reason:'Identity verification was unsuccessful'});

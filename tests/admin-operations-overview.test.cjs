@@ -50,6 +50,13 @@ test('overview computes only exact counts and returns no customer data',async()=
  assert.equal(result.data_scope,'live_counts');
  assert.equal(JSON.stringify(result).includes('customer_email'),false);
 });
+test('admin checkout overview cannot re-enable retired Stripe from a stale flag',()=>{
+ const src=fs.readFileSync(path.join(root,'api/admin-suppliers.js'),'utf8');
+ const status=fs.readFileSync(path.join(root,'api/checkout-status.js'),'utf8'); 
+ assert.match(src,/result.checkout_enabled = false/); 
+ assert.doesNotMatch(src,/result.checkout_enabled = process.env.CHECKOUT_ENABLED/); 
+ assert.match(status,/enabled: false/); 
+}); 
 test('overview page uses branded admin styling and never stores password',()=>{
  const html=fs.readFileSync(path.join(root,'admin-operations-overview.html'),'utf8');
  const js=fs.readFileSync(path.join(root,'admin-operations-overview.js'),'utf8');

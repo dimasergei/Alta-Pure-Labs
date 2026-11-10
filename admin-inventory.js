@@ -106,7 +106,7 @@
    const result=await response.json();
    if(!response.ok)throw Error(response.status===401?'Admin password not accepted.':
     'Report unchanged: '+String(result.reason||'Request rejected'));
-   out.textContent='Report status changed to '+result.report.status+'. Publication revoked.';
+   out.textContent='Report status changed to '+result.report.status+'. Publication revoked. Audit reference: '+String(result.review_reference||'unavailable')+'.';
    reviewForm.reset();
   }catch(error){out.textContent=error.message;}
   finally{pass.value='';button.disabled=false;}

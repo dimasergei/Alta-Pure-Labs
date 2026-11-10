@@ -35,7 +35,7 @@ test('inventory UI is read-only, uses existing dark theme and clears credentials
  const html=fs.readFileSync(path.join(root,'admin-inventory.html'),'utf8');
  const js=fs.readFileSync(path.join(root,'admin-inventory.js'),'utf8');
  assert.match(html,/admin-dashboard\.css/);
- assert.match(html,/No inventory imports, quality approvals, sales or shipments/);
+ assert.match(html,/This console cannot verify certificates, release inventory, authorize sales, or ship products/);
  assert.match(js,/\/api\/admin-suppliers\?inventory=1/);
  assert.match(js,/password\.value=''/);
  assert.doesNotMatch(js,/localStorage|sessionStorage|innerHTML\s*=/);

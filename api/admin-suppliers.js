@@ -59,7 +59,9 @@ module.exports = async (req, res) => {
         const db = createClient(process.env.SUPABASE_URL, process.env.SUPABASE_SERVICE_ROLE_KEY,
           { auth: { persistSession: false, autoRefreshToken: false } });
         const result = await loadOverview(db);
-        result.checkout_enabled = process.env.CHECKOUT_ENABLED === 'true';
+        // The public checkout endpoint is retired irrespective of stale environment flags.
+        // loadOverview() already derives the operational checkout status.
+        result.checkout_enabled = false;
         return res.status(200).json(result);
       }
       return await listSuppliers(req, res);
