@@ -1,7 +1,7 @@
 \set ON_ERROR_STOP on
 -- Disposable PostgreSQL only.
 \i tests/fixtures/manual-invoice-commerce-checks.sql
-\i supabase/migrations/20261110072347_payment_provider_options.sql
+\i supabase/migrations/20261110074742_payment_provider_options.sql
 set role service_role;
 do $$
 declare method_id uuid:='81000000-0000-4000-8000-000000000001';
