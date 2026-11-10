@@ -1,9 +1,9 @@
 'use strict';
 
 /**
- * Public, read-only checkout status. Reveals no credentials or configuration
- * details beyond whether the existing server-side checkout gate is enabled.
- * Any missing/unknown value is treated as unavailable.
+ * The legacy Stripe checkout is retired. This public endpoint is deliberately
+ * independent of CHECKOUT_ENABLED and other stale Vercel environment flags.
+ * A new provider-specific launch requires a separately reviewed implementation.
  */
 module.exports = async (req, res) => {
   res.setHeader('Cache-Control', 'no-store, max-age=0');
@@ -12,7 +12,5 @@ module.exports = async (req, res) => {
     res.setHeader('Allow', 'GET');
     return res.status(405).json({ error: 'Use GET.' });
   }
-  return res.status(200).json({
-    enabled: process.env.CHECKOUT_ENABLED === 'true'
-  });
+  return res.status(200).json({ enabled: false });
 };
