@@ -19,3 +19,18 @@ test('issue refuses stale totals and requires provider amount confirmation',asyn
 test('membership invoices are not volume-discounted or shipped',async()=>{const invoice={id,customer_id:uid,kind:'membership',status:'requested',version:1,request_data:{items:[{name:'VIP',id:'membership-vip',size:'365 days',qty:1,unit_price_usd_cents:4900}]}};const db=dbFor(invoice);const b={id,action:'preview',version:1,method_id:id,shipping_cents:0,tax_cents:0,delivery_tax:reviewFixture,fulfillment_confirmed:true,review_note:'Prepaid pass tax treatment reviewed.'};const r=await issueInvoice(db,b);assert.equal(r.total_cents,4900);assert.equal(r.discount_cents,0);await assert.rejects(issueInvoice(db,{...b,shipping_cents:10}));});
 test('unauthenticated admin cannot access payment receivers or execute writes',async()=>{let calls=0;const r=res();await handle({method:'GET',headers:{}},r,new URLSearchParams({commerce:'admin'}),{env:{ADMIN_ORDERS_PASSWORD:'x'.repeat(40)},db:{from(){calls++;}}});assert.equal(r.code,401);assert.equal(calls,0);});
 test('invoice request ownership is derived from verified user, not browser',async()=>{let args;const db={rpc:async(name,a)=>{args=a.p_data;return{data:{id,status:'requested'}};}};await requestInvoice(db,{id:uid,email:'OWNER@example.test'}, {id,customer_id:'forged',kind:'membership',plan:'vip',consent:true,terms_version:'launch-2026-11-v1',name:'Owner'},catalog);assert.equal(args.customer_id,uid);assert.equal(args.customer_email,'owner@example.test');assert.equal(args.request.items[0].unit_price_usd_cents,4900);assert.match(args.digest,/^[a-f0-9]{64}$/);});
+test('bank discount reaches final invoice, reduces tax base, and cannot carry into cards',async()=>{
+ const invoice={id,customer_id:uid,kind:'goods',status:'requested',version:1,request_data:{address:{country:'CA',region:'ON'},items:lines(1)}};
+ const delivery_tax={...reviewFixture,destination_country:'CA',destination_region:'ON',tax_mode:'canada_taxable_goods',canada_supply_confirmed:true,gst_hst_number:'123456789RT0001',shipping_taxable:true,delivery:{...reviewFixture.delivery,origin_country:'CA',origin_region:'ON'}};
+ const input={id,action:'preview',version:1,method_id:id,shipping_cents:1000,fx_ppm:1000000,delivery_tax,fulfillment_confirmed:true,review_note:'Fixture shipping and tax confirmed.'};
+ const r=await issueInvoice(dbFor(invoice,{...method,currency:'CAD'}),input);
+ assert.equal(r.discount_cents,300);assert.equal(r.pricing.payment_discount.amount_cents,300);assert.equal(r.tax_cents,871);assert.equal(r.total_cents,7571);
+ const card=await issueInvoice(dbFor(invoice,{...method,kind:'hosted_link',currency:'CAD'}),{...input,payment_discount:{amount_cents:99999}});
+ assert.equal(card.discount_cents,0);assert.equal(card.pricing.payment_discount,undefined);assert.equal(card.total_cents,7910);
+ await assert.rejects(issueInvoice(dbFor(invoice,{...method,currency:'CAD'}),{...input,action:'issue',expected_total_cents:7910}),e=>e.status===409);
+});
+test('bank savings apply after existing line discounts with cent rounding and exclude other rails and passes',()=>{
+ const {applyBankDiscount}=require('../lib/bank-transfer-discount');
+ const p={subtotal_cents:10001,discount_cents:1000};applyBankDiscount(p,method,'goods');assert.equal(p.payment_discount.base_cents,9001);assert.equal(p.payment_discount.amount_cents,450);assert.equal(p.discount_cents,1450);
+ for(const [m,kind] of [[{...method,kind:'interac'},'goods'],[{...method,kind:'hosted_link'},'goods'],[{...method,kind:'native_nmi'},'goods'],[{...method,active:false},'goods'],[method,'membership']]){const p={subtotal_cents:10001,discount_cents:0};applyBankDiscount(p,m,kind);assert.equal(p.discount_cents,0);assert.equal(p.payment_discount,undefined);}
+});
