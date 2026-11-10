@@ -1,7 +1,7 @@
 {
  "buildCommand":"npm run build",
  "outputDirectory":"public-build",
- "functions":{"api/checkout.js":{"includeFiles":"lib/catalog.json"},"api/customer-config.js":{"includeFiles":"lib/catalog.json"}},
+ "functions":{"api/checkout.js":{"includeFiles":"lib/catalog.json"},"api/customer-config.js":{"includeFiles":"lib/catalog.json","maxDuration":60}},
  "rewrites":[
   {"source":"/account","destination":"/account.html"},
   {"source":"/account/:path*","destination":"/account.html"},
