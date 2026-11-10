@@ -1,0 +1,9 @@
+# Native payment release verification
+
+The interrupted implementation was recovered from PR58, not restarted. Six GitHub workflows passed on head 8f2fca6a8ae9776ac2f884d3ee0f3855eba68a27. In a fresh sandbox, all208 source application tests passed again, the production build passed, and the native payment lifecycle passed in disposable PostgreSQL17. Earlier isolated browser checks covered eight groups with zero JS errors; they mocked account/provider interactions, not actual gateway payments.
+
+The schema was applied to the confirmed AltaPure Supabase project as migration20261110164316_native_gateway_checkout. The source filename was reconciled to that remote history entry with the same tested SQL blob fcf8640b02927005a5cde91a49b1fe82c98acaa5. Read-only verification confirmed three RLS-enabled tables, no browser read/execute access, no direct service-role table writes, and service-only fixed-search-path mutation functions. Gateway accounts, attempts, receiving methods and manual invoices remained empty; the legacy order count stayed19. No real payment, refund, fake receiver or merchant account was created.
+
+Test scope is explicit: the208-test suite runs against source files before build. Running every source assertion on generated HTML also exposes pre-existing legacy-navigation/template assertions; that is not a claimed post-build suite pass. The native payment suite and browser checks target the generated release separately. No source-only assertion is represented as provider-account acceptance.
+
+Production release validation and the exact deployment/commit are recorded in PR58. Live collection remains unconfigured until actual NMI/PayerURL credentials, account-specific tests and the owner's approval steps are supplied. Supplier automation remains deferred. Refer to native-gateway-activation.md for environment names and callbacks.
