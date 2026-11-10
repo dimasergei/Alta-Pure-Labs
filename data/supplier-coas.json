@@ -1561,6 +1561,512 @@
       "scope": "supplier_reference",
       "reviewed_at": "2026-11-10",
       "inventory_lot_linked": false
+    },
+    {
+      "id": "pd-retatrutide-glp-310mg",
+      "supplier_id": "peptidedropship",
+      "supplier": "PeptideDropship / Life Link Research",
+      "supplier_sku": null,
+      "sample_name": "Retatrutide 10mg",
+      "lot": "Not stated; laboratory sample 202608-LIF-001",
+      "report_date": "2026-09-09",
+      "report_id": "PL-COA-20260909-C02D",
+      "lab_name": "Prodigy Labs",
+      "report_client": "Life Link Research",
+      "publisher": "Prodigy Labs",
+      "document_url": "https://lifelinkresearch.com/wp-content/uploads/2026/06/2026-September-COA-Retatrutide-10mg_1-1.png",
+      "document_type": "images",
+      "document_pages": [
+        "https://lifelinkresearch.com/wp-content/uploads/2026/06/2026-September-COA-Retatrutide-10mg_1-1.png",
+        "https://lifelinkresearch.com/wp-content/uploads/2026/06/2026-September-COA-Retatrutide-10mg_2.png"
+      ],
+      "verification_url": null,
+      "source_library_url": "https://lifelinkresearch.com/certificate/?prod=12584",
+      "sha256": "2908a629bd22879166d660fa69f1dfc333dd338e31afdbb29d65fb7c996f773c",
+      "match_note": "PeptideDropship identified Life Link Research as its COA source. Product and nominal strength match; report client is preserved. No AltaPure fulfillment lot is assigned. The report does not provide a supplier lot; a laboratory sample number is not a supplier lot.",
+      "product_id": "retatrutide",
+      "size": "10mg",
+      "product": "Retatrutide",
+      "scope": "supplier_reference",
+      "reviewed_at": "2026-11-10",
+      "inventory_lot_linked": false
+    },
+    {
+      "id": "pd-retatrutide-glp-3-15mg-research-peptide",
+      "supplier_id": "peptidedropship",
+      "supplier": "PeptideDropship / Life Link Research",
+      "supplier_sku": null,
+      "sample_name": "Retatrutide 15mg",
+      "lot": "NA (as stated on report)",
+      "report_date": "2026-06-19",
+      "report_id": "COA5496",
+      "lab_name": "Bioviridian Inc.",
+      "report_client": "Life Link Research",
+      "publisher": "Bioviridian Inc.",
+      "document_url": "https://lifelinkresearch.com/wp-content/uploads/2025/04/COA5496.jpg",
+      "document_type": "images",
+      "document_pages": [
+        "https://lifelinkresearch.com/wp-content/uploads/2025/04/COA5496.jpg"
+      ],
+      "verification_url": null,
+      "source_library_url": "https://lifelinkresearch.com/certificate/?prod=1333",
+      "sha256": "8b4004cba2a517f227e51d9bac5b8a73c19a3332da51d9f488a745fae29c4b20",
+      "match_note": "PeptideDropship identified Life Link Research as its COA source. Product and nominal strength match; report client is preserved. No AltaPure fulfillment lot is assigned. The report does not provide a supplier lot; a laboratory sample number is not a supplier lot.",
+      "product_id": "retatrutide",
+      "size": "15mg",
+      "product": "Retatrutide",
+      "scope": "supplier_reference",
+      "reviewed_at": "2026-11-10",
+      "inventory_lot_linked": false
+    },
+    {
+      "id": "pd-retatrutide-glp-3-20mg",
+      "supplier_id": "peptidedropship",
+      "supplier": "PeptideDropship / Life Link Research",
+      "supplier_sku": null,
+      "sample_name": "Retatrutide 20mg",
+      "lot": "Not stated; laboratory sample 202607-PRO-005",
+      "report_date": "2026-08-10",
+      "report_id": "PL-COA-20260810-88DE-R5",
+      "lab_name": "Prodigy Labs",
+      "report_client": "Life Link Research",
+      "publisher": "Prodigy Labs",
+      "document_url": "https://lifelinkresearch.com/wp-content/uploads/2026/07/73dbde81-5169-40d8-85c5-41c7554a0965-0000-scaled.png",
+      "document_type": "images",
+      "document_pages": [
+        "https://lifelinkresearch.com/wp-content/uploads/2026/07/73dbde81-5169-40d8-85c5-41c7554a0965-0000-scaled.png",
+        "https://lifelinkresearch.com/wp-content/uploads/2026/07/73dbde81-5169-40d8-85c5-41c7554a0965-0001-scaled.png"
+      ],
+      "verification_url": null,
+      "source_library_url": "https://lifelinkresearch.com/certificate/?prod=12801",
+      "sha256": "05511d7c0eb4b13ef214bd9d51e43bb390a2ed97c0510df85caf6f81d7d8f29f",
+      "match_note": "PeptideDropship identified Life Link Research as its COA source. Product and nominal strength match; report client is preserved. No AltaPure fulfillment lot is assigned. The report does not provide a supplier lot; a laboratory sample number is not a supplier lot.",
+      "product_id": "retatrutide",
+      "size": "20mg",
+      "product": "Retatrutide",
+      "scope": "supplier_reference",
+      "reviewed_at": "2026-11-10",
+      "inventory_lot_linked": false
+    },
+    {
+      "id": "pd-dsip-5mg-research-peptide",
+      "supplier_id": "peptidedropship",
+      "supplier": "PeptideDropship / Life Link Research",
+      "supplier_sku": null,
+      "sample_name": "DSIP 5mg",
+      "lot": "#58471",
+      "report_date": "2025-02-26",
+      "report_id": "#58471",
+      "lab_name": "Janoshik Analytical",
+      "report_client": "Life Link Research",
+      "publisher": "Janoshik Analytical",
+      "document_url": "https://lifelinkresearch.com/wp-content/uploads/2025/04/DSIP-5mg-1.png",
+      "document_type": "images",
+      "document_pages": [
+        "https://lifelinkresearch.com/wp-content/uploads/2025/04/DSIP-5mg-1.png"
+      ],
+      "verification_url": null,
+      "source_library_url": "https://lifelinkresearch.com/certificate/?prod=1331",
+      "sha256": "cddfaf85934036396f162894c6ee9d21e8ec08a6eb34d1460b6002a8114741fb",
+      "match_note": "PeptideDropship identified Life Link Research as its COA source. Product and nominal strength match; report client is preserved. No AltaPure fulfillment lot is assigned.",
+      "product_id": "dsip",
+      "size": "5mg",
+      "product": "DSIP",
+      "scope": "supplier_reference",
+      "reviewed_at": "2026-11-10",
+      "inventory_lot_linked": false
+    },
+    {
+      "id": "pd-cjc-1295-no-dac-5mg-research-peptide",
+      "supplier_id": "peptidedropship",
+      "supplier": "PeptideDropship / Life Link Research",
+      "supplier_sku": null,
+      "sample_name": "CJC-1295 No DAC 5mg",
+      "lot": "Not Provided (as stated on report)",
+      "report_date": "2026-05-05",
+      "report_id": "RP218-29Apr26-1",
+      "lab_name": "Prime Analytical Laboratories, LLC",
+      "report_client": "Life Link Research",
+      "publisher": "Prime Analytical Laboratories, LLC",
+      "document_url": "https://lifelinkresearch.com/wp-content/uploads/2025/04/LLR-2026-CJC-1295-no-DAC-5mg.png",
+      "document_type": "images",
+      "document_pages": [
+        "https://lifelinkresearch.com/wp-content/uploads/2025/04/LLR-2026-CJC-1295-no-DAC-5mg.png"
+      ],
+      "verification_url": null,
+      "source_library_url": "https://lifelinkresearch.com/certificate/?prod=1312",
+      "sha256": "7067c0e83e3c0ae0d64db0b01e1ef86aeacbe0410715a35d5b98d3f49c7ac966",
+      "match_note": "PeptideDropship identified Life Link Research as its COA source. Product and nominal strength match; report client is preserved. No AltaPure fulfillment lot is assigned. The report does not provide a supplier lot; a laboratory sample number is not a supplier lot.",
+      "product_id": "cjc-1295-no-dac",
+      "size": "5mg",
+      "product": "CJC-1295 No DAC",
+      "scope": "supplier_reference",
+      "reviewed_at": "2026-11-10",
+      "inventory_lot_linked": false
+    },
+    {
+      "id": "pd-cagrilintide-5mg-research-peptide",
+      "supplier_id": "peptidedropship",
+      "supplier": "PeptideDropship / Life Link Research",
+      "supplier_sku": null,
+      "sample_name": "Cagrilintide 5mg",
+      "lot": "Not Provided (as stated on report)",
+      "report_date": "2026-04-22",
+      "report_id": "RP218-17Apr26-1",
+      "lab_name": "Prime Analytical Laboratories, LLC",
+      "report_client": "Life Link Research",
+      "publisher": "Prime Analytical Laboratories, LLC",
+      "document_url": "https://lifelinkresearch.com/wp-content/uploads/2025/06/LLR-COA-Cagrilintide-5mg-2026.jpg",
+      "document_type": "images",
+      "document_pages": [
+        "https://lifelinkresearch.com/wp-content/uploads/2025/06/LLR-COA-Cagrilintide-5mg-2026.jpg"
+      ],
+      "verification_url": null,
+      "source_library_url": "https://lifelinkresearch.com/certificate/?prod=8022",
+      "sha256": "8143869b6ff3d927d8d102304d6e82e5d2e00c6999489eafa90fed8120e7753d",
+      "match_note": "PeptideDropship identified Life Link Research as its COA source. Product and nominal strength match; report client is preserved. No AltaPure fulfillment lot is assigned. The report does not provide a supplier lot; a laboratory sample number is not a supplier lot.",
+      "product_id": "cagrilintide",
+      "size": "5mg",
+      "product": "Cagrilintide",
+      "scope": "supplier_reference",
+      "reviewed_at": "2026-11-10",
+      "inventory_lot_linked": false
+    },
+    {
+      "id": "pd-bpc-157-tb-500-10mg-10mg",
+      "supplier_id": "peptidedropship",
+      "supplier": "PeptideDropship / Life Link Research",
+      "supplier_sku": null,
+      "sample_name": "BPC/TB-500 10mg/10mg",
+      "lot": "#031826",
+      "report_date": "2026-04-21",
+      "report_id": "#148941",
+      "lab_name": "Janoshik Analytical",
+      "report_client": "Life Link Research",
+      "publisher": "Janoshik Analytical",
+      "document_url": "https://lifelinkresearch.com/wp-content/uploads/2026/04/LLR-BPC-157-TB500-10mg-blend-2026.png",
+      "document_type": "images",
+      "document_pages": [
+        "https://lifelinkresearch.com/wp-content/uploads/2026/04/LLR-BPC-157-TB500-10mg-blend-2026.png"
+      ],
+      "verification_url": null,
+      "source_library_url": "https://lifelinkresearch.com/certificate/?prod=10702",
+      "sha256": "76a802d1f84167256bb049ed63cad32e4ca86b79cc903d6e691ede55941f8f4a",
+      "match_note": "PeptideDropship identified Life Link Research as its COA source. Product and nominal strength match; report client is preserved. No AltaPure fulfillment lot is assigned. This report tests identity and amount only; peptide purity is explicitly excluded. TB-500 is identified as TB4 in the sheet; supplier formulation must be confirmed before fulfillment.",
+      "product_id": "bpc-tb-500",
+      "size": "10mg/10mg",
+      "product": "BPC/TB-500",
+      "scope": "supplier_reference",
+      "reviewed_at": "2026-11-10",
+      "inventory_lot_linked": false
+    },
+    {
+      "id": "pd-bpc-157-10mg",
+      "supplier_id": "peptidedropship",
+      "supplier": "PeptideDropship / Life Link Research",
+      "supplier_sku": null,
+      "sample_name": "BPC-157 10mg",
+      "lot": "#031826",
+      "report_date": "2026-04-20",
+      "report_id": "#149043",
+      "lab_name": "Janoshik Analytical",
+      "report_client": "Life Link Research",
+      "publisher": "Janoshik Analytical",
+      "document_url": "https://lifelinkresearch.com/wp-content/uploads/2025/04/LLR-BPC-157-10mg-2026.png",
+      "document_type": "images",
+      "document_pages": [
+        "https://lifelinkresearch.com/wp-content/uploads/2025/04/LLR-BPC-157-10mg-2026.png"
+      ],
+      "verification_url": null,
+      "source_library_url": "https://lifelinkresearch.com/certificate/?prod=1193",
+      "sha256": "c0f0b2ea539f464dac1a67950a90f37fa66a841fa0d7bd4169cfb255ed9de893",
+      "match_note": "PeptideDropship identified Life Link Research as its COA source. Product and nominal strength match; report client is preserved. No AltaPure fulfillment lot is assigned.",
+      "product_id": "bpc-157",
+      "size": "10mg",
+      "product": "BPC-157",
+      "scope": "supplier_reference",
+      "reviewed_at": "2026-11-10",
+      "inventory_lot_linked": false
+    },
+    {
+      "id": "pd-ghk-cu-50mg-research-peptide",
+      "supplier_id": "peptidedropship",
+      "supplier": "PeptideDropship / Life Link Research",
+      "supplier_sku": null,
+      "sample_name": "GHK-Cu 50mg",
+      "lot": "#109384",
+      "report_date": "2026-02-20",
+      "report_id": "#109384",
+      "lab_name": "Janoshik Analytical",
+      "report_client": "Life Link Research",
+      "publisher": "Janoshik Analytical",
+      "document_url": "https://lifelinkresearch.com/wp-content/uploads/2025/04/GHK-CU-2026-1.png",
+      "document_type": "images",
+      "document_pages": [
+        "https://lifelinkresearch.com/wp-content/uploads/2025/04/GHK-CU-2026-1.png"
+      ],
+      "verification_url": null,
+      "source_library_url": "https://lifelinkresearch.com/certificate/?prod=1270",
+      "sha256": "ffe35c9d39d18d8fbd67e5758585431feb8a40a3e7b02970d8f115e6f4f12269",
+      "match_note": "PeptideDropship identified Life Link Research as its COA source. Product and nominal strength match; report client is preserved. No AltaPure fulfillment lot is assigned.",
+      "product_id": "ghk-cu",
+      "size": "50mg",
+      "product": "GHK-Cu",
+      "scope": "supplier_reference",
+      "reviewed_at": "2026-11-10",
+      "inventory_lot_linked": false
+    },
+    {
+      "id": "pd-ipamorelin-10mg-research-peptide",
+      "supplier_id": "peptidedropship",
+      "supplier": "PeptideDropship / Life Link Research",
+      "supplier_sku": null,
+      "sample_name": "Ipamorelin 10mg",
+      "lot": "Not Provided (as stated on report)",
+      "report_date": "2026-03-19",
+      "report_id": "RP218-16Mar26-4",
+      "lab_name": "Prime Analytical Laboratories, LLC",
+      "report_client": "Life Link Research",
+      "publisher": "Prime Analytical Laboratories, LLC",
+      "document_url": "https://lifelinkresearch.com/wp-content/uploads/2025/06/RP218-16Mar26-4_page-0001.png",
+      "document_type": "images",
+      "document_pages": [
+        "https://lifelinkresearch.com/wp-content/uploads/2025/06/RP218-16Mar26-4_page-0001.png"
+      ],
+      "verification_url": null,
+      "source_library_url": "https://lifelinkresearch.com/certificate/?prod=8018",
+      "sha256": "f4a8d275b1817649c86c41e9a874fb6ef3914870ce4ca7cdb9ebeeeb955741ec",
+      "match_note": "PeptideDropship identified Life Link Research as its COA source. Product and nominal strength match; report client is preserved. No AltaPure fulfillment lot is assigned. The report does not provide a supplier lot; a laboratory sample number is not a supplier lot.",
+      "product_id": "ipamorelin",
+      "size": "10mg",
+      "product": "Ipamorelin",
+      "scope": "supplier_reference",
+      "reviewed_at": "2026-11-10",
+      "inventory_lot_linked": false
+    },
+    {
+      "id": "pd-thymosin-alpha-1-10mg-peptide",
+      "supplier_id": "peptidedropship",
+      "supplier": "PeptideDropship / Life Link Research",
+      "supplier_sku": null,
+      "sample_name": "Thymosin Alpha-1 10mg",
+      "lot": "Not Provided (as stated on report)",
+      "report_date": "2026-03-19",
+      "report_id": "RP218-16Mar26-14",
+      "lab_name": "Prime Analytical Laboratories, LLC",
+      "report_client": "Life Link Research",
+      "publisher": "Prime Analytical Laboratories, LLC",
+      "document_url": "https://lifelinkresearch.com/wp-content/uploads/2025/04/RP218-16Mar26-14_page-0001.png",
+      "document_type": "images",
+      "document_pages": [
+        "https://lifelinkresearch.com/wp-content/uploads/2025/04/RP218-16Mar26-14_page-0001.png"
+      ],
+      "verification_url": null,
+      "source_library_url": "https://lifelinkresearch.com/certificate/?prod=1332",
+      "sha256": "a02e5010ba22a3958a99124d624f1474a1b1f5a2ed5330626c099e00eb19d470",
+      "match_note": "PeptideDropship identified Life Link Research as its COA source. Product and nominal strength match; report client is preserved. No AltaPure fulfillment lot is assigned. The report does not provide a supplier lot; a laboratory sample number is not a supplier lot.",
+      "product_id": "thymosin-alpha-1",
+      "size": "10mg",
+      "product": "Thymosin Alpha-1",
+      "scope": "supplier_reference",
+      "reviewed_at": "2026-11-10",
+      "inventory_lot_linked": false
+    },
+    {
+      "id": "pd-epithalon-10mg-research-peptide",
+      "supplier_id": "peptidedropship",
+      "supplier": "PeptideDropship / Life Link Research",
+      "supplier_sku": null,
+      "sample_name": "Epithalon 10mg",
+      "lot": "Not Provided (as stated on report)",
+      "report_date": "2026-04-13",
+      "report_id": "RP218-07Apr26-1",
+      "lab_name": "Prime Analytical Laboratories, LLC",
+      "report_client": "Life Link Research",
+      "publisher": "Prime Analytical Laboratories, LLC",
+      "document_url": "https://lifelinkresearch.com/wp-content/uploads/2025/04/2026-LLR-Epithalon-COA-scaled.png",
+      "document_type": "images",
+      "document_pages": [
+        "https://lifelinkresearch.com/wp-content/uploads/2025/04/2026-LLR-Epithalon-COA-scaled.png"
+      ],
+      "verification_url": null,
+      "source_library_url": "https://lifelinkresearch.com/certificate/?prod=1335",
+      "sha256": "862a577a9f89d969c7be60f21ee33f5591559012453b9eca23d884233174edcd",
+      "match_note": "PeptideDropship identified Life Link Research as its COA source. Product and nominal strength match; report client is preserved. No AltaPure fulfillment lot is assigned. The report does not provide a supplier lot; a laboratory sample number is not a supplier lot.",
+      "product_id": "epithalon",
+      "size": "10mg",
+      "product": "Epithalon",
+      "scope": "supplier_reference",
+      "reviewed_at": "2026-11-10",
+      "inventory_lot_linked": false
+    },
+    {
+      "id": "pd-pt-141-10mg",
+      "supplier_id": "peptidedropship",
+      "supplier": "PeptideDropship / Life Link Research",
+      "supplier_sku": null,
+      "sample_name": "PT-141 10mg",
+      "lot": "Not Provided (as stated on report)",
+      "report_date": "2026-03-19",
+      "report_id": "RP218-16Mar26-8",
+      "lab_name": "Prime Analytical Laboratories, LLC",
+      "report_client": "Life Link Research",
+      "publisher": "Prime Analytical Laboratories, LLC",
+      "document_url": "https://lifelinkresearch.com/wp-content/uploads/2025/04/RP218-16Mar26-8_page-0001.png",
+      "document_type": "images",
+      "document_pages": [
+        "https://lifelinkresearch.com/wp-content/uploads/2025/04/RP218-16Mar26-8_page-0001.png"
+      ],
+      "verification_url": null,
+      "source_library_url": "https://lifelinkresearch.com/certificate/?prod=1274",
+      "sha256": "cbc0eb50989d04b1edd82d0f8e1bcd810aeba742ffd76a85a7e87d6508bf37ba",
+      "match_note": "PeptideDropship identified Life Link Research as its COA source. Product and nominal strength match; report client is preserved. No AltaPure fulfillment lot is assigned. The report does not provide a supplier lot; a laboratory sample number is not a supplier lot.",
+      "product_id": "pt-141",
+      "size": "10mg",
+      "product": "PT-141",
+      "scope": "supplier_reference",
+      "reviewed_at": "2026-11-10",
+      "inventory_lot_linked": false
+    },
+    {
+      "id": "pd-nad-500mg-research-peptide",
+      "supplier_id": "peptidedropship",
+      "supplier": "PeptideDropship / Life Link Research",
+      "supplier_sku": null,
+      "sample_name": "NAD+ 500mg",
+      "lot": "NA (as stated on report)",
+      "report_date": "2026-05-29",
+      "report_id": "COA4773",
+      "lab_name": "Bioviridian Inc.",
+      "report_client": "Life Link Research",
+      "publisher": "Bioviridian Inc.",
+      "document_url": "https://lifelinkresearch.com/wp-content/uploads/2025/04/2026_COA_NAD-scaled.png",
+      "document_type": "images",
+      "document_pages": [
+        "https://lifelinkresearch.com/wp-content/uploads/2025/04/2026_COA_NAD-scaled.png"
+      ],
+      "verification_url": null,
+      "source_library_url": "https://lifelinkresearch.com/certificate/?prod=1339",
+      "sha256": "565cf040df6f7469f4eb356b79f13b7eacd06ab2327fb0dc74425575488c8e44",
+      "match_note": "PeptideDropship identified Life Link Research as its COA source. Product and nominal strength match; report client is preserved. No AltaPure fulfillment lot is assigned. The report does not provide a supplier lot; a laboratory sample number is not a supplier lot. The sheet prints a content result in mL despite a 500mg sample label; supplier/lab clarification is needed. The original is unchanged.",
+      "product_id": "nad",
+      "size": "500mg",
+      "product": "NAD+",
+      "scope": "supplier_reference",
+      "reviewed_at": "2026-11-10",
+      "inventory_lot_linked": false
+    },
+    {
+      "id": "pd-kpv-10mg-research-peptide",
+      "supplier_id": "peptidedropship",
+      "supplier": "PeptideDropship / Life Link Research",
+      "supplier_sku": null,
+      "sample_name": "KPV 10mg",
+      "lot": "Not Provided (as stated on report)",
+      "report_date": "2026-03-19",
+      "report_id": "RP218-16Mar26-5",
+      "lab_name": "Prime Analytical Laboratories, LLC",
+      "report_client": "Life Link Research",
+      "publisher": "Prime Analytical Laboratories, LLC",
+      "document_url": "https://lifelinkresearch.com/wp-content/uploads/2025/04/RP218-16Mar26-5_page-0001.png",
+      "document_type": "images",
+      "document_pages": [
+        "https://lifelinkresearch.com/wp-content/uploads/2025/04/RP218-16Mar26-5_page-0001.png"
+      ],
+      "verification_url": null,
+      "source_library_url": "https://lifelinkresearch.com/certificate/?prod=1293",
+      "sha256": "08346f40cdb9267da55aeb4bd80173cc7443a7f6deca12b9273847c07bab9da8",
+      "match_note": "PeptideDropship identified Life Link Research as its COA source. Product and nominal strength match; report client is preserved. No AltaPure fulfillment lot is assigned. The report does not provide a supplier lot; a laboratory sample number is not a supplier lot.",
+      "product_id": "kpv",
+      "size": "10mg",
+      "product": "KPV",
+      "scope": "supplier_reference",
+      "reviewed_at": "2026-11-10",
+      "inventory_lot_linked": false
+    },
+    {
+      "id": "pd-mots-c-10mg-research-peptide",
+      "supplier_id": "peptidedropship",
+      "supplier": "PeptideDropship / Life Link Research",
+      "supplier_sku": null,
+      "sample_name": "MOTS-C 10mg",
+      "lot": "#031826",
+      "report_date": "2026-04-20",
+      "report_id": "#149041",
+      "lab_name": "Janoshik Analytical",
+      "report_client": "Life Link Research",
+      "publisher": "Janoshik Analytical",
+      "document_url": "https://lifelinkresearch.com/wp-content/uploads/2025/04/LLR-MOTS-c-10mg-2026.png",
+      "document_type": "images",
+      "document_pages": [
+        "https://lifelinkresearch.com/wp-content/uploads/2025/04/LLR-MOTS-c-10mg-2026.png"
+      ],
+      "verification_url": null,
+      "source_library_url": "https://lifelinkresearch.com/certificate/?prod=1229",
+      "sha256": "bb0136a91bcaebd384f82fb339b102e31cd8d04e77cc92f7d9160897514acc38",
+      "match_note": "PeptideDropship identified Life Link Research as its COA source. Product and nominal strength match; report client is preserved. No AltaPure fulfillment lot is assigned.",
+      "product_id": "mots-c",
+      "size": "10mg",
+      "product": "MOTS-C",
+      "scope": "supplier_reference",
+      "reviewed_at": "2026-11-10",
+      "inventory_lot_linked": false
+    },
+    {
+      "id": "pd-selank-10mg-research-peptide",
+      "supplier_id": "peptidedropship",
+      "supplier": "PeptideDropship / Life Link Research",
+      "supplier_sku": null,
+      "sample_name": "Selank 10mg",
+      "lot": "Not Provided (as stated on report)",
+      "report_date": "2026-03-19",
+      "report_id": "RP218-16Mar26-10",
+      "lab_name": "Prime Analytical Laboratories, LLC",
+      "report_client": "Life Link Research",
+      "publisher": "Prime Analytical Laboratories, LLC",
+      "document_url": "https://lifelinkresearch.com/wp-content/uploads/2025/04/RP218-16Mar26-10_page-0001.png",
+      "document_type": "images",
+      "document_pages": [
+        "https://lifelinkresearch.com/wp-content/uploads/2025/04/RP218-16Mar26-10_page-0001.png"
+      ],
+      "verification_url": null,
+      "source_library_url": "https://lifelinkresearch.com/certificate/?prod=1260",
+      "sha256": "15c030210235c5c0367e34e7ab90c00622ef05f929301f7b13669ef807b06e28",
+      "match_note": "PeptideDropship identified Life Link Research as its COA source. Product and nominal strength match; report client is preserved. No AltaPure fulfillment lot is assigned. The report does not provide a supplier lot; a laboratory sample number is not a supplier lot. The sheet reports 30.74mg content against its 10mg sample label; resolve this discrepancy before using it for fulfillment.",
+      "product_id": "selank",
+      "size": "10mg",
+      "product": "Selank",
+      "scope": "supplier_reference",
+      "reviewed_at": "2026-11-10",
+      "inventory_lot_linked": false
+    },
+    {
+      "id": "pd-semax-10mg-research-peptide",
+      "supplier_id": "peptidedropship",
+      "supplier": "PeptideDropship / Life Link Research",
+      "supplier_sku": null,
+      "sample_name": "Semax 10mg",
+      "lot": "Not provided on report",
+      "report_date": "2026-07-13",
+      "report_id": "Project 145409 / Lab 208513",
+      "lab_name": "Krause Analytical LLC",
+      "report_client": "Life Link Research",
+      "publisher": "Krause Analytical LLC",
+      "document_url": "https://lifelinkresearch.com/wp-content/uploads/2025/04/Smax_COA-2026_LLR.png",
+      "document_type": "images",
+      "document_pages": [
+        "https://lifelinkresearch.com/wp-content/uploads/2025/04/Smax_COA-2026_LLR.png"
+      ],
+      "verification_url": null,
+      "source_library_url": "https://lifelinkresearch.com/certificate/?prod=1313",
+      "sha256": "3407c763df21543f4eb121fd13f80fae1a63004dd2ca8d5c27fcc6e479ab00dc",
+      "match_note": "PeptideDropship identified Life Link Research as its COA source. Product and nominal strength match; report client is preserved. No AltaPure fulfillment lot is assigned. The report does not provide a supplier lot; a laboratory sample number is not a supplier lot.",
+      "product_id": "semax",
+      "size": "10mg",
+      "product": "Semax",
+      "scope": "supplier_reference",
+      "reviewed_at": "2026-11-10",
+      "inventory_lot_linked": false
     }
   ],
   "coverage": [
@@ -1568,22 +2074,28 @@
       "product_id": "retatrutide",
       "product": "Retatrutide",
       "size": "10mg",
-      "report_ids": [],
-      "status": "exact_report_needed"
+      "report_ids": [
+        "pd-retatrutide-glp-310mg"
+      ],
+      "status": "supplier_reference_available"
     },
     {
       "product_id": "retatrutide",
       "product": "Retatrutide",
       "size": "15mg",
-      "report_ids": [],
-      "status": "exact_report_needed"
+      "report_ids": [
+        "pd-retatrutide-glp-3-15mg-research-peptide"
+      ],
+      "status": "supplier_reference_available"
     },
     {
       "product_id": "retatrutide",
       "product": "Retatrutide",
       "size": "20mg",
-      "report_ids": [],
-      "status": "exact_report_needed"
+      "report_ids": [
+        "pd-retatrutide-glp-3-20mg"
+      ],
+      "status": "supplier_reference_available"
     },
     {
       "product_id": "retatrutide",
@@ -1677,7 +2189,7 @@
         "p99-atl-37516",
         "ypb-247"
       ],
-      "status": "supplier_report_available"
+      "status": "supplier_reference_available"
     },
     {
       "product_id": "aod-9604",
@@ -1687,7 +2199,7 @@
         "p99-0291-opt-260727-r1",
         "ypb-248"
       ],
-      "status": "supplier_report_available"
+      "status": "supplier_reference_available"
     },
     {
       "product_id": "aod-9604",
@@ -1696,14 +2208,16 @@
       "report_ids": [
         "p99-atl-37534"
       ],
-      "status": "supplier_report_available"
+      "status": "supplier_reference_available"
     },
     {
       "product_id": "cagrilintide",
       "product": "Cagrilintide",
       "size": "5mg",
-      "report_ids": [],
-      "status": "exact_report_needed"
+      "report_ids": [
+        "pd-cagrilintide-5mg-research-peptide"
+      ],
+      "status": "supplier_reference_available"
     },
     {
       "product_id": "cagrilintide",
@@ -1712,7 +2226,7 @@
       "report_ids": [
         "p99-atl-37503"
       ],
-      "status": "supplier_report_available"
+      "status": "supplier_reference_available"
     },
     {
       "product_id": "bpc-157",
@@ -1722,7 +2236,7 @@
         "p99-0327-opt-260729-r1",
         "ypb-212"
       ],
-      "status": "supplier_report_available"
+      "status": "supplier_reference_available"
     },
     {
       "product_id": "bpc-157",
@@ -1730,9 +2244,10 @@
       "size": "10mg",
       "report_ids": [
         "p99-0292-opt-260727-r1",
-        "ypb-213"
+        "ypb-213",
+        "pd-bpc-157-10mg"
       ],
-      "status": "supplier_report_available"
+      "status": "supplier_reference_available"
     },
     {
       "product_id": "tb-500",
@@ -1748,14 +2263,16 @@
       "report_ids": [
         "p99-0320-opt-260729-r1"
       ],
-      "status": "supplier_report_available"
+      "status": "supplier_reference_available"
     },
     {
       "product_id": "bpc-tb-500",
       "product": "BPC/TB-500",
       "size": "10mg/10mg",
-      "report_ids": [],
-      "status": "exact_report_needed"
+      "report_ids": [
+        "pd-bpc-157-tb-500-10mg-10mg"
+      ],
+      "status": "supplier_reference_available"
     },
     {
       "product_id": "bpc-tb-500",
@@ -1777,9 +2294,10 @@
       "size": "10mg",
       "report_ids": [
         "p99-atl-37539",
-        "ypb-265"
+        "ypb-265",
+        "pd-kpv-10mg-research-peptide"
       ],
-      "status": "supplier_report_available"
+      "status": "supplier_reference_available"
     },
     {
       "product_id": "ara-290",
@@ -1789,7 +2307,7 @@
         "p99-0312-opt-260729-r1",
         "ypb-277"
       ],
-      "status": "supplier_report_available"
+      "status": "supplier_reference_available"
     },
     {
       "product_id": "ll-37",
@@ -1811,9 +2329,10 @@
       "size": "10mg",
       "report_ids": [
         "p99-0316-opt-260729-r1",
-        "ypb-231"
+        "ypb-231",
+        "pd-thymosin-alpha-1-10mg-peptide"
       ],
-      "status": "supplier_report_available"
+      "status": "supplier_reference_available"
     },
     {
       "product_id": "ghk-cu",
@@ -1821,9 +2340,10 @@
       "size": "50mg",
       "report_ids": [
         "p99-atl-37542",
-        "ypb-221"
+        "ypb-221",
+        "pd-ghk-cu-50mg-research-peptide"
       ],
-      "status": "supplier_report_available"
+      "status": "supplier_reference_available"
     },
     {
       "product_id": "ghk-cu",
@@ -1832,7 +2352,7 @@
       "report_ids": [
         "p99-atl-37528"
       ],
-      "status": "supplier_report_available"
+      "status": "supplier_reference_available"
     },
     {
       "product_id": "ahk-cu",
@@ -1856,7 +2376,7 @@
         "p99-0324-opt-260729-r1",
         "ypb-218"
       ],
-      "status": "supplier_report_available"
+      "status": "supplier_reference_available"
     },
     {
       "product_id": "klow",
@@ -1866,7 +2386,7 @@
         "p99-atl-37523",
         "ypb-264"
       ],
-      "status": "supplier_report_available"
+      "status": "supplier_reference_available"
     },
     {
       "product_id": "snap8",
@@ -1876,14 +2396,16 @@
         "p99-0315-opt-260729-r1",
         "ypb-272"
       ],
-      "status": "supplier_report_available"
+      "status": "supplier_reference_available"
     },
     {
       "product_id": "cjc-1295-no-dac",
       "product": "CJC-1295 No DAC",
       "size": "5mg",
-      "report_ids": [],
-      "status": "exact_report_needed"
+      "report_ids": [
+        "pd-cjc-1295-no-dac-5mg-research-peptide"
+      ],
+      "status": "supplier_reference_available"
     },
     {
       "product_id": "cjc-1295-no-dac",
@@ -1892,7 +2414,7 @@
       "report_ids": [
         "ypb-219"
       ],
-      "status": "supplier_report_available"
+      "status": "supplier_reference_available"
     },
     {
       "product_id": "cjc-1295-dac",
@@ -1902,7 +2424,7 @@
         "p99-atl-37535",
         "ypb-220"
       ],
-      "status": "supplier_report_available"
+      "status": "supplier_reference_available"
     },
     {
       "product_id": "cjc-1295-dac",
@@ -1925,7 +2447,7 @@
       "report_ids": [
         "p99-0285-opt-260727-r1"
       ],
-      "status": "supplier_report_available"
+      "status": "supplier_reference_available"
     },
     {
       "product_id": "ipamorelin",
@@ -1933,9 +2455,10 @@
       "size": "10mg",
       "report_ids": [
         "p99-0314-opt-260729-r1",
-        "ypb-263"
+        "ypb-263",
+        "pd-ipamorelin-10mg-research-peptide"
       ],
-      "status": "supplier_report_available"
+      "status": "supplier_reference_available"
     },
     {
       "product_id": "sermorelin",
@@ -1952,7 +2475,7 @@
         "p99-atl-37518",
         "ypb-211"
       ],
-      "status": "supplier_report_available"
+      "status": "supplier_reference_available"
     },
     {
       "product_id": "tesamorelin",
@@ -1962,7 +2485,7 @@
         "p99-atl-37517",
         "ypb-279"
       ],
-      "status": "supplier_report_available"
+      "status": "supplier_reference_available"
     },
     {
       "product_id": "tesamorelin",
@@ -1972,7 +2495,7 @@
         "p99-atl-37530",
         "ypb-288"
       ],
-      "status": "supplier_report_available"
+      "status": "supplier_reference_available"
     },
     {
       "product_id": "tesa-ipa",
@@ -1994,9 +2517,10 @@
       "size": "10mg",
       "report_ids": [
         "p99-0322-opt-260729-r1",
-        "ypb-229"
+        "ypb-229",
+        "pd-semax-10mg-research-peptide"
       ],
-      "status": "supplier_report_available"
+      "status": "supplier_reference_available"
     },
     {
       "product_id": "selank",
@@ -2011,9 +2535,10 @@
       "size": "10mg",
       "report_ids": [
         "p99-0302-opt-260729-r1",
-        "ypb-228"
+        "ypb-228",
+        "pd-selank-10mg-research-peptide"
       ],
-      "status": "supplier_report_available"
+      "status": "supplier_reference_available"
     },
     {
       "product_id": "semax-selank",
@@ -2040,8 +2565,10 @@
       "product_id": "dsip",
       "product": "DSIP",
       "size": "5mg",
-      "report_ids": [],
-      "status": "exact_report_needed"
+      "report_ids": [
+        "pd-dsip-5mg-research-peptide"
+      ],
+      "status": "supplier_reference_available"
     },
     {
       "product_id": "dsip",
@@ -2050,16 +2577,17 @@
       "report_ids": [
         "p99-0286-opt-260727-r1"
       ],
-      "status": "supplier_report_available"
+      "status": "supplier_reference_available"
     },
     {
       "product_id": "nad",
       "product": "NAD+",
       "size": "500mg",
       "report_ids": [
-        "p99-0296-opt-260729-r1"
+        "p99-0296-opt-260729-r1",
+        "pd-nad-500mg-research-peptide"
       ],
-      "status": "supplier_report_available"
+      "status": "supplier_reference_available"
     },
     {
       "product_id": "nad",
@@ -2069,7 +2597,7 @@
         "p99-atl-37555",
         "ypb-224"
       ],
-      "status": "supplier_report_available"
+      "status": "supplier_reference_available"
     },
     {
       "product_id": "epithalon",
@@ -2077,9 +2605,10 @@
       "size": "10mg",
       "report_ids": [
         "p99-atl-37515",
-        "ypb-253"
+        "ypb-253",
+        "pd-epithalon-10mg-research-peptide"
       ],
-      "status": "supplier_report_available"
+      "status": "supplier_reference_available"
     },
     {
       "product_id": "epithalon",
@@ -2089,7 +2618,7 @@
         "p99-0303-opt-260729-r1",
         "ypb-254"
       ],
-      "status": "supplier_report_available"
+      "status": "supplier_reference_available"
     },
     {
       "product_id": "glutathione",
@@ -2098,7 +2627,7 @@
       "report_ids": [
         "ypb-283"
       ],
-      "status": "supplier_report_available"
+      "status": "supplier_reference_available"
     },
     {
       "product_id": "glutathione",
@@ -2108,7 +2637,7 @@
         "p99-atl-37550",
         "ypb-259"
       ],
-      "status": "supplier_report_available"
+      "status": "supplier_reference_available"
     },
     {
       "product_id": "ss-31",
@@ -2117,7 +2646,7 @@
       "report_ids": [
         "ypb-245"
       ],
-      "status": "supplier_report_available"
+      "status": "supplier_reference_available"
     },
     {
       "product_id": "ss-31",
@@ -2132,9 +2661,10 @@
       "size": "10mg",
       "report_ids": [
         "p99-0299-opt-260729-r1",
-        "ypb-227"
+        "ypb-227",
+        "pd-mots-c-10mg-research-peptide"
       ],
-      "status": "supplier_report_available"
+      "status": "supplier_reference_available"
     },
     {
       "product_id": "mots-c",
@@ -2151,7 +2681,7 @@
         "p99-0305-opt-260729-r1",
         "ypb-271"
       ],
-      "status": "supplier_report_available"
+      "status": "supplier_reference_available"
     },
     {
       "product_id": "b-12",
@@ -2168,7 +2698,7 @@
         "p99-atl-37533",
         "ypb-270"
       ],
-      "status": "supplier_report_available"
+      "status": "supplier_reference_available"
     },
     {
       "product_id": "melanotan-1",
@@ -2183,9 +2713,10 @@
       "size": "10mg",
       "report_ids": [
         "p99-0297-opt-260729-r1",
-        "ypb-274"
+        "ypb-274",
+        "pd-pt-141-10mg"
       ],
-      "status": "supplier_report_available"
+      "status": "supplier_reference_available"
     },
     {
       "product_id": "kisspeptin",
@@ -2202,7 +2733,7 @@
         "p99-0313-opt-260729-r1",
         "ypb-266"
       ],
-      "status": "supplier_report_available"
+      "status": "supplier_reference_available"
     },
     {
       "product_id": "oxytocin",
@@ -2246,7 +2777,7 @@
       "report_ids": [
         "p99-atl-37551"
       ],
-      "status": "supplier_report_available"
+      "status": "supplier_reference_available"
     },
     {
       "product_id": "needles",
@@ -2256,10 +2787,5 @@
       "status": "exact_report_needed"
     }
   ],
-  "supplier_gaps": [
-    {
-      "supplier": "PeptideDropship",
-      "note": "No original batch reports were available through its public pages or the existing correspondence. The existing supplier inquiry requests COAs; no duplicate email was sent."
-    }
-  ]
+  "supplier_gaps": []
 }

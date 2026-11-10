@@ -13,7 +13,7 @@ test('strength filtering cannot reuse a 5mg report for a 10mg selection',()=>{
 });
 test('unresolved identity and strength differences stay uncovered',()=>{
  for(const [product,size]of [['vip','10mg'],['ll-37','5mg'],['b-12','10mg'],['bac-3','3 mL'],['pinealon','10mg'],['cjc-ipamorelin','10mg/10mg']])assert.equal(selectReports(data.reports,{product,size}).length,0,product);
- assert.equal(selectReports(data.reports,{supplier:'peptidedropship'}).length,0);
+ assert(selectReports(data.reports,{supplier:'peptidedropship',product:'retatrutide',size:'10mg'}).length>0);
 });
 test('report client, lot and laboratory are searchable without changing provenance',()=>{
  assert(selectReports(data.reports,{query:'Wholesale Peptide Supply'}).length>0);
@@ -24,5 +24,6 @@ test('viewer rejects arbitrary URLs, credentials and non-HTTPS protocols',()=>{
  for(const url of ['javascript:alert(1)','http://api.purityanalytics.com/x','https://api.purityanalytics.com.evil.test/x','https://user:secret@api.purityanalytics.com/x','https://api.purityanalytics.com:444/x'])assert.equal(safeUrl(url),null);
  assert.equal(validReport({...data.reports[0],document_url:'https://evil.test/a.pdf'}),false);
  assert.equal(validReport({...data.reports[0],inventory_lot_linked:true}),false);
+ assert.equal(validReport({...data.reports[0],document_pages:['https://evil.test/a.png']}),false);
 });
 test('supplier reports never enter the verified AltaPure inventory registry',()=>assert.deepEqual(JSON.parse(fs.readFileSync('data/verified-coas.json','utf8')),[]));

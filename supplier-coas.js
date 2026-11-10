@@ -1,9 +1,9 @@
 /* Original supplier reports: catalog matches are distinct from fulfilled-lot verification. */
 (function(root){
  'use strict';
- const hosts=new Set(['pub-82f90d490a8048aa9629f0ae3ea6f567.r2.dev','api.purityanalytics.com','verify.purityanalytics.com','yourpeptidebrand.com','99puritypeptides.com']);
+ const hosts=new Set(['pub-82f90d490a8048aa9629f0ae3ea6f567.r2.dev','api.purityanalytics.com','verify.purityanalytics.com','yourpeptidebrand.com','99puritypeptides.com','lifelinkresearch.com']);
  function safeUrl(value){try{const u=new URL(value);return u.protocol==='https:'&&!u.username&&!u.password&&!u.port&&hosts.has(u.hostname)?u.href:null;}catch{return null;}}
- function validReport(r){return !!(r&&r.scope==='supplier_reference'&&r.inventory_lot_linked===false&&typeof r.id==='string'&&typeof r.product_id==='string'&&typeof r.size==='string'&&r.lot&&r.report_client&&r.lab_name&&r.report_id&&safeUrl(r.document_url));}
+ function validReport(r){return !!(r&&r.scope==='supplier_reference'&&r.inventory_lot_linked===false&&typeof r.id==='string'&&typeof r.product_id==='string'&&typeof r.size==='string'&&r.lot&&r.report_client&&r.lab_name&&r.report_id&&safeUrl(r.document_url)&&(!r.document_pages||(Array.isArray(r.document_pages)&&r.document_pages.length>0&&r.document_pages.every(safeUrl))));}
  function selectReports(records,{product='',size='',supplier='',query=''}={}){const q=query.trim().toLowerCase();return records.filter(validReport).filter(r=>(!product||r.product_id===product)&&(!size||r.size===size)&&(!supplier||r.supplier_id===supplier)&&[r.product,r.size,r.sample_name,r.lot,r.lab_name,r.report_id,r.supplier,r.report_client,r.supplier_sku].join(' ').toLowerCase().includes(q));}
  const api={safeUrl,validReport,selectReports};
  if(typeof module==='object'&&module.exports)module.exports=api;
@@ -17,8 +17,8 @@
   returnFocus=button;dialog.replaceChildren();
   const bar=el('div',undefined,'ap-coa-viewer-bar'),title=el('h2',r.product+' · '+r.size);title.id='ap-coa-viewer-title';const close=el('button','Close report ×','ap-button ap-button-small');close.type='button';close.onclick=closeViewer;bar.append(title,close);
   const context=el('p','Supplier: '+r.supplier+' · Report client: '+r.report_client+' · Lot: '+r.lot,'ap-coa-viewer-context');
-  const frame=el('iframe');frame.title='Original COA: '+r.sample_name+' — '+r.report_id;frame.referrerPolicy='no-referrer';frame.src=safeUrl(r.document_url)+'#view=FitH';
-  const fallback=el('p',undefined,'ap-coa-viewer-context');fallback.append('If the sheet does not display on this device, ',link(r.document_url,'open the original PDF ↗'));
+  let frame;if(r.document_type==='images'){frame=el('div',undefined,'ap-coa-image-pages');for(const [i,url]of r.document_pages.entries()){const img=el('img');img.src=safeUrl(url);img.alt='Original report sheet '+(i+1)+' for '+r.sample_name;img.referrerPolicy='no-referrer';frame.append(img);}}else{frame=el('iframe');frame.title='Original COA: '+r.sample_name+' — '+r.report_id;frame.referrerPolicy='no-referrer';frame.src=safeUrl(r.document_url)+'#view=FitH';}
+  const fallback=el('p',undefined,'ap-coa-viewer-context');fallback.append('If the sheet does not display on this device, ',link(r.document_url,'open the original report ↗'));
   dialog.append(bar,context,fallback,frame);dialog.showModal();close.focus();
  }
  async function render(container,catalog){
@@ -37,13 +37,13 @@
    for(const r of records){
     const card=el('article',undefined,'ap-coa-card');card.append(el('span','SUPPLIER REPORT','ap-pill'),el('h2',r.product+' · '+r.size),el('p',r.supplier,'ap-coa-supplier-name'));
     const dl=el('dl');for(const [label,value]of [['Report client / ordered by',r.report_client],['Laboratory',r.lab_name],['Certificate publisher',r.publisher],['Supplier lot',r.lot],['Report / analysis date',r.report_date],['Report ID',r.report_id],['Supplier SKU',r.supplier_sku]])if(value)dl.append(el('dt',label),el('dd',value));card.append(dl);
-    const actions=el('div',undefined,'ap-actions'),button=el('button','View COA','ap-button ap-button-small');button.type='button';button.onclick=()=>viewReport(r,button);actions.append(button,link(r.document_url,'Original PDF ↗'));if(safeUrl(r.verification_url))actions.append(link(r.verification_url,'Certificate verification ↗'));card.append(actions,el('p',r.match_note,'ap-fine'));grid.append(card);
+    const actions=el('div',undefined,'ap-actions'),button=el('button','View COA','ap-button ap-button-small');button.type='button';button.onclick=()=>viewReport(r,button);actions.append(button,link(r.document_type==='images'?r.source_library_url:r.document_url,r.document_type==='images'?'Original report ↗':'Original PDF ↗'));if(safeUrl(r.verification_url))actions.append(link(r.verification_url,'Certificate verification ↗'));card.append(actions,el('p',r.match_note,'ap-fine'));grid.append(card);
    }
    if(!records.length)grid.append(el('p','No original supplier report matches these filters. Try another selection or request the exact product, strength and lot.','ap-panel'));
    container.append(grid);
    const missing=coverage.filter(c=>!data.reports.some(r=>validReport(r)&&r.product_id===c.product_id&&r.size===c.size&&(!supplier||r.supplier_id===supplier)));
    if(missing.length){const details=el('details',undefined,'ap-coa-missing');details.append(el('summary',missing.length+' selected variants still need an exact supplier report'));const list=el('ul');for(const c of missing)list.append(el('li',c.product+' · '+c.size));details.append(list);container.append(details);}
-   const note=el('p','PeptideDropship: original batch reports are still requested. Reports are reproduced by opening their original supplier or publisher files, with the original client and attribution intact.','ap-fine');container.append(note);
+   const note=el('p','PeptideDropship identifies Life Link Research as its report source. All sheets retain their original client and attribution. A matching product label is not confirmation of the lot supplied with your order; missing lots and report discrepancies are noted on each card.','ap-fine');container.append(note);
   }catch{if(container.isConnected)container.textContent='Supplier reports are temporarily unavailable. Please contact us for the exact product, strength and lot.';}
  }
  api.render=render;root.AltaSupplierCoas=api;
