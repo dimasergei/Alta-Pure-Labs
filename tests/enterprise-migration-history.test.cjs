@@ -40,3 +40,13 @@ test('atomic reservation cancellation migration matches remote history',()=>{
  assert.match(sql,/revoke all on function public\.enterprise_cancel_reservation/);
  assert.match(sql,/grant execute on function public\.enterprise_cancel_reservation/);
 });
+
+test('COA review audit migration is recorded with exact remote version',()=>{
+ const file='20261110000833_enterprise_coa_review_audit_ledger.sql';
+ assert.ok(fs.readdirSync(root).includes(file));
+ const sql=fs.readFileSync(path.join(root,file),'utf8');
+ assert.match(sql,/enterprise_quality_review_events/);
+ assert.match(sql,/security definer/);
+ assert.match(sql,/revoke update on public\.enterprise_quality_documents from service_role/);
+ assert.match(sql,/grant execute on function public\.enterprise_review_quality_document/);
+});
