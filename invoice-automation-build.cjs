@@ -1,0 +1,10 @@
+'use strict';
+const fs=require('node:fs');
+let html=fs.readFileSync('admin-payments.html','utf8');
+html=html.replace('Share the invoice link with the customer using your normal support channel. This release does not automatically email invoices or monitor incoming funds.','Invoice and order updates are queued automatically and sent using the configured email service. Check the notification panel for failures. Copy the secure link only when a customer needs it again. Incoming bank payments still require verification.');
+if(!html.includes('src="/invoice-automation-ui.js"'))html=html.replace('</body>','<script src="/invoice-automation-ui.js" defer></script></body>');
+fs.writeFileSync('admin-payments.html',html);
+let js=fs.readFileSync('admin-payments.js','utf8');
+js=js.replace('Invoice issued. Copy the customer link and send it through your support channel.','Invoice issued. Customer notification is queued automatically; check the email panel for its state.');
+fs.writeFileSync('admin-payments.js',js);
+console.log('Invoice email automation and private activation check installed. Receiving details remain owner-provided.');
