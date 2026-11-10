@@ -8,7 +8,7 @@ end $$;
 -- Supabase service_role has BYPASSRLS; reproduce that in this disposable database.
 -- Table DML grants remain independently restricted and are tested below.
 alter role service_role bypassrls;
-\i supabase/migrations/20261110023756_customer_request_operations.sql
+\i supabase/migrations/20261110025900_customer_request_operations.sql
 set role service_role;
 do $$
 declare p jsonb; r jsonb; c jsonb; ok boolean; n integer;
