@@ -97,6 +97,7 @@ end $$;
 
 create function public.commerce_admin_command(p_action text,p_data jsonb,p_actor text)
 returns jsonb language plpgsql security definer set search_path=pg_catalog,pg_temp as $$
+#variable_conflict use_variable
 declare r public.commerce_invoices%rowtype; m public.commerce_payment_methods%rowtype;
  receipt public.commerce_receipts%rowtype; uid uuid; id uuid; v integer; next_status text;
  sub integer; disc integer; ship integer; tax integer; total integer; expires timestamptz;
@@ -130,7 +131,7 @@ begin
  if p_action in ('record_payment','record_refund') then
   select * into receipt from public.commerce_receipts where commerce_receipts.id=(p_data->>'receipt_id')::uuid;
   if found then
-   if receipt.invoice_id<>id or receipt.kind<>case when p_action='record_payment' then 'payment' else 'refund' end
+   if receipt.invoice_id<>id or receipt.kind<>(case when p_action='record_payment' then 'payment' else 'refund' end)
     or receipt.external_reference<>p_data->>'external_reference' or receipt.amount_cents<>(p_data->>'amount_cents')::integer
     or receipt.currency<>p_data->>'currency' then raise exception 'Receipt replay conflict' using errcode='23505'; end if;
    return jsonb_build_object('id',id,'status',r.status,'replayed',true);
