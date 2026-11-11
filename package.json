@@ -3,11 +3,15 @@
   "private": true,
   "version": "0.3.0",
   "scripts": {
-    "build": "node install-store.cjs && node site-build.cjs && node manual-commerce-build.cjs && node manual-policy-build.cjs && node invoice-automation-build.cjs && node payment-options-build.cjs && node native-gateway-build.cjs && node operations-build.cjs && node marketing-build.cjs && node direct-checkout-build.cjs && node tests/direct-checkout-build-output.cjs",
-    "test": "node --test tests/*.test.cjs"
+    "build": "node install-store.cjs && node site-build.cjs && node manual-commerce-build.cjs && node manual-policy-build.cjs && node invoice-automation-build.cjs && node payment-options-build.cjs && node native-gateway-build.cjs && node operations-build.cjs && node marketing-build.cjs && node direct-checkout-build.cjs && node account-experience-build.cjs && node tests/direct-checkout-build-output.cjs && node tests/account-experience-build-output.cjs",
+    "test": "node --test tests/*.test.cjs",
+    "test:account-dom": "node tests/account-experience-dom.cjs"
   },
   "dependencies": {
     "stripe": "18.5.0",
     "@supabase/supabase-js": "2.119.0"
+  },
+  "devDependencies": {
+    "jsdom": "26.1.0"
   }
 }

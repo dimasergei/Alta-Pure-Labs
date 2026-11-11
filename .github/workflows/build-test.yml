@@ -120,3 +120,5 @@ jobs:
         run: python -m unittest tests.test_schema_export -v
       - name: Build storefront
         run: npm run build
+      - name: Exercise account and checkout forms with isolated DOM fixtures
+        run: npm run test:account-dom
