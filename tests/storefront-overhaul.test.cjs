@@ -17,7 +17,7 @@ test('production build creates the actual unified site and account integration w
   const source=fs.readFileSync(path.join(temp,'products.js'),'utf8');
   let run=spawnSync(process.execPath,['site-build.cjs'],{cwd:temp,encoding:'utf8'});assert.equal(run.status,0,run.stderr);
   const html=fs.readFileSync(path.join(temp,'index.html'),'utf8');
-  for(const marker of ['ap-header','ap-mega-content','ap-search-dialog','ap-cart-dialog','ap-age-dialog','storefront-v2.js','workspace-v2.js','/research-builder','/bulk-orders','/memberships','/coas'])assert.ok(html.includes(marker),marker);
+  for(const marker of ['ap-header','ap-more-menu','ap-search-dialog','ap-cart-dialog','ap-age-dialog','storefront-v2.js','workspace-v2.js','/research-builder','/bulk-orders','/memberships','/coas'])assert.ok(html.includes(marker),marker);
   assert.ok(fs.existsSync(path.join(temp,'storefront-v2.html')));
   const account=fs.readFileSync(path.join(temp,'account.html'),'utf8');assert.match(account,/storefront-v2\.css/);assert.match(account,/workspace-v2\.js/);
   const accountJs=fs.readFileSync(path.join(temp,'account.js'),'utf8');assert.match(accountJs,/AltaWorkspace.renderAccountPanel/);assert.doesNotMatch(accountJs,/No membership, subscription, points, store-credit, or partner actions are enabled in this phase/);
