@@ -4,7 +4,7 @@
 set role service_role;
 do $$
 declare m uuid:=gen_random_uuid();u uuid:=gen_random_uuid();i uuid:=gen_random_uuid();j uuid:=gen_random_uuid();grant_id uuid:=gen_random_uuid();
- p jsonb;r jsonb;receipt uuid:=gen_random_uuid();
+ p jsonb;r jsonb;receipt uuid:=gen_random_uuid();earning_order uuid;redeeming_order uuid;pass_order uuid;
 begin
  perform public.commerce_admin_command('save_method',jsonb_build_object('id',m,'version',0,'kind','bank_transfer','label','Checkout fixture bank','currency','USD','payee','Fixture only','instructions','Isolated fixture receiving instructions','acceptance_reference','Fixture verification','active',true,'business_confirmed',true,'catalog_accepted',true),'checkout-fixture-admin');
  perform public.commerce_issue_credit(grant_id,u,5000,'Isolated credit fixture','checkout-fixture-admin');
@@ -42,6 +42,28 @@ begin
  perform public.commerce_refund_balance_order(j,2,'checkout-fixture-admin');
  perform public.commerce_refund_balance_order(j,2,'checkout-fixture-admin');
  if (select credit_cents from public.commerce_balance_accounts where customer_id=u)<>15000 then raise exception 'Full balance refund wrong';end if;
+ -- Real earned points can be reserved, and refunding their source creates debt
+ -- until the second unpaid order is cancelled; nothing is silently clamped away.
+ earning_order:=gen_random_uuid();redeeming_order:=gen_random_uuid();
+ perform public.commerce_place_checkout(p||jsonb_build_object('id',earning_order,'subtotal_cents',20000,'discount_cents',1000,'credit_redeemed_cents',0,'total_cents',21500,'earned_points',190));
+ perform public.commerce_admin_command('record_payment',jsonb_build_object('id',earning_order,'version',1,'receipt_id',gen_random_uuid(),'external_reference','fixture-points-earn','amount_cents',21500,'currency','USD','funds_confirmed',true),'checkout-fixture-admin');
+ perform public.commerce_place_checkout(p||jsonb_build_object('id',redeeming_order,'points_redeemed',100,'credit_redeemed_cents',0,'total_cents',11900,'earned_points',94));
+ if (select points from public.commerce_balance_accounts where customer_id=u)<>90 then raise exception 'Points not reserved';end if;
+ perform public.commerce_admin_command('record_refund',jsonb_build_object('id',earning_order,'version',2,'receipt_id',gen_random_uuid(),'external_reference','fixture-points-reverse','amount_cents',21500,'currency','USD','funds_confirmed',true),'checkout-fixture-admin');
+ if (select points from public.commerce_balance_accounts where customer_id=u)<>-100 then raise exception 'Points debt not preserved';end if;
+ perform public.commerce_cancel_checkout(redeeming_order,u);
+ if (select points from public.commerce_balance_accounts where customer_id=u)<>0 then raise exception 'Points hold not restored';end if;
+ -- A directly purchased pass still uses the established verified payment and revocation path.
+ pass_order:=gen_random_uuid();
+ perform public.commerce_place_checkout(p||jsonb_build_object('id',pass_order,'kind','membership','plan','vip','subtotal_cents',4900,'discount_cents',0,'shipping_cents',0,'total_cents',4900,'credit_redeemed_cents',0,'earned_points',0));
+ if exists(select 1 from public.commerce_memberships where invoice_id=pass_order) then raise exception 'Unpaid pass activated';end if;
+ perform public.commerce_admin_command('record_payment',jsonb_build_object('id',pass_order,'version',1,'receipt_id',gen_random_uuid(),'external_reference','fixture-direct-pass','amount_cents',4900,'currency','USD','funds_confirmed',true),'checkout-fixture-admin');
+ if not exists(select 1 from public.commerce_memberships where invoice_id=pass_order and revoked_at is null) then raise exception 'Paid pass missing';end if;
+ begin
+  perform public.commerce_place_checkout(p||jsonb_build_object('id',gen_random_uuid()));raise exception 'Stale member quote accepted' using errcode='22000';
+ exception when serialization_failure then null;end;
+ perform public.commerce_admin_command('record_refund',jsonb_build_object('id',pass_order,'version',2,'receipt_id',gen_random_uuid(),'external_reference','fixture-direct-pass-refund','amount_cents',4900,'currency','USD','funds_confirmed',true),'checkout-fixture-admin');
+ if not exists(select 1 from public.commerce_memberships where invoice_id=pass_order and revoked_at is not null) then raise exception 'Refunded pass not revoked';end if;
 end $$;
 reset role;
 do $$ begin
