@@ -49,3 +49,10 @@ test('auth, origin and admin credit issuance fail closed',async()=>{
  assert.equal(checkout.usable({...method,native_provider:'nmi'},{}),false);
  assert.equal(checkout.usable({...method,kind:'hosted_link'},{}),false);
 });
+test('BOGO quote is authoritative, preserves all fulfillment units, and binds the coupon to the quote',async()=>{
+ const b={...body,items:[{id:'fixture-product',size:'5mg',qty:2,price:0.01}],coupon:' bogo '},db=dbMock(),res=response();
+ await checkout.handle(request({...b,action:'quote'}),res,new URLSearchParams(),{env,db,catalog,rateLimit:async()=>{}});
+ assert.equal(res.code,200);assert.equal(res.body.subtotal_cents,20000);assert.equal(res.body.discount_cents,11450);assert.equal(res.body.total_cents,11050);assert.equal(res.body.pricing.bogo_free_units,1);
+ const denied=response();await checkout.handle(request({...b,coupon:'',action:'place',quote:res.body.quote}),denied,new URLSearchParams(),{env,db,catalog,rateLimit:async()=>{}});assert.equal(denied.code,409);assert.equal(db.calls.length,0);
+ const placed=response();await checkout.handle(request({...b,action:'place',quote:res.body.quote}),placed,new URLSearchParams(),{env,db,catalog,rateLimit:async()=>{}});assert.equal(placed.code,201);const p=db.calls[0].args.p_data;assert.equal(p.request.items[0].qty,2);assert.equal(p.pricing.lines[0].qty,2);assert.equal(p.pricing.lines[0].bogo_free_units,1);assert.equal(p.request.checkout.coupon,'BOGO');
+});

@@ -1,6 +1,7 @@
 \set ON_ERROR_STOP on
 -- Run after native/PeptidePay fixtures, only in the disposable database.
 \i supabase/migrations/20261111025932_direct_checkout_balances.sql
+\i supabase/migrations/20261111070511_checkout_promotion_version.sql
 set role service_role;
 do $$
 declare m uuid:=gen_random_uuid();u uuid:=gen_random_uuid();i uuid:=gen_random_uuid();j uuid:=gen_random_uuid();grant_id uuid:=gen_random_uuid();
@@ -73,3 +74,21 @@ do $$ begin
  or has_function_privilege('anon','public.commerce_issue_credit(uuid,uuid,integer,text,text)','EXECUTE') then raise exception 'Financial ACL regression';end if;
 end $$;
 select 'direct_checkout_balances_passed' as result;
+-- Promotion-aware checkout accepts v2, preserves quantity and pricing snapshots, and keeps role isolation.
+set role service_role;
+do $$
+declare m uuid:=gen_random_uuid();u uuid:=gen_random_uuid();i uuid:=gen_random_uuid();p jsonb;r jsonb;
+begin
+ perform public.commerce_admin_command('save_method',jsonb_build_object('id',m,'version',0,'kind','bank_transfer','label','Promotion fixture bank','currency','USD','payee','Fixture only','instructions','Isolated fixture receiving instructions','acceptance_reference','Fixture verification','active',true,'business_confirmed',true,'catalog_accepted',true),'fixture-admin');
+ p:=jsonb_build_object('id',i,'customer_id',u,'customer_email','promotion@example.test','customer_name','Promotion fixture','kind','goods','digest',repeat('e',64),'request',jsonb_build_object('items',jsonb_build_array(jsonb_build_object('id','fixture-product','size','5mg','qty',2)),'address',jsonb_build_object('country','US')),'consent',true,'terms_version','launch-2026-11-v1','checkout_version','checkout-2026-11-v2','currency','USD','method_id',m,'method_version',1,'subtotal_cents',20000,'discount_cents',11450,'shipping_cents',2500,'tax_cents',0,'total_cents',11050,'points_redeemed',0,'credit_redeemed_cents',0,'earned_points',85,'pricing',jsonb_build_object('bogo_free_units',1,'coupon_code','BOGO'),'membership_invoice_id',null);
+ r:=public.commerce_place_checkout(p);
+ if r->>'status'<>'accepted' or (select request_data->'items'->0->>'qty' from public.commerce_invoices where id=i)<>'2' or (select pricing->>'coupon_code' from public.commerce_invoices where id=i)<>'BOGO' then raise exception 'Promotion snapshot or quantity lost';end if;
+ perform public.commerce_place_checkout(p);
+ if (select count(*) from public.commerce_invoices where id=i)<>1 then raise exception 'Promotion replay duplicated order';end if;
+ begin
+  perform public.commerce_place_checkout(p||jsonb_build_object('id',gen_random_uuid(),'checkout_version','unknown'));
+  raise exception 'Unknown version accepted' using errcode='22000';
+ exception when invalid_parameter_value then null;end;
+ if has_function_privilege('anon','public.commerce_place_checkout(jsonb)','execute') or has_function_privilege('authenticated','public.commerce_place_checkout(jsonb)','execute') then raise exception 'Checkout exposed to browser roles';end if;
+end $$;
+reset role;
