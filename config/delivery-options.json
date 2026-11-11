@@ -1,0 +1,8 @@
+[
+ {"id":"standard","kind":"shipping","label":"Standard delivery","price_cents":2500,"enabled":true,"description":"Estimated 3–7 business days in transit after 1–3 business days of processing. Free for paid members or $250+ after discounts."},
+ {"id":"express","kind":"shipping","label":"Express UPS","price_cents":3495,"enabled":false,"description":"Not available until express dispatch and label service are confirmed."},
+ {"id":"next_day","kind":"shipping","label":"UPS Next Day","price_cents":6995,"enabled":false,"description":"Not available until next-day service and dispatch cutoffs are confirmed."},
+ {"id":"priority","kind":"extra","label":"Priority Processing","price_cents":999,"enabled":false,"description":"Moves an eligible order ahead in the fulfillment queue. Availability requires supplier confirmation."},
+ {"id":"cold_chain","kind":"extra","label":"Cold Chain Shipping","price_cents":999,"enabled":false,"description":"Available only when temperature-controlled packaging and handling are confirmed."},
+ {"id":"protection","kind":"extra","label":"Shipping Protection","price_cents":500,"enabled":false,"description":"Optional protection is not available until its coverage and claims terms are published."}
+]

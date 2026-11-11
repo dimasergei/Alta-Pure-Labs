@@ -9,7 +9,7 @@ const body={id,kind:'goods',method_id:mid,consent:true,checkout_version:config.v
 const env={SITE_URL:'https://altapurelabs.com',ADMIN_ORDERS_PASSWORD:'x'.repeat(40)};
 function response(){return{code:200,setHeader(){},status(n){this.code=n;return this;},json(b){this.body=b;return this;}};}
 function dbMock({balance={points:1000,credit_cents:5000},membership=null,existing=null}={}){
- const calls=[];return{calls,auth:{getUser:async()=>({data:{user}})},from(table){const value=table==='commerce_payment_methods'?[method]:table==='commerce_memberships'?(membership?[membership]:[]):table==='commerce_balance_accounts'?balance:table==='commerce_invoices'?existing:[];
+ const calls=[];return{calls,auth:{getUser:async()=>({data:{user}})},from(table){const value=table==='commerce_delivery_options'?require('../config/delivery-options.json'):table==='commerce_partner_codes'?null:table==='commerce_payment_methods'?[method]:table==='commerce_memberships'?(membership?[membership]:[]):table==='commerce_balance_accounts'?balance:table==='commerce_invoices'?existing:[];
   const q={select(){return q;},eq(){return q;},is(){return q;},lte(){return q;},gt(){return q;},order(){return q;},limit(){return q;},maybeSingle(){return q;},then(resolve,reject){return Promise.resolve({data:value}).then(resolve,reject);}};return q;},rpc:async(name,args)=>{calls.push({name,args});return{data:{id,status:'accepted'}};}};
 }
 const request=(b,headers={})=>({method:'POST',headers:{origin:env.SITE_URL,'content-type':'application/json',authorization:'Bearer fixture-auth-token-long-enough',...headers},body:b});
