@@ -1,5 +1,5 @@
 {
-  "version": "checkout-2026-11-v1",
+  "version": "checkout-2026-11-v2",
   "currency": "USD",
   "shipping_cents": 2500,
   "shipping_countries": [
@@ -10,5 +10,11 @@
   "points_per_dollar": 1,
   "point_value_cents": 1,
   "minimum_points_redemption": 100,
-  "tax_cents": 0
+  "tax_cents": 0,
+  "promotions": {
+    "version": "bogo-2026-11-v1",
+    "bogo": true,
+    "coupon": "BOGO",
+    "coupon_discount_bps": 1000
+  }
 }
