@@ -66,7 +66,7 @@
  }
  async function orders(root,auth,user,options={}){
   root.replaceChildren(node('p','Loading orders…'));
-  try{const data=await api(auth,null,'orders',new URLSearchParams(location.search).get('id'));root.replaceChildren();data.invoices=data.invoices.filter(r=>options.view==='tracking'?!!r.tracking_number:options.view==='pending'?['accepted','issued','requested'].includes(r.status):true);
+  try{const data=await api(auth,null,'orders',new URLSearchParams(location.search).get('id'));root.replaceChildren();data.invoices=data.invoices.filter(r=>options.view==='tracking'?!!r.tracking_number||r.shipments?.some(s=>s.tracking_number):options.view==='pending'?['accepted','issued','requested'].includes(r.status):true);
    if(!data.invoices.length)root.append(node('p',options.view==='tracking'?'Tracking appears here when your order ships.':options.view==='pending'?'No orders are awaiting payment.':'No checkout orders yet.'));
    for(const r of data.invoices){const card=node('article');card.className='ap-panel';card.style.marginTop='20px';const ref=(r.checkout_version?'ORD-':'INV-')+r.id.toUpperCase();
     const heading=node('h2',ref.slice(0,12));heading.className='ae-order-reference';heading.append(node('small',ref));card.append(heading,node('p','Status: '+(r.status==='accepted'?'Awaiting payment':r.status)),node('small',new Date(r.created_at).toLocaleString()));
@@ -78,7 +78,8 @@
     else if(['accepted','issued'].includes(r.status)&&!r.payable)card.append(node('p','The payment window expired or the method is unavailable. Contact us if you already sent payment; otherwise cancel and check out again.'));
     else if(r.status==='requested'||r.status==='issued')card.append(node('p','This earlier order needs support review. Contact altapurelabs@protonmail.com with the reference above.'));
     if(r.checkout_version&&r.status==='accepted'){const label=node('label'),c=node('input');c.type='checkbox';label.append(c,document.createTextNode(' I have not sent payment and want to cancel this unpaid order.'));const cancel=node('button','Cancel unpaid order'),out=node('p');cancel.type='button';cancel.className='ap-button ap-button-secondary';out.setAttribute('role','status');cancel.onclick=async()=>{if(!c.checked){out.textContent='Confirm no payment has been sent first.';return;}cancel.disabled=true;try{await api(auth,{action:'cancel',id:r.id,no_payment_sent:true});await orders(root,auth,user,options);}catch(e){out.textContent=e.message;cancel.disabled=false;}};card.append(label,cancel,out);}
-    if(r.tracking_number)card.append(node('p','Tracking: '+r.tracking_carrier+' · '+r.tracking_number));root.append(card);
+    for(const s of r.shipments||[])if(s.tracking_number)card.append(node('p',s.name+' · '+s.size+' × '+s.qty+' · '+s.status+' · '+s.tracking_carrier+' '+s.tracking_number));
+    if(r.tracking_number&&!r.shipments?.some(s=>s.tracking_number))card.append(node('p','Tracking: '+r.tracking_carrier+' · '+r.tracking_number));root.append(card);
    }
   }catch(e){root.replaceChildren(node('p',e.message));}
  }
