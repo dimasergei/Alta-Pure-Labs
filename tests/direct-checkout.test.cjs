@@ -15,12 +15,12 @@ function dbMock({balance={points:1000,credit_cents:5000},membership=null,existin
 const request=(b,headers={})=>({method:'POST',headers:{origin:env.SITE_URL,'content-type':'application/json',authorization:'Bearer fixture-auth-token-long-enough',...headers},body:b});
 test('authoritative catalog ignores client prices; member/volume then bank discount are server-selected',async()=>{
  const r=await checkout.normalize({},user,body,catalog);const p=checkout.price(r,method,{plan:'elite',invoice_id:id},{points:0,credit_cents:0});
- assert.equal(p.subtotal_cents,10000);assert.equal(p.discount_cents,1450);assert.equal(p.total_cents,11050);assert.equal(p.earned_points,85);
+ assert.equal(p.subtotal_cents,10000);assert.equal(p.discount_cents,1450);assert.equal(p.total_cents,8550);assert.equal(p.earned_points,855);
  assert.equal(r.request.items[0].unit_price_usd_cents,10000);
 });
 test('points and credit reduce payable and earning base without changing source prices',async()=>{
  const r=await checkout.normalize({},user,{...body,points:500,credit_cents:1000},catalog);const p=checkout.price(r,method,null,{points:600,credit_cents:1200});
- assert.equal(p.total_cents,10500);assert.equal(p.earned_points,80);assert.equal(p.points_redeemed,500);assert.equal(p.credit_redeemed_cents,1000);
+ assert.equal(p.total_cents,10500);assert.equal(p.earned_points,200);assert.equal(p.points_redeemed,500);assert.equal(p.credit_redeemed_cents,1000);
  assert.throws(()=>checkout.price(r,method,null,{points:499,credit_cents:1200}),/available/);
  assert.throws(()=>checkout.price(r,method,null,{points:600,credit_cents:999}),/credit/);
 });

@@ -1,13 +1,13 @@
 {
-  "version": "checkout-2026-11-v2",
+  "version": "checkout-2026-11-v3",
   "currency": "USD",
   "shipping_cents": 2500,
   "shipping_countries": [
     "US"
   ],
   "shipping_label": "Standard US delivery",
-  "shipping_note": "US$25 per order. Supplier fulfillment is arranged manually. Typical processing is 1\u20133 business days, followed by an estimated 3\u20137 business days in transit. Tracking follows dispatch; these are estimates, not guaranteed delivery dates.",
-  "points_per_dollar": 1,
+  "shipping_note": "Standard US delivery is $25, or free on $250+ in merchandise after discounts. Paid members receive free standard delivery. Estimated processing: 1\u20133 business days; estimated transit: 3\u20137 business days. Tracking follows dispatch.",
+  "points_per_dollar": 2.5,
   "point_value_cents": 1,
   "minimum_points_redemption": 100,
   "tax_cents": 0,
@@ -16,5 +16,6 @@
     "bogo": true,
     "coupon": "BOGO",
     "coupon_discount_bps": 1000
-  }
+  },
+  "free_shipping_threshold_cents": 25000
 }
