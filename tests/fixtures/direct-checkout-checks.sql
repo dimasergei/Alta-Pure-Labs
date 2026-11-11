@@ -1,7 +1,7 @@
 \set ON_ERROR_STOP on
 -- Run after native/PeptidePay fixtures, only in the disposable database.
 \i supabase/migrations/20261111025932_direct_checkout_balances.sql
-\i supabase/migrations/20261111070511_checkout_promotion_version.sql
+\i supabase/migrations/20261111071846_checkout_promotion_version.sql
 set role service_role;
 do $$
 declare m uuid:=gen_random_uuid();u uuid:=gen_random_uuid();i uuid:=gen_random_uuid();j uuid:=gen_random_uuid();grant_id uuid:=gen_random_uuid();
