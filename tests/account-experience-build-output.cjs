@@ -3,8 +3,8 @@ const assert=require('node:assert/strict'),fs=require('node:fs'),vm=require('nod
 const read=f=>fs.readFileSync('public-build/'+f,'utf8');
 for(const file of ['account-experience.js','direct-checkout-client.js','account.js','workspace-v2.js'])new vm.Script(read(file),{filename:file});
 const account=read('account.js'),nav=account.slice(account.indexOf('function accountNav'),account.indexOf('async function overview'));
-for(const name of ['Overview','Orders','Membership','Rewards','Profile','Partner','Support'])assert.ok(nav.includes("['"+name+"'"));
-for(const name of ['Tracking','Historical orders','Subscriptions','Store Credit','Points'])assert.ok(!nav.includes("['"+name+"'"));
+for(const name of ['Overview','Orders','Membership','Subscriptions','Points','Store Credit','Profile','Partner'])assert.ok(nav.includes("['"+name+"'"));
+for(const name of ['Tracking','Historical orders','Rewards','Support'])assert.ok(!nav.includes("['"+name+"'"));
 assert.match(account,/AccountExperience\.profile/);assert.match(account,/AccountExperience\.membership/);assert.match(account,/AccountExperience\.orders/);
 assert.match(account,/account\/purchases\?view=tracking/);assert.match(account,/account\/purchases\?view=history/);
 assert.match(read('workspace-v2.js'),/Partner inquiry<\/h2>\$\{inquiryForm\('partner'\)\}/);
