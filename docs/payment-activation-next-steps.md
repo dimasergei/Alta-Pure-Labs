@@ -1,79 +1,69 @@
-# Payment activation and remaining operating inputs
+# Payment activation: current checkpoint
 
-Reviewed November 10, 2026 against deployed main `9d6725c03777e6fd1dd3c4cebad35b71ba63099b` and the customer's open NeuroLabs checkout. This updates the pre-integration backlog; it does not certify merchant approval or real payment settlement.
+Reviewed 11 November 2026. This replaces the earlier manual-invoice-only intake. Recheck provider and production state before a later activation.
 
-## Current follow-up status
+## Deployed and verified
 
-PR #61 is deployed at `9a8496ea6911b7439b20819f28c938cf7bc21b24`. See [supplier-wallet-release.md](supplier-wallet-release.md) for the current supplier selection, wallet correction, exact NeuroLabs shipping observation and remaining merchant-account blocker. The older intake below is superseded where it asks for facts already supplied: sandbox is created and tested; Interac and Relay instructions are saved privately; the three suppliers are selected; tax work is deferred. No live account approval is established.
+- Production application commit: `31f0444d840ca64e5a64a48b5df3a04ef492a519`, deployment `dpl_1D6dfAaHZQVG8gGePZJuxGgiYVt1`, at https://altapurelabs.com.
+- Direct customer checkout calculates catalog prices, BOGO, coupons, membership/volume discounts, points and store credit on the server. Account pages and historical orders are retained. Fulfillment remains manual.
+- Checkout version is `checkout-2026-11-v2`. Standard US delivery is USD 25 per order. Bank transfer adds 5% off eligible merchandise after other discounts. See `config/checkout.json`, `lib/checkout-promotions.js` and `docs/reference-storefront-release.md` for exact behavior.
+- The public checkout configuration returns only US domestic wire in USD. Interac details are retained but its CAD route is inactive in the USD checkout. Receiving details remain private.
+- The promotion-version migration `20261111071846_checkout_promotion_version` is already applied. Do not reapply an older filename. No new migration was required for the read-only provider diagnostic.
+- PR #76 passed all six CI workflows; 267 unit tests passed locally. The private diagnostic script is excluded from public output. Production home and checkout configuration returned HTTP 200; the private script URL returned 404.
 
-## What is already installed
+## Merchant identity and completed setup
 
-NMI Payment Component and REST v5, PayerURL server-created invoices and signed callbacks, durable attempts, duplicate-charge protection, reconciliation, full NMI refunds, private gateway administration and customer payment pages are deployed. The recorded native migration is `20261110164316_native_gateway_checkout`; do not apply the earlier filename again.
+The operating merchant is XYZ Holdings LLC, the owner's New Mexico LLC. The Ontario corporation owns it; the owner resides in Canada. Do not revert to an assumed Canadian operating entity or the superseded Northline name.
 
-Manual invoice pricing/acceptance, prepaid nonrenewing passes, server-side member/volume discounts, transactional invoice email and its signed retry worker are also installed. Existing Stripe history and manual fulfillment remain intact.
+PeptideApprove/Tagada store: `store_aaf82802c630`. The owner authorized the existing Polygon USDC payout wallet ending `745a50` and creation of the CRM API key. Both are saved. The sensitive key is stored only in Vercel Production; never put it in source, frontend code, screenshots or logs. `TAGADA_STORE_ID` is configured and `TAGADA_ENABLED` remains false.
 
-Production inspection found no configured receiving routes, gateway accounts or native attempts. No live card or crypto activation is established. There are now three selected supplier records and separate public reference COAs; no report has been assigned to an AltaPure fulfilled lot. Records alone do not establish stock or fulfillment readiness.
+From Vercel, authentication, store, processors and payment-setup reads returned HTTP 200. The earlier 403 occurred in a separate testing environment; it is not evidence that the account or key is invalid. Run `node scripts/check-tagada-readiness.cjs` manually in the authorized hosting environment for redacted, read-only checks. It does not enable payments or create sessions.
 
-## Updated NeuroLabs comparison
+## Current provider status
 
-The signed-in payment step was inspected without submitting an order, entering payment details, linking a bank or accepting checkout terms. Its original selected bank method was restored. Customer information and merchant keys are intentionally omitted.
-
-| Observed checkout choice | Direct technical evidence | AltaPure consequence |
+| Route | Verified state | Still required |
 | --- | --- | --- |
-| Credit/Debit Card | `payment_method=nmi`; NMI Collect.js is loaded | Existing NMI adapter is the corresponding path. AltaPure uses the currently recommended Component/v5 integration. |
-| Apple Pay / Google Pay | Both buttons render; NMI wallet asset is present | Buttons still require account, domain and eligible-device testing. Rendering is not evidence of successful payment. |
-| All Credit/Debit Cards | `payment_method=noramp_platform`; description says secure redirect after order review | This is an additional provider route, not proof that PayerURL supplies the card option. NoRamp account eligibility and exact platform must be confirmed before integration. |
-| Same-Day Bank Payment | `payment_method=linkmoney`; customer-bank linking description | Link Money is a separate pay-by-bank integration. Relay receiving instructions alone cannot reproduce this flow. |
-| PayerURL | WooCommerce PayerURL script loaded, but no crypto payment choice in this checkout | Installed script does not prove crypto is currently offered or usable for this customer/order. |
+| PeptideApprove card-to-crypto | Wallet saved, MoonPay selected, pooled settlement shown, integration disabled | Supported exact-total checkout, confirmed on-ramp eligibility, callback/reconciliation integration, payment/refund tests |
+| PeptideApprove conventional cards | No active card processor; sandbox and blank-key NMI configurations disabled | Approved live processor configuration and testing |
+| Native Apple Pay | Integration and checkout-domain registration configured | Working wallet sheet and successful payment through an approved processor |
+| Native Google Pay | Provider configuration sandboxed | Working test sheet, production configuration/approval and payment test |
+| PeptidePay, a separate provider | Native adapter and signed webhook simulator tested; activation pending | Provider rate/activation confirmation and real provider session/payment tests |
+| Native NMI | Isolated sandbox sale, decline, query and full refund passed | Live credentials, callback/wallet testing and authorized live acceptance test |
+| PayerURL | Adapter retained; reported account login error unresolved | Working account, actual credentials and invoice/callback tests |
 
-NeuroLabs also showed shipping/delivery steps, a final summary and consent controls. Its discounts, protection fee, delivery promises and loyalty offers are its own commercial terms. They are not AltaPure defaults. The public checkout does not disclose its NMI acquiring bank or prove sales volume.
+Robert's existing thread proposes card-to-crypto at 8.5% with first-payment buyer ID verification. This does not establish a completed charge, wallet payment or settlement. Activation questions, the production API-auth correction and exact-total requirements were already sent in the same thread. Check for a reply before duplicate outreach or another application.
 
-## Practical order of work
+## Preview findings and completed fix
 
-1. Complete the existing card-processor review. Ask for a decision on the exact catalog, Canadian entity, merchant/settlement identity, countries, currencies and annual passes. Confirm NMI Component/v5 support, sandbox access and full fees before a paid application or contract. An approved hosted invoice can use the existing hosted-provider route while native account testing finishes.
-2. The owner-controlled sandbox is already created. Real sandbox sale, decline and full refund tests passed in the isolated harness; keep its keys and fixture data out of production. Continue wallet, 3DS and callback testing after account access is restored.
-3. Configure and test the actual account using `native-gateway-activation.md`. Store keys only in protected hosting settings. Verify sale, decline, authentication/wallet behavior, callback replay, timeout reconciliation and full refund. Configure Apple Pay's provider-issued verification file/domain registration before offering it.
-4. PayerURL registration and email confirmation are complete, but its dashboard returns 401 for the confirmed address. Resolve the existing account with support or owner password recovery; do not create another account or configure unverified credentials.
-5. Interac recipient/Autodeposit and Relay domestic USD wire details are saved as private inactive drafts. The legal seller/receiving owner has been identified. Preserve these fallbacks; prioritize approved card/wallet activation.
-6. Once the account passes testing, register its approved route in `/admin-gateways.html`. Perform a separately owner-authorized low-value live payment/refund and reconcile the actual settlement. Verify customer confirmation delivery and manual fulfillment acknowledgment/tracking.
+The existing pre-launch funnel `funnelv2_1b3e4623eb85` was opened through the portal's Preview workflow, with `draft=true` and staging in its URL. No real card, buyer contact details, purchase submission or live charge was entered. The provider created a preview session; this is not a real paid order or revenue.
 
-## Existing processor threads
+Two 10 mL BAC Water items initially showed USD 36 plus stale USD 15 shipping, total USD 51. The storefront's calculation without coupon, membership, points or credit is USD 36 minus USD 18 BOGO plus USD 25 shipping, total USD 43.
 
-Gmail was rechecked before any further outreach. RFG is obtaining written NMI, fee, Relay and sandbox answers. Its no-cost pre-check belongs to the existing file. MOBOPAY has since confirmed no NMI, Apple Pay or Google Pay; its settlement offering is stablecoin-only. PeptideApprove has no approval reply. No new duplicate application or outreach was sent during this follow-up.
+Updated existing provider shipping rate `sr_b10e43deb849` to **Standard US delivery, USD 25**, with the storefront's existing manual-fulfillment estimate and US-only scope. Reopened the saved rate and reloaded the preview to verify persistence. The preview now shows USD 25 shipping but totals USD 61 because BOGO is absent. No new shipping service, supplier commitment or fulfillment guarantee was introduced.
 
-The RFG pre-check requires truthful processing history and projections. Do not infer those from test orders. A public marketing eligibility statement is not written approval of this merchant.
+Google Pay rendered, but clicking and keyboard activation did not produce an observable payment sheet. The test did not pass. No charge/refund was attempted.
 
-## Additional benchmark providers
+There are no saved provider promotions. Its BOGO editor selects a purchased product and a reward product; do not assume this reproduces a discount on units already in the cart. An exploratory unsaved promotion was discarded. Do not globally halve prices or add duplicate free units to make one test total match.
 
-Link Money's official quickstart requires merchant-portal access and server-side client credentials. Confirm Canadian seller eligibility, the actual catalog, USD settlement, buyer-bank coverage, fees and sandbox access before commissioning this additional adapter. It has separate sessions, webhooks and refund handling; it is not enabled by the NMI or PayerURL keys.
+## Remaining implementation and acceptance sequence
 
-NoRamp's `noramp.dev` onboarding requires approval, an agreement and hosted identity/bank verification before credentials. Its restricted-product guide excludes needles and other categories present in some research catalogs. Its `noramp.io` policy is stricter and excludes consumer-style research sales and injection supplies. These public documents differ; the exact platform, contracting entity and written SKU scope need clarification. Do not remove product names from payment descriptions, conceal supplies or reroute disallowed goods to imitate another merchant's setup. Neither account approval nor a compatible non-Stripe processing arrangement has been established for AltaPure.
+1. Obtain the supported card-to-crypto server-side session/redirect contract: exact payable total after discounts and credit, stable external order reference, currency, return URLs and no-funds test procedure. The public catalog-based session API alone does not establish this contract.
+2. Implement the Tagada adapter and durable attempt binding against that contract. NMI and PeptidePay are different protocols; their callbacks and secrets cannot be reused. No Tagada payment-fulfillment webhook is registered yet.
+3. Implement/test authenticated status retrieval, signed raw-body callbacks, exact order/amount/currency checks, replay handling, timeouts, cancellation and refunds. Credits, points, membership activation, confirmation email and fulfillment eligibility must follow a verified payment exactly once.
+4. Compare the provider amount with the saved server quote for ordinary carts, odd/even BOGO quantities, coupon BOGO, membership savings, points, credit covering merchandise and shipping, and fully balance-funded orders. The demonstrated mismatch blocks substituting a direct provider link for the working checkout.
+5. Validate cards and each wallet independently in the supported test environment. Rendering a button is insufficient. The card-to-crypto provider's wallets are distinct from native wallets connected to the disabled card flow.
+6. After successful tests and actual live configuration, publish the tested route, register its approved account binding and enable the customer method. The owner completes any required low-value live payment or identity verification; verify refund and settlement separately. Preserve bank transfer, historical orders/Stripe handling and manual fulfillment.
 
-## Inputs for an operational business
+No additional wallet or API-key input is needed from the owner at this checkpoint. The unresolved provider contract and tests must not be presented as completed or merely a missing storefront button.
 
-| Area | Owner/provider input still required | Existing workflow |
-| --- | --- | --- |
-| Merchant account | Written acceptance and account-specific keys, approved scope and settlement details | Native NMI/PayerURL or approved hosted invoice |
-| Interac | Exact registered recipient, CAD receiving address, business-use permission and Autodeposit/instruction confirmation | Manual verified receipt |
-| Relay/bank | Bank-issued beneficiary, account currency and incoming ACH/wire instructions; legal title match | Private receiving-method configuration |
-| Supply and quality | Real availability, costs, origin, lot identifiers, authentic reports and supplier fulfillment terms | Owner review and manual fulfillment; no invented stock/COA |
-| Delivery/tax | Actual service/quote, destination eligibility and applicable tax/duty instructions | Final reviewed invoice before payment |
-| Commercial hosting | Owner-authorized hosting plan suitable for commercial use | Team was observed on Vercel Hobby; billing approval remains owner-controlled |
-| Acceptance | Authorized live payment/refund, email delivery, supplier handoff, tracking and settlement evidence | Existing audit/payment records; no dummy production financial records |
+## References
 
-The current checkout remains request → owner review → final invoice → customer acceptance → payment → manual fulfillment. Automatic cart charging like the benchmark requires authoritative shipping/tax and supply rules first. Manual supplier handling itself can remain after instant checkout is introduced.
+- [Native NMI/PayerURL activation](native-gateway-activation.md)
+- [PeptidePay activation](peptidepay-activation.md)
+- [Storefront release and promotion semantics](reference-storefront-release.md)
+- https://docs.tagada.io/developer-tools/api-hosts
+- https://docs.tagada.io/api-reference/auth/test-authentication
+- https://docs.tagada.io/api-reference/checkout/initialize-checkout-session
+- https://help.tagada.io/en/articles/54-enable-tagada-crypto
 
-Nonrenewing VIP/Elite passes and published volume discounts are implemented. Product subscriptions, points, gift cards, spendable store credit, BOGO and partner commissions are not offered; their absence does not justify promising unimplemented benefits or copying the competitor's obligations.
-
-## Primary sources inspected
-
-- https://neurolabsresearch.com/checkout/ — visible payment choices and DOM identifiers.
-- https://support.nmi.com/hc/en-gb/articles/34312649393681-Getting-Started-with-the-NMI-Payment-Gateway — free sandbox signup.
-- https://docs.nmi.com/docs/payment-component — Component recommendation and wallet domain setup.
-- https://payerurl.com/ and https://dash.payerurl.com/register — account entry and receiving-plan choices; advertised prices are not accepted terms.
-- https://developer.link.money/quickstart/ — merchant access, sessions and credentials.
-- https://noramp.dev/merchant-onboarding and https://noramp.dev/docs/restricted-products.md — approval path and restricted catalog.
-- https://noramp.io/policy/research-use-only — separately published RUO eligibility policy.
-- https://vercel.com/docs/plans/hobby — non-commercial personal-use restriction.
-
-No private account credentials or customer checkout data belong in this document.
+Keep credentials, full payout/receiving information, buyer data and token-bearing preview URLs out of this document.
