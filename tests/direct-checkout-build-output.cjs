@@ -1,0 +1,17 @@
+'use strict';
+const assert=require('node:assert/strict'),fs=require('node:fs'),vm=require('node:vm');
+const read=f=>fs.readFileSync('public-build/'+f,'utf8');
+for(const file of ['direct-checkout-client.js','account.js','storefront-v2.js','workspace-v2.js','native-pay.js','payment-options-public.js','admin-payments.js'])new vm.Script(read(file),{filename:file});
+assert.match(read('account.html'),/direct-checkout-client\.js/);
+assert.match(read('account.js'),/p==='\/checkout'/);
+assert.match(read('account.js'),/DirectCheckout\.balance/);
+assert.match(read('storefront-v2.js'),/Continue to checkout/);
+assert.match(read('storefront-v2.js'),/Buy annual pass/);
+assert.doesNotMatch(read('storefront-v2.js'),/Request.*invoice|checkout is (?:currently )?paused|reviewed invoices/i);
+assert.doesNotMatch(read('workspace-v2.js'),/Rewards redemption is not offered|redemption is not enabled/i);
+assert.doesNotMatch(read('payment-options-public.js'),/Request invoice|REVIEWED INVOICES|checkout&/);
+assert.match(read('commercial-terms.html'),/1 point per whole US\$1/);
+assert.match(read('shipping-policy.html'),/US\$25/);
+assert.match(read('pay.html'),/My orders/);
+assert.doesNotMatch(read('account.html')+read('pay.html'),/src="\/marketing-analytics\.js"/);
+console.log('Built checkout routes, scripts, terms, wallet page and privacy checks passed');
