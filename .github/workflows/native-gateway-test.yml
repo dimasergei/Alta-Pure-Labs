@@ -36,4 +36,5 @@ jobs:
           psql -X -v ON_ERROR_STOP=1 -h 127.0.0.1 -U postgres -d postgres -f tests/fixtures/direct-checkout-checks.sql
           psql -X -v ON_ERROR_STOP=1 -h 127.0.0.1 -U postgres -d postgres -f tests/fixtures/conversion-checks.sql
           psql -X -v ON_ERROR_STOP=1 -h 127.0.0.1 -U postgres -d postgres -f tests/fixtures/readiness-checks.sql
+          psql -X -v ON_ERROR_STOP=1 -h 127.0.0.1 -U postgres -d postgres -f tests/fixtures/unified-fulfillment-checks.sql
           bash tests/fixtures/direct-checkout-race.sh
