@@ -4,7 +4,7 @@ This extends the existing AltaPure checkout. It does not replace the storefront 
 
 ## Release and migration
 
-Apply `20261111174353_partner_settings_supplier_queue.sql` after `20261111163930_conversion_memberships_partners.sql`. The migration retains all partner codes, backfills their aliases, preserves existing orders, and starts supplier automation disabled. New tables use RLS and service-only access. The v4 checkout still accepts outstanding v1–v3 signed quotes under their original rules.
+Apply `20261111174353_partner_settings_supplier_queue.sql` after `20261111163930_conversion_memberships_partners.sql`. The migration retains all partner codes, backfills their aliases, preserves existing orders, and starts supplier automation disabled. New tables use RLS and service-only access. The database retains support for historical v1–v3 order accounting. Browsers with an older checkout version must refresh and review a new quote before placing an order; existing orders and their payment links remain available.
 
 Before deploying, create `PARTNER_BANK_ENCRYPTION_KEY` as 32 cryptographically random bytes encoded as 64 hex characters in the production server environment. Retain this key: replacing it without re-encryption makes existing bank records unreadable. Never expose it in a client, commit, log or support message. Bank records use AES-256-GCM with the partner UUID bound as authenticated data. Only masked details reach the customer dashboard. Admin payout reads are authenticated, recorded and cleared from the UI after 60 seconds. Saving details does not debit an account, verify bank ownership or initiate a payout.
 
