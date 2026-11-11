@@ -1,0 +1,105 @@
+/* AltaPure Labs — graphite, midnight cobalt and electric cyan design system. */
+:root{
+  --ap-green:#2456a6;
+  --ap-deep:#0c1728;
+  --ap-ink:#eaf0f8;
+  --ap-muted:#a6b2c2;
+  --ap-cream:#0f141c;
+  --ap-line:#2a3545;
+  --ap-lime:#51d9f4;
+  --ap-white:#f5f8fc;
+  --ap-shadow:0 18px 50px #02060b80;
+  --paper:#0f1117;
+  --ink:#eaf0f8;
+  --muted:#a6b2c2;
+  --surface:#171d27;
+  --teal:#39c9ed;
+  --forest:#172d54;
+  --dark:#0c121b;
+}
+
+.ap-site, body.ap-site{
+  color:var(--ap-ink);
+  background:#0f1117;
+  color-scheme:dark;
+}
+.ap-site :is(h1,h2,h3,h4,strong,b,summary,label,th){color:var(--ap-white)}
+.ap-site :is(p,small,.ap-muted,.account-muted,.account-meta,.ap-card-meta,.ap-card-size-note){color:var(--ap-muted)}
+.ap-site :is(a,button):focus-visible,
+.ap-site :is(input,select,textarea,summary):focus-visible{outline-color:#51d9f4;box-shadow:0 0 0 3px #51d9f455}
+
+/* Structural surfaces stay graphite; the header keeps a crisp glass edge. */
+.ap-site :is(.ap-header,.topbar){background:#111925f5;border-color:#2a3545;color:var(--ap-white)}
+.ap-site :is(.ap-announcement,.announce){background:#0b1421;color:#d6e3f5;border-color:#27364a}
+.ap-site :is(.ap-nav-row,.topbar,.ap-footer,.footer){border-color:#2a3545}
+.ap-site :is(.ap-footer,.footer){background:#0b111a;color:#e4edf8}
+.ap-site :is(.ap-product-card,.ap-membership-card,.ap-contact-card,.ap-coa-card,.ap-panel,.ap-stat,.ap-summary,.account-card,.account-order,.ae-panel,.dc-section,.dc-summary,.ap-category-tile,.ap-saved-list,.ap-dialog,.ap-cart-dialog,.ap-search-dialog,.ap-compare-dialog,.ap-age-dialog,.ap-quality-card){
+  color:var(--ap-ink);
+  background:#171e28;
+  border-color:#303d50;
+  box-shadow:0 12px 32px #02060b40;
+}
+.ap-site :is(.ap-product-image,.ap-card-size,.ap-search-trigger,.ap-mega-content,.ap-mega-content a,.ap-header-popover,.ap-header-dropdown .ap-header-popover,.ap-filter-list button,.ap-toolbar input,.ap-toolbar select,.ap-coa-controls input,.ap-coa-controls select,.ap-form input,.ap-form select,.ap-form textarea,.account-form input,.account-form select,.account-form textarea,.dc-fields input,.dc-fields select,.dc-fields textarea,.ae-fields input,.ae-fields select,.ae-fields textarea,.ap-cart-dialog input,.ap-cart-dialog select){
+  color:var(--ap-white);
+  background:#111823;
+  border-color:#344256;
+}
+.ap-site :is(input,select,textarea){color:var(--ap-white);background-color:#111823;border-color:#344256}
+.ap-site :is(input,select,textarea)::placeholder{color:#8998ab;opacity:1}
+.ap-site :is(.ap-nav>a,.ap-nav button,.ap-icon,.ap-brand,.ap-footer a,.top-links a,.icon-btn){color:var(--ap-white)}
+.ap-site :is(.ap-nav a:hover,.ap-footer a:hover,.ap-text-link:hover){color:#51d9f4}
+.ap-site :is(.ap-line,.ap-account-site .account-nav,.ap-bulk-table td,.ap-bulk-table th,.ap-faq-row,.ap-faq-numbered details){border-color:#303d50}
+.ap-site :is(.ap-product-card:hover,.ap-category-tile:hover,.ap-contact-card:hover){border-color:#47627f;box-shadow:0 16px 36px #02060b75}
+
+/* Midnight cobalt communicates authority; electric cyan is reserved for actions. */
+.ap-site .ap-button:not(.ap-button-secondary):not(.ap-button-light),
+.ap-site :is(.pill-dark,.pill-primary,.cv-checkout,.nl-purchase>.ap-button){
+  background:#39c9ed;border-color:#39c9ed;color:#07131e!important;
+}
+.ap-site .ap-button:not(.ap-button-secondary):not(.ap-button-light):hover,
+.ap-site :is(.pill-dark,.pill-primary,.cv-checkout,.nl-purchase>.ap-button):hover{
+  background:#70e2fa;border-color:#70e2fa;color:#07131e!important;
+}
+.ap-site :is(.ap-button-secondary,.ap-text-button,.ap-text-link,.text-link){color:#b8d8ff!important}
+.ap-site :is(.ap-button-secondary,.ap-button-light){border-color:#506988}
+.ap-site :is(.ap-button-light,.pill-light){background:#20385c;border-color:#33527d;color:#f5f8fc!important}
+.ap-site :is(.ap-cart-count,.nl-badge,.cv-popular,.ap-bogo-badge,.bogo-badge,.ap-sale-badge){background:#39c9ed;color:#07131e;border-color:#39c9ed}
+.ap-site :is(.cv-shipping-progress,.ap-account-site .account-message,.account-message,.ap-saved-list,.ap-summary){background:#172234;border-color:#344256;color:#eaf0f8}
+.ap-site :is(.ap-membership-card.is-featured,.ap-membership-card.featured,.ap-membership-card:has(.cv-popular)){border-color:#45c8ea;box-shadow:0 0 0 1px #45c8ea55,0 18px 48px #02060b80}
+.ap-site :is(.ap-plan-price,.cv-memberships .ap-plan-price,.ap-detail-price,.ap-card-price){color:#f5f8fc}
+.ap-site :is(.ap-footer-bottom,.ap-footer-grid,.footer-bottom,.footer-disclaimer){border-color:#2a3545}
+.ap-site .nl-hero,
+.ap-site .nl-wide-hero,
+.ap-site .nl-bulk-hero{
+  background:radial-gradient(ellipse at 76% 12%,#193c73 0,transparent 55%),linear-gradient(125deg,#0b1422,#111d2d 58%,#0b1422);
+  color:#f3f7fc;
+}
+.ap-site .nl-hero:before{background-image:linear-gradient(#62aaf71c 1px,transparent 1px),linear-gradient(90deg,#62aaf71c 1px,transparent 1px)}
+.ap-site .nl-hero h1 em{background:linear-gradient(90deg,#8beaff,#3ec8ef);background-clip:text;-webkit-text-fill-color:transparent}
+.ap-site .nl-hero .nl-primary{background:linear-gradient(95deg,#39c9ed,#76e4f7);border-color:#39c9ed;color:#07131e!important}
+.ap-site .nl-hero .nl-outline{background:#14243a;border-color:#49698e;color:#f3f7fc!important}
+.ap-site :is(.nl-offer-grid>a,.nl-wide-benefits>div,.nl-bulk-benefits>div,.nl-bulk-benefits>div:nth-child(2)){background:#172438;border-color:#354862;color:#eaf0f8}
+.ap-site :is(.nl-carousel-controls button,.nl-filter-pills button,.ap-size-options button,.dc-step-nav button,.rd-partner-tabs button,.rd-code-list button){background:#151e2b;border-color:#344256;color:#eaf0f8}
+.ap-site :is(.nl-doc-art,.nl-soft,.nl-shop-sale,.nl-sale-box,.nl-document-link,.nl-coa-copy,.ap-site .ap-feature,.dc-rewards,.rd-unavailable,.rd-optional,.rd-member-offer){background:#17202c;border-color:#334258;color:#eaf0f8}
+.ap-site .ap-feature.ap-dark{background:linear-gradient(130deg,#17376a,#0d1a2d);border-color:#345b91}
+.ap-site .ap-membership-card.ap-highlight{background:linear-gradient(135deg,#1d3d73,#111c2d);border-color:#47cde9}
+.ap-site .ap-highlight .ap-button-light{background:#39c9ed;border-color:#39c9ed;color:#07131e!important}
+.ap-site :is(.nl-badge,.nl-capsule,.cv-popular,.ap-highlight .ap-pill){background:#39c9ed;color:#07131e;border-color:#39c9ed}
+.ap-site :is(.nl-icon,.nl-step){background:#1a2c43;color:#aeeeff;border-color:#355373}
+.ap-site .nl-filter-pills button[aria-pressed=true]{background:#2456a6;border-color:#4b78bb;color:#fff}
+.ap-site .ap-size-options button[aria-pressed=true],.ap-site .dc-method:has(input:checked),.ap-site .rd-delivery:has(input:checked){background:#172b45;border-color:#4b8acb;color:#fff}
+.ap-site :is(.ap-site .ap-highlight .ap-pill,.cv-billing span,.cv-billing button[aria-selected=true],.rd-membership-table .rd-current,.rd-welcome>span,.rd-points,.rd-code-list small,.rd-wallet,.rd-delivery,.rd-unavailable,.rd-member-offer,.rd-optional){background:#172438!important;color:#e8f1fb;border-color:#344862}
+.ap-site :is(.cv-billing,.cv-shipping-progress,.ap-cart-quote .cv-total){background:#151e2b;border-color:#344256;color:#eaf0f8}
+.ap-site :is(.ap-bulk-table th,.rd-table thead){background:#1a2636;color:#eaf0f8}
+.ap-site .ap-bulk-table tr:hover{background:#1a2636}
+.ap-site .rd-referral input,.ap-site .rd-code-list small,.ap-site .rd-optional{background:#111823!important;color:#eaf0f8}
+.ap-site .ap-account-site .account-message,.ap-site .account-message{border-left-color:#39c9ed}
+.ap-site :is(.ap-hero,.ap-page-intro,.ap-section,.nl-featured,.nl-editorial,.ap-workspace-layout){color:var(--ap-ink)}
+
+/* Non-catalog public pages inherit the same dark base without changing admin tools. */
+body.ap-site :is(.account-page,.page,.checkout-page,.payment-page){background:#0f141c;color:#eaf0f8}
+body.ap-site :is(.account-nav a,.account-nav-logout){background:#151e2b;color:#dfe9f5;border-color:#334156}
+body.ap-site .account-nav a[aria-current=page]{background:#234e94;border-color:#3b70c8;color:white}
+body.ap-site .account-disclaimer{background:#1b2431;color:#d5dfeb;border-color:#e4ae52}
+
+@media(prefers-reduced-motion:reduce){.ap-site *,body.ap-site *{scroll-behavior:auto!important;transition-duration:.01ms!important}}
