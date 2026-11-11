@@ -5,7 +5,7 @@
  function close(m){clearTimeout(m.timer);m.panel.hidden=true;m.trigger.setAttribute('aria-expanded','false');m.root.classList.remove('ap-menu-open');}
  function open(m){for(const other of menus)if(other!==m)close(other);clearTimeout(m.timer);m.panel.hidden=false;m.trigger.setAttribute('aria-expanded','true');m.root.classList.add('ap-menu-open');}
  for(const m of menus){
-  m.root.addEventListener('pointerenter',e=>{if(e.pointerType!=='touch'&&window.matchMedia('(hover: hover)').matches)open(m);});
+  m.root.addEventListener('pointerenter',e=>{if(e.pointerType!=='touch'&&window.matchMedia('(min-width: 1051px) and (hover: hover)').matches)open(m);});
   m.root.addEventListener('pointerleave',()=>{m.timer=setTimeout(()=>{if(!m.root.contains(document.activeElement))close(m);},150);});
   m.root.addEventListener('focusin',()=>{if(!m.suppressFocus)open(m);});
   m.root.addEventListener('focusout',e=>{if(!m.root.contains(e.relatedTarget))close(m);});
