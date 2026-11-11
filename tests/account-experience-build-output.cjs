@@ -1,0 +1,15 @@
+'use strict';
+const assert=require('node:assert/strict'),fs=require('node:fs'),vm=require('node:vm');
+const read=f=>fs.readFileSync('public-build/'+f,'utf8');
+for(const file of ['account-experience.js','direct-checkout-client.js','account.js','workspace-v2.js'])new vm.Script(read(file),{filename:file});
+const account=read('account.js'),nav=account.slice(account.indexOf('function accountNav'),account.indexOf('async function overview'));
+for(const name of ['Overview','Orders','Membership','Rewards','Profile','Partner','Support'])assert.ok(nav.includes("['"+name+"'"));
+for(const name of ['Tracking','Historical orders','Subscriptions','Store Credit','Points'])assert.ok(!nav.includes("['"+name+"'"));
+assert.match(account,/AccountExperience\.profile/);assert.match(account,/AccountExperience\.membership/);assert.match(account,/AccountExperience\.orders/);
+assert.match(account,/account\/purchases\?view=tracking/);assert.match(account,/account\/purchases\?view=history/);
+assert.match(read('workspace-v2.js'),/Partner inquiry<\/h2>\$\{inquiryForm\('partner'\)\}/);
+assert.doesNotMatch(read('workspace-v2.js'),/Open partner program ↗/);
+assert.match(read('account.html'),/account-experience\.css/);assert.match(read('account.html'),/account-experience\.js/);
+assert.match(read('direct-checkout-client.js'),/className='dc-layout'/);
+assert.match(read('direct-checkout-client.js'),/profile\.shipping/);
+console.log('Built account navigation, inline pages, profile and checkout layout checks passed');
