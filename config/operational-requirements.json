@@ -63,9 +63,9 @@
     {
       "id": "shipping",
       "title": "Rates and eligible destinations",
-      "state": "supplier_estimates_configured",
+      "state": "implemented",
       "owner": "Owner / Carrier / Engineering",
-      "next": "Use selected-supplier planning presets; replace or confirm them against the exact order quote. Carrier, price, destination eligibility and customs timing are not inferred from NeuroLabs rates.",
+      "next": "US direct checkout uses the existing US$25 domestic charge. Supplier fulfillment remains manual, with tracking entered after dispatch; international checkout is unavailable.",
       "done_when": "Every accepted cart receives a valid route and shipping charge before payment; no worldwide default."
     },
     {
@@ -73,7 +73,7 @@
       "title": "Tax, accounting and legal entity",
       "state": "owner_deferred",
       "owner": "Owner / Accountant",
-      "next": "Owner deferred further tax configuration. Existing invoice review is preserved; no zero-tax default is implied. Seller is 1001517614 ONTARIO INC.; remaining registration and accounting details stay pending.",
+      "next": "Owner deferred tax setup. Direct US checkout currently collects zero tax; this is a configuration choice, not a determination of tax obligations. Operating seller: XYZ Holdings LLC.",
       "done_when": "Representative orders/refunds reconcile to processor payouts and tax reports using confirmed obligations."
     },
     {
@@ -94,10 +94,10 @@
     },
     {
       "id": "rewards",
-      "title": "Points, credit and gift cards",
-      "state": "not_offered",
+      "title": "Points and store-credit ledgers",
+      "state": "implemented",
       "owner": "Owner / Engineering",
-      "next": "No launch points, cashback, gift-card balances or spendable store credit are offered. Keep these disabled unless approved terms and tested transactional ledgers are introduced.",
+      "next": "Direct checkout reserves balances atomically. Confirmed product payments earn 1 point per paid merchandise dollar; 100 points = US$1. Cancellation and full refunds restore redemptions and reverse earnings. Gift cards are not offered.",
       "done_when": "Duplicate events cannot double-award; simultaneous redemption cannot overspend; refunds reverse correctly."
     },
     {
