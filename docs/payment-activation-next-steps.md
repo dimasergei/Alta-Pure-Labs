@@ -33,6 +33,16 @@ From Vercel, authentication, store, processors and payment-setup reads returned 
 
 Robert's existing thread proposes card-to-crypto at 8.5% with first-payment buyer ID verification. This does not establish a completed charge, wallet payment or settlement. Activation questions, the production API-auth correction and exact-total requirements were already sent in the same thread. Check for a reply before duplicate outreach or another application.
 
+### Application status discovered in the activation email
+
+The PeptideApprove reminder links to the existing TagadaPay merchant application. Its application list showed exactly one **draft**, at **step 1 of 6 (Business)**; it was not submitted or under review. Do not describe this as merely awaiting approval. The saved CRM/store setup is separate from this merchant application.
+
+Resumed that existing draft and filled the verified LLC name, United States / New Mexico registration, registered-agent address, published support contact details, website, disclosed research catalog, foreign corporate ownership and conservative USD 2,000 first-month projection. The form confirms progress is saved automatically. No duplicate application, contract acceptance or submission was performed.
+
+The form's required Registration number field expects the LLC's EIN. It remains blank because no verified EIN value was supplied or found in the connected correspondence. Continue was attempted and correctly stopped with a required-field error. The optional tax classification and incorporation date were also left blank rather than guessed. The owner should enter the EIN directly in the saved application; later steps and any identity/document/signature requirements remain unverified until this step can advance. Confirm with Robert whether this acquiring application is needed for his proposed card-to-crypto route.
+
+The separate PeptidePay dashboard was also rechecked and still explicitly says **Account pending activation**, with zero payments. Re-ran its dashboard's no-funds test webhook: HTTP 200, HMAC signature verified, test event ignored, and `live_payment_applied: false`. This confirms endpoint delivery and signature handling, not a successful card payment. Its provider activation must be resolved independently; completing the TagadaPay form does not activate PeptidePay.
+
 ## Preview findings and completed fix
 
 The existing pre-launch funnel `funnelv2_1b3e4623eb85` was opened through the portal's Preview workflow, with `draft=true` and staging in its URL. No real card, buyer contact details, purchase submission or live charge was entered. The provider created a preview session; this is not a real paid order or revenue.
@@ -54,7 +64,7 @@ There are no saved provider promotions. Its BOGO editor selects a purchased prod
 5. Validate cards and each wallet independently in the supported test environment. Rendering a button is insufficient. The card-to-crypto provider's wallets are distinct from native wallets connected to the disabled card flow.
 6. After successful tests and actual live configuration, publish the tested route, register its approved account binding and enable the customer method. The owner completes any required low-value live payment or identity verification; verify refund and settlement separately. Preserve bank transfer, historical orders/Stripe handling and manual fulfillment.
 
-No additional wallet or API-key input is needed from the owner at this checkpoint. The unresolved provider contract and tests must not be presented as completed or merely a missing storefront button.
+No additional wallet or API-key input is needed from the owner at this checkpoint. The EIN is needed to advance the existing TagadaPay application. Provider activation, the unresolved integration contract and the remaining payment tests must not be presented as completed or merely a missing storefront button.
 
 ## References
 
