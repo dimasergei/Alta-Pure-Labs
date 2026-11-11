@@ -33,13 +33,25 @@ From Vercel, authentication, store, processors and payment-setup reads returned 
 
 Robert's existing thread proposes card-to-crypto at 8.5% with first-payment buyer ID verification. This does not establish a completed charge, wallet payment or settlement. Activation questions, the production API-auth correction and exact-total requirements were already sent in the same thread. Check for a reply before duplicate outreach or another application.
 
-### Application status discovered in the activation email
+### Existing application: required documents
 
-The PeptideApprove reminder links to the existing TagadaPay merchant application. Its application list showed exactly one **draft**, at **step 1 of 6 (Business)**; it was not submitted or under review. Do not describe this as merely awaiting approval. The saved CRM/store setup is separate from this merchant application.
+The existing TagadaPay application has advanced through Business, Representative, Processing and Bank to **Documents (step 5 of 6)**. It remains a draft, not a submitted or approved merchant account. The saved CRM/store setup is separate from this application.
 
-Resumed that existing draft and filled the verified LLC name, United States / New Mexico registration, registered-agent address, published support contact details, website, disclosed research catalog, foreign corporate ownership and conservative USD 2,000 first-month projection. The form confirms progress is saved automatically. No duplicate application, contract acceptance or submission was performed.
+The owner entered the EIN and incorporation date. Removed invisible copy/paste formatting from the EIN without changing its digits; the form accepted it. The owner completed the representative details. These inputs should not be requested again, and progression through the form is not proof that identity verification has passed.
 
-The form's required Registration number field expects the LLC's EIN. It remains blank because no verified EIN value was supplied or found in the connected correspondence. Continue was attempted and correctly stopped with a required-field error. The optional tax classification and incorporation date were also left blank rather than guessed. The owner should enter the EIN directly in the saved application; later steps and any identity/document/signature requirements remain unverified until this step can advance. Confirm with Robert whether this acquiring application is needed for his proposed card-to-crypto route.
+Saved the previously disclosed startup forecast: USD 2,000 expected monthly card volume and USD 100 average captured order, with no verified live processing history. Historical chargeback/refund rates were not invented. The form's specific research-peptide category maps to MCC 5122 and is labelled wholesale; Robert was asked to confirm classification for the disclosed online retail catalog.
+
+The owner entered XYZ Holdings LLC as the bank account holder. Completed the remaining bank fields using the previously supplied Relay details, and the application advanced. A bank-issued statement must still verify that the exact payout account is held by the applicant; the earlier receiving instructions named Northline Research. Draft form acceptance does not establish ownership or successful settlement.
+
+The portal requires these uploads before submission:
+
+- Proof of the owner's residence: a utility bill, bank statement or official letter showing the actual home address, because the owner resides outside the company's country.
+- Business registration: the LLC's Articles of Organization or equivalent.
+- Payout bank proof: a statement, official bank letter or online-banking screenshot for the exact account entered.
+
+Proof of company address, signing authority and processing history are also offered; the latter two are explicitly optional. No document uploads or application submission were completed. The owner's existing Articles of Organization and EIN letter were located and read; no matching payout statement or residential proof was found in the searched connected records. The EIN letter is not a substitute for every required document.
+
+A focused clarification was sent to Robert in the existing thread: whether this acquiring application is necessary for his proposed pooled-USDC card-to-crypto route or is a separate conventional merchant-account application, and which merchant classification applies. Check for his response before duplicate outreach. No fees, contracts or credit-check consent were accepted.
 
 The separate PeptidePay dashboard was also rechecked and still explicitly says **Account pending activation**, with zero payments. Re-ran its dashboard's no-funds test webhook: HTTP 200, HMAC signature verified, test event ignored, and `live_payment_applied: false`. This confirms endpoint delivery and signature handling, not a successful card payment. Its provider activation must be resolved independently; completing the TagadaPay form does not activate PeptidePay.
 
@@ -64,7 +76,7 @@ There are no saved provider promotions. Its BOGO editor selects a purchased prod
 5. Validate cards and each wallet independently in the supported test environment. Rendering a button is insufficient. The card-to-crypto provider's wallets are distinct from native wallets connected to the disabled card flow.
 6. After successful tests and actual live configuration, publish the tested route, register its approved account binding and enable the customer method. The owner completes any required low-value live payment or identity verification; verify refund and settlement separately. Preserve bank transfer, historical orders/Stripe handling and manual fulfillment.
 
-No additional wallet or API-key input is needed from the owner at this checkpoint. The EIN is needed to advance the existing TagadaPay application. Provider activation, the unresolved integration contract and the remaining payment tests must not be presented as completed or merely a missing storefront button.
+No additional wallet or API-key input is needed from the owner at this checkpoint. The three required document uploads are now the immediate application blocker; later identity/signature and provider approval steps remain unverified. Provider activation, the unresolved integration contract and the remaining payment tests must not be presented as completed or merely a missing storefront button.
 
 ## References
 
