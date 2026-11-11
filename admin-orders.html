@@ -965,7 +965,7 @@
     }
 
 </style>
-</head>
+<link rel="stylesheet" href="/admin-fulfillment.css"></head>
 
 <body>
   <main class="admin-page">
@@ -1023,8 +1023,7 @@
             <button class="admin-nav-link is-active" type="button" data-admin-view="orders" aria-current="page">Orders</button>
             <button class="admin-nav-link" type="button" data-admin-view="batches">Batches</button>
             <button class="admin-nav-link" type="button" data-admin-view="notifications">Notifications</button>
-            <a class="admin-nav-link" href="/admin-operations-overview.html">Overview</a>
-            <a class="admin-nav-link" href="/admin-inventory.html">Inventory</a>
+            <button class="admin-nav-link" type="button" data-admin-view="lotus">Lotus</button>
           </nav>
         </div>
         <header class="top admin-section-heading">
@@ -1035,6 +1034,7 @@
         </header>
 
         <section id="admin-orders-section" class="admin-view-section">
+<div id="fulfillment-hub"></div><details class="fh-legacy"><summary>Historical orders & supplier batches</summary>
         <div class="controls">
           <div class="orders-toolbar">
             <div class="search-wrap">
@@ -1187,8 +1187,9 @@
           </div>
         </div>
 
-        </section>
+        </details></section>
 
+        <section id="admin-lotus-section" class="admin-view-section" hidden><iframe id="lotus-embedded" title="Lotus catalog mappings and operations" style="width:100%;height:76vh;border:0"></iframe></section>
         <section id="admin-batches-section" class="admin-view-section" hidden>
         <section class="panel supplier-panel">
           <div class="panel-head">
@@ -1342,6 +1343,7 @@
     </div>
   </main>
 
+  <script src="/admin-fulfillment.js"></script>
   <script>
     const $ = (selector) => document.querySelector(selector);
 
@@ -1368,7 +1370,8 @@
     const adminViews = {
       orders: $('#admin-orders-section'),
       batches: $('#admin-batches-section'),
-      notifications: $('#admin-notifications-section')
+      notifications: $('#admin-notifications-section'),
+      lotus: $('#admin-lotus-section')
     };
 
     function setAdminView(view) {
@@ -1384,7 +1387,9 @@
       });
       const heading = $('.admin-section-heading h1');
       const subtitle = $('.admin-section-heading .subtitle');
+      if(view==='lotus'&&!$('#lotus-embedded').getAttribute('src')){const frame=$('#lotus-embedded');frame.onload=()=>{const doc=frame.contentDocument,form=doc?.getElementById('supplier-login');if(form){form.elements.password.value=adminPassword;form.requestSubmit();}};frame.src='/admin-supplier.html';}
       const copy = {
+        lotus: ['Lotus', 'Catalog mappings, supplier status and exceptions.'],
         orders: ['Orders', 'Review payments and manage fulfillment.'],
         batches: ['Batches', 'Manage supplier batches and supplier records.'],
         notifications: ['Notifications', 'Review customer email delivery and retries.']
@@ -1706,6 +1711,8 @@
 
       requestNumber += 1;
       clearTimeout(searchTimer);
+      window.AltaFulfillment.clear();
+      $('#lotus-embedded').removeAttribute('src');
       adminPassword = '';
       savePassword('');
       passwordInput.value = '';
@@ -1793,6 +1800,7 @@
       updateAppliedFilterSummary();
       loginView.hidden = true;
       ordersView.hidden = false;
+      window.AltaFulfillment.mount(api);
     }
 
     function renderOrders() {
@@ -2641,6 +2649,7 @@
       }
     });
 
+    document.addEventListener('alta-open-payment-desk',()=>window.AltaFulfillment.paymentDesk(adminPassword));
     $('#logout-button').addEventListener('click', () => {
       if (allowDiscard()) logout();
     });
