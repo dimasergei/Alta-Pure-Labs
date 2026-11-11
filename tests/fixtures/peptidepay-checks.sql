@@ -1,6 +1,6 @@
 \set ON_ERROR_STOP on
 -- Runs after native-gateway-checks.sql in a disposable PostgreSQL database only.
-\i supabase/migrations/20261111013010_peptidepay_invoice_sessions.sql
+\i supabase/migrations/20261111013606_peptidepay_invoice_sessions.sql
 set role service_role;
 do $$
 declare m uuid:=gen_random_uuid();u uuid:=gen_random_uuid();i uuid:=gen_random_uuid();j uuid:=gen_random_uuid();a uuid:=gen_random_uuid();b uuid:=gen_random_uuid();

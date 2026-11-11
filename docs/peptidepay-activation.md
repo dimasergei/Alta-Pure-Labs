@@ -38,3 +38,5 @@ Then create the approved goods-only route in `/admin-gateways.html` with actual 
 Confirm the rate and activation requirement; explain discrepancies between generic docs and the account; confirm the supported merchant-wallet payment use; confirm simulator payloads and inability to change live session settlement. Run the signed no-funds callback test before a user-completed live test. Test successful payment, abandoned/expired checkout, retries, reconciliation and the provider's customer refund procedure. No tiny real payment is automatically initiated by this implementation.
 
 Sources: https://www.peptide-pay.com/docs ; https://www.peptide-pay.com/terms ; authenticated owner account settings.
+
+Migration applied as `20261111013606_peptidepay_invoice_sessions` through the connected Supabase migration service. The repository uses that exact recorded version to prevent duplicate application.
