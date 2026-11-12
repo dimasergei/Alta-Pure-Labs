@@ -14,6 +14,7 @@
   "promotions": {
     "version": "bogo-2026-11-v1",
     "bogo": true,
+    "ends_at": "2026-11-26T23:59:59-06:00",
     "coupon": "BOGO",
     "coupon_discount_bps": 1000
   },
