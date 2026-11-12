@@ -2,9 +2,9 @@
   --paper: #fff;
   --ink: #111314;
   --muted: #4e5556;
-  --surface: #f3f5f5;
-  --teal: #1c7a73;
-  --forest: #143832;
+  --surface: #f3f4f5;
+  --teal: #18407e;
+  --forest: #132239;
   --dark: #101314;
   --font: "Plus Jakarta Sans", Arial, sans-serif;
   --display: var(--font);
@@ -161,7 +161,7 @@ button { border: 0; }
   font-size: 8px;
   font-weight: 500;
   letter-spacing: .33em;
-  color: #a8b0a5;
+  color: #a5a9b0;
 }
 
 .top-links {
@@ -185,13 +185,13 @@ button { border: 0; }
   bottom: 6px;
   width: 0;
   height: 2px;
-  background: #8ed6ca;
+  background: #8ba9d9;
   transition: width .25s var(--ease);
 }
 
 .top-links a:hover,
 .top-links a:focus-visible {
-  color: #8ed6ca;
+  color: #8ba9d9;
 }
 
 .top-links a:hover::after,
@@ -300,7 +300,7 @@ button { border: 0; }
   max-width: 540px;
   font-size: 17px;
   margin: 0 auto 32px;
-  color: #f1f3f2;
+  color: #f1f2f3;
 }
 
 .hero-actions {
@@ -322,7 +322,7 @@ button { border: 0; }
 
 .hero-bottom {
   margin: 64px 0 0;
-  color: #e0e5e3;
+  color: #e0e2e5;
   font-size: 13px;
 }
 
@@ -369,7 +369,7 @@ button { border: 0; }
 
 .pill-light:hover,
 .pill-light:focus-visible {
-  background: #dbeee9;
+  background: #dae2ef;
 }
 
 .pill-ghost {
@@ -470,7 +470,7 @@ button { border: 0; }
   min-width: 0;
   display: flex;
   flex-direction: column;
-  background: var(--card-bg, #f1f3f2);
+  background: var(--card-bg, #f1f2f3);
   border: 1px solid transparent;
   transition: transform .3s var(--ease), box-shadow .3s var(--ease), border-color .3s var(--ease);
 }
@@ -479,17 +479,17 @@ button { border: 0; }
 .card:focus-within {
   transform: translateY(-7px);
   box-shadow: 0 20px 44px rgba(0,0,0,.16);
-  border-color: rgba(20,56,50,.22);
+  border-color: rgba(19,34,57,.22);
 }
 
 .card[data-group="GLP-1 & Metabolic"] { --card-bg: #dcebf5; }
-.card[data-group="Healing & Recovery"] { --card-bg: #dceee3; }
+.card[data-group="Healing & Recovery"] { --card-bg: #dbe3ef; }
 .card[data-group="Growth Hormone"] { --card-bg: #f5e3d2; }
 .card[data-group="Cognitive & Nootropic"] { --card-bg: #e8e1f4; }
 .card[data-group="Longevity"] { --card-bg: #f2edce; }
 .card[data-group="Cosmetic & Skin"] { --card-bg: #f4e0dc; }
 .card[data-group="Sexual & Hormonal"] { --card-bg: #efdce8; }
-.card[data-group="BAC Water & Supplies"] { --card-bg: #e2e9e9; }
+.card[data-group="BAC Water & Supplies"] { --card-bg: #e2e5e9; }
 
 /* Product image area */
 .shot {
@@ -563,27 +563,27 @@ button { border: 0; }
   width: 100%;
   min-height: 40px;
   padding: 8px 34px 8px 12px;
-  border: 1px solid rgba(20,56,50,.2);
+  border: 1px solid rgba(19,34,57,.2);
   border-radius: 2px;
-  color: #143832;
+  color: #132239;
   background: rgba(255,255,255,.78);
   font: inherit;
   font-size: 14px;
 }
 
 .variant-select:focus-visible {
-  outline: 2px solid #143832;
+  outline: 2px solid #132239;
   outline-offset: 2px;
 }
 
 .variant[data-selected="true"] {
-  outline: 1px solid rgba(20,56,50,.35);
+  outline: 1px solid rgba(19,34,57,.35);
 }
 
 .card .group,
 .card .muted,
 .card .from {
-  color: #4e5b56;
+  color: #4d535c;
 }
 
 .card .add {
@@ -640,14 +640,14 @@ button { border: 0; }
   width: 44px;
   height: 44px;
   border-radius: 50%;
-  background: #e6ecea;
+  background: #e6e8ec;
   display: grid;
   place-items: center;
   transition: background .2s, transform .2s;
 }
 
 .add:hover {
-  background: #c9dfd9;
+  background: #c8d1e0;
   transform: rotate(-8deg);
 }
 
@@ -679,7 +679,7 @@ button { border: 0; }
 }
 
 .spotlight-copy > p {
-  color: #d2d9d6;
+  color: #d2d5d9;
   max-width: 450px;
 }
 
@@ -702,7 +702,7 @@ button { border: 0; }
 }
 
 .spotlight-product .muted {
-  color: #d2d9d6;
+  color: #d2d5d9;
 }
 
 /* Catalog controls */
@@ -737,7 +737,7 @@ button { border: 0; }
 
 .chip:hover,
 .chip:focus-visible {
-  background: #e0e9e6;
+  background: #e0e3e9;
   transform: translateY(-2px);
 }
 
@@ -801,7 +801,7 @@ button { border: 0; }
 .policy p {
   max-width: 60ch;
   margin-bottom: 0;
-  color: #e4efeb;
+  color: #e4e8ef;
 }
 
 /* Small FAQ */
@@ -859,7 +859,7 @@ button { border: 0; }
 /* Numbered FAQ */
 .faq-section {
   padding: 80px 0;
-  background: #0f1f1b;
+  background: #0e1520;
   color: #fff;
 }
 
@@ -923,7 +923,7 @@ button { border: 0; }
 
 .faq-row details summary:hover,
 .faq-row details summary:focus-visible {
-  color: #8ed6ca;
+  color: #8ba9d9;
 }
 
 .faq-row details summary::-webkit-details-marker { display: none; }
@@ -1062,7 +1062,7 @@ button { border: 0; }
 
 .footer a:hover,
 .footer a:focus-visible {
-  color: #8ed6ca;
+  color: #8ba9d9;
 }
 
 .footer-social {
@@ -1283,7 +1283,7 @@ dialog::backdrop {
   width: 100%;
   padding: 12px;
   margin-top: 8px;
-  border: 1px solid #899591;
+  border: 1px solid #898e95;
   border-radius: 0;
   background: #fff;
 }
@@ -1575,7 +1575,7 @@ dialog::backdrop {
   width: min(720px, 100%);
   background: #fff;
   padding: clamp(28px, 5vw, 56px);
-  border: 1px solid #e2e6e5;
+  border: 1px solid #e2e4e6;
 }
 
 .confirm-eyebrow {
@@ -1617,7 +1617,7 @@ dialog::backdrop {
 
 .confirm-note {
   padding: 18px;
-  background: #eef6f3;
+  background: #eef1f6;
   border-left: 3px solid var(--teal);
   color: var(--muted);
   font-size: 14px;
@@ -1633,7 +1633,7 @@ dialog::backdrop {
 .confirm-disclaimer {
   margin: 32px 0 0;
   padding-top: 22px;
-  border-top: 1px solid #e2e6e5;
+  border-top: 1px solid #e2e4e6;
   color: var(--muted);
   font-size: 13px;
 }
@@ -1650,9 +1650,9 @@ dialog::backdrop {
 
 /* Currency and language controls */
 .locale-controls { display:flex; align-items:center; gap:9px; color:#fff; }
-.locale-control { display:grid; gap:1px; color:#cbd3cf; font-size:9px; line-height:1.2; letter-spacing:.08em; text-transform:uppercase; }
-.locale-control select { min-width:76px; max-width:100px; padding:5px 22px 5px 7px; border:1px solid #53625e; border-radius:4px; background:#1b2523; color:#fff; font-size:11px; letter-spacing:0; text-transform:none; }
-.locale-status { max-width:118px; color:#a8b0a5; font-size:9px; line-height:1.25; }
+.locale-control { display:grid; gap:1px; color:#cbced3; font-size:9px; line-height:1.2; letter-spacing:.08em; text-transform:uppercase; }
+.locale-control select { min-width:76px; max-width:100px; padding:5px 22px 5px 7px; border:1px solid #525963; border-radius:4px; background:#1b1f25; color:#fff; font-size:11px; letter-spacing:0; text-transform:none; }
+.locale-status { max-width:118px; color:#a5a9b0; font-size:9px; line-height:1.25; }
 @media (max-width:1100px) { .locale-status { display:none; } }
 @media (max-width:860px) {
   .topbar { align-items:flex-start; }
