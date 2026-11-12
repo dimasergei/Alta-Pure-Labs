@@ -21,3 +21,33 @@
  tick();
  setInterval(tick,1000);
 })();
+
+(() => {
+ const active=()=>Date.now()<Date.parse(document.querySelector('meta[name="altapure-promo-end"]')?.content);
+ function updateQuantity(){
+  const group=document.querySelector('[data-unit-price]');
+  const input=document.getElementById('ap-detail-quantity');
+  if(!group||!input)return;
+  const qty=Number(input.value),unit=Number(group.dataset.unitPrice);
+  if(!Number.isInteger(qty)||qty<1||qty>100)return;
+  const total=(active()?Math.ceil(qty/2):qty)*unit;
+  const format=n=>window.AltaLocale?.formatMoney?window.AltaLocale.formatMoney(n):new Intl.NumberFormat('en-US',{style:'currency',currency:'USD'}).format(n);
+  for(const button of group.querySelectorAll('[data-bundle-quantity]'))button.setAttribute('aria-pressed',String(Number(button.dataset.bundleQuantity)===qty));
+  const estimate=document.querySelector('[data-bundle-estimate]');
+  if(estimate)estimate.textContent=format(total)+' total · '+format(total/qty)+' per vial before additional discounts';
+  const mobile=document.querySelector('[data-mobile-total]');
+  if(mobile)mobile.textContent=format(total)+' estimated total';
+ }
+ document.addEventListener('click',event=>{
+  const bundle=event.target.closest('[data-bundle-quantity]');
+  if(bundle){
+   const input=document.getElementById('ap-detail-quantity');
+   if(input){input.value=bundle.dataset.bundleQuantity;input.dispatchEvent(new Event('input',{bubbles:true}));}
+  }
+  if(bundle||event.target.closest('[data-action="detail-quantity"]'))queueMicrotask(updateQuantity);
+ });
+ document.addEventListener('input',event=>{if(event.target.id==='ap-detail-quantity')updateQuantity();});
+ const main=document.getElementById('ap-main');
+ if(main)new MutationObserver(records=>{if(records.some(r=>[...r.addedNodes].some(n=>n.nodeType===1&&(n.matches?.('.nl-detail')||n.querySelector?.('.nl-detail')))))updateQuantity();}).observe(main,{childList:true});
+ updateQuantity();
+})();
