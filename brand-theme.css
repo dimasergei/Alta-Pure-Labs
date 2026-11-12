@@ -90,7 +90,7 @@ body.ap-site {
               radial-gradient(ellipse at 86% 73%, #253863, transparent 45%),
               linear-gradient(125deg, #0a1428, #132b4c 65%, #111a34);
 }
-.ap-site .nl-offer-grid > a {
+.ap-site .nl-offer-grid > .ap-offer-box {
   border: 1px solid transparent;
   background: linear-gradient(135deg,#183354,#10213e) padding-box,
               linear-gradient(110deg,#40639c,#91ecff,#9395ff,#40639c) border-box;
@@ -98,7 +98,7 @@ body.ap-site {
   animation: ap-promo-glint 4s ease-in-out 2;
   box-shadow: 0 0 18px #61bfff26;
 }
-.ap-site .nl-offer-grid > a:hover { box-shadow: 0 0 24px #75dfff60; }
+.ap-site .nl-offer-grid > .ap-offer-box:hover { box-shadow: 0 0 24px #75dfff60; }
 @keyframes ap-promo-glint {
   0%, 100% { background-position: 0 0, 0 0; }
   50% { background-position: 0 0, 100% 0; }
@@ -197,7 +197,7 @@ body.ap-site {
   .ap-site .ap-coa-library .ap-coa-controls { grid-template-columns: minmax(0,1fr); }
 }
 @media (prefers-reduced-motion: reduce) {
-  .ap-site :is(.ap-announcement, .nl-offer-grid > a, .nl-vial) { animation: none; }
+  .ap-site :is(.ap-announcement, .nl-offer-grid > .ap-offer-box, .nl-vial) { animation: none; }
 }
 .ap-announcement-standard { display: none; }
 .ap-promo-ended .ap-announcement-standard { display: inline; margin-inline: auto; }
@@ -326,4 +326,43 @@ body.ap-site {
 }
 @media(prefers-reduced-motion:reduce) {
  .ap-site .nl-badge::after { animation: none; display: none; }
+}
+
+/* Keep pale action surfaces legible over the shared white button text rule. */
+.ap-site .ap-button.nl-primary,
+.ap-site .nl-purchase > .ap-button,
+.ap-site .ap-coa-hero .ap-button {
+  color: #102b4e !important;
+}
+.ap-site .ap-supplier-coa-grid .ap-button,
+.ap-site .ap-coa-dialog .ap-button,
+.ap-site .nl-shop .ap-button,
+.ap-site .nl-shop .ap-add {
+  background: #173b69;
+  border-color: #173b69;
+  color: #fff !important;
+}
+.ap-site .ap-supplier-coa-grid .ap-button:hover,
+.ap-site .ap-coa-dialog .ap-button:hover,
+.ap-site .nl-shop .ap-button:hover,
+.ap-site .nl-shop .ap-add:hover {
+  background: #102b4e;
+  border-color: #102b4e;
+}
+.ap-site .nl-offer-grid > .ap-offer-box {
+  display: grid;
+  gap: 5px;
+  border-radius: 13px;
+  padding: 17px 20px;
+  color: #fff;
+}
+.ap-site .nl-offer-grid > .ap-offer-box strong { color: #e5f3ff; }
+.ap-site .cv-billing span { background: #d8f5e3; color: #146333; }
+.ap-site .cv-popular {
+  background: linear-gradient(115deg, #f9e7a2, #eac35b);
+  color: #4b350b;
+  border: 1px solid #d6ad40;
+}
+@media (max-width: 560px) {
+  .ap-site .nl-offer-grid > .ap-offer-box { padding: 13px; }
 }
