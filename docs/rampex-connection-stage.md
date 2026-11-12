@@ -1,3 +1,5 @@
+> Historical connection-only stage. The staged order integration is documented in rampex-order-integration.md; its production database migration and activation are separate.
+
 # Rampex connection verification — collection disabled
 
 This additive stage uses RAMPEX_API_KEY and RAMPEX_WEBHOOK_SECRET from server-only production secrets. No secret values belong in source, logs, chat or browser JavaScript.
