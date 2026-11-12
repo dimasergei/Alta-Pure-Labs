@@ -1,0 +1,75 @@
+/* Shared storefront palette and interaction styles. */
+body.ap-site {
+  --ap-ink: #172538;
+  --ap-muted: #526278;
+  --ap-deep: #152844;
+  --ap-green: #244c87;
+  --ap-cream: #f4f7fb;
+  --ap-line: #dce4ef;
+  --ap-lime: #dceafb;
+  --nl-ink: #152844;
+  --nl-green: #285b9d;
+  --nl-soft: #f4f7fb;
+  --nl-line: #dce4ef;
+  --paper: #fff;
+  --surface: #f4f7fb;
+  --ink: #172538;
+  --muted: #526278;
+  color: var(--ap-ink);
+  background: var(--paper);
+  color-scheme: light;
+}
+
+.ap-site :is(.ap-announcement, .announce) {
+  background: #152844;
+}
+
+.ap-site .nl-hero {
+  background: radial-gradient(ellipse at 77% 20%, #234878, transparent 61%), #101d31;
+}
+
+.ap-site .nl-hero h1 em {
+  background-image: linear-gradient(90deg, #a8e9fb, #6ccbe9);
+}
+
+.ap-site .nl-hero .nl-primary {
+  background: #8ce1f6;
+  color: #10283c;
+  box-shadow: none;
+}
+
+.ap-site .nl-hero .nl-primary:hover {
+  background: #bef0fc;
+  color: #10283c;
+}
+
+.ap-site :is(.ap-header, .topbar) {
+  border-bottom-color: var(--ap-line);
+}
+
+.ap-site :is(a, button, input, select, textarea, summary):focus-visible {
+  outline: 2px solid #3876c5;
+  outline-offset: 3px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  html { scroll-behavior: auto; }
+  .ap-site * { transition-duration: .01ms !important; }
+}
+
+@media (max-width: 480px) {
+  .ap-site .nl-hero h1 {
+    font-size: clamp(2rem, 10.5vw, 3.15rem);
+    overflow-wrap: anywhere;
+  }
+
+  .ap-site .ap-page-intro h1 {
+    font-size: clamp(1.9rem, 8vw, 2.6rem);
+    overflow-wrap: anywhere;
+  }
+
+  .ap-site .nl-hero .ap-actions > a {
+    max-width: 100%;
+    text-align: center;
+  }
+}
