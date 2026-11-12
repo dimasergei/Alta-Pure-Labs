@@ -81,8 +81,8 @@ test('builds an exact-amount request without network calls or secrets', () => {
   assert.equal(made.body.amount, 100.5); assert.equal(made.body.provider, 'rampnetwork');
   assert.equal(made.body.woo_order_id, 'invoice_123'); assert.equal(made.headers, undefined);
 });
-test('blocks Stripe, mixed-provider hosted checkout and invented providers', () => {
-  for (const provider of ['stripe','hosted','unknown','STRIPE']) {
+test('blocks unsupported direct routes and invented providers', () => {
+  for (const provider of ['stripe','unknown','STRIPE']) {
     assert.throws(() => r.buildPaymentRequest({...request,provider}));
   }
 });

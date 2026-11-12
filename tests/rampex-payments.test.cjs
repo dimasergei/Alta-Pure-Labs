@@ -32,8 +32,8 @@ test('Rampex is disabled by default and has no fake sandbox',()=>{
  assert.equal(cfg.ready,true);assert.equal(cfg.currencies.join(','),'USD');assert.equal(cfg.wallets.apple,false);
  assert.notEqual(r.configuration({...env,RAMPEX_API_KEY:'other-fixture'}).account_tag,cfg.account_tag);
 });
-test('only explicit non-Stripe providers and safe checkout URLs are accepted',()=>{
- for(const rail of ['stripe','hosted','meld','creditcard','unknown'])assert.throws(()=>r.assertRail(rail));
+test('only supported explicit routes or hosted and safe checkout URLs are accepted',()=>{
+ for(const rail of ['stripe','meld','creditcard','unknown'])assert.throws(()=>r.assertRail(rail));
  assert.equal(r.checkoutUrl('https://checkout.rampex.io/pay/test?provider=rampnetwork','rampnetwork'),'https://checkout.rampex.io/pay/test?provider=rampnetwork');
  for(const url of ['https://evil.invalid/pay','https://checkout.rampex.io@evil.invalid/pay','https://checkout.rampex.io/pay?provider=stripe','https://checkout.rampex.io/pay?provider=rampnetwork&provider=stripe','http://checkout.rampex.io/pay','https://checkout.rampex.io/pay#secret','https://checkout.rampex.io/','https://checkout.rampex.io:123/pay'])assert.throws(()=>r.checkoutUrl(url,'rampnetwork'));
 });
