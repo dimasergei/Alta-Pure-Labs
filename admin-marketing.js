@@ -49,7 +49,7 @@
   async function endpoint(body){
     const opt={method:body?'POST':'GET',cache:'no-store',headers:{'x-admin-password':password,...(body?{'Content-Type':'application/json'}:{})}};
     if(body)opt.body=JSON.stringify(body);
-    const r=await fetch('/api/admin-marketing',opt);
+    const r=await fetch('/api/customer-config?marketing=admin',opt);
     const payload=await r.json().catch(()=>({error:'Unable to read server response.'}));
     if(!r.ok)throw Error(payload.error||'Marketing endpoint unavailable.');
     return payload;
