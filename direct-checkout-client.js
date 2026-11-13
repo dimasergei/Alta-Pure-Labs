@@ -9,6 +9,26 @@
   const r=await fetch(url,{method:body?'POST':'GET',cache:'no-store',headers:{Authorization:'Bearer '+token,...(body?{'Content-Type':'application/json'}:{})},...(body?{body:JSON.stringify(body)}:{})});
   const data=await r.json();if(!r.ok)throw Error(data.error||'The request could not be confirmed.');return data;
  }
+ async function openRampexPayment(auth,invoice,amount,currency){
+  const session=await auth.auth.getSession(),token=session.data?.session?.access_token;
+  if(!token)throw Error('Sign in again to pay your saved order.');
+  const response=await fetch('/api/checkout?native=customer&invoice='+encodeURIComponent(invoice),{
+   method:'POST',cache:'no-store',
+   headers:{Authorization:'Bearer '+token,'Content-Type':'application/json'},
+   body:JSON.stringify({action:'pay',invoice_id:invoice,attempt_id:crypto.randomUUID(),
+    confirm_amount_cents:amount,confirm_currency:currency,
+    consent:true,crypto_conversion_consent:true})
+  });
+  let payment;try{payment=await response.json();}catch{throw Error('Payment status could not be verified. Do not create a second order.');}
+  if(!response.ok)throw Error(payment.error||'Rampex could not create the payment link. Check your order before retrying.');
+  if(payment.state==='paid')return{paid:true};
+  if(payment.state!=='redirected'||!payment.redirect_url)
+   throw Error('The payment link needs review. No second payment link will be created automatically.');
+  let url;try{url=new URL(payment.redirect_url);}catch{throw Error('Rampex returned an invalid payment destination.');}
+  if(url.origin!=='https://checkout.rampex.io'||url.username||url.password||url.hash||url.pathname==='/')
+   throw Error('Rampex returned an unexpected payment destination.');
+  return{url:url.href};
+ }
  function link(label,url){const a=node('a',label);a.href=url;a.className='ap-button ap-button-secondary';return a;}
  function summary(q){const box=node('section');box.className='dc-review-summary';box.append(node('span','FINAL TOTAL'));const totals=node('div');totals.className='dc-totals';
   for(const [label,value] of [['Subtotal',q.subtotal_cents],['Discounts',-q.discount_cents],['Delivery',q.shipping_cents],['Tax',q.tax_cents],['Points redeemed',-q.points_redeemed],['Store credit',-q.credit_redeemed_cents],['Due now',q.total_cents]]){if(!value&&['Discounts','Points redeemed','Store credit'].includes(label))continue;const row=node('div');row.className='dc-total-row'+(label==='Due now'?' dc-due':'');row.append(node('span',label),node('strong',money(value)));totals.append(row);}
@@ -55,10 +75,32 @@
      const d=Object.fromEntries(new FormData(form));for(const control of form.elements)control.disabled=true;const request={kind:goods?'goods':'membership',...(goods?{items:cart.map(({id,size,qty})=>({id,size,qty})),address:{line1:d.line1,line2:d.line2,city:d.city,region:d.region,postal_code:d.postal_code,country:d.country},research_use:d.research_use==='on'}:{plan}),name:d.name,organization:d.organization,note:d.note,consent:d.consent==='on',method_id:d.method_id,points:Number(d.points||0),credit_cents:Math.round(Number(d.credit||0)*100),coupon:d.coupon||'',delivery:window.ReadinessUI.selection(form),checkout_version:data.config.version};
      const fingerprint=Array.from(new Uint8Array(await crypto.subtle.digest('SHA-256',new TextEncoder().encode(JSON.stringify(request))))).map(x=>x.toString(16).padStart(2,'0')).join('');if(lastFingerprint&&lastFingerprint!==fingerprint){requestId=crypto.randomUUID();sessionStorage.setItem('ap-checkout-id',requestId);}lastFingerprint=fingerprint;sessionStorage.setItem('ap-checkout-fingerprint',fingerprint);
      body={...request,id:requestId,action:'quote'};const q=await api(auth,body);estimate.hidden=true;review.replaceChildren(summary(q));review.scrollIntoView({behavior:'auto',block:'nearest'});status.textContent='Review the final total, then place your order.';
-     const place=node('button',q.total_cents===0?'Place order using account balance':'Place order and continue to payment');place.type='button';place.className='ap-button';review.append(place);
+     const selected=methods.find(m=>m.id===body.method_id),rampex=selected?.native_provider==='rampex'&&q.total_cents>0;
+     const place=node('button',q.total_cents===0?'Place order using account balance':rampex?'Place order & pay by card':'Place order and continue to payment');place.type='button';place.className='ap-button';review.append(place);
+     if(rampex){const note=node('p','One-time payment of the final total shown above. Secure card payment opens with Stripe via Rampex; provider fees and identity verification may apply.');note.className='dc-note';review.append(note);}
      place.onclick=async()=>{if(busy)return;busy=true;place.disabled=true;button.disabled=true;for(const x of form.elements)x.disabled=true;status.textContent='Saving your order. Please wait…';
-      try{const result=await api(auth,{...body,action:'place',quote:q.quote});sessionStorage.removeItem('ap-checkout-id');sessionStorage.removeItem('ap-checkout-fingerprint');if(goods){const current=window.AltaStore?.cart||[];if(JSON.stringify(current.map(({id,size,qty})=>({id,size,qty})))===JSON.stringify(body.items))localStorage.removeItem('pp-cart');}const selected=methods.find(m=>m.id===body.method_id);location.assign(q.total_cents>0&&selected?.kind!=='bank_transfer'?'/pay.html?invoice='+encodeURIComponent(result.id):'/account/purchases?id='+encodeURIComponent(result.id));}
-      catch(err){status.textContent=err.message+' Your checkout reference is '+requestId+'.';busy=false;place.disabled=false;button.disabled=false;for(const x of form.elements)x.disabled=x.dataset.unavailable==='true';}
+      let savedOrder;
+      try{
+       const result=await api(auth,{...body,action:'place',quote:q.quote});savedOrder=result.id;
+       let next='/account/purchases?id='+encodeURIComponent(result.id);
+       if(rampex){
+        status.textContent='Opening secure card payment…';
+        const payment=await openRampexPayment(auth,result.id,q.total_cents,q.currency);
+        next=payment.paid?next:payment.url;
+       }else if(q.total_cents>0&&selected?.kind!=='bank_transfer')next='/pay.html?invoice='+encodeURIComponent(result.id);
+       sessionStorage.removeItem('ap-checkout-id');sessionStorage.removeItem('ap-checkout-fingerprint');
+       if(goods){const current=window.AltaStore?.cart||[];if(JSON.stringify(current.map(({id,size,qty})=>({id,size,qty})))===JSON.stringify(body.items))localStorage.removeItem('pp-cart');}
+       location.assign(next);
+      }catch(err){
+       status.replaceChildren();
+       if(savedOrder){
+        status.append(node('span','Order '+savedOrder+' was saved. '+err.message+' Do not submit a new order.'));
+        status.append(document.createTextNode(' '));
+        status.append(link('View saved order','/account/purchases?id='+encodeURIComponent(savedOrder)));
+        place.textContent='Continue payment for saved order';
+       }else status.textContent=err.message+' Your checkout reference is '+requestId+'.';
+       busy=false;place.disabled=false;button.disabled=false;for(const x of form.elements)x.disabled=x.dataset.unavailable==='true';
+      }
      };
     }catch(err){status.textContent=err.message;}finally{busy=false;for(const control of form.elements)control.disabled=control.dataset.unavailable==='true';}
    };
