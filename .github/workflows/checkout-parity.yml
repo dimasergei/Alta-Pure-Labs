@@ -37,8 +37,6 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: checkout-parity-v2-report
-          path: |
-            test-results/checkout-parity-report/
-            test-results/checkout-parity/
+          path: tests/checkout-parity/test-results/
           if-no-files-found: ignore
           retention-days: 7
