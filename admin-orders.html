@@ -965,7 +965,18 @@
     }
 
 </style>
-<link rel="stylesheet" href="/admin-fulfillment.css"></head>
+<link rel="stylesheet" href="/admin-fulfillment.css"><style id="simplified-order-ui">
+.fh-advanced {margin:0 0 14px; padding:9px 12px;border:1px solid var(--border);border-radius:8px;color:var(--muted)}
+.fh-advanced summary{cursor:pointer;font-weight:600;font-size:12px}
+.fh-advanced[open] summary{margin-bottom:12px}
+.fh-advanced .advanced-lotus{margin:12px 0}
+.simple-order-list{display:block}
+.order-head{grid-template-columns:18px minmax(0,1fr) auto;gap:10px}
+.quick-cancel{margin-right:12px;white-space:nowrap;background:#382225;border:1px solid #945658;color:#ffcfcd;border-radius:6px;padding:8px 11px;font-size:12px;font-weight:700;min-height:36px}
+.quick-cancel:hover{background:#533034}
+.quick-cancel:focus-visible{outline:2px solid #ffaaa8}
+@media(max-width:640px){.order-head{grid-template-columns:18px minmax(0,1fr);gap:7px}.quick-cancel{grid-column:2;justify-self:end;margin:0 11px 10px 0}.order-toggle{padding-bottom:7px}}
+</style></head>
 
 <body>
   <main class="admin-page">
@@ -1023,7 +1034,7 @@
             <button class="admin-nav-link is-active" type="button" data-admin-view="orders" aria-current="page">Orders</button>
             <button class="admin-nav-link" type="button" data-admin-view="batches">Batches</button>
             <button class="admin-nav-link" type="button" data-admin-view="notifications">Notifications</button>
-            <button class="admin-nav-link" type="button" data-admin-view="lotus">Lotus</button>
+            
           </nav>
         </div>
         <header class="top admin-section-heading">
@@ -1034,7 +1045,8 @@
         </header>
 
         <section id="admin-orders-section" class="admin-view-section">
-<div id="fulfillment-hub"></div><details class="fh-legacy"><summary>Historical orders & supplier batches</summary>
+<details class="fh-advanced"><summary>Advanced fulfillment tools</summary><div id="fulfillment-hub"></div><div class="advanced-lotus"><button class="admin-nav-link" type="button" data-admin-view="lotus">Lotus</button></div></details>
+<div class="simple-order-list"><p class="subtitle" style="margin:3px 0 14px">Select an order to view details. Cancel an unfulfilled order directly from its row. Canceling does not refund payments or recall supplier shipments.</p>
         <div class="controls">
           <div class="orders-toolbar">
             <div class="search-wrap">
@@ -1187,7 +1199,7 @@
           </div>
         </div>
 
-        </details></section>
+        </div></section>
 
         <section id="admin-lotus-section" class="admin-view-section" hidden><iframe id="lotus-embedded" title="Lotus catalog mappings and operations" style="width:100%;height:76vh;border:0"></iframe></section>
         <section id="admin-batches-section" class="admin-view-section" hidden>
@@ -1920,6 +1932,12 @@
 
                 <span class="chevron" aria-hidden="true">⌄</span>
               </button>
+              ${['unfulfilled'].includes(status) && !order.archived ? `
+                <button class="quick-cancel" type="button" data-cancel-order
+                  aria-label="Cancel order ${escapeHtml(order.order_number || order.id)}">
+                  Cancel order
+                </button>` : ''}
+
             </div>
 
             <div
@@ -2110,6 +2128,40 @@
     }
 
     ordersList.addEventListener('click', async (event) => {
+      const quickCancel = event.target.closest('[data-cancel-order]');
+      if (quickCancel) {
+        if (saving || !allowDiscard()) return;
+        const article = quickCancel.closest('.order');
+        const order = loadedOrders.find((item) => item.id === article?.dataset.orderId);
+        if (!order || order.archived || order.fulfillment_status !== 'unfulfilled') {
+          setNotice('Only unfulfilled active orders can be canceled here. Refresh to review their status.', true);
+          return;
+        }
+        const paid = ['paid','partially_refunded'].includes(order.payment_status);
+        if (!window.confirm(
+          'Cancel order ' + (order.order_number || order.id) +
+          '?\\n\\nThis changes fulfillment status to Canceled and may email the customer.' +
+          (paid ? '\\n\\nThis order has a payment. CANCELLATION DOES NOT REFUND IT. Check the payment and supplier before proceeding.' :
+           '\\n\\nThis does not issue a refund or reverse any supplier shipment.')
+        )) return;
+        quickCancel.disabled = true;
+        quickCancel.textContent = 'Canceling…';
+        try {
+          await api('/api/admin-orders', {
+            method: 'PATCH',
+            headers: {'Content-Type':'application/json'},
+            body: JSON.stringify({order_id:order.id,fulfillment_status:'canceled'})
+          });
+          await loadOrders();
+          setNotice('Order ' + (order.order_number || order.id) + ' marked Canceled. Review notifications and any supplier activity. No refund was issued.');
+        } catch (error) {
+          quickCancel.disabled = false;
+          quickCancel.textContent = 'Cancel order';
+          setNotice(error.message + ' Verify the order before retrying.', true);
+        }
+        return;
+      }
+
       const toggle = event.target.closest('.order-toggle');
 
       if (toggle) {

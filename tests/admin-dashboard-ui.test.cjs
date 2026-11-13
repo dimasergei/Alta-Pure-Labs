@@ -10,14 +10,19 @@ const batchApi = fs.readFileSync(path.join(root, 'api/admin-supplier-batches.js'
 const supplierApi = fs.readFileSync(path.join(root, 'api/admin-suppliers.js'), 'utf8');
 const notificationApi = fs.readFileSync(path.join(root, 'api/admin-notifications.js'), 'utf8');
 
-test('admin dashboard exposes orders, batches, notifications and Lotus without empty tabs', () => {
+test('admin dashboard emphasizes three primary sections and keeps Lotus in advanced tools', () => {
   const nav = html.match(/<nav class="admin-nav"[\s\S]*?<\/nav>/);
   assert.ok(nav);
   assert.deepEqual([...nav[0].matchAll(/data-admin-view="([^"]+)"/g)].map(x => x[1]), [
-    'orders', 'batches', 'notifications', 'lotus'
+    'orders', 'batches', 'notifications'
   ]);
   assert.doesNotMatch(nav[0], /Overview|Inventory/);
   assert.match(html, /id="fulfillment-hub"/);
+  assert.match(html, /class="fh-advanced"/);
+  assert.match(html, /class="simple-order-list"/);
+  assert.match(html, /data-admin-view="lotus"/);
+  assert.match(html, /data-cancel-order/);
+  assert.match(html, /fulfillment_status:'canceled'/);
   assert.match(nav[0], /aria-label="Admin sections"/);
   assert.match(html, /id="admin-orders-section"/);
   assert.match(html, /id="admin-batches-section"/);
