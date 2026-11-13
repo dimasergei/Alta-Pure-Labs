@@ -91,3 +91,23 @@
 .nlc-rec-prices b{color:#174d94;font-weight:800}
 .nlc-rec small{display:block;font-size:10px;color:#078447;font-weight:700;margin:4px 0 7px}
 .nlc-wallet-row svg.nlc-google-mark{display:block!important;width:23px;height:23px;flex:none;background:none!important;clip-path:none!important;color:initial!important}
+
+/* Screenshot fixes: tooltip must open below the milestone, never behind the header. */
+.nlc-unlock{position:relative;isolation:isolate;z-index:2;padding-top:12px;padding-bottom:15px}
+.nlc-progress{margin-top:10px;margin-bottom:10px}
+.nlc-gift{z-index:3}
+.nlc-gift-tip{top:calc(100% + 11px)!important;bottom:auto!important;right:50%!important;transform:translateX(50%);z-index:20!important;white-space:normal;min-width:190px;max-width:220px;pointer-events:none}
+.nlc-gift-two .nlc-gift-tip{right:-8px!important;transform:none}
+.nlc-gift-one .nlc-gift-tip{right:-50px!important;transform:none}
+.nlc-gift-tip::before{content:"";position:absolute;bottom:100%;right:21px;border:7px solid transparent;border-bottom-color:#07080a}
+.nlc-gift:focus-visible{outline:3px solid #1267bf;outline-offset:3px}
+.nlc-scrollable-items{overflow-x:hidden;scroll-padding-top:18px}
+/* The reference uses one connected pill: pale endcaps, white quantity and full capsule outline. */
+.ap-cart-dialog .nlc-line .nlc-quantity-row{display:block!important;margin-top:14px!important}
+.ap-cart-dialog .nlc-line .nlc-quantity-row .ap-quantity{display:grid!important;grid-template-columns:49px 57px 49px!important;align-items:stretch!important;gap:0!important;width:max-content!important;height:47px!important;margin:0!important;border:1px solid #cdd3db!important;border-radius:25px!important;background:#fff!important;overflow:hidden!important;box-shadow:none!important}
+.ap-cart-dialog .nlc-line .nlc-quantity-row .ap-quantity button{display:flex!important;align-items:center!important;justify-content:center!important;width:49px!important;min-width:49px!important;height:47px!important;padding:0!important;margin:0!important;border:0!important;border-radius:0!important;background:#f2f6fb!important;color:#164e96!important;font-size:23px!important;font-weight:700!important;line-height:1!important}
+.ap-cart-dialog .nlc-line .nlc-quantity-row .ap-quantity input{display:block!important;width:57px!important;height:47px!important;min-width:57px!important;padding:0!important;margin:0!important;border:0!important;border-left:1px solid #d2d7df!important;border-right:1px solid #d2d7df!important;border-radius:0!important;background:#fff!important;color:#121820!important;text-align:center!important;font-size:18px!important;font-weight:500!important;line-height:47px!important;box-shadow:none!important}
+.ap-cart-dialog .nlc-line .nlc-quantity-row .ap-quantity button:hover{background:#e7f0fa!important}
+.ap-cart-dialog .nlc-line .nlc-quantity-row .ap-quantity button:focus-visible{outline:2px solid #1d5ab1!important;outline-offset:-3px!important}
+.ap-cart-dialog .nlc-line .nlc-name [data-nlc-bogo-line]:not([hidden]){display:inline-block!important;margin:9px 0 0!important}
+@media(max-width:480px){.ap-cart-dialog .nlc-line .nlc-quantity-row .ap-quantity{grid-template-columns:42px 47px 42px!important;height:42px!important}.ap-cart-dialog .nlc-line .nlc-quantity-row .ap-quantity button{width:42px!important;min-width:42px!important;height:42px!important}.ap-cart-dialog .nlc-line .nlc-quantity-row .ap-quantity input{width:47px!important;min-width:47px!important;height:42px!important;line-height:42px!important}}
