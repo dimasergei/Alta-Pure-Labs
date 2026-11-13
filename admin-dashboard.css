@@ -38,6 +38,7 @@ body {
 .admin-brand-label { color:#687370; font-size:9px; font-weight:800; letter-spacing:.17em; }
 .admin-nav { display:flex; align-items:center; gap:5px; }
 .admin-nav-link {
+  display:inline-flex; align-items:center; justify-content:center; text-decoration:none;
   border:1px solid transparent; background:transparent; color:#4e5556;
   border-radius:999px; min-height:38px; padding:8px 17px;
   font:600 12px/1.2 "Plus Jakarta Sans",sans-serif;
