@@ -11,9 +11,9 @@
 .nlc-line img{width:61px;height:72px;object-fit:contain;background:#f2f5fa;border-radius:10px}
 .nlc-line .nlc-name strong{display:block;font-size:12px;line-height:1.4;color:#152339}
 .nlc-line .nlc-name small{display:block;font-size:11px;color:#6c7e98;margin-top:3px}
-.nlc-line .ap-quantity{display:inline-flex;align-items:center;margin-top:9px;border:1px solid #d7e1ed;border-radius:22px;overflow:hidden;height:30px}
-.nlc-line .ap-quantity button{width:30px;height:30px;border:0;background:#f3f7fc;color:#164e96;font-size:15px}
-.nlc-line .ap-quantity input{width:28px;font-size:12px;border:0;text-align:center;padding:0!important;background:transparent}
+.nlc-line .ap-quantity{display:inline-flex;align-items:center;margin-top:0;border:1px solid #c7d1df;border-radius:24px;overflow:hidden;height:34px}
+.nlc-line .ap-quantity button{width:36px;height:34px;border:0;background:#f3f7fc;color:#164e96;font-size:15px}
+.nlc-line .ap-quantity input{width:36px;font-size:12px;border:0;text-align:center;padding:0!important;background:transparent}
 .nlc-price{text-align:right;display:grid;justify-items:end;gap:15px}
 .nlc-price strong{font-size:12px;color:#164a92}
 .nlc-price button{background:none;border:0;color:#939eab;font-size:17px}
@@ -64,3 +64,30 @@
 .nlc-google-mark{font-family:Arial,sans-serif;font-weight:700;font-size:23px;line-height:1;background:conic-gradient(#4285f4 0deg 90deg,#34a853 90deg 175deg,#fbbc05 175deg 250deg,#ea4335 250deg 330deg,#4285f4 330deg);-webkit-background-clip:text;background-clip:text;color:transparent}
 .nlc-wallet-or{font-size:11px;color:#8091a5}
 @media(max-height:650px){.nlc-cart-checkout{padding:3px 10px 5px}.nlc-cart-totals>div{padding:2px 0}.nlc-proceed{padding:9px;margin:3px 0 5px}.nlc-wallet-row button{height:32px}.nlc-delivery-est{padding:3px 0}.nlc-coupon input{height:32px}}
+
+/* Cart reference polish */
+.ap-cart-dialog .ap-dialog-head>button{border:0!important;outline:0!important;box-shadow:none!important;width:40px;height:40px;background:#eaf0f7!important;color:#233149!important;font-size:23px;line-height:1;border-radius:50%;cursor:pointer}
+.ap-cart-dialog .ap-dialog-head>button:focus-visible{outline:2px solid #1c57a5!important;outline-offset:2px!important}
+.nlc-quantity-row{display:flex;align-items:center;gap:10px;margin-top:11px}
+.nlc-name [data-nlc-bogo-line]:not([hidden]){display:inline-block;margin:5px 0 0}
+.nlc-quantity-row .ap-quantity{margin:0!important}
+.nlc-unlock{padding:11px 15px 13px;border-bottom:1px solid #e0e5ec;background:#fff}
+.nlc-unlock p{font-size:12px;line-height:1.35;margin:0 0 10px;color:#636b78}
+.nlc-unlock p strong{color:#111a29;font-weight:800}
+.nlc-progress{position:relative;height:7px;border-radius:12px;background:#e3e6e9;margin:0 15px 8px 0}
+.nlc-progress-fill{display:block;height:100%;border-radius:12px;background:linear-gradient(100deg,#58b6ff,#0750a6 65%,#8acaff);background-size:200% 100%;animation:nlc-shimmer 2.8s ease-in-out infinite}
+@keyframes nlc-shimmer{0%{background-position:100% 50%}100%{background-position:0 50%}}
+@media(prefers-reduced-motion:reduce){.nlc-progress-fill{animation:none}}
+.nlc-gift{position:absolute;top:50%;transform:translate(-50%,-50%);display:flex;align-items:center;justify-content:center;width:26px;height:26px;border:3px solid #fff;border-radius:50%;background:#07080a;color:#fff;font-size:16px;box-shadow:0 1px 6px #0005;cursor:help}
+.nlc-gift-one{left:83.61%}.nlc-gift-two{left:100%}
+.nlc-gift-tip{position:absolute;bottom:calc(100% + 12px);right:0;display:none;min-width:180px;max-width:210px;background:#07080a;color:#fff;padding:12px;border-radius:12px;text-align:center;font-size:12px;line-height:1.5;box-shadow:0 3px 14px #0004;white-space:normal;z-index:8}
+.nlc-gift:hover .nlc-gift-tip,.nlc-gift:focus .nlc-gift-tip{display:block}
+.nlc-cart-totals .nlc-first-subtotal{font-size:13px;color:#111e32}
+.nlc-cart-totals .nlc-first-subtotal strong{font-size:16px;color:#13243d}
+.nlc-bank-discount{color:#12884c!important;font-weight:800}
+.nlc-bank-discount strong{color:#12884c!important}
+.nlc-rec-prices{display:flex;gap:7px;align-items:center;flex-wrap:wrap;margin-top:6px;font-size:11px}
+.nlc-rec-prices s{color:#8c97a8;font-weight:400}
+.nlc-rec-prices b{color:#174d94;font-weight:800}
+.nlc-rec small{display:block;font-size:10px;color:#078447;font-weight:700;margin:4px 0 7px}
+.nlc-wallet-row svg.nlc-google-mark{display:block!important;width:23px;height:23px;flex:none;background:none!important;clip-path:none!important;color:initial!important}
