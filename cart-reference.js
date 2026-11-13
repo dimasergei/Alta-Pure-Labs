@@ -57,6 +57,7 @@
     const country=localStorage.getItem('ap-shipping-country')||'US';
     const protection=(settings.delivery_options||[]).find(x=>x.id==='protection'&&x.enabled===true);
     if(protection&&country==='US')selected.add('protection');else selected.delete('protection');
+    sessionStorage.setItem(cartKey(items),JSON.stringify([...selected]));
     const request=await fetch('/api/customer-config?checkout=cart',{method:'POST',
       headers:{'Content-Type':'application/json'},
       body:JSON.stringify({items:(window.AltaStore.cart||[]).map(({id,size,qty})=>({id,size,qty})),
