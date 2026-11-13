@@ -966,11 +966,13 @@
 
 </style>
 <link rel="stylesheet" href="/admin-fulfillment.css"><style id="simplified-order-ui">
+#orders-message{display:none!important}
+#admin-notifications-section>.notification-panel{display:none!important}
 .fh-advanced {margin:0 0 14px; padding:9px 12px;border:1px solid var(--border);border-radius:8px;color:var(--muted)}
 .fh-advanced summary{cursor:pointer;font-weight:600;font-size:12px}
 .fh-advanced[open] summary{margin-bottom:12px}
 .fh-advanced .advanced-lotus{margin:12px 0}
-.simple-order-list{display:block}
+.simple-order-list{display:none !important}
 .order-head{grid-template-columns:18px minmax(0,1fr) auto;gap:10px}
 .quick-cancel{margin-right:12px;white-space:nowrap;background:#382225;border:1px solid #945658;color:#ffcfcd;border-radius:6px;padding:8px 11px;font-size:12px;font-weight:700;min-height:36px}
 .quick-cancel:hover{background:#533034}
@@ -1045,7 +1047,7 @@
         </header>
 
         <section id="admin-orders-section" class="admin-view-section">
-<details class="fh-advanced"><summary>Advanced fulfillment tools</summary><div id="fulfillment-hub"></div><div class="advanced-lotus"><button class="admin-nav-link" type="button" data-admin-view="lotus">Lotus</button></div></details>
+<div id="fulfillment-hub"></div>
 <div class="simple-order-list"><p class="subtitle" style="margin:3px 0 14px">Select an order to view details. Cancel an unfulfilled order directly from its row. Canceling does not refund payments or recall supplier shipments.</p>
         <div class="controls">
           <div class="orders-toolbar">
@@ -1310,6 +1312,7 @@
         </section>
 
         <section id="admin-notifications-section" class="admin-view-section" hidden>
+<div id="unified-notifications"></div>
         <section class="panel notification-panel">
           <div class="panel-head">
             <div>
@@ -1356,6 +1359,7 @@
   </main>
 
   <script src="/admin-fulfillment.js"></script>
+  <script src="/admin-unified-notifications.js"></script>
   <script>
     const $ = (selector) => document.querySelector(selector);
 
@@ -1408,6 +1412,7 @@
       }[view];
       heading.textContent = copy[0];
       subtitle.textContent = copy[1];
+      if(view==='notifications'&&adminPassword)window.AltaUnifiedNotifications?.mount(api);
     }
 
     document.querySelectorAll('[data-admin-view]').forEach((button) => {
@@ -1724,6 +1729,7 @@
       requestNumber += 1;
       clearTimeout(searchTimer);
       window.AltaFulfillment.clear();
+      window.AltaUnifiedNotifications?.clear();
       $('#lotus-embedded').removeAttribute('src');
       adminPassword = '';
       savePassword('');

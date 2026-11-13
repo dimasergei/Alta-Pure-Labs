@@ -108,20 +108,43 @@
  }
  async function orders(root,auth,user,options={}){
   root.replaceChildren(node('p','Loading orders…'));
-  try{const data=await api(auth,null,'orders',new URLSearchParams(location.search).get('id'));root.replaceChildren();data.invoices=data.invoices.filter(r=>options.view==='tracking'?!!r.tracking_number||r.shipments?.some(s=>s.tracking_number):options.view==='pending'?['accepted','issued','requested'].includes(r.status):true);
-   if(!data.invoices.length)root.append(node('p',options.view==='tracking'?'Tracking appears here when your order ships.':options.view==='pending'?'No orders are awaiting payment.':'No checkout orders yet.'));
-   for(const r of data.invoices){const card=node('article');card.className='ap-panel';card.style.marginTop='20px';const ref=(r.checkout_version?'ORD-':'INV-')+r.id.toUpperCase();
-    const heading=node('h2',ref.slice(0,12));heading.className='ae-order-reference';heading.append(node('small',ref));card.append(heading,node('p','Status: '+(r.status==='accepted'?'Awaiting payment':r.status)),node('small',new Date(r.created_at).toLocaleString()));
-    for(const x of r.pricing?.lines||r.request_data.items||[])card.append(node('p',x.name+' · '+x.size+' × '+x.qty));
-    if(r.total_cents!==null){card.append(node('p','Subtotal '+money(r.subtotal_cents,r.currency)+' · Discounts −'+money(r.discount_cents,r.currency)+' · Delivery '+money(r.shipping_cents,r.currency)+' · Tax '+money(r.tax_cents,r.currency)));
-     if(r.points_redeemed||r.credit_redeemed_cents)card.append(node('p','Redeemed: '+r.points_redeemed+' points and '+money(r.credit_redeemed_cents,r.currency)+' store credit.'));
-     card.append(node('h3',(r.status==='accepted'?'Amount due: ':'Payment amount: ')+money(r.total_cents,r.currency)));}
-    if(r.status==='accepted'&&r.payable&&r.payment_snapshot){const m=r.payment_snapshot;if(m.payment_url)card.append(link('Pay securely',m.payment_url));else{card.append(node('h3',m.label),node('p','Beneficiary: '+m.payee));const instructions=node('pre',m.instructions);instructions.style.whiteSpace='pre-wrap';card.append(instructions,node('p','Payment reference: '+ref),node('p','Send the exact amount above. We confirm receipt before fulfillment. Placing an order does not mark it paid.'));}}
-    else if(['accepted','issued'].includes(r.status)&&!r.payable)card.append(node('p','The payment window expired or the method is unavailable. Contact us if you already sent payment; otherwise cancel and check out again.'));
-    else if(r.status==='requested'||r.status==='issued')card.append(node('p','This earlier order needs support review. Contact altapurelabs@protonmail.com with the reference above.'));
-    if(r.checkout_version&&r.status==='accepted'){const label=node('label'),c=node('input');c.type='checkbox';label.append(c,document.createTextNode(' I have not sent payment and want to cancel this unpaid order.'));const cancel=node('button','Cancel unpaid order'),out=node('p');cancel.type='button';cancel.className='ap-button ap-button-secondary';out.setAttribute('role','status');cancel.onclick=async()=>{if(!c.checked){out.textContent='Confirm no payment has been sent first.';return;}cancel.disabled=true;try{await api(auth,{action:'cancel',id:r.id,no_payment_sent:true});await orders(root,auth,user,options);}catch(e){out.textContent=e.message;cancel.disabled=false;}};card.append(label,cancel,out);}
-    for(const s of r.shipments||[])if(s.tracking_number)card.append(node('p',s.name+' · '+s.size+' × '+s.qty+' · '+s.status+' · '+s.tracking_carrier+' '+s.tracking_number));
-    if(r.tracking_number&&!r.shipments?.some(s=>s.tracking_number))card.append(node('p','Tracking: '+r.tracking_carrier+' · '+r.tracking_number));root.append(card);
+  const compact=id=>'AP'+String(id||'').replace(/-/g,'').slice(0,10).toUpperCase();
+  const state=s=>({accepted:'Awaiting payment',paid:'Paid',processing:'Processing',shipped:'Shipped',delivered:'Delivered',refunded:'Refunded',void:'Canceled',issued:'Payment pending',requested:'Under review'}[s]||String(s||'Pending'));
+  try{
+   const data=await api(auth,null,'orders',new URLSearchParams(location.search).get('id'));root.replaceChildren();
+   const invoices=(data.invoices||[]).filter(r=>options.view==='tracking'?!!r.tracking_number||r.shipments?.some(s=>s.tracking_number):options.view==='pending'?['accepted','issued','requested'].includes(r.status):true);
+   if(!invoices.length)root.append(node('p',options.view==='tracking'?'Tracking appears here when your order ships.':options.view==='pending'?'No orders are awaiting payment.':'No checkout orders yet.'));
+   for(const r of invoices){
+    const card=node('article');card.className='ap-panel dc-clean-order';
+    const head=node('div');head.className='dc-clean-order-head';
+    const left=node('div');left.append(node('h2','Order '+compact(r.id)),node('small',new Date(r.created_at).toLocaleString()));
+    const right=node('div');right.className='dc-clean-order-right';right.append(node('strong',money(r.total_cents,r.currency)),node('span',state(r.status)));
+    head.append(left,right);card.append(head);
+    const items=node('div');items.className='dc-clean-items';
+    for(const x of r.pricing?.lines||r.request_data?.items||[]){
+     const item=node('div');item.append(node('span',(x.name||'Research item')+' · '+(x.size||'')+' × '+(x.qty||1)));
+     if(Number.isSafeInteger(x.line_total_cents))item.append(node('strong',money(x.line_total_cents,r.currency)));
+     items.append(item);
+    }if(items.childElementCount)card.append(items);
+    const detail=node('div');detail.className='dc-clean-meta';detail.append(node('span','Payment: '+state(r.status)));
+    if(r.tracking_number)detail.append(node('span','Tracking: '+r.tracking_carrier+' '+r.tracking_number));
+    if(r.status==='accepted')detail.append(node('span','Payment required before fulfillment'));
+    card.append(detail);
+    const actions=node('div');actions.className='dc-clean-actions';
+    if(r.status==='accepted'&&r.payable&&r.payment_snapshot){
+     const m=r.payment_snapshot;
+     if(m.payment_url)actions.append(link('Pay securely',m.payment_url));
+     else{actions.append(node('p',m.label+' · '+m.payee));const i=node('pre',m.instructions);i.style.whiteSpace='pre-wrap';actions.append(i);}
+    }else if(r.status==='accepted'&&!r.payable)actions.append(node('p','Payment unavailable. Contact support or cancel this unpaid order.'));
+    if(r.checkout_version&&r.status==='accepted'){
+     const cancel=node('button','Cancel order'),out=node('p');cancel.type='button';cancel.className='ap-button ap-button-secondary';out.setAttribute('role','status');out.className='dc-cancel-feedback';
+     cancel.onclick=async()=>{
+      if(!window.confirm('Cancel '+compact(r.id)+'? Only continue if you have not paid. Any issued payment link may remain valid; do not use it after cancellation.'))return;
+      cancel.disabled=true;try{const response=await api(auth,{action:'cancel',id:r.id,no_payment_sent:true});if(response.status!=='void')throw Error('Cancellation not confirmed.');await orders(root,auth,user,options);}catch(e){out.textContent=e.message;cancel.disabled=false;}
+     };actions.append(cancel,out);
+    }
+    if(r.status==='void')actions.append(node('p','This order was canceled. No refund was automatically issued.'));
+    card.append(actions);root.append(card);
    }
   }catch(e){root.replaceChildren(node('p',e.message));}
  }
