@@ -1,0 +1,70 @@
+name: Publish reviewed one-click Rampex checkout
+on:
+  push:
+    branches: [ops/publish-oneclick-90cf067]
+    paths: [.github/workflows/publish-oneclick-90cf067.yml]
+permissions:
+  contents: write
+concurrency:
+  group: publish-oneclick-90cf067
+  cancel-in-progress: false
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+        with:
+          ref: 8a3e626706fe37142efcf556a3af13d30351a8cd
+          fetch-depth: 1
+          persist-credentials: false
+      - name: Verify exact reviewed commit before executing code
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 - <<'PY'
+          import hashlib, pathlib, subprocess, urllib.request
+          base = '8a3e626706fe37142efcf556a3af13d30351a8cd'
+          head = '90cf0676ff960265c82bf6b3103974709d6d788c'
+          url = 'https://sb-2jd7ma6dt091.vercel.run/e992293d15514a3b81a89f08dd1faf3b.bundle'
+          with urllib.request.urlopen(url, timeout=30) as response:
+              bundle = response.read(2000001)
+          assert len(bundle) <= 2000000, 'Unexpected artifact size'
+          assert hashlib.sha256(bundle).hexdigest() == 'a840e6e001c16ac661f08b64b94e28f6c7024d138451ed4412adfe3d532a36c6', 'Source checksum mismatch'
+          pathlib.Path('/tmp/oneclick.bundle').write_bytes(bundle)
+          subprocess.run(['git', 'bundle', 'verify', '/tmp/oneclick.bundle'], check=True)
+          subprocess.run(['git', 'fetch', '/tmp/oneclick.bundle', 'HEAD'], check=True)
+          def git(*args):
+              return subprocess.check_output(['git', *args], text=True).strip()
+          assert git('rev-parse','FETCH_HEAD') == head, 'Unexpected commit'
+          assert git('rev-parse',head+'^') == base, 'Unexpected parent'
+          expected = {'direct-checkout-client.js','lib/direct-checkout.js','lib/native-gateway.js','native-pay.js','pay.html','tests/one-click-rampex-checkout.test.cjs'}
+          assert set(git('diff','--name-only',base,head).splitlines()) == expected, 'Unexpected changed files'
+          assert git('show',head+':vercel.json') == git('show',base+':vercel.json'), 'Deployment settings changed'
+          assert git('show',head+':api/checkout.js') == git('show',base+':api/checkout.js'), 'Legacy payment routing changed'
+          print('Verified exact commit, parent, changed-file allowlist and deployed configuration. No secrets or SQL changes.')
+          PY
+      - name: Test exact commit (no production credentials)
+        shell: bash
+        run: |
+          set -euo pipefail
+          git checkout --detach 90cf0676ff960265c82bf6b3103974709d6d788c
+          npm ci --ignore-scripts --no-audit --no-fund
+          npm test
+          npm run build
+          npm run test:account-dom
+      - name: Publish reviewed branch without force push
+        shell: bash
+        env:
+          PUBLISH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          python3 - <<'PY'
+          import base64, os, subprocess
+          token = os.environ.pop('PUBLISH_TOKEN')
+          auth = base64.b64encode(('x-access-token:' + token).encode()).decode()
+          env = dict(os.environ)
+          env.update(GIT_TERMINAL_PROMPT='0', GIT_CONFIG_COUNT='1', GIT_CONFIG_KEY_0='http.https://github.com/.extraheader', GIT_CONFIG_VALUE_0='AUTHORIZATION: basic ' + auth)
+          subprocess.run(['git','push','https://github.com/dimasergei/Alta-Pure-Labs.git','90cf0676ff960265c82bf6b3103974709d6d788c:refs/heads/feature/oneclick-rampex-checkout'],env=env,check=True)
+          print('Published tested commit. Production deployment and payment execution are separate operations.')
+          PY
