@@ -41,7 +41,8 @@ test('VIS-02 cart coupon expands without pushing primary controls away',async({p
  await page.locator('details.nlc-coupon summary').click();
  await capture(page,'cart-coupon-expanded');
  const after=await box(footer);
- expect(Math.abs(after.y-before.y)).toBeLessThanOrEqual(6);
+ expect(Math.abs((after.y+after.height)-(before.y+before.height)),'Footer bottom must remain anchored').toBeLessThanOrEqual(6);
+ expect(await footer.evaluate(node=>getComputedStyle(node).overflowY)).not.toBe('auto');
  await expect(page.getByRole('link',{name:/proceed to checkout/i})).toBeInViewport();
  await expect(page.locator('[data-nlc-wallets]')).toBeInViewport();
 });
