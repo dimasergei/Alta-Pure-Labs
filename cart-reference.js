@@ -69,7 +69,7 @@
     root.querySelectorAll('[data-nlc-bogo-line]').forEach((node,index)=>{
      const item=items[index],confirmed=quotedLines.find(line=>line.id===item.id&&line.size===item.size&&line.qty===item.qty);
      const n=confirmed?.bogo_free_units;
-     const free=Number.isSafeInteger(n)&&n>0&&n<=item.qty&&/^bogo(?:$|\\+)/.test(confirmed.discount_reason||'')?n:0;
+     const free=Number.isSafeInteger(n)&&n>0&&n<=item.qty&&['bogo','bogo+coupon_bogo'].includes(confirmed?.discount_reason)?n:0;
      node.hidden=!free;node.textContent=free?'+'+free+' FREE · BOGO':'';
     });
     const shipping=data.pricing?.delivery?.shipping_cents||0;
