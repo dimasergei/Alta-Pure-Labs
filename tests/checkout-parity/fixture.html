@@ -1,0 +1,123 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Checkout Parity Fixture — No Live Payments</title>
+<link rel="stylesheet" href="/styles.css">
+<link rel="stylesheet" href="/reference-ui.css">
+<link rel="stylesheet" href="/checkout-reference.css">
+<link rel="stylesheet" href="/account-experience.css">
+<link rel="stylesheet" href="/cart-reference.css">
+<style>
+  html,body{margin:0;min-height:100%;background:#fff}
+  body{--paper:#fff;--ink:#101720}
+  .fixture-header{height:76px;background:#fff;border-bottom:1px solid #e5ebf1;display:flex;align-items:center;padding:0 5vw;justify-content:space-between}
+  .fixture-header b{font-size:19px;letter-spacing:.06em}.fixture-header small{color:#69809a;font-size:10px;letter-spacing:.08em}
+  #cart-shell{position:fixed;inset:0;background:#07141d66;z-index:100;display:none}
+  body[data-mode="cart"] #cart-shell{display:block}
+  body[data-mode="cart"] #checkout-page{display:none}
+  body[data-mode="checkout"] #cart-shell{display:none}
+  #fixture-console{position:fixed;bottom:0;left:0;background:#f9e9d8;color:#452c05;font:11px monospace;z-index:200}
+</style>
+<script>
+// Only local deterministic fixtures. These do not call AltaPure or any payment processor.
+(()=>{
+ const query=new URLSearchParams(location.search),mode=query.get('view')==='cart'?'cart':'checkout';
+ document.documentElement.dataset.fixtureMode=mode;
+ window.__fixtureMode=mode; window.__fixtureReady=false;window.__fixtureErrors=[];
+ window.addEventListener('error',e=>window.__fixtureErrors.push(e.message));
+ const png='data:image/svg+xml;charset=utf-8,'+encodeURIComponent('<svg xmlns="http://www.w3.org/2000/svg" width="90" height="110" viewBox="0 0 90 110"><rect width="90" height="110" rx="10" fill="#edf0f5"/><rect x="33" y="12" width="24" height="17" fill="#4b5660"/><rect x="25" y="29" width="40" height="70" rx="8" fill="#e7e9eb" stroke="#6c7b8a" stroke-width="2"/><rect x="26" y="42" width="38" height="38" fill="#173c6e"/><text x="45" y="61" text-anchor="middle" fill="#fff" font-size="8" font-family="Arial">ALTA</text></svg>');
+ const prod=(id,name,price)=>({id,name,variants:[{size:'5mg',price}]});
+ const catalog=[prod('p1','Research Compound A',51),prod('p2','Reconstitution Solution',22),prod('p3','Research Compound B',60),prod('p4','Lab Standard',13),prod('p5','Research Compound C',38),prod('p6','Analytical Sample D',21),prod('p7','Reagent E',18),prod('p8','Control F',14),prod('p9','Standard G',25)];
+ let items=[{id:'p1',key:'p1:5mg',name:'Research Compound A',size:'5mg',qty:2,price:51},{id:'p2',key:'p2:5mg',name:'Reconstitution Solution',size:'5mg',qty:1,price:22}];
+ if(query.get('many')==='1')items=[...items,...catalog.slice(2,8).map(p=>({id:p.id,key:p.id+':5mg',name:p.name,size:'5mg',qty:1,price:p.variants[0].price}))];
+ const zones={US:{standard:1495,express:3495,next_day:6995},CA:{standard:3995,express:5995},OTHER:{standard:5995,express:9995},version:'shipping-2026-11-v1'};
+ const delivery=[
+  {id:'standard',kind:'shipping',label:'Standard UPS',price_cents:1495,enabled:true,description:'Tracked standard shipping'},
+  {id:'express',kind:'shipping',label:'Express UPS',price_cents:3495,enabled:true,description:'Expedited delivery where available'},
+  {id:'next_day',kind:'shipping',label:'UPS Next Day',price_cents:6995,enabled:true,description:'Eligibility varies by destination'},
+  {id:'priority',kind:'extra',label:'Priority Processing',price_cents:999,enabled:true,description:'Priority order preparation, subject to capacity.'},
+  {id:'cold_chain',kind:'extra',label:'Cold Chain Shipping',price_cents:999,enabled:true,description:'Insulated packaging. Temperature is not guaranteed.'},
+  {id:'protection',kind:'extra',label:'Shipping Protection',price_cents:500,enabled:true,description:'Optional seller-backed lost/damaged package protection.'}
+ ];
+ const config={version:'checkout-2026-11-v4',shipping_countries:['US','CA','GB','AU','FR','DE','MX','JP','IE','NZ','PT','BR']};
+ const state={config,delivery_options:delivery,shipping_zones:zones,
+  terms:{conversion:{plans:{vip:{monthly_cents:1999,annual_cents:19190}}}},
+  balances:{points:0,credit_cents:0},methods:[{id:'a0000000-0000-4000-8000-000000000001',label:'Card payment unavailable',native_provider:null,kind:'hosted_link'}],nmi:null,capabilities:{card:false,apple_pay:false,google_pay:false}};
+ const user={id:'b0000000-0000-4000-8000-000000000002',email:'researcher@example.test',user_metadata:{full_name:'Lab Customer',alta_profile:{shipping:{name:'Lab Customer',line1:'12 Research Avenue',city:'Miami',region:'FL',postal_code:'33101',country:'US',phone:'305-555-0100'}}}};
+ const auth={auth:{getSession:async()=>({data:{session:{access_token:'LOCAL-FIXTURE-NOT-REAL'}}})}};
+ const snap=()=>items.map(x=>({...x}));
+ const extras=()=>new URLSearchParams(location.search).get('extras')==='both'?['protection','priority','cold_chain']:['protection'];
+ try{localStorage.clear();localStorage.setItem('ap-checkout-coupon','BOGO');localStorage.setItem('ap-shipping-extras',JSON.stringify(extras()));localStorage.setItem('ap-shipping-country','US')}catch{}
+ window.AltaStore={get cart(){return snap()},catalog,product:id=>catalog.find(p=>p.id===id),image:()=>png,
+  adjustQuantity(key,delta){items=items.map(x=>x.key===key?{...x,qty:Math.max(1,x.qty+delta)}:x);return true},
+  addItems(rows){for(const row of rows){const p=catalog.find(x=>x.id===row.id);if(p)items.push({id:p.id,key:p.id+':5mg',name:p.name,size:'5mg',qty:1,price:p.variants[0].price})}}
+ };
+ window.AltaCartNmi={open(){}};
+ window.DirectCheckout={checkout:async()=>{},api:async(_auth,body)=>{
+   if(!body)return state;
+   if(body.action==='quote')return quote({country:body.address.country,items:body.items,coupon:body.coupon,delivery:body.delivery});
+   if(body.action==='place')throw Error('Local fixture cannot create a real order');
+   throw Error('Unexpected request: '+body.action);
+ }};
+ function quote(body){
+  const order=body.items||snap(),subtotal=order.reduce((n,x)=>n+(catalog.find(p=>p.id===x.id)?.variants[0]?.price||0)*100*(x.qty||1),0);
+  const discount=body.coupon==='BOGO'?Math.floor(subtotal*.55):0;
+  const rates=zones[body.country]||zones.OTHER;
+  const speed=body.delivery?.shipping||'standard';
+  const shipping=rates[speed];
+  const selected=body.delivery?.extras||extras();
+  const addOns=selected.map(id=>delivery.find(x=>x.id===id)).filter(Boolean).map(x=>({id:x.id,label:x.label,amount_cents:x.price_cents}));
+  return{quote:'fixture-quote-not-a-signature',currency:'USD',subtotal_cents:subtotal,discount_cents:discount,
+   shipping_cents:shipping+addOns.reduce((n,x)=>n+x.amount_cents,0),
+   total_cents:subtotal-discount+shipping+addOns.reduce((n,x)=>n+x.amount_cents,0),
+   earned_points:Math.floor(subtotal*.012),
+   pricing:{delivery:{shipping_cents:shipping,extras:addOns,selection:body.delivery,country:body.country}}};
+ }
+ window.fetch=async(url,opts={})=>{
+  const request=String(url);
+  if(request.includes('checkout=public'))return{ok:true,json:async()=>state};
+  if(request.includes('checkout=cart')){
+   const input=JSON.parse(opts.body||'{}');
+   const q=quote(input);
+   return{ok:true,status:200,json:async()=>q};
+  }
+  throw Error('Outbound fetch disabled in test fixture: '+request);
+ };
+ window.__fixture={mode,state,user,auth,quote,cart:()=>snap(),catalog};
+})();
+</script>
+<script src="/checkout-reference.js"></script>
+<script src="/cart-reference.js"></script>
+</head>
+<body class="ap-site ap-checkout-page" data-mode="checkout">
+<div id="checkout-page">
+ <header class="fixture-header"><b>ALTAPURE LABS</b><small>TEST FIXTURE — NO LIVE PAYMENT PROCESSING</small></header>
+ <main class="account-page"><section class="account-shell"><div id="account-root"></div></section></main>
+</div>
+<div id="cart-shell">
+ <section role="dialog" aria-modal="true" aria-label="Cart" class="ap-cart-dialog" open>
+   <div class="ap-dialog-head"><h2>Your Cart</h2><button type="button" aria-label="Close">×</button></div>
+   <div id="ap-cart-content"></div>
+ </section>
+</div>
+<script>
+(async()=>{
+ const mode=window.__fixtureMode;
+ document.body.dataset.mode=mode;
+ const q=new URLSearchParams(location.search);
+ try{
+  if(mode==='cart')await window.AltaCartNmi.offer(document.getElementById('ap-cart-content'));
+  else{
+   await window.DirectCheckout.checkout(document.getElementById('account-root'),window.__fixture.auth,window.__fixture.user,{});
+   await new Promise(r=>setTimeout(r,150));
+   if(['delivery','payment'].includes(q.get('view'))){document.querySelector('[data-nlx-next]')?.click();await new Promise(r=>setTimeout(r,180))}
+   if(q.get('view')==='payment'){document.querySelector('[data-nlx-next]')?.click();await new Promise(r=>setTimeout(r,180))}
+  }
+ }catch(e){window.__fixtureErrors.push(e.stack||e.message)}
+ window.__fixtureReady=true;
+})();
+</script>
+</body>
+</html>
