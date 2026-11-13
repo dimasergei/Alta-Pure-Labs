@@ -24,7 +24,7 @@
   root.innerHTML='<div class="nlc-scrollable-items cart__body" data-testid="cart-product-scroll"><section class="nlc-cart-lines">'+items.map(x=>
     '<div class="nlc-line"><img src="'+html(window.AltaStore.image(window.AltaStore.product(x.id),x.size))+'" alt="">'
     +'<div class="nlc-name"><strong>'+html(x.name)+'</strong><small>'+html(x.size)+'</small>'
-    +'<div class="ap-quantity"><button type="button" data-action="cart-quantity" data-key="'+html(x.key)+'" data-step="-1" aria-label="Decrease '+html(x.name)+' quantity">−</button>'
+    +'<span hidden data-testid="cart-bogo-free" data-nlc-bogo-line></span><div class="ap-quantity"><button type="button" data-action="cart-quantity" data-key="'+html(x.key)+'" data-step="-1" aria-label="Decrease '+html(x.name)+' quantity">−</button>'
     +'<input value="'+x.qty+'" readonly aria-label="Quantity"><button type="button" data-action="cart-quantity" data-key="'+html(x.key)+'" data-step="1" aria-label="Increase '+html(x.name)+' quantity">+</button></div>'
     +'</div><div class="nlc-price"><strong>'+money(Math.round(x.price*100)*x.qty)+'</strong><button type="button" data-action="cart-remove" data-key="'+html(x.key)+'" aria-label="Remove item">×</button></div></div>'
    ).join('')+'</section>'
@@ -64,6 +64,14 @@
        country,delivery:{shipping:'standard',extras:[...selected].sort()}})});
     const data=await request.json();
     if(!request.ok||id!==seq||!root.isConnected)return;
+    // An explicit server line entitlement is required before showing a BOGO badge.
+    const quotedLines=Array.isArray(data.pricing?.lines)?data.pricing.lines:[];
+    root.querySelectorAll('[data-nlc-bogo-line]').forEach((node,index)=>{
+     const item=items[index],confirmed=quotedLines.find(line=>line.id===item.id&&line.size===item.size&&line.qty===item.qty);
+     const n=confirmed?.bogo_free_units;
+     const free=Number.isSafeInteger(n)&&n>0&&n<=item.qty&&/^bogo(?:$|\\+)/.test(confirmed.discount_reason||'')?n:0;
+     node.hidden=!free;node.textContent=free?'+'+free+' FREE · BOGO':'';
+    });
     const shipping=data.pricing?.delivery?.shipping_cents||0;
     const features=data.pricing?.delivery?.extras||[];
     const nodes=[['Subtotal',data.subtotal_cents]];
