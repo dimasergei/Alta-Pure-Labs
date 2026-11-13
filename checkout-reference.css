@@ -118,7 +118,7 @@ body.ap-checkout-page #account-root{box-shadow:none!important;border:0!important
 .nlx-terms label input{margin-top:2px}
 .nlx-status{min-height:20px;font-size:12px;color:#526f83;margin:8px 0}.nlx-status.nlx-error{color:#b32e3d}
 .nlx-trust{display:flex;justify-content:space-around;margin-top:13px;color:#778aa4;font-size:10px;letter-spacing:.075em;font-weight:800}
-.nlx-right{min-width:0}
+.nlx-right{min-width:0;align-self:stretch}
 .nlx-summary{position:sticky;top:24px;border:1px solid var(--nx-border);border-radius:23px;background:#fff;padding:0 22px 22px;overflow:hidden}
 .nlx-summary-head{display:flex;justify-content:space-between;align-items:center;border-bottom:1px solid var(--nx-border);margin:0 -22px 18px;padding:21px 22px 16px}
 .nlx-summary-head h2{font-size:17px;font-weight:800;margin:0}.nlx-summary-head span{color:#8394ab;font-size:12px}
