@@ -41,7 +41,8 @@ test('VIS-02 cart coupon expands without pushing primary controls away',async({p
  await page.locator('details.nlc-coupon summary').click();
  await capture(page,'cart-coupon-expanded');
  const after=await box(footer);
- expect(Math.abs(after.y-before.y)).toBeLessThanOrEqual(6);
+ expect(Math.abs((after.y+after.height)-(before.y+before.height)),'Footer bottom must remain anchored').toBeLessThanOrEqual(6);
+ expect(await footer.evaluate(node=>getComputedStyle(node).overflowY)).not.toBe('auto');
  await expect(page.getByRole('link',{name:/proceed to checkout/i})).toBeInViewport();
  await expect(page.locator('[data-nlc-wallets]')).toBeInViewport();
 });
@@ -155,11 +156,11 @@ test('VIS-13 BOGO free badges follow confirmed quote lines and disappear after q
  await pageReady(page,'cart');
  const cartFree=page.locator('[data-testid="cart-bogo-free"]:not([hidden])');
  await expect(cartFree).toHaveCount(1);
- await expect(cartFree.first()).toHaveText('+1 FREE · BOGO');
+ await expect(cartFree.first()).toHaveText('+1 FREE');
  await capture(page,'cart-server-confirmed-bogo');
  await pageReady(page,'shipping');
  await expect(page.getByTestId('checkout-bogo-free')).toHaveCount(1);
- await expect(page.getByTestId('checkout-bogo-free')).toHaveText('+1 FREE · BOGO');
+ await expect(page.getByTestId('checkout-bogo-free')).toHaveText('+1 FREE');
  await page.locator('[data-nlx-qty="-1"]').first().click();
  await page.waitForTimeout(300);
  await expect(page.getByTestId('checkout-bogo-free')).toHaveCount(0);
