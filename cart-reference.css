@@ -24,34 +24,43 @@
 .nlc-rec img{width:49px;height:58px;object-fit:contain;background:#f1f3f8;border-radius:6px}
 .nlc-rec strong{display:block;font-size:10px;line-height:1.3}.nlc-rec span{display:block;font-size:10px;color:#1c4b85;margin:5px 0}
 .nlc-rec button{background:#0b0c10;border:0;border-radius:22px;color:#fff;font-size:9px;font-weight:800;padding:8px 12px;white-space:nowrap}
-.nlc-cart-checkout{height:min(520px,60dvh);flex:none;overflow-y:auto;overscroll-behavior:contain;margin-top:auto;padding:13px 18px 20px;border-top:1px solid #dfe7ef;background:#fff;box-shadow:0 -8px 20px #1d32440c}
-.nlc-coupon{border-top:1px solid #e8edf2;padding-top:9px}
-.nlc-coupon summary{font-size:12px;font-weight:800;padding:8px 0;cursor:pointer}
-.nlc-coupon>div{display:flex;gap:8px;padding:8px 0}
-.nlc-coupon input{min-width:0;flex:1;height:43px;border:1px solid #c9d8e7;border-radius:24px;padding:10px 14px;font-size:12px}
+.nlc-cart-checkout{flex:0 0 auto;overflow:visible;margin-top:auto;padding:7px 14px 10px;border-top:1px solid #dfe7ef;background:#fff;box-shadow:0 -8px 20px #1d32440c}
+.nlc-coupon{border-top:1px solid #e8edf2;padding-top:3px}
+.nlc-coupon summary{font-size:12px;font-weight:800;padding:5px 0;cursor:pointer}
+.nlc-coupon>div{display:flex;gap:8px;padding:4px 0}
+.nlc-coupon input{min-width:0;flex:1;height:36px;border:1px solid #c9d8e7;border-radius:24px;padding:10px 14px;font-size:12px}
 .nlc-coupon button{border:1px solid #d5dce5;border-radius:22px;background:#fff;padding:0 17px;font-size:11px;font-weight:800}
-.nlc-delivery-est{border-bottom:1px solid #e8edf2;padding:8px 0 13px;margin:0;font-size:11px;color:#6b8099}
-.nlc-cart-totals{padding:8px 0}
-.nlc-cart-totals>div{display:flex;justify-content:space-between;gap:14px;padding:6px 0;font-size:12px;color:#51647e}
+.nlc-delivery-est{display:flex;justify-content:center;align-items:center;gap:4px;border-bottom:1px solid #e8edf2;padding:6px 0;margin:0;font-size:10px;color:#6b8099;white-space:nowrap}.nlc-delivery-est svg{color:#164c97;flex:none}.nlc-delivery-est strong{color:#152a45}
+.nlc-cart-totals{padding:4px 0}
+.nlc-cart-totals>div{display:flex;justify-content:space-between;gap:14px;padding:3px 0;font-size:11px;color:#51647e}
 .nlc-cart-totals strong{color:#1c2c42}
 .nlc-cart-totals label{display:flex;align-items:center;gap:8px;font-size:12px;margin:5px 0;padding:6px 0;color:#31445f}
 .nlc-cart-totals label input{width:17px;height:17px;accent-color:#18519e}
 .nlc-cart-totals label strong{margin-left:auto}
-.nlc-cart-totals .nlc-subtotal{border-top:1px solid #e7ecf3;margin-top:5px;padding-top:10px;font-weight:800;color:#152a45;font-size:14px}
-.nlc-cart-totals .nlc-subtotal strong{font-size:17px}
-.nlc-proceed{display:block;border-radius:28px;background:#174c98!important;color:white!important;text-decoration:none;text-align:center;font-size:13px;font-weight:800;padding:16px;margin:8px 0 15px}
-.nlc-wallet-area{padding-top:10px;text-align:center;border-top:1px solid #e5ebf1}
+.nlc-cart-totals .nlc-subtotal{border-top:1px solid #e7ecf3;margin-top:3px;padding-top:6px;font-weight:800;color:#152a45;font-size:12px}
+.nlc-cart-totals .nlc-subtotal strong{font-size:14px}
+.nlc-proceed{display:block;border-radius:28px;background:#174c98!important;color:white!important;text-decoration:none;text-align:center;font-size:12px;font-weight:800;padding:12px;margin:5px 0 9px}
+.nlc-wallet-area{padding-top:5px;text-align:center;border-top:1px solid #e5ebf1}
 .nlc-wallet-area>small{color:#8b99ae;display:block;font-size:10px;letter-spacing:.1em;margin-bottom:11px}
 .nlc-wallet-row{display:flex;align-items:center;gap:7px}
-.nlc-wallet-row button{height:40px;border-radius:25px;background:#050609;border:0;color:#fff;flex:1;font-weight:800;font-size:14px;letter-spacing:-.025em}
-.nlc-wallet-row button:disabled{opacity:.45;cursor:not-allowed}
+.nlc-wallet-row button{height:37px;border-radius:25px;background:#050609;border:0;color:#fff;flex:1;font-family:Arial,sans-serif;font-weight:500;font-size:20px;letter-spacing:-.04em;display:flex;align-items:center;justify-content:center;gap:3px}
+.nlc-wallet-row button:disabled{opacity:1;cursor:not-allowed;filter:grayscale(.45)}
 .nlc-wallet-row span{font-size:11px;color:#8091a5}
 .nlc-g{font-size:17px;background:conic-gradient(#4285f4 0 90deg,#34a853 90deg 175deg,#fbbc05 175deg 250deg,#ea4335 250deg 330deg,#4285f4 330deg);-webkit-background-clip:text;background-clip:text;color:transparent}
-.nlc-wallet-area p{font-size:10px;color:#8a97aa;line-height:1.5;margin:9px 0}
+.nlc-wallet-area p{font-size:9px;color:#8a97aa;line-height:1.35;margin:5px 0 0}
 .nlc-wallet-area p a{color:#31588c}
 @media(max-width:480px){.ap-cart-dialog{width:100vw!important}.nlc-cart-checkout{padding:12px}.nlc-line{grid-template-columns:55px minmax(0,1fr) auto}.nlc-line img{width:55px}}
 
-@media(max-height:700px){.nlc-cart-checkout{height:min(420px,62dvh)}.nlc-cart-lines .nlc-line{padding-block:10px}}
-.nlc-scrollable-items:focus-visible,.nlc-cart-checkout:focus-visible{outline:2px solid #164b99;outline-offset:-2px}
+@media(max-height:700px){.nlc-cart-checkout{padding-block:4px}.nlc-cart-lines .nlc-line{padding-block:10px}.nlc-coupon summary{padding:3px 0}.nlc-wallet-area p{font-size:8px}}
+.nlc-scrollable-items:focus-visible{outline:2px solid #164b99;outline-offset:-2px}
 
 .nlc-name [data-nlc-bogo-line]:not([hidden]){display:inline-block;margin-top:5px;padding:3px 7px;border:1px solid #a5c7ed;border-radius:7px;background:#eaf4ff;color:#164a91;font-size:10px;font-weight:800;line-height:1.2;white-space:nowrap}
+
+/* Cart footer is static; only product rows and add-ons may scroll. */
+.nlc-protection-static{color:#31445f!important}
+.nlc-pay-divider{display:flex;align-items:center;justify-content:center;gap:5px;margin-bottom:7px;color:#8190a7;font-size:10px;letter-spacing:.09em;font-weight:700}
+.nlc-pay-divider strong{color:#152a45;letter-spacing:0;font-size:12px}
+.nlc-apple-mark{font-family:Arial,sans-serif;font-size:25px;line-height:1}
+.nlc-google-mark{font-family:Arial,sans-serif;font-weight:700;font-size:23px;line-height:1;background:conic-gradient(#4285f4 0deg 90deg,#34a853 90deg 175deg,#fbbc05 175deg 250deg,#ea4335 250deg 330deg,#4285f4 330deg);-webkit-background-clip:text;background-clip:text;color:transparent}
+.nlc-wallet-or{font-size:11px;color:#8091a5}
+@media(max-height:650px){.nlc-cart-checkout{padding:3px 10px 5px}.nlc-cart-totals>div{padding:2px 0}.nlc-proceed{padding:9px;margin:3px 0 5px}.nlc-wallet-row button{height:32px}.nlc-delivery-est{padding:3px 0}.nlc-coupon input{height:32px}}
