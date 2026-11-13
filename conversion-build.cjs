@@ -7,7 +7,7 @@ function cart(){
  const root=$('#ap-cart-content');if(!root)return;$('#ap-cart-title').textContent='Your Cart ('+cart.reduce((n,x)=>n+x.qty,0)+')';
  if(!cart.length){root.innerHTML='<div class="ap-empty"><h3>Your cart is empty.</h3><a class="ap-button" href="/shop">Shop Products</a></div>';return;}
  root.innerHTML=cart.map(x=>`<div class="ap-cart-line"><img src="${esc(image(product(x.id),x.size))}" alt="${esc(x.name+' '+x.size)}"><div><a href="/product/${x.id}?size=${encodeURIComponent(x.size)}"><strong>${esc(x.name)}</strong></a><small>${esc(x.size)} · ${esc(money(x.price))} each</small><div class="ap-quantity"><button data-action="cart-quantity" data-key="${esc(x.key)}" data-step="-1" aria-label="Decrease ${esc(x.name)} quantity">−</button><input value="${x.qty}" readonly aria-label="Quantity"><button data-action="cart-quantity" data-key="${esc(x.key)}" data-step="1" aria-label="Increase ${esc(x.name)} quantity">+</button></div></div><div><strong>${esc(money(Math.ceil(x.qty/2)*x.price))}</strong><small>${Math.floor(x.qty/2)?Math.floor(x.qty/2)+' free included':''}</small><button class="ap-remove" data-action="cart-remove" data-key="${esc(x.key)}">Remove</button></div></div>`).join('');
- window.ConversionUI.cart(root,cart);
+ window.AltaCartNmi?.offer(root);
 }
 // The injected function closes over the existing storefront state; do not create a second cart.
 patch('storefront-v2.js',s=>s.replace(' window.AltaStore=',`\n renderCart=${cart.toString().replace('function cart()', 'function renderConversionCart()')};\n membershipCards=function(){return '<div data-cv-memberships>'+window.ConversionUI.membershipCards(window.AltaConversionConfig)+'</div>';};\n window.AltaStore=`));

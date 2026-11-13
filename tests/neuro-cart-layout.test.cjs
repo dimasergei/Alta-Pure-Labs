@@ -44,3 +44,11 @@ test('cart widget only enables actual wallet controls when a verified NMI accoun
   assert.ok([...f.cart.querySelectorAll('[data-nlc-wallets] button')].every(x=>!x.disabled));
  }finally{f.dom.window.close();}
 });
+
+test('final storefront build selects the new cart and never invokes the retired duplicate coupon panel',()=>{
+ const src=fs.readFileSync('conversion-build.cjs','utf8');
+ const storefront=fs.readFileSync('storefront-v2.js','utf8');
+ assert.match(src,/window\.AltaCartNmi\?\.offer\(root\)/);
+ assert.doesNotMatch(src,/window\.ConversionUI\.cart\(root,cart\)/);
+ assert.match(storefront,/window\.AltaCartNmi\?\.offer\(root\)/);
+});

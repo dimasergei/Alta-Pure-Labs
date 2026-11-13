@@ -1,7 +1,7 @@
 {
   "version": "checkout-2026-11-v4",
   "currency": "USD",
-  "shipping_cents": 2500,
+  "shipping_cents": 1495,
   "shipping_countries": [
     "AF",
     "AX",
@@ -247,7 +247,7 @@
     "ZM",
     "ZW"
   ],
-  "shipping_label": "Standard US delivery",
+  "shipping_label": "Standard UPS (US)",
   "shipping_note": "Shipping rates are displayed by destination and service before purchase. Express and next-day availability is subject to carrier coverage. International duties and customs fees may apply.",
   "points_per_dollar": 2.5,
   "point_value_cents": 1,

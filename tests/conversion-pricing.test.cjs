@@ -4,7 +4,7 @@ test('membership prices, calendar periods, free shipping and earning rates are e
  assert.equal(pricing.membershipItem('vip','monthly').unit_price_usd_cents,1999);
  assert.equal(pricing.membershipItem('elite','annual').unit_price_usd_cents,95990);
  assert.throws(()=>pricing.membershipItem('elite','weekly'));
- assert.equal(pricing.shipping(24999,null),2500);assert.equal(pricing.shipping(25000,null),0);
+ assert.equal(pricing.shipping(24999,null),1495);assert.equal(pricing.shipping(25000,null),0);
  assert.equal(pricing.shipping(1,{plan:'vip'}),0);
  assert.equal(pricing.earnings(999,null),24);assert.equal(pricing.earnings(999,{plan:'vip'}),49);assert.equal(pricing.earnings(999,{plan:'elite'}),99);
  assert.equal(pricing.earnings(-10,null),0);

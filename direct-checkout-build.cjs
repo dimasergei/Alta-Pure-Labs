@@ -27,7 +27,7 @@ patch('storefront-v2.js',s=>s
  .replaceAll('El pago instantáneo con tarjeta no está conectado. Solicite una factura.','Finalice su compra para entregas en Estados Unidos.')
  .replaceAll('Préparez et enregistrez votre panier. Aucun paiement ne sera effectué.','Vérifiez le total et choisissez un moyen de paiement disponible.')
  .replaceAll('Puede preparar y guardar su carrito. No se realizará ningún pago.','Revise el total y elija un método de pago disponible.')
- .replaceAll('Shipment eligibility, rates, and timing are confirmed separately.','Standard US delivery is US$25 per order; view the estimated timing at checkout.')
+ .replaceAll('Shipment eligibility, rates, and timing are confirmed separately.','Shipping rates and options are calculated for your destination before checkout.')
  .replaceAll('Shipping, taxes, and unapproved discounts are not included.','Final discounts and delivery are calculated at checkout.'));
 patch('workspace-v2.js',s=>s
  .replaceAll('Paid passes activate after the reviewed invoice is paid and receipt is verified.','Paid passes activate after payment is confirmed.')
