@@ -12,7 +12,7 @@
  // One cart's elective services cannot silently be copied into an unrelated order.
  const cartKey=items=>'ap-v2-cart-extras:'+JSON.stringify(items.map(({id,size,qty})=>({id,size,qty})));
  function extras(items){const home=localStorage.getItem('ap-shipping-country')||'US';try{const v=JSON.parse(sessionStorage.getItem(cartKey(items))||'null');return Array.isArray(v)?v:home==='US'?['protection']:[];}catch{return home==='US'?['protection']:[];}}
- function saveExtras(selected,items){sessionStorage.setItem(cartKey(items),JSON.stringify([...selected]));}
+
  const before=window.AltaCartNmi?.offer;
  async function offer(root){
   if(!root?.isConnected)return;
@@ -33,13 +33,13 @@
     return '<div class="nlc-rec"><img src="'+html(window.AltaStore.image(p,v.size))+'" alt=""><div><strong>'+html(p.name)+'</strong><span>'+money(Math.round(v.price*100))+'</span><button data-action="add" data-id="'+html(p.id)+'" type="button">ADD MORE</button></div></div>';
    }).join('')+'</div></div>':'')
    +'</div><div class="nlc-cart-checkout cart__checkout" data-testid="cart-fixed-footer"><details class="nlc-coupon"><summary>Coupon code</summary><div><input type="text" name="nlc_coupon" placeholder="Coupon code" maxlength="40" value="'+html(localStorage.getItem('ap-checkout-coupon')||'')+'"><button type="button" data-nlc-apply>APPLY</button></div></details>'
-   +'<p class="nlc-delivery-est">Shipping and optional services are priced in your verified checkout quote.</p>'
+   +'<p class="nlc-delivery-est"><svg viewBox="0 0 24 24" width="17" height="17" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><path d="M3 6h11v11H3zM14 10h4l3 4v3h-7z"/><circle cx="7" cy="18" r="2"/><circle cx="18" cy="18" r="2"/></svg> <strong>Estimated delivery:</strong> <span data-nlc-estimate></span></p>'
    +'<div class="nlc-cart-totals" data-nlc-cart-totals><p role="status">Calculating your order total…</p></div>'
    +'<a class="nlc-proceed" href="/checkout">Proceed to Checkout</a>'
-   +'<div class="nlc-wallet-area"><small>OR PAY INSTANTLY</small><div class="nlc-wallet-row" data-nlc-wallets>'
-   +'<button type="button" disabled aria-label="Apple Pay pending activation">Apple Pay</button>'
-   +'<span>or</span><button type="button" disabled aria-label="Google Pay pending activation">Google Pay</button></div>'
-   +'<p>Wallet payments become available when the authorized processor is connected. <a href="/research-use-policy.html">Research-use terms</a> apply.</p></div></div>';
+   +'<div class="nlc-wallet-area"><div class="nlc-pay-divider"><span>OR PAY INSTANTLY</span> <strong data-nlc-instant-amount></strong></div><div class="nlc-wallet-row" data-nlc-wallets>'
+   +'<button type="button" disabled aria-label="Apple Pay pending activation"><span class="nlc-apple-mark" aria-hidden="true"></span><span>Pay</span></button>'
+   +'<span class="nlc-wallet-or">or</span><button type="button" disabled aria-label="Google Pay pending activation"><span class="nlc-google-mark" aria-hidden="true">G</span><span>Pay</span></button></div>'
+   +'<p>By paying, you confirm you are 21+, buying for research use only, and accept the <a href="/research-use-policy.html">RUO Agreement</a> and <a href="/commercial-terms.html">Terms</a>.</p></div></div>';
   const track=root.querySelector('[data-nlc-cart-totals]');
   const redraw=async()=>{
    const id=++seq;
@@ -56,7 +56,7 @@
     }
     const country=localStorage.getItem('ap-shipping-country')||'US';
     const protection=(settings.delivery_options||[]).find(x=>x.id==='protection'&&x.enabled===true);
-    if(!protection||country!=='US')selected.delete('protection');
+    if(protection&&country==='US')selected.add('protection');else selected.delete('protection');
     const request=await fetch('/api/customer-config?checkout=cart',{method:'POST',
       headers:{'Content-Type':'application/json'},
       body:JSON.stringify({items:(window.AltaStore.cart||[]).map(({id,size,qty})=>({id,size,qty})),
@@ -70,7 +70,7 @@
      const item=items[index],confirmed=quotedLines.find(line=>line.id===item.id&&line.size===item.size&&line.qty===item.qty);
      const n=confirmed?.bogo_free_units;
      const free=Number.isSafeInteger(n)&&n>0&&n<=item.qty&&['bogo','bogo+coupon_bogo'].includes(confirmed?.discount_reason)?n:0;
-     node.hidden=!free;node.textContent=free?'+'+free+' FREE · BOGO':'';
+     node.hidden=!free;node.textContent=free?'+'+free+' FREE':'';
     });
     const shipping=data.pricing?.delivery?.shipping_cents||0;
     const features=data.pricing?.delivery?.extras||[];
@@ -78,15 +78,18 @@
     if(data.discount_cents)nodes.push(['Discounts',-data.discount_cents]);
     nodes.push(['Shipping',shipping]);
     for(const f of features.filter(x=>x.id!=='protection'))nodes.push([f.label,f.amount_cents]);
+    const includedProtection=features.find(x=>x.id==='protection');
     track.innerHTML=nodes.map(([label,price])=>'<div><span>'+html(label)+'</span><strong>'+money(price)+'</strong></div>').join('')
-     +(protection?'<label><input type="checkbox" name="nlc_protection" '+(selected.has('protection')?'checked':'')+'> Shipping Protection <strong>'+money(protection.price_cents)+'</strong></label>':'')
+     +(includedProtection?'<div class="nlc-protection-static"><span>Shipping Protection</span><strong>'+money(includedProtection.amount_cents)+'</strong></div>':'')
      +'<div class="nlc-subtotal"><span>Estimated total</span><strong>'+money(data.total_cents)+'</strong></div>';
-    const check=track.querySelector('[name=nlc_protection]');
-    if(check)check.onchange=()=>{check.checked?selected.add('protection'):selected.delete('protection');saveExtras(selected,items);redraw();};
     const proceed=root.querySelector('.nlc-proceed');if(proceed)proceed.textContent='Proceed to Checkout ('+money(data.total_cents)+')';
+    const instant=root.querySelector('[data-nlc-instant-amount]');if(instant)instant.textContent=money(data.total_cents);
    }catch(error){if(root.isConnected&&id===seq)track.textContent='Final prices will be shown at checkout. '+(error?.message||'');}
   };
 
+  const dateLabel=offset=>{const date=new Date();date.setDate(date.getDate()+offset);return new Intl.DateTimeFormat('en-US',{weekday:'short',month:'short',day:'numeric'}).format(date);};
+  const estimate=root.querySelector('[data-nlc-estimate]');
+  if(estimate)estimate.textContent=dateLabel(7)+' – '+dateLabel(13);
   root.querySelector('[data-nlc-apply]').addEventListener('click',()=>{
    localStorage.setItem('ap-checkout-coupon',root.querySelector('[name=nlc_coupon]').value.trim().toUpperCase());redraw();
   });
