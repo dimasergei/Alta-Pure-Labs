@@ -122,6 +122,15 @@
     button.setAttribute('aria-expanded',String(!open));panel.hidden=open;
    }));
   }
+  function shippingCrossSell(){
+   const items=snapshotCart();
+   const picks=(window.AltaStore?.catalog||[]).filter(x=>!items.some(line=>line.id===x.id)&&Array.isArray(x.variants)&&x.variants.length).slice(0,2);
+   if(!picks.length)return '';
+   return '<section class="nlx-cross-sell" data-nlx-cross-sell><h3>Recommended for your research</h3><div>'+picks.map(item=>{
+    const variant=item.variants[0],photo=window.AltaStore?.image?.(item,variant.size)||'';
+    return '<article><img src="'+esc(photo)+'" alt=""><span><strong>'+esc(item.name)+'</strong><small>'+esc(variant.size)+' · '+usd(Math.round(Number(variant.price)*100))+'</small></span><button type="button" data-nlx-cross-sell-add="'+esc(item.id)+'" data-size="'+esc(variant.size)+'">Add</button></article>';
+   }).join('')+'</div></section>';
+  }
   function renderSummary(){
    const items=snapshotCart();
    view('[data-nlx-item-count]',detail).textContent=items.reduce((n,x)=>n+x.qty,0)+' items';
@@ -195,12 +204,12 @@
    const ready=!!method;
    const amount=usd(currentPreview?.total_cents||0);
    return '<section class="nlx-payment"><h2>Payment</h2><div class="nlx-express-label"><strong>EXPRESS CHECKOUT</strong><span>'+amount+'</span></div>'
-     +'<div class="nlx-wallets" data-nlx-wallets><button type="button" class="nlx-wallet-button" disabled><span class="nlx-apple-symbol"></span> Pay</button><span class="nlx-or">or</span><button type="button" class="nlx-wallet-button" disabled><span class="nlx-google-mark">G</span> Pay</button></div>'
+     +'<div class="nlx-wallets" data-nlx-wallets>'+(ready?'<p class="nlx-provider-wallet-note">Eligible digital wallets appear in the provider-owned secure payment form below.</p>':'<button type="button" class="nlx-wallet-unavailable" disabled aria-label="Apple Pay pending activation">Apple Pay · Pending activation</button><span class="nlx-or">or</span><button type="button" class="nlx-wallet-unavailable" disabled aria-label="Google Pay pending activation">Google Pay · Pending activation</button>')+'</div>'
      +'<p class="nlx-wallet-consent">By choosing Apple Pay or Google Pay you confirm you are at least 21, purchasing solely for research use, and agree to our <a href="/research-use-policy.html" target="_blank" rel="noopener">Research Use Only Agreement</a> and <a href="/terms-and-conditions.html" target="_blank" rel="noopener">Terms &amp; Conditions</a>.</p>'
      +'<div class="nlx-divider"><span>OR PAY ANOTHER WAY</span></div>'
-     +'<div class="nlx-payment-rows"><label class="nlx-payment-option"><input type="radio" name="payment_choice" value="card" checked><span>Credit/Debit Card</span><span class="nlx-card-logos">'+logo('visa','VISA')+logo('amex','AMEX')+'</span></label></div>'
+     +(ready?'<div class="nlx-payment-rows"><div class="nlx-payment-option"><span>Secure card form</span><span class="nlx-card-logos">'+logo('visa','Visa')+logo('amex','American Express')+'</span></div></div>':'<p class="nlx-payment-pending">Card checkout awaiting activation. No payment can be submitted here until the merchant is approved.</p>')
      +'<div class="nlx-inline-nmi" data-nlx-nmi></div>'
-     +'<div class="nlx-we-accept"><span>'+(ready?'WE ACCEPT':'PAYMENT METHODS · PENDING ACTIVATION')+'</span><div>'+payCards.map(([type,label])=>logo(type,label)).join('')+'</div><small>'+(ready?'Methods available according to your eligible wallet or card':'Payment methods activate after merchant approval')+'</small></div>'
+     +'<div class="nlx-we-accept"><span>'+(ready?'NETWORK AVAILABILITY DETERMINED BY SECURE PROVIDER':'PAYMENT METHODS · PENDING ACTIVATION')+'</span><div>'+payCards.map(([type,label])=>logo(type,label)).join('')+'</div><small>'+(ready?'Supported networks and wallets depend on merchant and customer eligibility':'Illustrative payment brands only; checkout is inactive until merchant approval')+'</small></div>'
      +'<div class="nlx-terms"><label><input type="checkbox" name="ruo" required><span>'+esc(terms1)+'</span></label>'
      +'<label><input type="checkbox" name="responsibility" required><span>'+esc(terms2)+' <a href="/research-use-policy.html" target="_blank" rel="noopener">Research Use Only Agreement</a>.</span></label></div>'
      +'<div class="nlx-status" data-nlx-status role="status" aria-live="polite"></div><button type="button" class="nlx-primary" data-nlx-place '+(ready?'disabled':'disabled')+'>'+(ready?'Review your total':'Card checkout awaiting activation')+' · '+amount+'</button>'
@@ -223,7 +232,7 @@
       +'<label>Billing street *<input name="billing_line1" maxlength="180" placeholder="Billing street address"></label>'
       +'<div class="nlx-two"><label>Billing city *<input name="billing_city" maxlength="80"></label><label>Billing state / region *<input name="billing_region" maxlength="80"></label></div>'
       +'<div class="nlx-two"><label>Billing postal code *<input name="billing_postal" maxlength="20"></label><label>Billing country *<select name="billing_country">'+countries+'</select></label></div></div>'
-      +'<div class="nlx-next"><button type="button" class="nlx-primary" data-nlx-next>Continue</button></div></div>';
+      +shippingCrossSell()+'<div class="nlx-next"><button type="button" class="nlx-primary" data-nlx-next>Continue</button></div></div>';
     form.elements.country.value=state.country;form.elements.billing_country.value=state.billingData?.country||state.country;
     if(!state.billingSame){
      const b=state.billingData||{};for(const [k,v] of Object.entries({billing_line1:b.line1,billing_city:b.city,billing_region:b.region,billing_postal:b.postal_code})){
@@ -235,6 +244,13 @@
     const other=view('.nlx-billing-other',form);form.elements.billing_same.addEventListener('change',()=>{
       other.hidden=form.elements.billing_same.checked;all('input',other).forEach(x=>x.required=!other.hidden);
     });
+    all('[data-nlx-cross-sell-add]',form).forEach(button=>button.addEventListener('click',()=>{
+     try{
+      if(typeof window.AltaStore?.addItems!=='function')throw Error('The cart is unavailable.');
+      window.AltaStore.addItems([{id:button.dataset.nlxCrossSellAdd,size:button.dataset.size,qty:1}]);
+      invalidate();renderStep();refresh();
+     }catch(error){view('[data-nlx-quote-note]',detail).textContent=error.message;}
+    }));
     view('[data-nlx-next]',form).addEventListener('click',goNext);
    }else if(stage===1){
     form.innerHTML='<div class="nlx-step-delivery"><div class="nlx-address-confirm"><div><strong>Ship to</strong><p>'+esc([form.dataset.shipName||'Your address',form.dataset.shipAddress||''].filter(Boolean).join(' · '))+'</p></div><button type="button" data-nlx-back-edit>Edit</button></div>'+deliveryCards()+offerBox()
