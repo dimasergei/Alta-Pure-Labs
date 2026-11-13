@@ -72,7 +72,7 @@ test('customer-selected country updates authoritative quote; US-only next-day ex
   const country=f.root.querySelector('select[name=country]');
   country.value='CA';country.dispatchEvent(new f.w.Event('change',{bubbles:true}));
   await new Promise(r=>setTimeout(r,290));
-  assert.equal(f.root.querySelector('[data-nlx-extra="protection"]').checked,false,'Paid extras cannot be preselected for international customers');
+  assert.equal(f.root.querySelector('[data-nlx-extra="protection"]'),null,'US-only shipping protection must not be offered for international destinations');
   assert.equal(f.quotes.at(-1).total_cents,23995);
   f.root.querySelector('[data-nlx-next]').click();await wait();
   assert.match(f.root.textContent,/Delivery speed/);
@@ -87,7 +87,8 @@ test('customer-selected country updates authoritative quote; US-only next-day ex
   assert.match(f.root.textContent,/OR PAY ANOTHER WAY/);
   assert.match(f.root.textContent,/PAYMENT METHODS · PENDING ACTIVATION/);
   assert.equal(f.root.querySelectorAll('.nlx-terms input[type=checkbox]').length,2);
-  assert.ok([...f.root.querySelectorAll('.nlx-wallet-button')].every(b=>b.disabled),'Wallet buttons cannot claim acceptance before onboarding');
+  assert.equal(f.root.querySelectorAll('.nlx-wallet-unavailable').length,2);
+  assert.ok([...f.root.querySelectorAll('.nlx-wallet-unavailable')].every(b=>b.disabled),'Wallet buttons cannot claim acceptance before onboarding');
  }finally{f.dom.window.close();}
 });
 test('protected line is added/removed from server quote and cart quantities update via AltaStore',async()=>{

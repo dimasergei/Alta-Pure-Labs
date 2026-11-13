@@ -3,7 +3,7 @@ body.ap-checkout-page{background:#fff!important;color:#111c2a}
 body.ap-checkout-page .account-page{padding:22px 28px 72px!important;background:#fff!important}
 body.ap-checkout-page .account-shell{width:min(1380px,100%)!important;max-width:none!important}
 body.ap-checkout-page #account-root{box-shadow:none!important;border:0!important;padding:0!important;max-width:none!important;background:transparent!important}
-.nlx-checkout-root{--nx-border:#dce5ef;--nx-text:#101720;--nx-blue:#0e3f87;--nx-muted:#687b94;--nx-sky:#eef4ff;font-family:'Plus Jakarta Sans',Inter,Arial,sans-serif;color:var(--nx-text);font-size:14px}
+.nlx-checkout-root{--nx-border:#dce5ef;--nx-text:#101720;--nx-blue:#0e3f87;--nx-muted:#687b94;--nx-sky:#eef4ff;font-family:Poppins,Inter,Arial,sans-serif;color:var(--nx-text);font-size:14px}
 .nlx-checkout-root *{box-sizing:border-box}
 .nlx-checkout-root [hidden]{display:none!important}
 .nlx-page{width:min(1350px,100%);margin:0 auto}
@@ -35,7 +35,7 @@ body.ap-checkout-page #account-root{box-shadow:none!important;border:0!important
 .nlx-small-check input,.nlx-terms input{width:17px;height:17px;accent-color:#164e9b;flex:none}
 .nlx-small-check small{font-size:10px;color:#72849c}
 .nlx-next{margin:22px 0 4px}
-.nlx-primary{width:100%;background:#08090c;border:0;color:white;font-size:15px;font-weight:800;min-height:57px;border-radius:30px;transition:filter .18s;box-shadow:none}
+.nlx-primary{width:100%;background:#08090c;border:0;color:white!important;font-size:15px;font-weight:800;min-height:57px;border-radius:30px;transition:filter .18s;box-shadow:none}
 .nlx-primary:not(:disabled):hover{filter:brightness(1.2)}
 .nlx-primary:disabled{background:#283447;color:#cfd8e0}
 .nlx-address-confirm{display:flex;justify-content:space-between;align-items:start;background:#f5f8fc;border:1px solid var(--nx-border);border-radius:14px;padding:15px 18px;gap:14px;margin:12px 0 18px}
@@ -56,7 +56,13 @@ body.ap-checkout-page #account-root{box-shadow:none!important;border:0!important
 .nlx-extra-cold_chain .nlx-extra-icon{background:#d5eaff;color:#286ca3}
 .nlx-extra-box strong{font-size:13px;color:#173144}
 .nlx-extra-box p{color:#657488;line-height:1.5;margin:3px 0;font-size:11px}
-.nlx-extra-box a{font-size:11px;color:#174f90;text-decoration:underline}
+.nlx-disclosure-trigger{display:inline-block;background:transparent;border:0;padding:2px 0;color:#174f90;text-decoration:underline;font-size:11px;cursor:pointer;text-align:left}
+.nlx-disclosure-trigger:focus-visible{outline:2px solid #164b99;outline-offset:2px}
+.nlx-disclosure{margin-top:7px;font-size:11px;line-height:1.5;color:#435a75;max-width:100%}
+.nlx-disclosure[hidden]{display:none!important}
+.nlx-disclosure p{margin:4px 0 6px}
+.nlx-disclosure a{font-size:11px;color:#174f90;text-decoration:underline}
+.nlx-extra-check{display:flex!important;align-items:center;justify-content:center;cursor:pointer}
 .nlx-extra-box>span:not(.nlx-extra-icon){color:#66717d;margin-left:auto;white-space:nowrap}
 .nlx-extra-box input{width:19px;height:19px;accent-color:#0b4c94}
 .nlx-member-offer{border:2px solid #cfe1ff;background:#edf4ff;border-radius:15px;padding:18px 20px;margin:18px 0}
@@ -87,9 +93,10 @@ body.ap-checkout-page #account-root{box-shadow:none!important;border:0!important
 .nlx-express-label strong{font-size:12px;font-weight:800;letter-spacing:.045em;color:#194985}
 .nlx-express-label span{font-size:13px;font-weight:800}
 .nlx-wallets{display:flex;align-items:center;gap:10px}
-.nlx-wallet-button{width:50%;height:43px;border-radius:30px;background:#050506;color:#fff;border:0;font-weight:700;font-size:15px;letter-spacing:-.025em;display:flex;gap:5px;align-items:center;justify-content:center;opacity:.52}
-.nlx-wallet-button:disabled{opacity:.55}
-.nlx-apple-symbol{font-size:24px;line-height:1}.nlx-google-mark{font-weight:900;font-size:20px;background:conic-gradient(#4285f4 0deg 90deg,#34a853 90deg 175deg,#fbbc05 175deg 250deg,#ea4335 250deg 330deg,#4285f4 330deg);-webkit-background-clip:text;background-clip:text;color:transparent}
+.nlx-wallet-unavailable{width:50%;min-height:43px;border-radius:24px;background:#f1f4f8;color:#4c607b;border:1px solid #cfdae5;font-weight:700;font-size:11px;display:flex;align-items:center;justify-content:center;text-align:center}
+.nlx-wallet-unavailable:disabled{cursor:not-allowed}
+.nlx-provider-wallet-note{font-size:12px;color:#53677f;text-align:center;width:100%;border:1px solid #dce5ef;border-radius:12px;padding:12px}
+.nlx-payment-pending{border:1px solid #dfe7f1;border-radius:12px;background:#f5f8fc;padding:12px;color:#5b708a;font-size:12px}
 .nlx-or{font-size:11px;color:#74839b}.nlx-wallet-consent{text-align:center;color:#7c8ca1;font-size:10px;line-height:1.6;margin:10px 0 18px}
 .nlx-wallet-consent a,.nlx-terms a{color:#264d85;text-decoration:underline}
 .nlx-divider{display:flex;align-items:center;gap:15px;margin:20px 0}
@@ -104,20 +111,14 @@ body.ap-checkout-page #account-root{box-shadow:none!important;border:0!important
 .nlx-we-accept{text-align:center;margin:20px 0 17px}
 .nlx-we-accept>span{display:block;font-size:10px;letter-spacing:.08em;color:#8291a3;font-weight:700;margin-bottom:11px}
 .nlx-we-accept>div{display:flex;gap:5px;flex-wrap:wrap;justify-content:center}
-.nlx-pay-logo{display:inline-flex;align-items:center;justify-content:center;min-height:23px;min-width:37px;border-radius:3px;padding:2px 5px;background:#fff;border:1px solid #e2e6ed;color:#17335d;font-weight:900;font-size:10px;letter-spacing:-.04em}
-.nlx-pay-logo--visa{background:#174b9d;color:white;font-style:italic}
-.nlx-pay-logo--apple{color:#050505;font-size:12px}
-.nlx-pay-logo--google{color:#1b5db4;font-size:10px}
-.nlx-pay-logo--mastercard{background:linear-gradient(90deg,#dc3e19 0 50%,#ffb700 50%);font-size:13px;color:#fff}
-.nlx-pay-logo--amex{font-size:8px;background:#277cba;color:white;letter-spacing:-.02em}
-.nlx-pay-logo--discover{color:#343334;font-size:9px;border-bottom:3px solid #e69020}
+.nlx-payment-mark{width:45px;height:30px;object-fit:contain;border:1px solid #e2e6ed;border-radius:4px;background:#fff}
 .nlx-we-accept>small{display:block;color:#8b9aab;font-size:9px;margin-top:8px}
 .nlx-terms{display:grid;gap:12px;margin:24px 0 15px}
 .nlx-terms label{display:flex;gap:13px;align-items:flex-start;border:1px solid #d8e1ee;border-radius:15px;padding:16px;font-size:12px;color:#40516b;line-height:1.65;cursor:pointer}
 .nlx-terms label input{margin-top:2px}
 .nlx-status{min-height:20px;font-size:12px;color:#526f83;margin:8px 0}.nlx-status.nlx-error{color:#b32e3d}
 .nlx-trust{display:flex;justify-content:space-around;margin-top:13px;color:#778aa4;font-size:10px;letter-spacing:.075em;font-weight:800}
-.nlx-right{min-width:0}
+.nlx-right{min-width:0;align-self:stretch}
 .nlx-summary{position:sticky;top:24px;border:1px solid var(--nx-border);border-radius:23px;background:#fff;padding:0 22px 22px;overflow:hidden}
 .nlx-summary-head{display:flex;justify-content:space-between;align-items:center;border-bottom:1px solid var(--nx-border);margin:0 -22px 18px;padding:21px 22px 16px}
 .nlx-summary-head h2{font-size:17px;font-weight:800;margin:0}.nlx-summary-head span{color:#8394ab;font-size:12px}
@@ -152,3 +153,18 @@ body.ap-checkout-page #account-root{box-shadow:none!important;border:0!important
 .nlx-empty,.nlx-error{color:#a3343c}
 @media(max-width:1080px){.nlx-columns{grid-template-columns:minmax(0,1.3fr) minmax(290px,1fr);gap:17px}.nlx-left{padding:22px}.nlx-summary{padding-inline:16px}.nlx-summary-head{margin-inline:-16px;padding-inline:16px}}
 @media(max-width:770px){body.ap-checkout-page .account-page{padding:16px 13px 48px!important}.nlx-columns{grid-template-columns:1fr;gap:18px}.nlx-right{grid-row:2}.nlx-summary{position:static}.nlx-left{border-radius:16px;padding:18px}.nlx-two{grid-template-columns:1fr}.nlx-progress{gap:6px}.nlx-progress button{gap:6px;font-size:11px}.nlx-progress button:not(:last-child):after{min-width:4px;margin-left:0}.nlx-confirm>div{grid-template-columns:62px 1fr auto}.nlx-summary-head{padding-block:15px}}
+
+.nlx-points-text{display:flex;align-items:center;gap:7px;min-width:0}.nlx-points-text svg{flex:none}.nlx-shield-svg{display:block}
+.nlx-cross-sell{margin-top:18px;padding-top:14px;border-top:1px solid #e2eaf3}.nlx-cross-sell>div{display:grid;gap:8px}
+.nlx-cross-sell article{display:flex;align-items:center;gap:12px;border:1px solid #e0e8f2;border-radius:12px;padding:9px;min-width:0}
+.nlx-cross-sell img{width:42px;height:52px;object-fit:contain;border-radius:7px;background:#f2f5f9}
+.nlx-cross-sell article span{flex:1;min-width:0}.nlx-cross-sell article strong{display:block;font-size:12px}
+.nlx-cross-sell article small{font-size:11px;color:#657892}
+.nlx-cross-sell article button{border:0;border-radius:18px;padding:9px 15px;font-size:11px;font-weight:800;background:#101720;color:#fff}
+.nlx-member-year{background:#fff;border:1px solid #cadcfa;border-radius:9px;padding:10px 12px;font-size:12px}
+.nlx-member-year small{display:block;margin-top:5px;color:#697d94}
+.nlx-member-actions{grid-template-columns:1fr 1fr}.nlx-member-actions a:first-child{background:#fff;color:#124883;border:1px solid #b9d3f9}
+.nlx-checkout-root .nlx-summary{overflow-wrap:anywhere}
+@media(max-width:480px){.nlx-express-label{align-items:flex-start;gap:8px}.nlx-wallets{flex-wrap:wrap}.nlx-wallet-unavailable{flex:1;min-width:115px}.nlx-protection-body{flex-wrap:wrap}.nlx-member-actions{grid-template-columns:1fr}}
+
+.nlx-promo-free{display:inline-flex;width:max-content;max-width:100%;align-items:center;margin:1px 0 7px;padding:3px 7px;border:1px solid #a5c7ed;border-radius:7px;background:#eaf4ff;color:#164a91;font-size:10px;font-weight:800;line-height:1.2;white-space:nowrap}

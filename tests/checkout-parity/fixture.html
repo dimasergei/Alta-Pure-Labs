@@ -62,8 +62,19 @@
    throw Error('Unexpected request: '+body.action);
  }};
  function quote(body){
-  const order=body.items||snap(),subtotal=order.reduce((n,x)=>n+(catalog.find(p=>p.id===x.id)?.variants[0]?.price||0)*100*(x.qty||1),0);
-  const discount=body.coupon==='BOGO'?Math.floor(subtotal*.55):0;
+  // Mirrors the real promotion contract: the free units and coupon discount
+  // arrive only from the authoritative quote response, never browser arithmetic.
+  const order=body.items||snap();
+  const lines=order.map(item=>{
+   const unit=Math.round((catalog.find(p=>p.id===item.id)?.variants.find(v=>v.size===item.size)?.price||0)*100);
+   const qty=item.qty||1,gross=unit*qty,free=Math.floor(qty/2);
+   const bogo=free*unit,coupon=body.coupon==='BOGO'?Math.floor((gross-bogo)*.1):0;
+   return{id:item.id,size:item.size,qty,unit_price_cents:unit,gross_cents:gross,
+    bogo_free_units:free,discount_reason:free?'bogo'+(coupon?'+coupon_bogo':''):(coupon?'none+coupon_bogo':'none'),
+    discount_cents:bogo+coupon,line_total_cents:gross-bogo-coupon};
+  });
+  const subtotal=lines.reduce((n,x)=>n+x.gross_cents,0);
+  const discount=lines.reduce((n,x)=>n+x.discount_cents,0);
   const rates=zones[body.country]||zones.OTHER;
   const speed=body.delivery?.shipping||'standard';
   const shipping=rates[speed];
@@ -72,8 +83,8 @@
   return{quote:'fixture-quote-not-a-signature',currency:'USD',subtotal_cents:subtotal,discount_cents:discount,
    shipping_cents:shipping+addOns.reduce((n,x)=>n+x.amount_cents,0),
    total_cents:subtotal-discount+shipping+addOns.reduce((n,x)=>n+x.amount_cents,0),
-   earned_points:Math.floor(subtotal*.012),
-   pricing:{delivery:{shipping_cents:shipping,extras:addOns,selection:body.delivery,country:body.country}}};
+   earned_points:Math.floor((subtotal-discount)/100),
+   pricing:{lines,delivery:{shipping_cents:shipping,extras:addOns,selection:body.delivery,country:body.country}}};
  }
  window.fetch=async(url,opts={})=>{
   const request=String(url);

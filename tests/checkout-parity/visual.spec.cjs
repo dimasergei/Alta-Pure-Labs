@@ -150,3 +150,17 @@ test('VIS-12 short-mobile cart keeps product browsing and checkout accessible',a
  expect(b.height).toBeLessThanOrEqual(667*.65);
  await expect(page.getByRole('link',{name:/proceed to checkout/i})).toBeVisible();
 });
+
+test('VIS-13 BOGO free badges follow confirmed quote lines and disappear after quantity changes',async({page})=>{
+ await pageReady(page,'cart');
+ const cartFree=page.locator('[data-testid="cart-bogo-free"]:not([hidden])');
+ await expect(cartFree).toHaveCount(1);
+ await expect(cartFree.first()).toHaveText('+1 FREE · BOGO');
+ await capture(page,'cart-server-confirmed-bogo');
+ await pageReady(page,'shipping');
+ await expect(page.getByTestId('checkout-bogo-free')).toHaveCount(1);
+ await expect(page.getByTestId('checkout-bogo-free')).toHaveText('+1 FREE · BOGO');
+ await page.locator('[data-nlx-qty="-1"]').first().click();
+ await page.waitForTimeout(300);
+ await expect(page.getByTestId('checkout-bogo-free')).toHaveCount(0);
+});

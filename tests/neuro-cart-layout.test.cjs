@@ -10,7 +10,7 @@ function fixture(authorized=false){
  w.AltaCartNmi={open(){}};
  w.fetch=async(url,options={})=>{
   requests.push({url,body:options.body?JSON.parse(options.body):undefined});
-  if(String(url).includes('checkout=public'))return{ok:true,json:async()=>({methods:[],nmi:authorized?{ready:true,method_id:'method-1',wallets:{apple:true,google:true}}:null})};
+  if(String(url).includes('checkout=public'))return{ok:true,json:async()=>({methods:authorized?[{id:'method-1',native_provider:'nmi',kind:'card'}]:[],delivery_options:[{id:'protection',enabled:true,price_cents:500}],nmi:authorized?{ready:true,method_id:'method-1',wallets:{apple:true,google:true}}:null})};
   const b=JSON.parse(options.body);
   const protectedFee=b.delivery.extras.includes('protection')?500:0;
   return{ok:true,json:async()=>({subtotal_cents:10000,discount_cents:0,total_cents:11495+protectedFee,pricing:{delivery:{shipping_cents:1495,extras:protectedFee?[{id:'protection',label:'Shipping Protection',amount_cents:500}]:[]}}})};

@@ -1,10 +1,11 @@
 /* AltaPure cart: clean order and express-payment drawer */
-.ap-cart-dialog{width:min(480px,100vw)!important;max-width:100vw!important;height:100dvh!important;max-height:100dvh!important;top:0!important;right:0!important;bottom:0!important;left:auto!important;margin:0!important;border-radius:0!important;border:0!important;overflow:hidden!important;padding:0!important;background:#fff!important;color:#172337!important;box-shadow:-20px 0 80px #0003!important}
+.ap-cart-dialog{width:min(440px,100vw)!important;max-width:100vw!important;height:100dvh!important;max-height:100dvh!important;top:0!important;right:0!important;bottom:0!important;left:auto!important;margin:0!important;border-radius:0!important;border:0!important;overflow:hidden!important;padding:0!important;background:#fff!important;color:#172337!important;box-shadow:-20px 0 80px #0003!important}
 .ap-cart-dialog::backdrop{background:#12152388}
 .ap-cart-dialog .ap-dialog-head{margin:0!important;padding:15px 18px!important;min-height:68px;border-bottom:1px solid #e5ebf1!important;display:flex;align-items:center;justify-content:space-between;background:#fff}
 .ap-cart-dialog .ap-dialog-head h2{font-size:18px!important;letter-spacing:-.025em;font-weight:800!important}
 .ap-cart-dialog .ap-dialog-head>button{width:36px;height:36px;border:0;border-radius:50%;background:#edf2f9;font-size:25px;color:#3c506d}
-#ap-cart-content{height:calc(100dvh - 68px);overflow:auto;display:flex;flex-direction:column;padding:0!important;font-family:'Plus Jakarta Sans',Inter,Arial,sans-serif}
+#ap-cart-content{height:calc(100dvh - 68px);overflow:hidden;display:flex;flex-direction:column;min-height:0;padding:0!important;font-family:Poppins,Inter,Arial,sans-serif}
+.nlc-scrollable-items{min-height:0;flex:1;overflow-y:auto;overscroll-behavior:contain;scrollbar-gutter:stable}
 .nlc-cart-lines{padding:0 18px}
 .nlc-line{display:grid;grid-template-columns:61px minmax(0,1fr) auto;gap:12px;align-items:start;padding:18px 0;border-bottom:1px solid #e4ebf3}
 .nlc-line img{width:61px;height:72px;object-fit:contain;background:#f2f5fa;border-radius:10px}
@@ -23,7 +24,7 @@
 .nlc-rec img{width:49px;height:58px;object-fit:contain;background:#f1f3f8;border-radius:6px}
 .nlc-rec strong{display:block;font-size:10px;line-height:1.3}.nlc-rec span{display:block;font-size:10px;color:#1c4b85;margin:5px 0}
 .nlc-rec button{background:#0b0c10;border:0;border-radius:22px;color:#fff;font-size:9px;font-weight:800;padding:8px 12px;white-space:nowrap}
-.nlc-cart-checkout{margin-top:auto;padding:13px 18px 20px;box-shadow:0 -8px 20px #1d32440c}
+.nlc-cart-checkout{height:min(520px,60dvh);flex:none;overflow-y:auto;overscroll-behavior:contain;margin-top:auto;padding:13px 18px 20px;border-top:1px solid #dfe7ef;background:#fff;box-shadow:0 -8px 20px #1d32440c}
 .nlc-coupon{border-top:1px solid #e8edf2;padding-top:9px}
 .nlc-coupon summary{font-size:12px;font-weight:800;padding:8px 0;cursor:pointer}
 .nlc-coupon>div{display:flex;gap:8px;padding:8px 0}
@@ -49,3 +50,8 @@
 .nlc-wallet-area p{font-size:10px;color:#8a97aa;line-height:1.5;margin:9px 0}
 .nlc-wallet-area p a{color:#31588c}
 @media(max-width:480px){.ap-cart-dialog{width:100vw!important}.nlc-cart-checkout{padding:12px}.nlc-line{grid-template-columns:55px minmax(0,1fr) auto}.nlc-line img{width:55px}}
+
+@media(max-height:700px){.nlc-cart-checkout{height:min(420px,62dvh)}.nlc-cart-lines .nlc-line{padding-block:10px}}
+.nlc-scrollable-items:focus-visible,.nlc-cart-checkout:focus-visible{outline:2px solid #164b99;outline-offset:-2px}
+
+.nlc-name [data-nlc-bogo-line]:not([hidden]){display:inline-block;margin-top:5px;padding:3px 7px;border:1px solid #a5c7ed;border-radius:7px;background:#eaf4ff;color:#164a91;font-size:10px;font-weight:800;line-height:1.2;white-space:nowrap}

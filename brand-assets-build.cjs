@@ -7,6 +7,9 @@ const {ends_at: promoEnd}=require('./config/checkout.json').promotions;
 if(!fs.existsSync(out))throw new Error('public-build output is missing.');
 fs.copyFileSync(theme,path.join(out,theme));
 for(const [source,target] of [['altapure-favicon.svg','favicon.svg'],['altapure-favicon-48.png','favicon-48.png'],['altapure-favicon.ico','favicon.ico'],['altapure-touch-icon.png','apple-touch-icon.png'],['altapure-logo-mark.png','brand-logo.png']])fs.copyFileSync(path.join(process.cwd(),'assets',source),path.join(out,target));
+// Self-host authentic payment marks from the reviewed assets directory.
+fs.mkdirSync(path.join(out,'assets','payment-brands'),{recursive:true});
+fs.cpSync(path.join(process.cwd(),'assets','payment-brands'),path.join(out,'assets','payment-brands'),{recursive:true});
 const iconLinks=`<meta name="altapure-promo-end" content="${promoEnd}">`+'<link rel="icon" type="image/svg+xml" href="/favicon.svg"><link rel="icon" type="image/png" sizes="48x48" href="/favicon-48.png"><link rel="shortcut icon" href="/favicon.ico"><link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png"><meta name="theme-color" content="#ffffff">';
 const organization='<script type="application/ld+json">{"@context":"https://schema.org","@type":"Organization","name":"AltaPure Labs","url":"https://altapurelabs.com/","logo":"https://altapurelabs.com/brand-logo.png"}</script>';
 let count=0;

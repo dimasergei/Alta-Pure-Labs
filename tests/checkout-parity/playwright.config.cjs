@@ -24,6 +24,7 @@ module.exports=defineConfig({
  projects:[{name:'chromium',use:{...devices['Desktop Chrome'],viewport:{width:1536,height:900},deviceScaleFactor:1}}],
  webServer:{
   command:'node tests/checkout-parity/serve.cjs',
+  cwd:require('node:path').resolve(__dirname,'../..'),
   url:'http://127.0.0.1:'+PORT+'/tests/checkout-parity/fixture.html?view=shipping',
   reuseExistingServer:!process.env.CI,
   timeout:30_000

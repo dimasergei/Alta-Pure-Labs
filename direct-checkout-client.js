@@ -47,7 +47,7 @@
   if(q.pricing.bogo_free_units)box.append(node('p','BOGO: '+q.pricing.bogo_free_units+' free unit'+(q.pricing.bogo_free_units===1?'':'s')+' included in your ordered quantities.'));if(q.pricing.coupon_code)box.append(node('p','Coupon '+q.pricing.coupon_code+' applied.'));box.append(totals,node('p','Earn '+q.earned_points+' points when payment is confirmed.'));if(q.pricing.shipping_note)box.append(node('p',q.pricing.shipping_note));return box;
  }
  function cartSummary(cart,goods,plan,data){const box=node('aside');box.className='dc-summary';box.setAttribute('aria-label','Order summary');box.append(node('h2','Your order'));
-  const lines=goods?cart:[{name:data.terms.memberships[plan].name,size:'365-day membership',qty:1,price:data.terms.memberships[plan].price_cents/100}];
+  const lines=goods?cart:[{name:data.terms.memberships[plan].name,size:'Annual membership · no automatic renewal',qty:1,price:data.terms.conversion.plans[plan].annual_cents/100}];
   for(const x of lines){const row=node('div');row.className='dc-cart-item';if(goods){const img=node('img');img.src=window.AltaStore.image(window.AltaStore.product(x.id),x.size);img.alt='';row.append(img);}else row.append(node('span','365'));const label=node('div');label.append(node('strong',x.name),node('small',x.size+' · Qty '+x.qty));row.append(label,node('strong',money(Math.round(x.price*100)*x.qty)));box.append(row);}
   const estimate=node('div');estimate.className='dc-totals';estimate.innerHTML='<div class="dc-total-row"><span>Subtotal before discounts</span><strong>'+money(lines.reduce((sum,x)=>sum+Math.round(x.price*100)*x.qty,0))+'</strong></div><div class="dc-total-row"><span>Delivery</span><strong>'+(goods?'US$25.00':'Not required')+'</strong></div>';
   const note=node('p','Review your total to apply eligible discounts, points and store credit. All checkout amounts are in USD.');note.className='dc-note';estimate.append(note);box.append(estimate);return {box,estimate};
@@ -68,10 +68,17 @@
  }
  async function checkout(root,auth,user,options={}){
   try{
-   const data=await api(auth),plan=new URLSearchParams(location.search).get('plan'),goods=!['vip','elite'].includes(plan),cart=window.AltaStore?.cart||[];
+   const params=new URLSearchParams(location.search),plan=params.get('plan'),goods=!['vip','elite'].includes(plan),
+    membershipPeriod=goods?null:(params.get('period')||'annual'),data=await api(auth),cart=window.AltaStore?.cart||[];
    root.innerHTML='<div class="dc-topline"><a href="/shop">← Continue shopping</a><a href="/account/purchases">My orders</a></div><header class="dc-heading"><h1>Checkout</h1><p class="dc-steps">Your details &nbsp; / &nbsp; Review order &nbsp; / &nbsp; Payment</p></header>'; document.title='Checkout | AltaPure Labs';
    if(goods&&!cart.length){root.append(node('p','Your cart is empty.'),link('Shop products','/shop'));return;}
    if(!goods&&data.membership){root.append(node('p','You already have an active '+data.membership.plan.toUpperCase()+' pass.'),link('View membership','/account/membership'));return;}
+   if(!goods&&membershipPeriod!=='annual'){
+    root.append(node('p','Monthly membership checkout is not offered in this flow. Review the annual plan before paying.'),link('View memberships','/memberships'));return;
+   }
+   if(!goods&&(!Number.isSafeInteger(data.terms?.conversion?.plans?.[plan]?.annual_cents)||data.terms.conversion.plans[plan].annual_cents<=0)){
+    root.append(node('p','Membership pricing could not be verified. No order has been created.'),link('View memberships','/memberships'));return;
+   }
    const methods=data.methods.filter(m=>m.sale_scope==='both'||m.sale_scope===(goods?'goods':'membership'));
    if(!methods.length){root.append(node('p','No payment method is currently available for this purchase. Please contact the team.'),link('Contact','/contact'));return;}
    const profile=user.user_metadata?.alta_profile||{},address=profile.shipping||{};
@@ -84,7 +91,7 @@
    form.addEventListener('input',()=>{if(!busy){nmiWidget?.destroy();nmiWidget=null;nmiLocked=false;review.replaceChildren();estimate.hidden=false;status.textContent='';}});
    form.onsubmit=async e=>{e.preventDefault();if(busy||!steps.ready())return;busy=true;const button=form.querySelector('button[type="submit"]');button.disabled=true;status.textContent='Calculating your total…';
     try{
-     const d=Object.fromEntries(new FormData(form));for(const control of form.elements)control.disabled=true;const request={kind:goods?'goods':'membership',...(goods?{items:cart.map(({id,size,qty})=>({id,size,qty})),address:{line1:d.line1,line2:d.line2,city:d.city,region:d.region,postal_code:d.postal_code,country:d.country},research_use:d.research_use==='on'}:{plan}),name:d.name,organization:d.organization,note:d.note,consent:d.consent==='on',method_id:d.method_id,points:Number(d.points||0),credit_cents:Math.round(Number(d.credit||0)*100),coupon:d.coupon||'',delivery:window.ReadinessUI.selection(form),checkout_version:data.config.version};
+     const d=Object.fromEntries(new FormData(form));for(const control of form.elements)control.disabled=true;const request={kind:goods?'goods':'membership',...(goods?{items:cart.map(({id,size,qty})=>({id,size,qty})),address:{line1:d.line1,line2:d.line2,city:d.city,region:d.region,postal_code:d.postal_code,country:d.country},research_use:d.research_use==='on'}:{plan,billing_period:membershipPeriod}),name:d.name,organization:d.organization,note:d.note,consent:d.consent==='on',method_id:d.method_id,points:Number(d.points||0),credit_cents:Math.round(Number(d.credit||0)*100),coupon:d.coupon||'',delivery:window.ReadinessUI.selection(form),checkout_version:data.config.version};
      const fingerprint=Array.from(new Uint8Array(await crypto.subtle.digest('SHA-256',new TextEncoder().encode(JSON.stringify(request))))).map(x=>x.toString(16).padStart(2,'0')).join('');if(lastFingerprint&&lastFingerprint!==fingerprint){requestId=crypto.randomUUID();sessionStorage.setItem('ap-checkout-id',requestId);}lastFingerprint=fingerprint;sessionStorage.setItem('ap-checkout-fingerprint',fingerprint);
      body={...request,id:requestId,action:'quote'};const q=await api(auth,body);estimate.hidden=true;review.replaceChildren(summary(q));review.scrollIntoView({behavior:'auto',block:'nearest'});status.textContent='Review the final total, then place your order.';
      const selected=methods.find(m=>m.id===body.method_id),rampex=selected?.native_provider==='rampex'&&q.total_cents>0;
