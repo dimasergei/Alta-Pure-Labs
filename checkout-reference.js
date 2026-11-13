@@ -136,8 +136,7 @@
    const matching=Array.isArray(preview?.pricing?.lines)?preview.pricing.lines.find(row=>
     row.id===line.id&&row.size===line.size&&row.qty===line.qty):null;
    const n=matching?.bogo_free_units;
-   return Number.isSafeInteger(n)&&n>0&&n<=line.qty&&
-    /^bogo(?:$|\\+)/.test(matching.discount_reason||'')?n:0;
+   return Number.isSafeInteger(n)&&n>0&&n<=line.qty&&['bogo','bogo+coupon_bogo'].includes(matching?.discount_reason)?n:0;
   }
   function renderSummary(){
    const items=snapshotCart();
