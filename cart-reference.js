@@ -21,16 +21,19 @@
   const selected=new Set(extras(items)),catalog=window.AltaStore?.catalog||[];
   const picks=catalog.filter(p=>!items.some(x=>x.id===p.id)).slice(0,5);
   let subtotal=items.reduce((n,x)=>n+Math.round(x.price*100)*x.qty,0);
-  root.innerHTML='<div class="nlc-scrollable-items cart__body" data-testid="cart-product-scroll"><section class="nlc-cart-lines">'+items.map(x=>
+  const unlock=target=>money(Math.max(0,target-subtotal));
+  root.innerHTML='<div class="nlc-scrollable-items cart__body" data-testid="cart-product-scroll">'
+   +'<div class="nlc-unlock"><p data-nlc-unlock-copy>Add <strong>'+unlock(25000)+'</strong> more to unlock <strong>Free Priority Shipping</strong></p><div class="nlc-progress" role="progressbar" aria-label="Shipping rewards progress" aria-valuemin="0" aria-valuemax="299" aria-valuenow="'+Math.min(299,Math.floor(subtotal/100))+'"><span class="nlc-progress-fill" style="width:'+Math.min(100,subtotal/29900*100)+'%"></span><span class="nlc-gift nlc-gift-one" tabindex="0" aria-label="Free Priority Shipping at $250">♔<span class="nlc-gift-tip">Free Priority Shipping — $250.00</span></span><span class="nlc-gift nlc-gift-two" tabindex="0" aria-label="Free BAC Water and Free Shipping at $299">♔<span class="nlc-gift-tip">Free BAC Water + Free Shipping — $299.00</span></span></div></div>'
+   +'<section class="nlc-cart-lines">'+items.map(x=>
     '<div class="nlc-line"><img src="'+html(window.AltaStore.image(window.AltaStore.product(x.id),x.size))+'" alt="">'
     +'<div class="nlc-name"><strong>'+html(x.name)+'</strong><small>'+html(x.size)+'</small>'
-    +'<span hidden data-testid="cart-bogo-free" data-nlc-bogo-line></span><div class="ap-quantity"><button type="button" data-action="cart-quantity" data-key="'+html(x.key)+'" data-step="-1" aria-label="Decrease '+html(x.name)+' quantity">−</button>'
-    +'<input value="'+x.qty+'" readonly aria-label="Quantity"><button type="button" data-action="cart-quantity" data-key="'+html(x.key)+'" data-step="1" aria-label="Increase '+html(x.name)+' quantity">+</button></div>'
+    +'<span hidden data-testid="cart-bogo-free" data-nlc-bogo-line></span><div class="nlc-quantity-row"><div class="ap-quantity"><button type="button" data-action="cart-quantity" data-key="'+html(x.key)+'" data-step="-1" aria-label="Decrease '+html(x.name)+' quantity">−</button>'
+    +'<input value="'+x.qty+'" readonly aria-label="Quantity"><button type="button" data-action="cart-quantity" data-key="'+html(x.key)+'" data-step="1" aria-label="Increase '+html(x.name)+' quantity">+</button></div></div>'
     +'</div><div class="nlc-price"><strong>'+money(Math.round(x.price*100)*x.qty)+'</strong><button type="button" data-action="cart-remove" data-key="'+html(x.key)+'" aria-label="Remove item">×</button></div></div>'
    ).join('')+'</section>'
    +(picks.length?'<div class="nlc-recs"><h3>RECOMMENDED ADD-ONS</h3><div class="nlc-rec-track">'+picks.map(p=>{
     const v=p.variants[0];
-    return '<div class="nlc-rec"><img src="'+html(window.AltaStore.image(p,v.size))+'" alt=""><div><strong>'+html(p.name)+'</strong><span>'+money(Math.round(v.price*100))+'</span><button data-action="add" data-id="'+html(p.id)+'" type="button">ADD MORE</button></div></div>';
+    return '<div class="nlc-rec"><img src="'+html(window.AltaStore.image(p,v.size))+'" alt=""><div><strong>'+html(p.name)+'</strong><div class="nlc-rec-prices"><s>'+money(Math.round(v.price*100))+'</s> <b>'+money(Math.floor(v.price*90))+'</b></div><small>Save 10% · code BOGO</small><button data-action="add" data-id="'+html(p.id)+'" type="button">ADD MORE</button></div></div>';
    }).join('')+'</div></div>':'')
    +'</div><div class="nlc-cart-checkout cart__checkout" data-testid="cart-fixed-footer"><details class="nlc-coupon"><summary>Coupon code</summary><div><input type="text" name="nlc_coupon" placeholder="Coupon code" maxlength="40" value="'+html(localStorage.getItem('ap-checkout-coupon')||'')+'"><button type="button" data-nlc-apply>APPLY</button></div></details>'
    +'<p class="nlc-delivery-est"><svg viewBox="0 0 24 24" width="17" height="17" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><path d="M3 6h11v11H3zM14 10h4l3 4v3h-7z"/><circle cx="7" cy="18" r="2"/><circle cx="18" cy="18" r="2"/></svg> <strong>Estimated delivery:</strong> <span data-nlc-estimate></span></p>'
@@ -80,9 +83,13 @@
     nodes.push(['Shipping',shipping]);
     for(const f of features.filter(x=>x.id!=='protection'))nodes.push([f.label,f.amount_cents]);
     const includedProtection=features.find(x=>x.id==='protection');
-    track.innerHTML=nodes.map(([label,price])=>'<div><span>'+html(label)+'</span><strong>'+money(price)+'</strong></div>').join('')
-     +(includedProtection?'<div class="nlc-protection-static"><span>Shipping Protection</span><strong>'+money(includedProtection.amount_cents)+'</strong></div>':'')
-     +'<div class="nlc-subtotal"><span>Estimated total</span><strong>'+money(data.total_cents)+'</strong></div>';
+    const bankSavings=Math.floor(Math.max(0,data.subtotal_cents-data.discount_cents)*0.05);
+    track.innerHTML=nodes.map(([label,price],i)=>'<div class="'+(i===0?'nlc-first-subtotal':'')+'"><span>'+html(label)+'</span><strong>'+(i===0?money(price):price<0?'−'+money(-price):'+'+money(price))+'</strong></div>').join('')
+     +(includedProtection?'<div class="nlc-protection-static"><span>Shipping Protection</span><strong>+'+money(includedProtection.amount_cents)+'</strong></div>':'')
+     +'<div class="nlc-bank-discount"><span>Same-Day Bank Payment discount (5%)</span><strong>−'+money(bankSavings)+'</strong></div>';
+    const unlockText=root.querySelector('[data-nlc-unlock-copy]');
+    if(unlockText){const remaining=Math.max(0,25000-(data.subtotal_cents-data.discount_cents));unlockText.innerHTML=remaining?'Add <strong>'+money(remaining)+'</strong> more to unlock <strong>Free Priority Shipping</strong>':'<strong>Free Priority Shipping unlocked!</strong>';}
+    const bar=root.querySelector('.nlc-progress-fill');if(bar)bar.style.width=Math.min(100,100*(data.subtotal_cents-data.discount_cents)/29900)+'%';
     const proceed=root.querySelector('.nlc-proceed');if(proceed)proceed.textContent='Proceed to Checkout ('+money(data.total_cents)+')';
     const instant=root.querySelector('[data-nlc-instant-amount]');if(instant)instant.textContent=money(data.total_cents);
    }catch(error){if(root.isConnected&&id===seq)track.textContent='Final prices will be shown at checkout. '+(error?.message||'');}
