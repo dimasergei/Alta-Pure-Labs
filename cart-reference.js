@@ -47,7 +47,7 @@
     const settings=await methods();
     if(!root.isConnected||id!==seq)return;
     const method=settings.methods?.find(m=>m.kind!=='bank_transfer')||settings.methods?.[0];
-    const wallet=settings.nmi?.ready===true?settings.nmi:null;
+    const wallet=settings.nmi?.ready===true&&settings.methods?.some(m=>m.id===settings.nmi.method_id&&m.native_provider==='nmi')?settings.nmi:null;
     if(wallet){
      root.querySelectorAll('[data-nlc-wallets] button').forEach((b,i)=>{
       const authorized=i===0?wallet.wallets?.apple===true:wallet.wallets?.google===true;
