@@ -1,0 +1,44 @@
+name: Checkout parity V2 (isolated acceptance)
+on:
+  pull_request:
+    paths:
+      - 'checkout-reference.js'
+      - 'checkout-reference.css'
+      - 'cart-reference.js'
+      - 'cart-reference.css'
+      - 'brand-assets-build.cjs'
+      - 'assets/payment-brands/**'
+      - 'tests/checkout-parity/**'
+      - '.github/workflows/checkout-parity.yml'
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  parity:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Install deterministic dependencies
+        run: npm ci --no-audit --no-fund
+      - name: Validate checkout source contracts
+        run: node --test tests/checkout-parity/contracts.test.cjs
+      - name: Install isolated Playwright runner and Chromium
+        run: |
+          npm install --no-save --no-package-lock @playwright/test@1.56.1
+          npx playwright install --with-deps chromium
+      - name: Capture isolated checkout desktop/mobile visuals and test interactions
+        run: npx playwright test --config=tests/checkout-parity/playwright.config.cjs
+      - name: Upload local fixture reports (no production data)
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: checkout-parity-v2-report
+          path: |
+            test-results/checkout-parity-report/
+            test-results/checkout-parity/
+          if-no-files-found: ignore
+          retention-days: 7
