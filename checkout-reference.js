@@ -9,14 +9,21 @@
  const countryOptions=codes=>codes.map(code=>({code,label:COUNTRIES.of(code)||code})).sort((a,b)=>a.label.localeCompare(b.label)).map(c=>'<option value="'+esc(c.code)+'">'+esc(c.label)+'</option>').join('');
  const stepTitles=['Shipping','Delivery','Payment'];
  const payCards=[
-  ['visa','VISA'],['apple',' Pay'],['google','G Pay'],['mastercard','●●'],['amex','AMERICAN EXPRESS'],['discover','DISCOVER']
+  ['visa','Visa'],['apple','Apple Pay'],['google','Google Pay'],['mastercard','Mastercard'],['amex','American Express'],['discover','Discover']
  ];
- const logo=(type,text)=>'<span class="nlx-pay-logo nlx-pay-logo--'+type+'">'+esc(text)+'</span>';
+ const logo=(type,text)=>'<img class="nlx-payment-mark" src="/assets/payment-brands/'+type+'.svg" alt="'+esc(text)+'" width="45" height="30" loading="lazy">';
+ const shieldIcon='<svg class="nlx-shield-svg" viewBox="0 0 24 24" width="26" height="26" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><path d="M12 3 20 6v6c0 5-3.4 8.1-8 10-4.6-1.9-8-5-8-10V6l8-3Z"/><path d="m8 12 3 3 5-6"/></svg>';
+ const sparkleIcon='<svg data-icon="sparkles" viewBox="0 0 24 24" width="19" height="19" fill="none" stroke="currentColor" stroke-width="1.7" aria-hidden="true"><path d="m12 2 1.8 6.2L20 10l-6.2 1.8L12 18l-1.8-6.2L4 10l6.2-1.8L12 2ZM19 16l.8 2.2L22 19l-2.2.8L19 22l-.8-2.2L16 19l2.2-.8L19 16Z"/></svg>';
+ const cartKey=items=>'ap-v2-cart-extras:'+JSON.stringify(items.map(({id,size,qty})=>({id,size,qty})));
  const terms1='I confirm that I am at least 21 years old and purchasing solely for lawful laboratory research. These products are not intended for human or veterinary consumption.';
  const terms2='I accept the research-use agreement and terms. I understand that availability, shipping restrictions and customs requirements apply to my destination.';
+ // Keep the original membership-only checkout before overriding goods checkout.
+ const membershipCheckout=window.DirectCheckout?.checkout;
  async function checkout(root,auth,user,options={}){
-  const original=window.DirectCheckout?.checkout;
-  if(['vip','elite'].includes(new URLSearchParams(location.search).get('plan')))return original(root,auth,user,options);
+  if(['vip','elite'].includes(new URLSearchParams(location.search).get('plan'))){
+   if(!membershipCheckout){root.replaceChildren(el('p','nlx-error','Membership checkout is unavailable.'));return;}
+   return membershipCheckout(root,auth,user,options);
+  }
   const cart=window.AltaStore?.cart||[];
   if(!cart.length){root.replaceChildren(el('p','nlx-empty','Your cart is empty.'));return;}
   let data;
@@ -29,7 +36,7 @@
   const countries=countryOptions(supported);
   const optionsById=Object.fromEntries((data.delivery_options||[]).map(x=>[x.id,x]));
   const isActive=id=>!!optionsById[id]?.enabled;
-  const priorExtras=(()=>{try{return JSON.parse(localStorage.getItem('ap-shipping-extras')||'null');}catch{return null;}})();
+  const priorExtras=(()=>{try{return JSON.parse(sessionStorage.getItem(cartKey(cart))||'null');}catch{return null;}})();
 
   let stage=0,quote=null,quoteVersion=0,quoteTimer=null,nmiComponent=null,onePayment=false,lastPlaced=null,orderId=crypto.randomUUID(),currentPreview=null,loadingPreview=false,sms=false;
   const state={country:supported.includes(saved.country)?saved.country:'US',
@@ -107,19 +114,28 @@
    counts.push(['Total',p?.total_cents??(subtotal-savings+ships)]);
    return counts;
   }
+  function wireDisclosures(scope){
+   all('button[data-nlx-info]',scope).forEach(button=>button.addEventListener('click',()=>{
+    const id=button.getAttribute('aria-controls'),panel=id&&scope.querySelector('#'+id);
+    if(!panel)return;
+    const open=button.getAttribute('aria-expanded')==='true';
+    button.setAttribute('aria-expanded',String(!open));panel.hidden=open;
+   }));
+  }
   function renderSummary(){
    const items=snapshotCart();
    view('[data-nlx-item-count]',detail).textContent=items.reduce((n,x)=>n+x.qty,0)+' items';
-   view('[data-nlx-protection]',detail).innerHTML=isActive('protection')?'<div class="nlx-protection-body"><span class="nlx-shield">♢</span><div><strong>Shipping Protection</strong><a href="/shipping-protection.html" target="_blank" rel="noopener">Read more</a></div><span class="nlx-protection-price">'+usd(optionsById.protection.price_cents)+'</span><label class="nlx-mini-check"><input type="checkbox" data-nlx-extra="protection" '+(state.extras.has('protection')?'checked':'')+' aria-label="Shipping protection"></label></div>':'';
+   view('[data-nlx-protection]',detail).innerHTML=isActive('protection')&&state.country==='US'?'<div class="nlx-protection-body"><span class="nlx-shield">'+shieldIcon+'</span><div class="nlx-protection-copy"><strong>Shipping Protection</strong><button type="button" class="nlx-disclosure-trigger" data-testid="protection-disclosure" data-nlx-info="protection" aria-controls="nlx-protection-detail" aria-expanded="false">Read more</button><div class="nlx-disclosure" id="nlx-protection-detail" data-testid="protection-disclosure-panel" data-nlx-panel hidden><p>'+esc(optionsById.protection.description||'Optional protection for eligible shipments.')+'</p><a href="/shipping-protection.html">Full shipping protection policy</a></div></div><span class="nlx-protection-price">'+usd(optionsById.protection.price_cents)+'</span><label class="nlx-mini-check"><input type="checkbox" data-nlx-extra="protection" '+(state.extras.has('protection')?'checked':'')+' aria-label="Shipping protection"></label></div>':'';
    view('[data-nlx-products]',detail).innerHTML='<div class="nlx-product-head"><span>PRODUCT</span><span>SUBTOTAL</span></div>'+items.map(x=>{
     const image=window.AltaStore?.image?.(window.AltaStore.product(x.id),x.size)||'';
     return '<div class="nlx-product"><img src="'+esc(image)+'" alt=""><div class="nlx-product-name"><strong>'+esc(x.name)+'</strong><small>'+esc(x.size)+'</small><div class="nlx-qty"><button data-nlx-qty="-1" data-key="'+esc(x.key)+'" aria-label="Decrease quantity">−</button><span>'+x.qty+'</span><button data-nlx-qty="1" data-key="'+esc(x.key)+'" aria-label="Increase quantity">+</button></div></div><strong class="nlx-product-price">'+usd(Math.round(x.price*100)*x.qty)+'</strong></div>';
    }).join('');
    view('[data-nlx-totals]',detail).innerHTML=moneyLines().map(([n,v])=>'<div class="'+(n==='Total'?'nlx-grand':'')+'"><span>'+esc(n)+'</span><strong>'+usd(v)+'</strong></div>').join('');
    const points=currentPreview?.earned_points||0;
-   view('[data-nlx-points]',detail).innerHTML='<span>✧ &nbsp; Earn <strong>'+Math.max(0,points)+' points</strong> on this order</span><a href="/account/points">Earn more →</a>';
+   view('[data-nlx-points]',detail).innerHTML='<span class="nlx-points-text">'+sparkleIcon+' Earn <strong>'+Math.max(0,points)+' points</strong> on this order</span><a href="/memberships">Earn more →</a>';
    view('[data-nlx-quote-note]',detail).textContent='Final USD charges are verified by AltaPure before any payment. International customs duties may apply.';
    const coupon=view('[name=sidebar_coupon]',detail);if(document.activeElement!==coupon)coupon.value=state.coupon;
+   wireDisclosures(detail);
    all('[data-nlx-extra="protection"]',detail).forEach(x=>x.addEventListener('change',()=>{
     x.checked?state.extras.add('protection'):state.extras.delete('protection');schedule();refresh();
    }));
@@ -131,7 +147,7 @@
     renderSummary();refresh();
    }));
   }
-  function invalidate(){if(lastPlaced)return;localStorage.setItem('ap-shipping-extras',JSON.stringify([...state.extras]));localStorage.setItem('ap-checkout-coupon',state.coupon);quote=null;currentPreview=null;nmiComponent?.destroy();nmiComponent=null;onePayment=false;orderId=crypto.randomUUID();}
+  function invalidate(){if(lastPlaced)return;sessionStorage.setItem(cartKey(snapshotCart()),JSON.stringify([...state.extras]));localStorage.setItem('ap-checkout-coupon',state.coupon);quote=null;currentPreview=null;nmiComponent?.destroy();nmiComponent=null;onePayment=false;orderId=crypto.randomUUID();}
   const refresh=async()=>{
    if(lastPlaced)return;
    try{
@@ -162,17 +178,18 @@
    const country=shippingCountry();const map=rates[country]||rates.OTHER||{};
    const options=['standard','express','next_day'].map((id,i)=>{const x=optionsById[id];if(!x)return'';
     const amount=map[id],eligible=x.enabled&&Number.isSafeInteger(amount);
-    return '<label class="nlx-delivery-card '+(state.shipping===id?'nlx-chosen':'')+(eligible?'':' nlx-disabled')+'"><input type="radio" name="delivery_speed" value="'+id+'" '+(state.shipping===id?'checked ':'')+(eligible?'':'disabled')+'><span class="nlx-delivery-desc"><strong>'+esc(x.label)+'</strong><small>'+esc(id==='standard'?'Tracked standard delivery':id==='express'?'Expedited delivery where available':'Next-business-day shipping for eligible US destinations')+'</small></span><span class="nlx-delivery-price">'+(eligible?usd(amount):'Unavailable')+'</span></label>';
+    return '<label class="nlx-delivery-card '+(state.shipping===id?'nlx-chosen':'')+(eligible?'':' nlx-disabled')+'"><input type="radio" name="delivery_speed" value="'+id+'" '+(state.shipping===id?'checked ':'')+(eligible?'':'disabled')+'><span class="nlx-delivery-desc"><strong>'+esc(x.label)+'</strong><small>'+esc(id==='standard'?'Estimated at dispatch · Tracked service':id==='express'?'Estimated at dispatch · Expedited service where available':'Estimated at dispatch · Next-day service where eligible')+'</small></span><span class="nlx-delivery-price">'+(eligible?usd(amount):'Unavailable')+'</span></label>';
    }).join('');
    const extra=['priority','cold_chain'].map((id,i)=>{const x=optionsById[id];if(!x)return'';
-    return '<label class="nlx-extra-box nlx-extra-'+id+'"><div><span class="nlx-extra-icon">'+(id==='priority'?'◷':'❄')+'</span><div><strong>'+esc(x.label)+'</strong><p>'+esc(x.description)+'</p><a href="#nlx-extra-info" data-nlx-info="'+id+'">Read more</a></div></div><span>'+usd(x.price_cents)+'</span><input type="checkbox" data-nlx-extra="'+id+'" '+(state.extras.has(id)?'checked':'')+(x.enabled?'':' disabled')+'></label>';
+    const label=id==='priority'?'priority':'cold-chain',target='nlx-disclose-'+label;
+    return '<div class="nlx-extra-box nlx-extra-'+id+'"><div><span class="nlx-extra-icon">'+(id==='priority'?'◷':'❄')+'</span><div><strong>'+esc(x.label)+'</strong><p>'+esc(x.description)+'</p><button type="button" class="nlx-disclosure-trigger" data-nlx-info="'+id+'" data-testid="'+label+'-disclosure" aria-expanded="false" aria-controls="'+target+'">Read more</button><div id="'+target+'" data-testid="'+label+'-disclosure-panel" data-nlx-panel class="nlx-disclosure" hidden><p>'+esc(x.description)+'</p><p>Optional service; pricing is included only when selected in the final quote.</p></div></div></div><span>'+usd(x.price_cents)+'</span><label class="nlx-extra-check"><input type="checkbox" aria-label="'+esc(x.label)+'" data-nlx-extra="'+id+'" '+(state.extras.has(id)?'checked':'')+(x.enabled?'':' disabled')+'></label></div>';
    }).join('');
    return '<h2>Delivery speed</h2><div class="nlx-delivery-list">'+options+'</div><div class="nlx-addons">'+extra+'</div>';
   }
   const plan=data.terms?.conversion?.plans?.vip;
   function offerBox(){
    if(!plan)return '';
-   return '<section class="nlx-member-offer"><span class="nlx-optional">OPTIONAL</span><strong class="nlx-member-label">ALTA VIP MEMBERSHIP</strong><h3>Save more on your next orders</h3><p>Member pricing · faster rewards · standard US shipping benefits</p><div class="nlx-member-types"><label class="'+(state.priorityPeriod==='monthly'?'selected':'')+'"><input type="radio" name="nxl_period" value="monthly" '+(state.priorityPeriod==='monthly'?'checked':'')+'>Monthly <small>'+usd(plan.monthly_cents)+'/mo</small></label><label class="'+(state.priorityPeriod==='annual'?'selected':'')+'"><input type="radio" name="nxl_period" value="annual" '+(state.priorityPeriod==='annual'?'checked':'')+'>Annual −20% <small>'+usd(plan.annual_cents)+'/yr</small></label></div><div class="nlx-member-actions"><button type="button" data-nlx-skip> No thanks</button><a href="/checkout?plan=vip&period='+esc(state.priorityPeriod)+'">Activate membership →</a></div><small>Membership checkout is separate and never automatically added.</small></section>';
+   return '<section class="nlx-member-offer"><span class="nlx-optional">OPTIONAL</span><strong class="nlx-member-label">ALTA VIP MEMBERSHIP</strong><h3>Membership benefits for future orders</h3><p>Annual membership · no automatic renewal. Monthly billing is not available in the current checkout.</p><div class="nlx-member-types"><div class="nlx-member-year"><strong>Annual</strong><small>Verified at membership checkout</small></div></div><div class="nlx-member-actions"><a data-testid="membership-activate" href="/memberships">View membership details</a><a href="/checkout?plan=vip&period=annual">Activate annual VIP →</a></div><small>Membership is a separate purchase and is never automatically added to this cart.</small></section>';
   }
   function paymentLayout(){
    const ready=!!method;
@@ -230,7 +247,7 @@
     view('[data-nlx-skip]',form)?.addEventListener('click',()=>view('.nlx-member-offer',form)?.remove());
     view('[data-nlx-back-edit]',form).addEventListener('click',()=>{state.note=form.elements.note?.value||'';showStep(0);});
     view('[data-nlx-next]',form).addEventListener('click',goNext);
-    all('[data-nlx-info]',form).forEach(link=>link.addEventListener('click',event=>{event.preventDefault();const item=optionsById[link.dataset.nlxInfo];window.alert(item?.description||'');}));
+    wireDisclosures(form);
    }else{
     const ship=state.shippingData||formatAddress(),bill=state.billingData||ship;
     const hidden=Object.entries({name:((state.firstName||nameFirst)+' '+(state.lastName||nameLast)).trim(),
@@ -278,7 +295,7 @@
        const link=el('a','nlx-view-order','View your paid order');link.href='/account/purchases?id='+encodeURIComponent(lastPlaced);target.append(link);
        note('Payment confirmed. Your order has been saved.');
        sessionStorage.removeItem('ap-checkout-id');sessionStorage.removeItem('ap-checkout-fingerprint');
-       localStorage.removeItem('pp-cart');return{paid:true};
+       localStorage.removeItem('pp-cart');sessionStorage.removeItem(cartKey(snapshotCart()));return{paid:true};
       }
       if(confirmed.state==='declined'){note('Card declined. Your order is saved; review it before retrying.',true);return{pending:true};}
       note('Payment is being verified. Do not submit another charge.');return{pending:true};
