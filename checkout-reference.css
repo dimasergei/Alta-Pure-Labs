@@ -166,3 +166,5 @@ body.ap-checkout-page #account-root{box-shadow:none!important;border:0!important
 .nlx-member-actions{grid-template-columns:1fr 1fr}.nlx-member-actions a:first-child{background:#fff;color:#124883;border:1px solid #b9d3f9}
 .nlx-checkout-root .nlx-summary{overflow-wrap:anywhere}
 @media(max-width:480px){.nlx-express-label{align-items:flex-start;gap:8px}.nlx-wallets{flex-wrap:wrap}.nlx-wallet-unavailable{flex:1;min-width:115px}.nlx-protection-body{flex-wrap:wrap}.nlx-member-actions{grid-template-columns:1fr}}
+
+.nlx-promo-free{display:inline-flex;width:max-content;max-width:100%;align-items:center;margin:1px 0 7px;padding:3px 7px;border:1px solid #a5c7ed;border-radius:7px;background:#eaf4ff;color:#164a91;font-size:10px;font-weight:800;line-height:1.2;white-space:nowrap}
