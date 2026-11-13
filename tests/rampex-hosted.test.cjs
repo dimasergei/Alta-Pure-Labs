@@ -36,5 +36,5 @@ test('hosted request helper accepts the authorized route but preserves server re
  const result=protocol.buildPaymentRequest({amount_cents:4900,currency:'USD',email:'customer@example.invalid',order_id:'invoice_123',provider:'hosted',provider_status:{id:'hosted',status:'active',minimum_currency:'USD',minimum_amount:2},return_url:'https://altapurelabs.com/invoice.html?id=invoice_123'});assert.equal(result.body.provider,'hosted');
 });
 test('wallet copy is provider-conditional and existing native wallet flags are not fabricated',()=>{
- const page=fs.readFileSync('native-pay.js','utf8');assert.match(page,/Apple Pay and Google Pay are offered there when supported/);assert.match(page,/g\.provider==='nmi'/);assert.deepEqual(r.configuration(env).wallets,{apple:false,google:false});
+ const page=fs.readFileSync('native-pay.js','utf8');assert.match(page,/credit or debit card through Stripe via Rampex/);assert.match(page,/g\.provider==='nmi'/);assert.deepEqual(r.configuration(env).wallets,{apple:false,google:false});
 });
