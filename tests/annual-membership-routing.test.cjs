@@ -12,6 +12,7 @@ function fixture(period){
  const url='https://altapurelabs.com/checkout?plan=vip'+(period===undefined?'':'&period='+encodeURIComponent(period));
  const dom=new JSDOM('<main id="root"></main>',{url,runScripts:'outside-only'}),w=dom.window,requests=[];
  w.HTMLElement.prototype.scrollIntoView=()=>{};
+ w.TextEncoder=TextEncoder;
  Object.defineProperty(w.crypto,'randomUUID',{configurable:true,value:()=>'11111111-1111-4111-8111-111111111111'});
  Object.defineProperty(w.crypto,'subtle',{configurable:true,value:{digest:async()=>new Uint8Array(32).buffer}});
  w.AltaStore={cart:[]};
@@ -52,7 +53,7 @@ async function quoteAnnual(period){
   consent.checked=true;
   f.root.querySelector('form').dispatchEvent(new f.w.Event('submit',{bubbles:true,cancelable:true}));
   await new Promise(resolve=>setTimeout(resolve,90));
-  assert.equal(f.requests.length,1,'Quote once and do not place/pay in the fixture');
+  assert.equal(f.requests.length,1,'Quote once and do not place/pay in the fixture. Status: '+(f.root.querySelector('[role=status]')?.textContent||f.root.textContent.slice(-220)));
   assert.equal(f.requests[0].kind,'membership');
   assert.equal(f.requests[0].plan,'vip');
   assert.equal(f.requests[0].billing_period,'annual','The backend must not silently use its monthly default');
