@@ -69,3 +69,9 @@ test('admin navigation is Orders and Marketing only; existing operational sectio
   assert.match(marketing,/href="\/admin-marketing\.html" aria-current="page">Marketing/);
   assert.match(marketing,/No messages are sent/);
 });
+test('Marketing browser script parses and uses official review-only draft flow',()=>{
+  const source=fs.readFileSync(path.join(__dirname,'../admin-marketing.js'),'utf8');
+  assert.doesNotThrow(()=>new Function(source));
+  assert.match(source,/draft-output/);
+  assert.doesNotMatch(source,/graph\.facebook\.com|api\.instagram\.com|ig\.me\/m/);
+});
