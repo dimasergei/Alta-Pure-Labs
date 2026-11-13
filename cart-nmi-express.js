@@ -40,7 +40,8 @@
     const a=document.createElement('a');a.href='/account/login?returnTo=%2Fcheckout';a.className='ap-button';a.textContent='Sign in to checkout';
     host.append(p,a);return;
    }
-   await load('/readiness-ui.js');await load('/nmi-inline-checkout.js');await load('/direct-checkout-client.js');
+   await load('/readiness-ui.js');await load('/nmi-inline-checkout.js');await load('/direct-checkout-client.js');await load('/checkout-reference.js');
+   if(!document.querySelector('link[href="/checkout-reference.css"]')){const style=document.createElement('link');style.rel='stylesheet';style.href='/checkout-reference.css';document.head.append(style);}
    if(!document.querySelector('link[href="/account-experience.css"]')){const style=document.createElement('link');style.rel='stylesheet';style.href='/account-experience.css';document.head.append(style);}
    host.replaceChildren();host.classList.add('account-card');
    await window.DirectCheckout.checkout(host,auth,data.user,{method:c.method_id});

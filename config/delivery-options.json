@@ -1,8 +1,50 @@
 [
- {"id":"standard","kind":"shipping","label":"Standard delivery","price_cents":2500,"enabled":true,"description":"Estimated 3–7 business days in transit after 1–3 business days of processing. Free for paid members or $250+ after discounts."},
- {"id":"express","kind":"shipping","label":"Express UPS","price_cents":3495,"enabled":false,"description":"Not available until express dispatch and label service are confirmed."},
- {"id":"next_day","kind":"shipping","label":"UPS Next Day","price_cents":6995,"enabled":false,"description":"Not available until next-day service and dispatch cutoffs are confirmed."},
- {"id":"priority","kind":"extra","label":"Priority Processing","price_cents":999,"enabled":false,"description":"Moves an eligible order ahead in the fulfillment queue. Availability requires supplier confirmation."},
- {"id":"cold_chain","kind":"extra","label":"Cold Chain Shipping","price_cents":999,"enabled":false,"description":"Available only when temperature-controlled packaging and handling are confirmed."},
- {"id":"protection","kind":"extra","label":"Shipping Protection","price_cents":500,"enabled":false,"description":"Optional protection is not available until its coverage and claims terms are published."}
+  {
+    "id": "standard",
+    "kind": "shipping",
+    "label": "Standard UPS",
+    "price_cents": 1495,
+    "enabled": true,
+    "description": "Standard shipping with tracking. Delivery dates depend on destination and carrier confirmation."
+  },
+  {
+    "id": "express",
+    "kind": "shipping",
+    "label": "Express UPS",
+    "price_cents": 3495,
+    "enabled": true,
+    "description": "Expedited carrier service when available. Final delivery dates follow dispatch confirmation."
+  },
+  {
+    "id": "next_day",
+    "kind": "shipping",
+    "label": "UPS Next Day",
+    "price_cents": 6995,
+    "enabled": true,
+    "description": "Next-business-day service within eligible US destinations; cutoffs and availability depend on carrier."
+  },
+  {
+    "id": "priority",
+    "kind": "extra",
+    "label": "Priority Processing",
+    "price_cents": 999,
+    "enabled": true,
+    "description": "Priority order handling and preparation ahead of standard orders, subject to daily capacity."
+  },
+  {
+    "id": "cold_chain",
+    "kind": "extra",
+    "label": "Cold Chain Shipping",
+    "price_cents": 999,
+    "enabled": true,
+    "description": "Insulated packaging with cooling materials for products eligible for cold-chain handling. No guaranteed transit temperature."
+  },
+  {
+    "id": "protection",
+    "kind": "extra",
+    "label": "Shipping Protection",
+    "price_cents": 500,
+    "enabled": true,
+    "description": "Optional seller-backed protection for eligible packages lost or damaged in transit. Read coverage terms before selecting."
+  }
 ]

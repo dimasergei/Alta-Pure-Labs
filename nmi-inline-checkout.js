@@ -16,9 +16,13 @@
  const available=(c,id)=>!!(c?.ready===true&&c.method_id===id&&typeof c.tokenization_key==='string'&&c.tokenization_key.length>10);
  function billing(form){
   const name=String(form.elements.name?.value||'').trim().split(/\s+/);
+  const separate=form.elements.billing_same?.value==='false';
   return{first_name:name.shift()||'',last_name:name.join(' ')||'-',
-   address1:form.elements.line1?.value||'',city:form.elements.city?.value||'',state:form.elements.region?.value||'',
-   zip:form.elements.postal_code?.value||'',country:form.elements.country?.value||'US'};
+   address1:separate?form.elements.billing_line1?.value||'':form.elements.line1?.value||'',
+   city:separate?form.elements.billing_city?.value||'':form.elements.city?.value||'',
+   state:separate?form.elements.billing_region?.value||'':form.elements.region?.value||'',
+   zip:separate?form.elements.billing_postal?.value||'':form.elements.postal_code?.value||'',
+   country:separate?form.elements.billing_country?.value||'US':form.elements.country?.value||'US'};
  }
  function threeDS(token,conf,bill,amount,currency,host){
   if(!conf.three_ds)return Promise.resolve(null);
@@ -64,7 +68,7 @@
   };
   widget=window.mountNmiPayments('#'+host.id+' .nmi-fields',{
    tokenizationKey:config.tokenization_key,paymentMethods:methods,
-   payButtonText:'Pay '+new Intl.NumberFormat('en-US',{style:'currency',currency}).format(amount/100),
+   payButtonText:'Place order · '+new Intl.NumberFormat('en-US',{style:'currency',currency}).format(amount/100),
    expressCheckoutConfig:{amount:(amount/100).toFixed(2),currency,countryCode:form.elements.country?.value||'US',
     emailRequired:true,billingRequired:true,applePay:{totalLabel:'AltaPure Labs'},
     googlePay:{totalPriceStatus:'FINAL',buttonType:'pay'}},

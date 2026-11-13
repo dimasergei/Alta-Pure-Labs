@@ -1,0 +1,154 @@
+/* AltaPure checkout — a clean, responsive three-step research storefront UI. */
+body.ap-checkout-page{background:#fff!important;color:#111c2a}
+body.ap-checkout-page .account-page{padding:22px 28px 72px!important;background:#fff!important}
+body.ap-checkout-page .account-shell{width:min(1380px,100%)!important;max-width:none!important}
+body.ap-checkout-page #account-root{box-shadow:none!important;border:0!important;padding:0!important;max-width:none!important;background:transparent!important}
+.nlx-checkout-root{--nx-border:#dce5ef;--nx-text:#101720;--nx-blue:#0e3f87;--nx-muted:#687b94;--nx-sky:#eef4ff;font-family:'Plus Jakarta Sans',Inter,Arial,sans-serif;color:var(--nx-text);font-size:14px}
+.nlx-checkout-root *{box-sizing:border-box}
+.nlx-checkout-root [hidden]{display:none!important}
+.nlx-page{width:min(1350px,100%);margin:0 auto}
+.nlx-heading{margin:0 0 27px}
+.nlx-heading h1{font-size:clamp(31px,3vw,39px);font-weight:800;letter-spacing:-.055em;line-height:1.15;margin:0 0 7px!important;color:#101820}
+.nlx-heading p{color:#7385a2;margin:0;font-size:14px}
+.nlx-columns{display:grid;grid-template-columns:minmax(0,1.92fr) minmax(335px,1fr);gap:40px;align-items:start}
+.nlx-left{border:1px solid var(--nx-border);border-radius:24px;padding:29px 35px 31px;min-width:0;background:#fff}
+.nlx-progress{display:flex;justify-content:space-between;gap:9px;align-items:center;padding:0 0 20px;margin:0 0 24px;border-bottom:1px solid var(--nx-border)}
+.nlx-progress button{display:flex;gap:10px;align-items:center;justify-content:start;flex:1;background:none;border:none;cursor:pointer;color:#a9b4c4;font-size:13px;font-weight:700;text-align:left;padding:4px 0;font-family:inherit}
+.nlx-progress button:not(:last-child):after{content:'';height:2px;background:#dce5ee;flex:1;min-width:15px;margin-left:7px}
+.nlx-progress button span{display:inline-flex;align-items:center;justify-content:center;width:29px;height:29px;border-radius:50%;background:#edf2f7;color:#a5b3c5;font-weight:800;flex:none}
+.nlx-progress button.nlx-step-active{color:#1e2430}.nlx-progress button.nlx-step-active span{background:#164b99;color:#fff}
+.nlx-progress button.nlx-step-done{color:#203852}.nlx-progress button.nlx-step-done span{background:#e7f0fc;color:#174f9a}
+.nlx-checkout-root h2{font-size:20px;letter-spacing:-.025em;line-height:1.28;color:#121720;margin:19px 0 13px}
+.nlx-checkout-root h3{font-size:12px;letter-spacing:.015em;font-weight:800;color:#18212b;margin:19px 0 10px}
+.nlx-checkout-root input,.nlx-checkout-root select,.nlx-checkout-root textarea,.nlx-checkout-root button{font:inherit}
+.nlx-checkout-root button{cursor:pointer}
+.nlx-checkout-root button:disabled{cursor:not-allowed}
+.nlx-checkout-root label:not(.nlx-small-check):not(.nlx-delivery-card):not(.nlx-extra-box):not(.nlx-mini-check):not(.nlx-payment-option):not(.nlx-member-types label):not(.nlx-terms label){display:block;font-size:11px;font-weight:700;color:#344861}
+.nlx-step-shipping>label,.nlx-step-shipping>.nlx-two,.nlx-billing-other>label,.nlx-billing-other>.nlx-two{margin:10px 0}
+.nlx-step-shipping input:not([type=checkbox]),.nlx-step-shipping select,.nlx-step-shipping textarea,
+.nlx-checkout-root .nlx-billing-other input,.nlx-checkout-root .nlx-billing-other select{height:53px;background:#f2f5f9;border:1px solid #edf1f5;border-radius:13px;padding:11px 16px;margin-top:6px;width:100%;outline:none;font-size:14px;color:#26364c;font-weight:500;box-shadow:none}
+.nlx-step-shipping select{appearance:auto}
+.nlx-step-shipping input:focus,.nlx-step-shipping select:focus,.nlx-checkout-root textarea:focus{border-color:#164b99;box-shadow:0 0 0 2px #1654a21b}
+.nlx-checkout-root input::placeholder{color:#93a0b3}
+.nlx-two{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.nlx-small-check{display:flex!important;align-items:center;gap:10px;margin:15px 0;font-size:12px!important;line-height:1.5;cursor:pointer}
+.nlx-small-check input,.nlx-terms input{width:17px;height:17px;accent-color:#164e9b;flex:none}
+.nlx-small-check small{font-size:10px;color:#72849c}
+.nlx-next{margin:22px 0 4px}
+.nlx-primary{width:100%;background:#08090c;border:0;color:white;font-size:15px;font-weight:800;min-height:57px;border-radius:30px;transition:filter .18s;box-shadow:none}
+.nlx-primary:not(:disabled):hover{filter:brightness(1.2)}
+.nlx-primary:disabled{background:#283447;color:#cfd8e0}
+.nlx-address-confirm{display:flex;justify-content:space-between;align-items:start;background:#f5f8fc;border:1px solid var(--nx-border);border-radius:14px;padding:15px 18px;gap:14px;margin:12px 0 18px}
+.nlx-address-confirm p{font-size:12px;color:#53647d;margin:5px 0 0;line-height:1.5}
+.nlx-address-confirm button,.nlx-confirm button{border:none;background:none;color:#16488b;text-decoration:underline;font-size:12px;font-weight:700;padding:0}
+.nlx-delivery-list{display:grid;gap:10px}
+.nlx-delivery-card{display:flex;align-items:center;gap:13px;border:2px solid var(--nx-border);border-radius:14px;padding:16px 17px;min-height:67px;cursor:pointer;background:#fff}
+.nlx-delivery-card.nlx-chosen{border-color:#1a232b}
+.nlx-delivery-card.nlx-disabled{opacity:.5;cursor:not-allowed}
+.nlx-delivery-card input{accent-color:#1a232b;width:19px;height:19px;flex:none}
+.nlx-delivery-desc{flex:1;min-width:0}.nlx-delivery-desc strong{font-size:13px;display:block;line-height:1.4}.nlx-delivery-desc small{display:block;color:#687b93;line-height:1.35;font-size:11px}
+.nlx-delivery-price{font-weight:800;font-size:13px;color:#1c2735}
+.nlx-addons{display:grid;gap:10px;margin:18px 0 20px}
+.nlx-extra-box{display:flex;justify-content:space-between;align-items:center;gap:12px;border:2px solid #f3b7bc;border-radius:14px;background:#ffeced;padding:14px 17px;font-size:12px;cursor:pointer}
+.nlx-extra-cold_chain{border-color:#9dd3ff;background:#e8f5ff}
+.nlx-extra-box>div{display:flex;gap:13px;min-width:0;align-items:start;flex:1}
+.nlx-extra-icon{display:flex;width:30px;height:30px;background:#ffe0e1;border-radius:50%;align-items:center;justify-content:center;color:#c73737;flex:none}
+.nlx-extra-cold_chain .nlx-extra-icon{background:#d5eaff;color:#286ca3}
+.nlx-extra-box strong{font-size:13px;color:#173144}
+.nlx-extra-box p{color:#657488;line-height:1.5;margin:3px 0;font-size:11px}
+.nlx-extra-box a{font-size:11px;color:#174f90;text-decoration:underline}
+.nlx-extra-box>span:not(.nlx-extra-icon){color:#66717d;margin-left:auto;white-space:nowrap}
+.nlx-extra-box input{width:19px;height:19px;accent-color:#0b4c94}
+.nlx-member-offer{border:2px solid #cfe1ff;background:#edf4ff;border-radius:15px;padding:18px 20px;margin:18px 0}
+.nlx-optional{display:inline-block;border-radius:10px;background:#111;color:#fff;font-weight:800;font-size:9px;padding:5px 9px;letter-spacing:.08em;margin-right:10px}
+.nlx-member-label{font-size:11px;color:#134788;letter-spacing:.08em}
+.nlx-member-offer h3{font-size:19px;letter-spacing:-.03em;margin:10px 0 4px;color:#102133}
+.nlx-member-offer p{font-size:12px;color:#53667e;line-height:1.5;margin:0 0 14px}
+.nlx-member-types{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:12px}
+.nlx-member-types label{border:1px solid #cadcfa;border-radius:9px;padding:10px 12px;background:white;font-size:12px;cursor:pointer}
+.nlx-member-types label.selected{background:#123d7d;color:white;border-color:#123d7d}
+.nlx-member-types label input{appearance:none;position:absolute;opacity:0}
+.nlx-member-types label small{display:block;margin-top:4px;opacity:.8}
+.nlx-member-actions{display:grid;grid-template-columns:auto 1fr;gap:9px;margin-bottom:10px}
+.nlx-member-actions button{border:1px solid #cce0fe;background:white;border-radius:30px;padding:10px 17px;font-size:11px;font-weight:800}
+.nlx-member-actions a{border-radius:30px;background:#103e83;color:#fff;text-decoration:none;text-align:center;padding:12px;font-size:12px;font-weight:800}
+.nlx-member-offer>small{display:block;text-align:center;color:#6e809a;font-size:10px}
+.nlx-order-note{border:1px solid #dfe7f1;border-radius:14px;padding:13px 16px;margin:18px 0}
+.nlx-order-note summary{cursor:pointer;font-weight:700;font-size:12px}
+.nlx-order-note textarea{width:100%;padding:12px;border:1px solid var(--nx-border);border-radius:10px;margin-top:11px;min-height:86px}
+.nlx-shipping-terms{font-size:11px;color:#74849a;line-height:1.65}
+.nlx-confirm{border:1px solid var(--nx-border);border-radius:15px;overflow:hidden;background:#f5f8fd;margin-bottom:26px}
+.nlx-confirm>div{display:grid;grid-template-columns:100px 1fr auto;align-items:start;gap:12px;border-bottom:1px solid var(--nx-border);padding:14px 17px;font-size:12px}
+.nlx-confirm>div:last-child{border-bottom:0}
+.nlx-confirm strong{color:#6a819d;font-size:11px;letter-spacing:.08em}
+.nlx-confirm span{color:#344b65;line-height:1.5}
+.nlx-payment h2{margin-bottom:26px}
+.nlx-express-label{display:flex;justify-content:space-between;align-items:center;margin-bottom:12px}
+.nlx-express-label strong{font-size:12px;font-weight:800;letter-spacing:.045em;color:#194985}
+.nlx-express-label span{font-size:13px;font-weight:800}
+.nlx-wallets{display:flex;align-items:center;gap:10px}
+.nlx-wallet-button{width:50%;height:43px;border-radius:30px;background:#050506;color:#fff;border:0;font-weight:700;font-size:15px;letter-spacing:-.025em;display:flex;gap:5px;align-items:center;justify-content:center;opacity:.52}
+.nlx-wallet-button:disabled{opacity:.55}
+.nlx-apple-symbol{font-size:24px;line-height:1}.nlx-google-mark{font-weight:900;font-size:20px;background:conic-gradient(#4285f4 0deg 90deg,#34a853 90deg 175deg,#fbbc05 175deg 250deg,#ea4335 250deg 330deg,#4285f4 330deg);-webkit-background-clip:text;background-clip:text;color:transparent}
+.nlx-or{font-size:11px;color:#74839b}.nlx-wallet-consent{text-align:center;color:#7c8ca1;font-size:10px;line-height:1.6;margin:10px 0 18px}
+.nlx-wallet-consent a,.nlx-terms a{color:#264d85;text-decoration:underline}
+.nlx-divider{display:flex;align-items:center;gap:15px;margin:20px 0}
+.nlx-divider:before,.nlx-divider:after{content:'';flex:1;height:1px;background:#e1e6ef}
+.nlx-divider span{font-size:10px;color:#8594aa;letter-spacing:.08em;white-space:nowrap}
+.nlx-payment-option{display:flex!important;align-items:center;gap:13px;border:1px solid #dbe1e8;border-radius:13px;background:#fafbfc;padding:14px 16px;font-weight:700!important;color:#1d2732!important;cursor:pointer}
+.nlx-payment-option input{accent-color:#154f99;width:17px;height:17px}
+.nlx-payment-option>span:nth-child(2){flex:1}
+.nlx-card-logos{display:flex;gap:5px}
+.nlx-inline-nmi{margin:12px 0;color:#536884;font-size:12px}
+.nlx-inline-nmi .nmi-fields{min-height:130px}
+.nlx-we-accept{text-align:center;margin:20px 0 17px}
+.nlx-we-accept>span{display:block;font-size:10px;letter-spacing:.08em;color:#8291a3;font-weight:700;margin-bottom:11px}
+.nlx-we-accept>div{display:flex;gap:5px;flex-wrap:wrap;justify-content:center}
+.nlx-pay-logo{display:inline-flex;align-items:center;justify-content:center;min-height:23px;min-width:37px;border-radius:3px;padding:2px 5px;background:#fff;border:1px solid #e2e6ed;color:#17335d;font-weight:900;font-size:10px;letter-spacing:-.04em}
+.nlx-pay-logo--visa{background:#174b9d;color:white;font-style:italic}
+.nlx-pay-logo--apple{color:#050505;font-size:12px}
+.nlx-pay-logo--google{color:#1b5db4;font-size:10px}
+.nlx-pay-logo--mastercard{background:linear-gradient(90deg,#dc3e19 0 50%,#ffb700 50%);font-size:13px;color:#fff}
+.nlx-pay-logo--amex{font-size:8px;background:#277cba;color:white;letter-spacing:-.02em}
+.nlx-pay-logo--discover{color:#343334;font-size:9px;border-bottom:3px solid #e69020}
+.nlx-we-accept>small{display:block;color:#8b9aab;font-size:9px;margin-top:8px}
+.nlx-terms{display:grid;gap:12px;margin:24px 0 15px}
+.nlx-terms label{display:flex;gap:13px;align-items:flex-start;border:1px solid #d8e1ee;border-radius:15px;padding:16px;font-size:12px;color:#40516b;line-height:1.65;cursor:pointer}
+.nlx-terms label input{margin-top:2px}
+.nlx-status{min-height:20px;font-size:12px;color:#526f83;margin:8px 0}.nlx-status.nlx-error{color:#b32e3d}
+.nlx-trust{display:flex;justify-content:space-around;margin-top:13px;color:#778aa4;font-size:10px;letter-spacing:.075em;font-weight:800}
+.nlx-right{min-width:0}
+.nlx-summary{position:sticky;top:24px;border:1px solid var(--nx-border);border-radius:23px;background:#fff;padding:0 22px 22px;overflow:hidden}
+.nlx-summary-head{display:flex;justify-content:space-between;align-items:center;border-bottom:1px solid var(--nx-border);margin:0 -22px 18px;padding:21px 22px 16px}
+.nlx-summary-head h2{font-size:17px;font-weight:800;margin:0}.nlx-summary-head span{color:#8394ab;font-size:12px}
+.nlx-protect{margin-bottom:17px}
+.nlx-protection-body{display:flex;align-items:center;gap:12px;border:2px solid #174a92;border-radius:13px;background:#eef2f8;padding:12px 13px;min-height:63px}
+.nlx-shield{display:flex;align-items:center;justify-content:center;background:#dbe6f2;border-radius:50%;width:30px;height:30px;color:#264c7c;font-size:19px}
+.nlx-protection-body>div{flex:1}
+.nlx-protection-body strong{display:block;font-size:12px}
+.nlx-protection-body a{font-size:11px;color:#245496;text-decoration:underline}
+.nlx-protection-price{font-size:11px;color:#718094}
+.nlx-mini-check input{width:20px;height:20px;accent-color:#164b97;cursor:pointer}
+.nlx-product-head{display:flex;justify-content:space-between;color:#aab5c3;font-size:9px;letter-spacing:.08em;border-bottom:1px solid #e5eaf0;padding:9px 0 13px}
+.nlx-product{display:grid;grid-template-columns:52px minmax(0,1fr) auto;align-items:start;gap:10px;padding:15px 0;border-bottom:1px solid #eef1f5}
+.nlx-product>img{width:52px;height:64px;object-fit:contain;background:#f0f2f6;border-radius:11px}
+.nlx-product-name strong{display:block;font-size:11px;font-weight:800;line-height:1.4}
+.nlx-product-name small{display:block;color:#8d9caf;font-size:10px;margin:3px 0 7px}
+.nlx-product-price{font-size:11px;color:#58697e;white-space:nowrap;align-self:center}
+.nlx-qty{display:inline-flex;align-items:center;height:28px;border-radius:24px;border:1px solid #d8e2ed;overflow:hidden}
+.nlx-qty button{width:29px;height:28px;background:#f4f7fb;color:#124d98;border:0;font-size:14px;font-weight:800}
+.nlx-qty span{padding:0 12px;font-size:12px}
+.nlx-coupon{display:flex;gap:9px;padding:17px 0;border-bottom:1px solid #e5eaf1}
+.nlx-coupon input{min-width:0;flex:1;border:1px solid #d8e1e8;border-radius:24px;height:43px;padding:9px 14px;outline:none;font-size:12px}
+.nlx-coupon button{border:1px solid #d8e1e8;border-radius:24px;background:#fff;font-size:10px;font-weight:800;padding:0 16px}
+.nlx-total-rows{padding:7px 0}
+.nlx-total-rows>div{display:flex;justify-content:space-between;gap:20px;padding:11px 0;border-bottom:1px solid #e9eef2;color:#788599;font-size:12px}
+.nlx-total-rows>div strong{font-weight:500;color:#617085}
+.nlx-total-rows>div.nlx-grand{border:0;color:#151923;font-weight:800;font-size:14px}
+.nlx-total-rows>div.nlx-grand strong{font-weight:900;color:#10131a;font-size:16px}
+.nlx-points{display:flex;align-items:center;justify-content:space-between;gap:7px;border:1px solid #b8cef2;border-radius:13px;background:#eaf2ff;color:#154488;padding:13px 12px;font-size:11px}
+.nlx-points a{color:#174b91;white-space:nowrap;font-size:10px;text-decoration:underline}
+.nlx-quote-note{font-size:10px;line-height:1.5;color:#8a98aa;margin:14px 0 0}
+.nlx-empty,.nlx-error{color:#a3343c}
+@media(max-width:1080px){.nlx-columns{grid-template-columns:minmax(0,1.3fr) minmax(290px,1fr);gap:17px}.nlx-left{padding:22px}.nlx-summary{padding-inline:16px}.nlx-summary-head{margin-inline:-16px;padding-inline:16px}}
+@media(max-width:770px){body.ap-checkout-page .account-page{padding:16px 13px 48px!important}.nlx-columns{grid-template-columns:1fr;gap:18px}.nlx-right{grid-row:2}.nlx-summary{position:static}.nlx-left{border-radius:16px;padding:18px}.nlx-two{grid-template-columns:1fr}.nlx-progress{gap:6px}.nlx-progress button{gap:6px;font-size:11px}.nlx-progress button:not(:last-child):after{min-width:4px;margin-left:0}.nlx-confirm>div{grid-template-columns:62px 1fr auto}.nlx-summary-head{padding-block:15px}}

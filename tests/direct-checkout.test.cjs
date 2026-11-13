@@ -8,8 +8,8 @@ const catalog=[{id:'fixture-product',name:'Fixture product',variants:[{size:'5mg
 const body={id,kind:'goods',method_id:mid,consent:true,checkout_version:config.version,items:[{id:'fixture-product',size:'5mg',qty:1,price:0.01}],name:'Customer',organization:'Lab',address:{line1:'123 Fixture Street',city:'Fixture City',region:'FL',postal_code:'34287',country:'US'},research_use:true};
 const env={SITE_URL:'https://altapurelabs.com',ADMIN_ORDERS_PASSWORD:'x'.repeat(40)};
 function response(){return{code:200,setHeader(){},status(n){this.code=n;return this;},json(b){this.body=b;return this;}};}
-function dbMock({balance={points:1000,credit_cents:5000},membership=null,existing=null}={}){
- const calls=[];return{calls,auth:{getUser:async()=>({data:{user}})},from(table){const value=table==='commerce_delivery_options'?require('../config/delivery-options.json'):table==='commerce_partner_codes'?null:table==='commerce_payment_methods'?[method]:table==='commerce_memberships'?(membership?[membership]:[]):table==='commerce_balance_accounts'?balance:table==='commerce_invoices'?existing:[];
+function dbMock({balance={points:1000,credit_cents:5000},membership=null,existing=null,paymentMethods=[method]}={}){
+ const calls=[];return{calls,auth:{getUser:async()=>({data:{user}})},from(table){const value=table==='commerce_delivery_options'?require('../config/delivery-options.json'):table==='commerce_partner_codes'?null:table==='commerce_payment_methods'?paymentMethods:table==='commerce_memberships'?(membership?[membership]:[]):table==='commerce_balance_accounts'?balance:table==='commerce_invoices'?existing:[];
   const q={select(){return q;},eq(){return q;},is(){return q;},lte(){return q;},gt(){return q;},order(){return q;},limit(){return q;},maybeSingle(){return q;},then(resolve,reject){return Promise.resolve({data:value}).then(resolve,reject);}};return q;},rpc:async(name,args)=>{calls.push({name,args});return{data:{id,status:'accepted'}};}};
 }
 const request=(b,headers={})=>({method:'POST',headers:{origin:env.SITE_URL,'content-type':'application/json',authorization:'Bearer fixture-auth-token-long-enough',...headers},body:b});
@@ -20,12 +20,12 @@ test('authoritative catalog ignores client prices; member/volume then bank disco
 });
 test('points and credit reduce payable and earning base without changing source prices',async()=>{
  const r=await checkout.normalize({},user,{...body,points:500,credit_cents:1000},catalog);const p=checkout.price(r,method,null,{points:600,credit_cents:1200});
- assert.equal(p.total_cents,10500);assert.equal(p.earned_points,200);assert.equal(p.points_redeemed,500);assert.equal(p.credit_redeemed_cents,1000);
+ assert.equal(p.total_cents,9495);assert.equal(p.earned_points,200);assert.equal(p.points_redeemed,500);assert.equal(p.credit_redeemed_cents,1000);
  assert.throws(()=>checkout.price(r,method,null,{points:499,credit_cents:1200}),/available/);
  assert.throws(()=>checkout.price(r,method,null,{points:600,credit_cents:999}),/credit/);
 });
-test('small redemptions, negative points debt, non-US shipping and membership credit are rejected',async()=>{
- for(const delta of [{points:50},{points:100,credit_cents:20000},{address:{...body.address,country:'CA'}}]){
+test('small redemptions, invalid shipping countries and membership credit are rejected',async()=>{
+ for(const delta of [{points:50},{points:100,credit_cents:20000},{address:{...body.address,country:'AA'}}]){
   const r=await checkout.normalize({},user,{...body,...delta},catalog);assert.throws(()=>checkout.price(r,method,null,{points:1000,credit_cents:50000}));
  }
  const r=await checkout.normalize({},user,{...body,points:100},catalog);assert.throws(()=>checkout.price(r,method,null,{points:-10,credit_cents:0}));
@@ -52,7 +52,21 @@ test('auth, origin and admin credit issuance fail closed',async()=>{
 test('BOGO quote is authoritative, preserves all fulfillment units, and binds the coupon to the quote',async()=>{
  const b={...body,items:[{id:'fixture-product',size:'5mg',qty:2,price:0.01}],coupon:' bogo '},db=dbMock(),res=response();
  await checkout.handle(request({...b,action:'quote'}),res,new URLSearchParams(),{env,db,catalog,rateLimit:async()=>{}});
- assert.equal(res.code,200);assert.equal(res.body.subtotal_cents,20000);assert.equal(res.body.discount_cents,11450);assert.equal(res.body.total_cents,11050);assert.equal(res.body.pricing.bogo_free_units,1);
+ assert.equal(res.code,200);assert.equal(res.body.subtotal_cents,20000);assert.equal(res.body.discount_cents,11450);assert.equal(res.body.total_cents,10045);assert.equal(res.body.pricing.bogo_free_units,1);
  const denied=response();await checkout.handle(request({...b,coupon:'',action:'place',quote:res.body.quote}),denied,new URLSearchParams(),{env,db,catalog,rateLimit:async()=>{}});assert.equal(denied.code,409);assert.equal(db.calls.length,0);
  const placed=response();await checkout.handle(request({...b,action:'place',quote:res.body.quote}),placed,new URLSearchParams(),{env,db,catalog,rateLimit:async()=>{}});assert.equal(placed.code,201);const p=db.calls[0].args.p_data;assert.equal(p.request.items[0].qty,2);assert.equal(p.pricing.lines[0].qty,2);assert.equal(p.pricing.lines[0].bogo_free_units,1);assert.equal(p.request.checkout.coupon,'BOGO');
+});
+
+
+test('price-only checkout preview works without any active card processor and never creates an order',async()=>{
+ const db=dbMock({paymentMethods:[]}),res=response();
+ const form={items:[{id:'fixture-product',size:'5mg',qty:1}],method_id:null,country:'CA',
+  delivery:{shipping:'standard',extras:['protection']},coupon:''};
+ await checkout.handle({method:'POST',headers:{origin:env.SITE_URL,'content-type':'application/json'},body:form},res,
+  new URLSearchParams('checkout=cart'),{env,db,catalog,rateLimit:async()=>{}});
+ assert.equal(res.code,200);
+ assert.equal(res.body.currency,'USD');
+ assert.equal(res.body.shipping_cents,4495);
+ assert.equal(res.body.total_cents,14495);
+ assert.deepEqual(db.calls,[],'A price preview must not write orders, payments, points or supplier records');
 });
