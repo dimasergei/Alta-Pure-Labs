@@ -1,0 +1,136 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <meta name="robots" content="noindex,nofollow">
+  <meta name="referrer" content="no-referrer">
+  <title>Marketing — AltaPure Labs Admin</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/admin-dashboard.css">
+  <link rel="stylesheet" href="/admin-marketing.css">
+  <link rel="icon" href="/favicon.svg">
+</head>
+<body class="mk-body">
+<main class="admin-page">
+  <div class="shell">
+    <section id="mk-login" class="mk-login panel">
+      <div class="admin-login-brand"><span class="admin-brand-mark" aria-hidden="true"><span></span><span></span><span></span></span><span><strong>AltaPure Labs</strong><small>ADMIN</small></span></div>
+      <h1>Marketing access</h1>
+      <p>Use your existing AltaPure admin password. This workspace does not send Instagram messages automatically.</p>
+      <form id="mk-login-form">
+        <label for="mk-password">Admin password</label>
+        <input id="mk-password" type="password" required autocomplete="current-password">
+        <button class="mk-button" type="submit">Open Marketing</button>
+      </form>
+      <p id="mk-login-error" class="mk-error" role="alert" hidden></p>
+      <a href="/admin-orders.html">Return to Orders</a>
+    </section>
+
+    <section id="mk-app" hidden>
+      <div class="admin-brandbar mk-header">
+        <div class="admin-header-left">
+          <a class="admin-brand" href="/" aria-label="AltaPure Labs storefront">
+            <span class="admin-brand-mark" aria-hidden="true"><span></span><span></span><span></span></span>
+            <span class="admin-brand-copy"><span class="admin-brand-name">AltaPure Labs</span><span class="admin-brand-label">ADMIN</span></span>
+          </a>
+          <div class="admin-utilities">
+            <button id="mk-logout" type="button" class="mk-quiet" aria-label="Log out">Log out</button>
+          </div>
+        </div>
+        <nav class="admin-nav" aria-label="Admin sections">
+          <a class="admin-nav-link" href="/admin-orders.html">Orders</a>
+          <a class="admin-nav-link is-active" href="/admin-marketing.html" aria-current="page">Marketing</a>
+        </nav>
+      </div>
+
+      <header class="mk-title">
+        <div><p class="mk-eyebrow">CREATOR ACQUISITION WORKSPACE</p><h1>Marketing</h1><p>Prospects, conversations, outreach drafts and follow-ups in one place.</p></div>
+        <div class="mk-header-actions"><button id="mk-import-button" class="mk-button mk-outline" type="button">Import CSV</button><button id="mk-add-button" class="mk-button" type="button">+ Add prospect</button></div>
+      </header>
+      <p id="mk-alert" class="mk-alert" role="status" aria-live="polite"></p>
+      <div class="mk-info"><strong>Workspace preview:</strong> prospect records are saved in this browser only until a shared database is connected. Export a backup regularly. AI drafts require a server-side API key. No messages are sent by this page.</div>
+
+      <div class="mk-metrics" aria-label="Marketing snapshot">
+        <article><span>Prospects</span><strong id="mk-total">0</strong><small>Tracked profiles</small></article>
+        <article><span>Contacted</span><strong id="mk-contacted">0</strong><small>Outreach recorded</small></article>
+        <article><span>Replied</span><strong id="mk-replied">0</strong><small>Interested or responded</small></article>
+        <article><span>Due follow-ups</span><strong id="mk-due">0</strong><small>Today or earlier</small></article>
+      </div>
+
+      <div class="mk-subnav" role="tablist" aria-label="Marketing sections">
+        <button type="button" class="mk-subtab is-active" role="tab" aria-selected="true" data-panel="pipeline">Prospects</button>
+        <button type="button" class="mk-subtab" role="tab" aria-selected="false" data-panel="conversations">Conversations</button>
+        <button type="button" class="mk-subtab" role="tab" aria-selected="false" data-panel="insights">Analytics</button>
+        <button type="button" class="mk-subtab" role="tab" aria-selected="false" data-panel="settings">Settings</button>
+      </div>
+
+      <section id="mk-panel-pipeline" class="mk-panel">
+        <div class="mk-toolbar">
+          <label><span class="mk-sr">Search prospects</span><input id="mk-search" type="search" placeholder="Search name, handle, niche or notes…"></label>
+          <label><span class="mk-sr">Filter by status</span><select id="mk-filter"><option value="">All stages</option><option>New</option><option>Qualified</option><option>Drafted</option><option>Contacted</option><option>Replied</option><option>Negotiating</option><option>Partner</option><option>Dormant</option></select></label>
+          <label><span class="mk-sr">Sort prospects</span><select id="mk-sort"><option value="followup">Next follow-up</option><option value="recent">Last updated</option><option value="followers">Followers</option><option value="name">Name</option></select></label>
+        </div>
+        <div class="mk-table-wrap"><table class="mk-table"><thead><tr><th>Creator</th><th>Platform</th><th>Followers</th><th>Stage</th><th>Follow-up</th><th>Actions</th></tr></thead><tbody id="mk-leads"><tr><td colspan="6">Add your first prospect or import a CSV.</td></tr></tbody></table></div>
+        <div class="mk-bottom-tools"><span id="mk-count">0 records</span><button id="mk-export-csv" type="button">Export CSV</button><button id="mk-export-json" type="button">Backup JSON</button><label class="mk-text-link">Restore JSON<input id="mk-import-json" type="file" accept="application/json,.json" hidden></label><input id="mk-import-csv" type="file" accept="text/csv,.csv" hidden></div>
+      </section>
+
+      <section id="mk-panel-conversations" class="mk-panel" hidden>
+        <div class="mk-two-col">
+          <div class="mk-card"><h2>Conversation tracker</h2><p class="mk-muted">Log contact attempts and inbound replies manually. Instagram inbox synchronization is not connected.</p><label for="mk-conversation-select">Creator</label><select id="mk-conversation-select"></select><div id="mk-conversation-timeline" class="mk-timeline"></div><form id="mk-message-form"><label for="mk-message-type">Message type</label><select id="mk-message-type"><option value="outbound">Outbound — sent manually</option><option value="inbound">Inbound — received</option><option value="note">Internal note</option></select><label for="mk-message-text">Record message or note</label><textarea id="mk-message-text" rows="4" maxlength="4000" required></textarea><button class="mk-button" type="submit">Save to history</button></form></div>
+          <div class="mk-card"><h2>Instagram connection</h2><span class="mk-status">Not connected</span><p>Meta's official Instagram messaging integration can support inbox synchronization after you authorize a professional Instagram account and obtain the required messaging permissions.</p><p class="mk-muted">This version does not scrape profiles, initiate bulk DMs, or automatically contact anyone. Drafts stay in your control.</p><a href="https://developers.facebook.com/docs/instagram-platform/" target="_blank" rel="noopener noreferrer">Instagram platform setup documentation</a><h3>Draft a response</h3><p>Use the Draft button on any prospect to prepare a first approach, follow-up or reply.</p></div>
+        </div>
+      </section>
+
+      <section id="mk-panel-insights" class="mk-panel" hidden>
+        <div class="mk-card"><h2>Outreach pipeline</h2><p class="mk-muted">Counts reflect manually recorded stages, not platform analytics or verified purchases.</p><div id="mk-stage-bars" class="mk-stage-bars"></div></div>
+      </section>
+
+      <section id="mk-panel-settings" class="mk-panel" hidden>
+        <div class="mk-two-col">
+          <div class="mk-card"><h2>Drafting voice</h2><p class="mk-muted">Additional context for the AI writing assistant. Sent only when you request a draft.</p><label for="mk-style">Brand voice and outreach preferences</label><textarea id="mk-style" rows="7" maxlength="2000" placeholder="Short, direct, professional. Long-term collaboration..."></textarea><button id="mk-save-settings" class="mk-button" type="button">Save preferences</button></div>
+          <div class="mk-card"><h2>Integration status</h2><p><strong>Outreach sending:</strong> manual review and send only</p><p><strong>Instagram inbox:</strong> not connected</p><p><strong>AI drafting:</strong> <span id="mk-ai-state">Checking…</span></p><p><strong>Shared CRM database:</strong> not connected</p><p class="mk-muted">Until a shared backend exists, browser data is not synchronized between devices or browsers. Export a backup before clearing browser storage.</p></div>
+        </div>
+      </section>
+    </section>
+  </div>
+</main>
+
+<dialog id="mk-editor" class="mk-dialog" aria-labelledby="mk-editor-title">
+  <form id="mk-lead-form">
+    <div class="mk-dialog-head"><h2 id="mk-editor-title">Prospect</h2><button class="mk-quiet" id="mk-editor-close" type="button" aria-label="Close">×</button></div>
+    <input id="mk-id" type="hidden">
+    <div class="mk-form-grid">
+      <label>Creator name<input id="mk-name" required maxlength="150"></label>
+      <label>Instagram handle<input id="mk-handle" maxlength="80" placeholder="@handle"></label>
+      <label>Platform<select id="mk-platform"><option>Instagram</option><option>TikTok</option><option>YouTube</option><option>Other</option></select></label>
+      <label>Followers<input id="mk-followers" type="number" min="0" max="1000000000"></label>
+      <label>Average views<input id="mk-views" type="number" min="0" max="1000000000"></label>
+      <label>Stage<select id="mk-stage"><option>New</option><option>Qualified</option><option>Drafted</option><option>Contacted</option><option>Replied</option><option>Negotiating</option><option>Partner</option><option>Dormant</option></select></label>
+      <label>Business email<input id="mk-email" type="email" maxlength="254" placeholder="optional"></label>
+      <label>Next follow-up<input id="mk-followup" type="date"></label>
+      <label class="mk-wide">Profile or contact URL<input id="mk-url" type="url" maxlength="1000" placeholder="https://..."></label>
+      <label class="mk-wide">Niche<input id="mk-niche" maxlength="180" placeholder="Bodybuilding, fitness, science..."></label>
+      <label class="mk-wide">Research notes<textarea id="mk-notes" rows="4" maxlength="3000" placeholder="Recent content, actual audience fit, public contact source..."></textarea></label>
+    </div>
+    <div class="mk-dialog-actions"><button id="mk-delete" class="mk-danger" type="button">Delete</button><button class="mk-button" type="submit">Save prospect</button></div>
+  </form>
+</dialog>
+
+<dialog id="mk-draft-dialog" class="mk-dialog" aria-labelledby="mk-draft-title">
+  <form id="mk-draft-form">
+    <div class="mk-dialog-head"><h2 id="mk-draft-title">Outreach draft</h2><button class="mk-quiet" id="mk-draft-close" type="button" aria-label="Close">×</button></div>
+    <p id="mk-draft-target" class="mk-muted"></p>
+    <label for="mk-draft-type">Message type</label><select id="mk-draft-type"><option value="intro">First introduction</option><option value="followup">Follow-up</option><option value="reply">Reply to inquiry</option></select>
+    <label for="mk-draft-context">Specific content / context</label><textarea id="mk-draft-context" rows="3" maxlength="1500" placeholder="What I liked about a recent post, what they asked, preferred offer..."></textarea>
+    <div class="mk-dialog-actions"><button class="mk-button" type="submit" id="mk-generate">Generate AI draft</button><button id="mk-template" class="mk-button mk-outline" type="button">Use template</button></div>
+    <p id="mk-draft-status" role="status"></p>
+    <label for="mk-draft-output">Review and edit before sending</label><textarea id="mk-draft-output" rows="12" maxlength="6000"></textarea>
+    <div class="mk-dialog-actions"><button id="mk-copy" type="button" class="mk-button mk-outline">Copy text</button><button id="mk-mark-drafted" type="button" class="mk-button">Save draft & status</button></div>
+  </form>
+</dialog>
+<script src="/admin-marketing.js" defer></script>
+</body>
+</html>
