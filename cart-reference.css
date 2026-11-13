@@ -90,4 +90,4 @@
 .nlc-rec-prices s{color:#8c97a8;font-weight:400}
 .nlc-rec-prices b{color:#174d94;font-weight:800}
 .nlc-rec small{display:block;font-size:10px;color:#078447;font-weight:700;margin:4px 0 7px}
-.nlc-google-mark{font-size:0!important;display:inline-block!important;width:24px;height:24px;background:conic-gradient(#4285f4 0deg 90deg,#34a853 90deg 175deg,#fbbc05 175deg 250deg,#ea4335 250deg 330deg,#4285f4 330deg);-webkit-background-clip:initial!important;background-clip:initial!important;clip-path:polygon(50% 0%,90% 12%,74% 31%,61% 24%,43% 25%,25% 42%,25% 58%,40% 75%,57% 76%,72% 65%,50% 65%,50% 46%,100% 46%,100% 61%,88% 85%,62% 100%,37% 97%,15% 83%,0% 60%,0% 37%,18% 12%);flex:none}
+.nlc-wallet-row svg.nlc-google-mark{display:block!important;width:23px;height:23px;flex:none;background:none!important;clip-path:none!important;color:initial!important}
