@@ -29,6 +29,18 @@
    throw Error('Rampex returned an unexpected payment destination.');
   return{url:url.href};
  }
+ async function chargeNmi(auth,id,cents,currency,data){
+  const session=await auth.auth.getSession(),token=session.data?.session?.access_token;
+  if(!token)throw Error('Sign in again to pay your order.');
+  const response=await fetch('/api/checkout?native=customer&invoice='+encodeURIComponent(id),{
+   method:'POST',cache:'no-store',headers:{Authorization:'Bearer '+token,'Content-Type':'application/json'},
+   body:JSON.stringify({action:'pay',invoice_id:id,attempt_id:crypto.randomUUID(),confirm_amount_cents:cents,
+    confirm_currency:currency,consent:true,payment_token:data.token,billing:data.billing,cardholder_auth:data.cardholder_auth})
+  });
+  const payment=await response.json().catch(()=>null);
+  if(!response.ok)throw Error(payment?.error||'Payment state uncertain. Check your saved order before retrying.');
+  return payment;
+ }
  function link(label,url){const a=node('a',label);a.href=url;a.className='ap-button ap-button-secondary';return a;}
  function summary(q){const box=node('section');box.className='dc-review-summary';box.append(node('span','FINAL TOTAL'));const totals=node('div');totals.className='dc-totals';
   for(const [label,value] of [['Subtotal',q.subtotal_cents],['Discounts',-q.discount_cents],['Delivery',q.shipping_cents],['Tax',q.tax_cents],['Points redeemed',-q.points_redeemed],['Store credit',-q.credit_redeemed_cents],['Due now',q.total_cents]]){if(!value&&['Discounts','Points redeemed','Store credit'].includes(label))continue;const row=node('div');row.className='dc-total-row'+(label==='Due now'?' dc-due':'');row.append(node('span',label),node('strong',money(value)));totals.append(row);}
@@ -54,7 +66,7 @@
   form.noValidate=true;show(0);
   return {ready(){if(current<2){move(current+1);return false;}for(let i=0;i<sections.length;i++){const bad=invalid(sections[i]);if(bad){show(i);bad.reportValidity();return false;}}return true;}};
  }
- async function checkout(root,auth,user){
+ async function checkout(root,auth,user,options={}){
   try{
    const data=await api(auth),plan=new URLSearchParams(location.search).get('plan'),goods=!['vip','elite'].includes(plan),cart=window.AltaStore?.cart||[];
    root.innerHTML='<div class="dc-topline"><a href="/shop">← Continue shopping</a><a href="/account/purchases">My orders</a></div><header class="dc-heading"><h1>Checkout</h1><p class="dc-steps">Your details &nbsp; / &nbsp; Review order &nbsp; / &nbsp; Payment</p></header>'; document.title='Checkout | AltaPure Labs';
@@ -65,17 +77,57 @@
    const profile=user.user_metadata?.alta_profile||{},address=profile.shipping||{};
    const form=node('form');form.className='ap-form dc-form';
    form.innerHTML=`<section class="dc-section"><span class="dc-kicker">01 · ${goods?'Delivery details':'Membership details'}</span><h2>${goods?'Where should we send your order?':data.terms.memberships[plan].name}</h2><p>${goods?'Standard US delivery · US$25 per order.':data.terms.memberships[plan].discount_bps/100+'% merchandise savings for 365 days. No automatic renewal.'} <a href="/account/profile">Manage saved details</a></p><div class="dc-fields"><label>Full name<input name="name" autocomplete="shipping name" maxlength="120" required value="${esc(address.name||user.user_metadata?.full_name||'')}"></label><label>Laboratory / organization (optional)<input name="organization" maxlength="180" autocomplete="shipping organization" value="${esc(address.organization||profile.organization||'')}"></label>${goods?'<label>Street address<input name="line1" autocomplete="shipping address-line1" required minlength="3" maxlength="180" value="'+esc(address.line1||'')+'"></label><label>Apartment, suite, etc. (optional)<input name="line2" autocomplete="shipping address-line2" maxlength="180" value="'+esc(address.line2||'')+'"></label><div class="ap-form-row"><label>City<input name="city" required minlength="2" maxlength="80" autocomplete="shipping address-level2" value="'+esc(address.city||'')+'"></label><label>State<input name="region" required maxlength="80" autocomplete="shipping address-level1" value="'+esc(address.region||'')+'"></label></div><div class="ap-form-row"><label>ZIP code<input name="postal_code" required minlength="2" maxlength="20" autocomplete="shipping postal-code" value="'+esc(address.postal_code||'')+'"></label><label>Country<select name="country" autocomplete="shipping country"><option value="US">United States</option></select></label></div><p class="dc-note">'+(address.country&&address.country!=='US'?'Your saved address is outside the United States. Enter a US delivery address to continue. ':'')+'<a href="/shipping-policy.html">See delivery estimates and shipping details</a></p>':''}</div></section><section class="dc-section"><span class="dc-kicker">02 · Payment</span><h2>Choose how to pay</h2><p>Review the total before placing your order.</p>${methods.map((m,i)=>'<label class="dc-method"><input type="radio" name="method_id" value="'+esc(m.id)+'" '+(i===0?'checked':'')+' required><span><strong>'+esc(m.label)+'</strong><small>'+(m.kind==='bank_transfer'?(goods?'Save an extra 5% on merchandise. ':'')+'Bank instructions appear after you place your order. Payment is confirmed before fulfillment.':['peptidepay','rampex'].includes(m.provider_key)?'Card-to-crypto checkout through the provider. Review its currency, fees and eligibility before paying.':'Continue to the secure payment form after placing your order.')+'</small></span></label>').join('')}</section><section class="dc-section"><span class="dc-kicker">03 · Review</span><h2>Finish your order</h2>${goods?'<label class="dc-coupon">Coupon code (optional)<input name="coupon" maxlength="40" placeholder="BOGO" autocomplete="off"><small>Buy 1, get 1 free on matching pairs. BOGO adds another 10% off merchandise.</small></label><details class="dc-rewards"><summary>Use points or store credit</summary><p class="dc-note">Available: '+Math.max(0,data.balances.points)+' points · '+money(data.balances.credit_cents)+' store credit.</p><div class="ap-form-row"><label>Points to use<input name="points" type="number" min="0" step="1" max="'+Math.max(0,data.balances.points)+'" value="0"></label><label>Store credit (US$)<input name="credit" type="number" min="0" step="0.01" max="'+(data.balances.credit_cents/100).toFixed(2)+'" value="0"></label></div><p class="dc-note">100 points = US$1; minimum 100 points. Points apply to merchandise; credit can also cover delivery.</p></details>':''}<div class="dc-fields"><label>Order note (optional)<textarea name="note" rows="2" maxlength="1000"></textarea></label>${goods?'<label class="ap-checkbox-label"><input name="research_use" type="checkbox" required> I am 21 or older. Products are for controlled laboratory research only, not human or animal use.</label>':''}<label class="ap-checkbox-label"><input name="consent" type="checkbox" required><span>I agree to the <a href="/commercial-terms.html" target="_blank" rel="noopener">checkout terms</a>, <a href="/shipping-policy.html" target="_blank" rel="noopener">shipping policy</a> and <a href="/refund-policy.html" target="_blank" rel="noopener">refund policy</a>.</span></label><button type="submit" class="ap-button">Review order total →</button></div></section>`;
-   const preferred=new URLSearchParams(location.search).get('method');if(methods.some(m=>m.id===preferred))form.elements.method_id.value=preferred;
+   const preferred=options.method||new URLSearchParams(location.search).get('method');if(methods.some(m=>m.id===preferred))form.elements.method_id.value=preferred;
    const {box:aside,estimate}=cartSummary(cart,goods,plan,data),layout=node('div');layout.className='dc-layout';
    const review=node('div'),status=node('p');status.className='dc-confirm-status';status.setAttribute('role','status');status.setAttribute('aria-live','polite');aside.append(review,status);layout.append(form,aside);root.append(layout);const steps=checkoutSteps(form,root,goods,data);window.ReadinessUI.enhanceCheckout(form,aside,auth,goods?cart:[],data);
-   let busy=false,body,lastFingerprint=sessionStorage.getItem('ap-checkout-fingerprint')||'',requestId=sessionStorage.getItem('ap-checkout-id')||crypto.randomUUID();sessionStorage.setItem('ap-checkout-id',requestId);
-   form.addEventListener('input',()=>{if(!busy){review.replaceChildren();estimate.hidden=false;status.textContent='';}});
+   let busy=false,body,nmiWidget=null,nmiLocked=false,lastFingerprint=sessionStorage.getItem('ap-checkout-fingerprint')||'',requestId=sessionStorage.getItem('ap-checkout-id')||crypto.randomUUID();sessionStorage.setItem('ap-checkout-id',requestId);
+   form.addEventListener('input',()=>{if(!busy){nmiWidget?.destroy();nmiWidget=null;nmiLocked=false;review.replaceChildren();estimate.hidden=false;status.textContent='';}});
    form.onsubmit=async e=>{e.preventDefault();if(busy||!steps.ready())return;busy=true;const button=form.querySelector('button[type="submit"]');button.disabled=true;status.textContent='Calculating your total…';
     try{
      const d=Object.fromEntries(new FormData(form));for(const control of form.elements)control.disabled=true;const request={kind:goods?'goods':'membership',...(goods?{items:cart.map(({id,size,qty})=>({id,size,qty})),address:{line1:d.line1,line2:d.line2,city:d.city,region:d.region,postal_code:d.postal_code,country:d.country},research_use:d.research_use==='on'}:{plan}),name:d.name,organization:d.organization,note:d.note,consent:d.consent==='on',method_id:d.method_id,points:Number(d.points||0),credit_cents:Math.round(Number(d.credit||0)*100),coupon:d.coupon||'',delivery:window.ReadinessUI.selection(form),checkout_version:data.config.version};
      const fingerprint=Array.from(new Uint8Array(await crypto.subtle.digest('SHA-256',new TextEncoder().encode(JSON.stringify(request))))).map(x=>x.toString(16).padStart(2,'0')).join('');if(lastFingerprint&&lastFingerprint!==fingerprint){requestId=crypto.randomUUID();sessionStorage.setItem('ap-checkout-id',requestId);}lastFingerprint=fingerprint;sessionStorage.setItem('ap-checkout-fingerprint',fingerprint);
      body={...request,id:requestId,action:'quote'};const q=await api(auth,body);estimate.hidden=true;review.replaceChildren(summary(q));review.scrollIntoView({behavior:'auto',block:'nearest'});status.textContent='Review the final total, then place your order.';
      const selected=methods.find(m=>m.id===body.method_id),rampex=selected?.native_provider==='rampex'&&q.total_cents>0;
+     if(selected?.native_provider==='nmi'&&q.total_cents>0){
+      if(!window.AltaNmiInline?.available(data.nmi,selected.id))throw Error('Card and wallet payments have not been activated by the merchant.');
+      nmiWidget?.destroy();nmiLocked=false;
+      const host=node('div');host.className='dc-nmi-widget';review.append(host);
+      const note=node('p','Secure card or wallet payment. Your final amount is verified before charging.');note.className='dc-note';review.append(note);
+      nmiWidget=await window.AltaNmiInline.mount({host,config:data.nmi,methodId:selected.id,
+       amount:q.total_cents,currency:q.currency,form,onError:e=>{status.textContent=e.message;},
+       onPayment:async details=>{
+        if(nmiLocked)return{pending:true};
+        nmiLocked=true;let saved;
+        try{
+         status.textContent='Saving your order…';
+         const placed=await api(auth,{...body,action:'place',quote:q.quote});saved=placed.id;
+         status.textContent='Processing secure payment…';
+         const payment=await chargeNmi(auth,saved,q.total_cents,q.currency,details);
+         if(payment.state==='paid'){
+          nmiWidget?.destroy();nmiWidget=null;review.replaceChildren();
+          const done=node('section');done.className='dc-payment-success';
+          done.append(node('h3','Payment confirmed'),node('p','Your order has been paid.'));
+          done.append(link('View your order','/account/purchases?id='+encodeURIComponent(saved)));
+          review.append(done);status.textContent='Payment confirmed.';
+          sessionStorage.removeItem('ap-checkout-id');sessionStorage.removeItem('ap-checkout-fingerprint');
+          if(goods){const current=window.AltaStore?.cart||[];if(JSON.stringify(current.map(({id,size,qty})=>({id,size,qty})))===JSON.stringify(body.items))localStorage.removeItem('pp-cart');}
+          return{paid:true};
+         }
+         if(payment.state==='declined'){nmiLocked=false;status.textContent='Card declined. Please review your details.';return{retry:true,message:'Card declined. Please use another card.'};}
+         nmiWidget?.destroy();nmiWidget=null;review.replaceChildren();
+         review.append(node('p','Payment verification is pending. Do not submit another payment.'));
+         review.append(link('View saved order','/account/purchases?id='+encodeURIComponent(saved)));
+         status.textContent='Payment status is pending.';return{pending:true};
+        }catch(e){
+         if(!saved)nmiLocked=false;
+         status.replaceChildren();
+         status.append(node('span',(saved?'Order '+saved+' saved. ':'')+e.message));
+         if(saved)status.append(document.createTextNode(' '),link('Check order status','/account/purchases?id='+encodeURIComponent(saved)));
+         return{retry:!saved,message:e.message};
+        }
+       }});
+      status.textContent='Pay the verified final amount using a card or eligible wallet.';return;
+     }
      const place=node('button',q.total_cents===0?'Place order using account balance':rampex?'Place order & pay by card':'Place order and continue to payment');place.type='button';place.className='ap-button';review.append(place);
      if(rampex){const note=node('p','One-time payment of the final total shown above. Secure card payment opens with Stripe via Rampex; provider fees and identity verification may apply.');note.className='dc-note';review.append(note);}
      place.onclick=async()=>{if(busy)return;busy=true;place.disabled=true;button.disabled=true;for(const x of form.elements)x.disabled=true;status.textContent='Saving your order. Please wait…';

@@ -27,7 +27,13 @@ test('supplier worker cannot make a request while either activation gate is off'
 });
 test('wallet availability requires a verified live native method and never exposes tokenization credentials',()=>{
  const checkout=require('../lib/direct-checkout');assert.deepEqual(checkout.capabilities([],{}),{card:false,card_method_id:null,apple_pay:false,google_pay:false});
- const c=checkout.capabilities([{id:'native-id',native_provider:'nmi'}],{NMI_APPLE_PAY_ENABLED:'true',NMI_GOOGLE_PAY_ENABLED:'true'});assert.equal(c.apple_pay,true);assert.equal(c.card_method_id,'native-id');assert.equal(c.tokenization_key,undefined);
+ const m=[{id:'native-id',native_provider:'nmi'}];
+ assert.equal(checkout.capabilities(m,{NMI_APPLE_PAY_ENABLED:'true'}).card,false);
+ const config={NMI_API_KEY:'fixture-key',NMI_TOKENIZATION_KEY:'public-fixture-token',NMI_WEBHOOK_KEY:'fixture-webhook',
+ NMI_MERCHANT_ID:'fixture-merchant',NMI_CURRENCIES:'USD',NMI_MODE:'live',NMI_ENABLED:'true',NMI_APPLE_PAY_ENABLED:'true',NMI_GOOGLE_PAY_ENABLED:'true'};
+ const c=checkout.capabilities(m,config);assert.equal(c.apple_pay,true);assert.equal(c.google_pay,true);
+ assert.equal(c.card_method_id,'native-id');assert.equal(c.tokenization_key,undefined);
+ assert.equal(JSON.stringify(checkout.nmiPublicConfig(m,config)).includes('fixture-webhook'),false);
 });
 test('supplier operations reject unauthenticated and cross-origin writes before querying data',async()=>{
  const handler=require('../lib/lotus-admin').handle;let queried=false;

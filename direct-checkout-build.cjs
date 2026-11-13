@@ -2,7 +2,7 @@
 const fs=require('node:fs'),path=require('node:path');
 const out='public-build';
 function patch(file,fn){const p=path.join(out,file);fs.writeFileSync(p,fn(fs.readFileSync(p,'utf8')));}
-patch('account.html',s=>s.replace('<script src="/account.js">','<script src="/direct-checkout-client.js"></script><script src="/account.js">'));
+patch('account.html',s=>s.replace('<script src="/account.js">','<script src="/nmi-inline-checkout.js"></script><script src="/direct-checkout-client.js"></script><script src="/account.js">'));
 patch('account.js',s=>{
  const continuation=`function safeCheckoutReturn(value){if(typeof value!=='string'||/[\\\\\\r\\n]/.test(value)||!value.startsWith('/')||value.startsWith('//'))return null;try{const u=new URL(value,location.origin);if(u.origin!==location.origin||!/^\\/(?:checkout|pay\\.html|account\\/(?:purchases|membership|points|store-credit|orders(?:\\/[A-Za-z0-9_-]+)?))$/.test(u.pathname))return null;return u.pathname+u.search;}catch{return null;}}\nfunction consumeCheckoutReturn(value){const next=safeCheckoutReturn(value)||safeCheckoutReturn(sessionStorage.getItem('ap-account-return'));sessionStorage.removeItem('ap-account-return');return next;}\n`;
  s=s.replace('function route(){',continuation+'function route(){');
@@ -53,6 +53,8 @@ for(const file of ['payment-options-public.js','payment-options-ui.js'])patch(fi
 for(const entry of fs.readdirSync(out,{withFileTypes:true}))if(entry.isFile()&&entry.name.endsWith('.html')&&!entry.name.startsWith('admin-'))patch(entry.name,s=>s.replaceAll('Online checkout is paused.','US checkout is available.').replaceAll('Online checkout is currently paused','US checkout is available').replaceAll('Invoice requests','Checkout').replaceAll('request an invoice','check out').replaceAll('/account/invoices?new=goods','/checkout'));
 for(const file of fs.readdirSync(path.join(out,'product')))patch('product/'+file,s=>s.replaceAll('Online checkout is paused.','US checkout is available.'));
 patch('robots.txt',s=>s+'Disallow: /checkout\nDisallow: /pay.html\n');
+fs.copyFileSync('nmi-inline-checkout.js',path.join(out,'nmi-inline-checkout.js'));
+fs.copyFileSync('cart-nmi-express.js',path.join(out,'cart-nmi-express.js'));
 fs.copyFileSync('checkout-payment-options.js',path.join(out,'payment-options-public.js'));
 patch('payment-options.html',s=>s.replace('See current availability for Interac, bank transfer, PayPal, Stripe, BTCPay Bitcoin and NOWPayments invoices.','See the payment methods currently available at checkout.')
  .replace('Choose a preferred enabled method when requesting an invoice. Review the exact final currency and amount before accepting. The presence of a provider here does not mean its account is connected or that every product is eligible.','Review the final total and choose an available payment method at checkout. Only enabled routes are shown below.')
