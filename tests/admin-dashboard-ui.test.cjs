@@ -10,18 +10,19 @@ const batchApi = fs.readFileSync(path.join(root, 'api/admin-supplier-batches.js'
 const supplierApi = fs.readFileSync(path.join(root, 'api/admin-suppliers.js'), 'utf8');
 const notificationApi = fs.readFileSync(path.join(root, 'api/admin-notifications.js'), 'utf8');
 
-test('admin dashboard exposes orders, batches, notifications and Lotus without empty tabs', () => {
+test('admin dashboard exposes only Orders and Marketing tabs while preserving internal operations', () => {
   const nav = html.match(/<nav class="admin-nav"[\s\S]*?<\/nav>/);
   assert.ok(nav);
-  assert.deepEqual([...nav[0].matchAll(/data-admin-view="([^"]+)"/g)].map(x => x[1]), [
-    'orders', 'batches', 'notifications', 'lotus'
-  ]);
+  assert.deepEqual([...nav[0].matchAll(/data-admin-view="([^"]+)"/g)].map(x => x[1]), ['orders']);
+  assert.match(nav[0], /href="\/admin-marketing\.html">Marketing<\/a>/);
+  assert.doesNotMatch(nav[0], />Batches<\/|>Notifications<\/|>Lotus<\//);
   assert.doesNotMatch(nav[0], /Overview|Inventory/);
   assert.match(html, /id="fulfillment-hub"/);
   assert.match(nav[0], /aria-label="Admin sections"/);
   assert.match(html, /id="admin-orders-section"/);
   assert.match(html, /id="admin-batches-section"/);
   assert.match(html, /id="admin-notifications-section"/);
+  assert.match(html, /id="admin-lotus-section"/);
 });
 
 test('admin dashboard uses responsive brand styling and visible keyboard focus', () => {
