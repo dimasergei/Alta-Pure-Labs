@@ -111,3 +111,12 @@
 .ap-cart-dialog .nlc-line .nlc-quantity-row .ap-quantity button:focus-visible{outline:2px solid #1d5ab1!important;outline-offset:-3px!important}
 .ap-cart-dialog .nlc-line .nlc-name [data-nlc-bogo-line]:not([hidden]){display:inline-block!important;margin:9px 0 0!important}
 @media(max-width:480px){.ap-cart-dialog .nlc-line .nlc-quantity-row .ap-quantity{grid-template-columns:42px 47px 42px!important;height:42px!important}.ap-cart-dialog .nlc-line .nlc-quantity-row .ap-quantity button{width:42px!important;min-width:42px!important;height:42px!important}.ap-cart-dialog .nlc-line .nlc-quantity-row .ap-quantity input{width:47px!important;min-width:47px!important;height:42px!important;line-height:42px!important}}
+
+/* Use the identical isolated wallet artwork in the cart drawer and checkout. */
+.nlc-wallet-row .nlc-wallet-lockup{display:inline-flex!important;align-items:center!important;justify-content:center!important;gap:3px!important;white-space:nowrap!important}
+.nlc-wallet-row button:disabled{filter:none!important;opacity:1!important}
+.nlc-wallet-row button .nlc-wallet-logo{position:static!important;display:block!important;object-fit:contain!important;border:0!important;background:none!important;filter:none!important;box-shadow:none!important;transform:none!important;flex:none!important}
+.nlc-wallet-row button img.nlc-apple-mark{width:17px!important;height:22px!important}
+.nlc-wallet-row button img.nlc-google-mark{width:20px!important;height:20px!important}
+.nlc-wallet-row button .nlc-apple-pay-word{font-family:-apple-system,BlinkMacSystemFont,"SF Pro Display","Helvetica Neue",Arial,sans-serif!important;font-size:18px!important;letter-spacing:-.05em;color:#fff!important;font-weight:500!important}
+.nlc-wallet-row button .nlc-google-pay-word{font-family:"Google Sans","Product Sans",Arial,Helvetica,sans-serif!important;font-size:18px!important;letter-spacing:-.035em;color:#fff!important;font-weight:400!important}
