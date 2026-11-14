@@ -112,7 +112,9 @@ test('PAR-11: compact shipping summary includes an actionable in-page cross-sell
 test('PAR-12: CTA semantics remain explicit, with a single payment submit',()=>{
  assert.match(checkoutCss,/\.nlx-primary\s*\{[^}]*background\s*:\s*#08090c/s);
  assert.match(checkoutCss,/\.nlx-primary\s*\{[^}]*color\s*:\s*white/s);
- assert.match(checkout,/card checkout awaiting activation/i,
-  'When the merchant is not approved, do not misrepresent a live place-order control.');
+ assert.match(checkout,/Payment method awaiting activation/i,
+  'Unapproved payment choices must remain unavailable.');
+ assert.match(checkout,/selected==='bank'&&bank/,
+  'Only an active bank transfer method can enable the place-order control.');
  assert.match(checkout,/data-nlx-place/);
 });
