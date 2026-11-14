@@ -16,20 +16,24 @@ const faq=[
  ['What happens if I let my membership lapse?','Your account returns to the free Member tier when the prepaid term expires. Order history and eligible points remain accessible, while paid-tier discounts and free standard US delivery stop. You can purchase a new term when your previous one has ended.']
 ];
 const features=id=>{
- const p=plans[id],paid=id!=='member';
- return [[true,p.points_per_dollar+'× points per eligible $1 spent'],
- [paid,'Free standard US shipping on eligible orders'],
- [paid,(p.discount_bps/100)+'% off eligible merchandise automatically'],
- [true,'Order history and shipment tracking'],
- [true,'Points balance and store credit in your account']]
- .map(([enabled,label])=>'<li class="'+(enabled?'':'mx-unavailable')+'"><span class="mx-icon" aria-hidden="true">'+(enabled?'✓':'○')+'</span><span>'+esc(label)+'</span></li>').join('');
+ const p=plans[id],free=id==='member',gold=id==='vip',platinum=id==='elite';
+ const entries=[
+  [true,p.points_per_dollar+'× points per eligible $1 spent'],
+  [!free,'Free standard US shipping on eligible orders'],
+  [!free,(free?'5':String(p.discount_bps/100))+'% off eligible orders, applied automatically'],
+  [!free,'Early access to eligible new releases'],
+  [platinum,'Priority fulfillment — ships first where available'],
+  [platinum,'$50 monthly store credit on orders $150+'],
+  [platinum,'Free BAC Water (3mL) with every eligible purchase']
+ ];
+ return entries.map(([enabled,label])=>'<li class="'+(enabled?'':'mx-unavailable')+'"><span class="mx-icon" aria-hidden="true">'+(enabled?'✓':'○')+'</span><span>'+esc(label)+'</span></li>').join('');
 };
 function card(id){
  const free=id==='member',middle=id==='vip',p=plans[id];
  const href=free?'/account/signup':'/checkout?plan='+encodeURIComponent(id)+'&period='+period;
  const tier=middle?'ALTA <span class="mx-metal-gold">GOLD</span>':id==='elite'?'ALTA <span class="mx-metal-platinum">PLATINUM</span>':'Member';
  const price=free?'Free':usd(p[period+'_cents'])+'<small>/'+(period==='annual'?'yr':'mo')+'</small>';
- const subtitle=free?'Start earning points on every eligible order.':middle?'More rewards and savings with each order.':'Our highest available level of member savings.';
+ const subtitle=free?'Start earning points on every eligible order.':middle?'More rewards and savings with each order.':'Everything in GOLD, plus premium fulfillment perks.';
  return '<article class="mx-card mx-card-'+id+'">'+(middle?'<span class="mx-popular">MOST POPULAR</span>':'')+
  '<div class="mx-card-top"><h3>'+tier+'</h3><div class="mx-price">'+price+'</div><p>'+subtitle+'</p></div>'+
  '<ul class="mx-benefits">'+features(id)+'</ul>'+
@@ -41,7 +45,7 @@ function render(){
  '<p>Choose a prepaid membership to unlock eligible savings, free standard US delivery and extra rewards on future orders after confirmed payment.</p></header>'+
  '<div class="mx-period" role="group" aria-label="Membership billing"><button type="button" data-mx-period="monthly" aria-pressed="'+(period==='monthly')+'">Monthly</button><button type="button" data-mx-period="annual" aria-pressed="'+(period==='annual')+'">Annual <span>Save 20%</span></button></div>'+
  '<div class="mx-card-grid">'+['member','vip','elite'].map(card).join('')+'</div>'+
- '<p class="mx-terms">Prepaid terms do not renew automatically. The better of BOGO and eligible member or volume pricing applies per product line; membership fees do not earn points. Benefits become active only after verified payment.</p>'+
+ '<p class="mx-terms">Prepaid terms do not renew automatically. The better of BOGO and eligible member or volume pricing applies per product line; membership fees do not earn points. Standard shipping, discount and points benefits activate on verified payment. Priority fulfillment, monthly credits and gift items require eligibility and fulfillment verification.</p>'+
  '<section class="mx-faq" id="membership-faq"><header><h2>Membership FAQ</h2><p>Everything you need to know before you join.</p></header><div class="mx-faq-items">'+
  faq.map(([q,a])=>'<details><summary>'+esc(q)+'<span aria-hidden="true"></span></summary><p>'+esc(a)+'</p></details>').join('')+
  '</div></section></section>';
