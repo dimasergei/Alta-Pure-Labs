@@ -366,3 +366,11 @@ body.ap-site {
 @media (max-width: 560px) {
   .ap-site .nl-offer-grid > .ap-offer-box { padding: 13px; }
 }
+
+/* Checkout-reference top-banner palette wins over the generic brand surface. */
+.ap-site .ap-announcement{background:linear-gradient(110deg,#07172b 0%,#163c76 56%,#222d6a 100%);color:#fff;gap:12px}
+.ap-site .ap-announcement .ap-promo-main{color:#fff}
+.ap-site .ap-announcement .ap-promo-bogo{color:#fff}
+.ap-site .ap-announcement .ap-promo-shop{color:#162741}
+.ap-checkout-page .ap-announcement .ap-locale-controls{display:none!important}
+@media(max-width:600px){.ap-site .ap-announcement{gap:5px;padding-inline:8px}.ap-site .ap-announcement .ap-promo-main{font-size:9px}.ap-site .ap-announcement .ap-promo-shop{font-size:8px;padding:5px 7px}.ap-site .ap-announcement .ap-promo-bogo{padding:4px 7px;font-size:8px}}
