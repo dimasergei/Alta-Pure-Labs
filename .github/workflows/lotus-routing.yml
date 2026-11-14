@@ -5,6 +5,9 @@ on:
       - 'lib/lotus-*.js'
       - 'lib/order-ledger-reconciliation.js'
       - 'lib/lotus-admin.js'
+      - 'lib/admin-order-query.js'
+      - 'api/admin-orders.js'
+      - 'tests/unified-admin-orders.test.cjs'
       - 'admin-fulfillment.js'
       - 'admin-orders.html'
       - 'tests/lotus-*.test.cjs'
@@ -26,7 +29,9 @@ jobs:
         run: |
           node --check admin-fulfillment.js
           node --check lib/lotus-admin.js
+          node --check lib/admin-order-query.js
+          node --check api/admin-orders.js
           node --check lib/lotus-order-routing.js
           node --check lib/order-ledger-reconciliation.js
       - name: Isolated routing and reconciliation tests
-        run: node --test tests/lotus-order-routing.test.cjs tests/order-ledger-reconciliation.test.cjs
+        run: node --test tests/lotus-order-routing.test.cjs tests/order-ledger-reconciliation.test.cjs tests/unified-admin-orders.test.cjs
