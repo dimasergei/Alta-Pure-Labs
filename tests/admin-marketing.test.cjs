@@ -73,9 +73,9 @@ test('admin navigation is Orders and Marketing only; existing operational sectio
   assert.deepEqual(links,['Orders','Marketing']);
   for(const id of ['admin-orders-section','admin-batches-section','admin-notifications-section','admin-lotus-section'])assert.match(html,new RegExp('id="'+id+'"'));
   const marketing=fs.readFileSync(path.join(__dirname,'../admin-marketing.html'),'utf8');
-  assert.match(marketing,/href="\/admin-orders\.html">Orders/);
-  assert.match(marketing,/href="\/admin-marketing\.html" aria-current="page">Marketing/);
-  assert.match(marketing,/This workspace does not send Instagram messages automatically/);
+  assert.match(marketing,/href="#orders" data-ap-workspace="orders">Orders/);
+  assert.match(marketing,/href="#marketing" data-ap-workspace="marketing" aria-current="page">Marketing/);
+  assert.match(marketing,/Orders and Marketing in one secure workspace/);
 });
 test('Marketing browser script parses and uses official review-only draft flow',()=>{
   const source=fs.readFileSync(path.join(__dirname,'../admin-marketing.js'),'utf8');
