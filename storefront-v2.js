@@ -64,7 +64,7 @@
   if(action==='detail-size'){selections[id]=button.dataset.size;const u=new URL(location.href);u.searchParams.set('size',button.dataset.size);history.replaceState(null,'',u);render();return;}
   if(action==='detail-quantity'){const input=$('#ap-detail-quantity');input.value=String(Math.max(1,Math.min(100,(Number(input.value)||1)+Number(button.dataset.step))));return;}
   if(action==='cart-remove'){cart=cart.filter(x=>x.key!==button.dataset.key);syncCart();return;}
-  if(action==='cart-quantity'){cart=cart.map(x=>x.key===button.dataset.key?{...x,qty:Math.max(0,Math.min(100,x.qty+Number(button.dataset.step)))}:x).filter(x=>x.qty>0);syncCart();return;}
+  if(action==='cart-quantity'){cart=cart.map(x=>x.key===button.dataset.key?{...x,qty:Math.max(0,Math.min(Date.now()<Date.parse(document.querySelector('meta[name=altapure-promo-end]')?.content)?50:100,x.qty+Number(button.dataset.step)))}:x).filter(x=>x.qty>0);syncCart();return;}
   if(action==='cart-export'){exportLines(cart,'AltaPure-cart.csv');return;}
   if(action==='clear-filters'){state.query='';state.group='All';state.maxPrice=Math.ceil(Math.max(...catalog.flatMap(p=>p.variants.map(v=>v.price))));state.savedOnly=false;state.limit=12;render();return;}
   if(action==='more'){state.limit+=12;renderCatalogResults();return;}
