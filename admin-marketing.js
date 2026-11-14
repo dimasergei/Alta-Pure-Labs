@@ -324,6 +324,7 @@
         title=elem('strong',item.direction==='incoming'?participantLabel(item.participant_id):'AltaPure'),
         date=elem('small',new Date(item.message_at).toLocaleString()),
         body=elem('p',item.body||'[Media message]');
+      if((igMedia[item.provider_message_id]||[]).length&&!item.body)body.textContent='';
       el.append(title,date,body);
       for(const media of (igMedia[item.provider_message_id]||[])){
         try{
@@ -354,6 +355,8 @@
         const result=await endpoint({action:'instagram_sync'});
         rememberIgProfiles(result.participant_profiles);
         igMedia=result.media&&typeof result.media==='object'&&!Array.isArray(result.media)?result.media:{};
+        const mediaStatus=result.media_diagnostics;
+        if(mediaStatus?.unavailable)notice('Instagram media: '+mediaStatus.resolved+' attachments resolved; '+mediaStatus.unavailable+' unavailable from Meta. Older media may have expired.',true);
         const lookup=result.profile_lookup;
         if(lookup&&lookup.unresolved)notice('Instagram usernames: '+lookup.resolved+' resolved, '+lookup.unresolved+' unavailable. Lookup HTTP status counts: '+JSON.stringify(lookup.failures||{}),true);
       }
