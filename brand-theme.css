@@ -601,3 +601,21 @@ body.ap-site {
 @media(prefers-reduced-motion:reduce){
  .ap-site .nl-hero .ap-promo-clock,.ap-site .nl-hero .ap-promo-time-cell{animation:none!important}
 }
+
+
+/* Move floating product imagery up so the bottoms remain visible at initial viewport height. */
+@media(min-width:1101px){
+ .ap-site .nl-hero .nl-vial-stage .nl-vial-0{top:68px!important}
+ .ap-site .nl-hero .nl-vial-stage .nl-vial-1{top:-27px!important}
+ .ap-site .nl-hero .nl-vial-stage .nl-vial-2{top:82px!important}
+}
+@media(min-width:801px) and (max-width:1100px){
+ .ap-site .nl-hero .nl-vial-stage .nl-vial-0{top:83px!important}
+ .ap-site .nl-hero .nl-vial-stage .nl-vial-1{top:-9px!important}
+ .ap-site .nl-hero .nl-vial-stage .nl-vial-2{top:103px!important}
+}
+@media(max-width:800px){
+ .ap-site .nl-hero .nl-vial-stage .nl-vial-0{top:35px!important}
+ .ap-site .nl-hero .nl-vial-stage .nl-vial-1{top:-13px!important}
+ .ap-site .nl-hero .nl-vial-stage .nl-vial-2{top:56px!important}
+}
