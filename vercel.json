@@ -87,5 +87,17 @@
   ],
   "git": {
     "deploymentEnabled": false
-  }
+  },
+  "redirects": [
+    {
+      "source": "/admin-orders.html",
+      "destination": "/admin-marketing.html?view=orders",
+      "permanent": false
+    },
+    {
+      "source": "/admin-orders",
+      "destination": "/admin-marketing.html?view=orders",
+      "permanent": false
+    }
+  ]
 }
