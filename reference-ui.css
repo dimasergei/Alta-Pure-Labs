@@ -21,3 +21,21 @@ body.ap-site{font-family:Poppins,Arial,sans-serif;background:#fff;color:#101317}
 .dc-step-nav{display:flex;align-items:center;justify-content:center;gap:35px;margin:22px 0}.dc-step-nav button{display:flex;align-items:center;gap:9px;border:0;background:none;color:#818791;font-size:12px;font-weight:600;cursor:pointer;padding:5px}.dc-step-nav button>span{display:grid;place-items:center;width:29px;height:29px;border:1px solid #d5d9df;border-radius:50%;font-size:11px}.dc-step-nav button[aria-current=step]{color:#152949}.dc-step-nav button[aria-current=step]>span,.dc-step-nav .dc-step-complete>span{background:#152949;color:#fff;border-color:#152949}.dc-step-actions{display:flex;justify-content:space-between;gap:14px;margin-top:22px}.dc-step-actions .ap-button:only-child{margin-left:auto}.nl-delivery-option{padding:20px;background:#f4f6f9;border:1px solid #bbc5d5;border-radius:12px}.nl-delivery-option strong{font-size:14px}.nl-delivery-option p{font-size:12px}.dc-section[hidden]{display:none!important}.dc-method{margin-bottom:20px}.dc-coupon{display:grid;gap:9px}.dc-coupon small{font-size:10px;color:#6e757f;line-height:1.6}
 @media(max-width:767px){.dc-step-nav{gap:8px;justify-content:space-between}.dc-step-nav button{font-size:10px;gap:6px;padding:2px}.dc-step-nav button>span{width:23px;height:23px}.dc-step-actions{gap:10px}.dc-step-actions .ap-button{padding:12px 14px;font-size:11px}}
 .nl-prices del{font-size:12px;color:#9b9e9b;line-height:1.2}.ap-cart-line>div:last-child small{display:block;font-size:10px;color:#4e5e78;margin-top:7px}.ap-cart-totals{font-size:13px}
+
+/* Compact NeuroLabs-inspired hero trust area, contained beneath the offer cards. */
+.ap-site .nl-hero .nl-hero-inner{align-items:center;min-height:635px;padding-top:38px;padding-bottom:30px}
+.ap-site .nl-hero .nl-offer-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;max-width:600px;margin-top:20px}
+.ap-site .nl-hero .nl-offer-grid>.ap-offer-box{display:flex;align-items:center;gap:11px;min-width:0;min-height:74px;padding:14px 13px!important}
+.ap-site .nl-hero .nl-offer-grid>.ap-offer-box>div{display:grid;gap:5px;min-width:0}
+.ap-site .nl-hero .ap-offer-icon{height:39px;width:39px;flex:0 0 39px;display:grid;place-items:center;border-radius:11px;background:#ffffff2b;border:1px solid #c7aaff66}
+.ap-site .nl-hero .ap-offer-icon svg{width:23px;height:23px;fill:none;stroke:#f2e9ff;stroke-width:1.7;stroke-linecap:round;stroke-linejoin:round}
+.ap-site .nl-hero .nl-trust{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:0;max-width:600px;width:100%;margin-top:24px;padding:16px 0 3px;border-top:1px solid #ffffff35}
+.ap-site .nl-hero .nl-trust>div{min-width:0;padding:0 10px;text-align:left;border-right:1px solid #ffffff2d}
+.ap-site .nl-hero .nl-trust>div:first-child{padding-left:0}
+.ap-site .nl-hero .nl-trust>div:last-child{border-right:0}
+.ap-site .nl-hero .nl-trust strong{display:block;color:#fff;font-size:15px!important;line-height:1.17!important;font-weight:850!important;letter-spacing:-.02em!important;min-height:32px}
+.ap-site .nl-hero .nl-trust span{display:block;margin-top:5px;color:#c7cae8;font-size:9px!important;font-weight:700;line-height:1.32;letter-spacing:.055em}
+.ap-site .nl-hero .nl-offer-grid>.ap-offer-box strong{font-weight:800;font-size:12px;letter-spacing:0;color:#f8faff}
+.ap-site .nl-hero .nl-offer-grid>.ap-offer-box span:not(.ap-offer-icon){font-size:10px;color:#f0e9ff}
+@media(max-width:1100px){.ap-site .nl-hero .nl-trust strong{font-size:13px!important}.ap-site .nl-hero .nl-trust span{font-size:8px!important}}
+@media(max-width:700px){.ap-site .nl-hero .nl-hero-inner{padding-top:32px}.ap-site .nl-hero .nl-offer-grid{grid-template-columns:repeat(2,minmax(0,1fr))}.ap-site .nl-hero .nl-trust{grid-template-columns:repeat(2,minmax(0,1fr));row-gap:15px;padding-bottom:14px}.ap-site .nl-hero .nl-trust>div:nth-child(2){border-right:0}.ap-site .nl-hero .nl-trust>div:nth-child(3){padding-left:0}.ap-site .nl-hero .nl-trust strong{min-height:unset}.ap-site .nl-hero .ap-offer-icon{width:32px;height:32px;flex-basis:32px}.ap-site .nl-hero .ap-offer-icon svg{width:19px;height:19px}}
