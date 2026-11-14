@@ -214,21 +214,23 @@
   const plan=data.terms?.conversion?.plans?.vip;
   function offerBox(){
    if(!plan)return '';
-   return '<section class="nlx-member-offer"><span class="nlx-optional">OPTIONAL</span><strong class="nlx-member-label">ALTA VIP MEMBERSHIP</strong><h3>Membership benefits for future orders</h3><p>Annual membership · no automatic renewal. Monthly billing is not available in the current checkout.</p><div class="nlx-member-types"><div class="nlx-member-year"><strong>Annual</strong><small>Verified at membership checkout</small></div></div><div class="nlx-member-actions"><a data-testid="membership-activate" href="/memberships">View membership details</a><a href="/checkout?plan=vip&period=annual">Activate annual VIP →</a></div><small>Membership is a separate purchase and is never automatically added to this cart.</small></section>';
+   const monthly=usd(plan.monthly_cents),annual=usd(plan.annual_cents);
+   return '<section class="nlx-member-offer"><div><span class="nlx-optional">OPTIONAL</span><strong class="nlx-member-label">ALTA GOLD MEMBERSHIP</strong></div><h3>Save <em>$21.73</em> today</h3><p>Free express shipping on every order · 5% off every order · 5x points per $1</p><div class="nlx-member-types"><button type="button" data-nlx-plan="monthly" class="'+(state.priorityPeriod==='monthly'?'selected':'')+'"><strong>Monthly</strong><small>'+monthly+'/mo</small></button><button type="button" data-nlx-plan="annual" class="'+(state.priorityPeriod==='annual'?'selected':'')+'"><strong>Annual <span class="nlx-annual-badge">-20%</span></strong><small>'+annual+'/yr</small></button></div><div class="nlx-member-actions"><button type="button" data-nlx-skip>No thanks</button><a data-testid="membership-activate" href="'+(state.priorityPeriod==='annual'?'/checkout?plan=vip&period=annual':'/memberships')+'">Activate · '+(state.priorityPeriod==='annual'?annual+'/yr':monthly+'/mo')+' →</a></div><small>The membership checks out on its own. Your cart is saved and comes back with your member pricing.</small><a class="nlx-compare" href="/memberships">Compare plans</a></section>';
   }
   function paymentLayout(){
-   const ready=!!method;
    const amount=usd(currentPreview?.total_cents||0);
+   const bank=(data.methods||[]).find(m=>m.kind==='bank_transfer'&&m.active!==false);
    return '<section class="nlx-payment"><h2>Payment</h2><div class="nlx-express-label"><strong>EXPRESS CHECKOUT</strong><span>'+amount+'</span></div>'
-     +'<div class="nlx-wallets" data-nlx-wallets>'+(ready?'<p class="nlx-provider-wallet-note">Eligible digital wallets appear in the provider-owned secure payment form below.</p>':'<button type="button" class="nlx-wallet-unavailable" disabled aria-label="Apple Pay pending activation">Apple Pay · Pending activation</button><span class="nlx-or">or</span><button type="button" class="nlx-wallet-unavailable" disabled aria-label="Google Pay pending activation">Google Pay · Pending activation</button>')+'</div>'
-     +'<p class="nlx-wallet-consent">By choosing Apple Pay or Google Pay you confirm you are at least 21, purchasing solely for research use, and agree to our <a href="/research-use-policy.html" target="_blank" rel="noopener">Research Use Only Agreement</a> and <a href="/terms-and-conditions.html" target="_blank" rel="noopener">Terms &amp; Conditions</a>.</p>'
+     +'<div class="nlx-wallets" data-nlx-wallets><button type="button" class="nlx-wallet-unavailable" disabled>'+logo('apple','Apple')+'<b>Pay</b></button><span class="nlx-or">or</span><button type="button" class="nlx-wallet-unavailable" disabled>'+logo('google','Google')+'<b>Pay</b><span class="nlx-wallet-card-logos">'+logo('visa','Visa')+logo('amex','American Express')+'</span></button></div>'
+     +'<p class="nlx-wallet-consent">By tapping Apple Pay or Google Pay, you confirm you are at least 21, are buying for research use only, and accept the <a href="/research-use-policy.html">Research Use Only Agreement</a> and <a href="/commercial-terms.html">Terms &amp; Conditions</a>.</p>'
      +'<div class="nlx-divider"><span>OR PAY ANOTHER WAY</span></div>'
-     +(ready?'<div class="nlx-payment-rows"><div class="nlx-payment-option"><span>Secure card form</span><span class="nlx-card-logos">'+logo('visa','Visa')+logo('amex','American Express')+'</span></div></div>':'<p class="nlx-payment-pending">Card checkout awaiting activation. No payment can be submitted here until the merchant is approved.</p>')
-     +'<div class="nlx-inline-nmi" data-nlx-nmi></div>'
-     +'<div class="nlx-we-accept"><span>'+(ready?'NETWORK AVAILABILITY DETERMINED BY SECURE PROVIDER':'PAYMENT METHODS · PENDING ACTIVATION')+'</span><div>'+payCards.map(([type,label])=>logo(type,label)).join('')+'</div><small>'+(ready?'Supported networks and wallets depend on merchant and customer eligibility':'Illustrative payment brands only; checkout is inactive until merchant approval')+'</small></div>'
-     +'<div class="nlx-terms"><label><input type="checkbox" name="ruo" required><span>'+esc(terms1)+'</span></label>'
-     +'<label><input type="checkbox" name="responsibility" required><span>'+esc(terms2)+' <a href="/research-use-policy.html" target="_blank" rel="noopener">Research Use Only Agreement</a>.</span></label></div>'
-     +'<div class="nlx-status" data-nlx-status role="status" aria-live="polite"></div><button type="button" class="nlx-primary" data-nlx-place '+(ready?'disabled':'disabled')+'>'+(ready?'Review your total':'Card checkout awaiting activation')+' · '+amount+'</button>'
+     +'<div class="nlx-payment-rows"><div class="nlx-payment-choice"><label class="nlx-payment-option"><input type="radio" name="payment_choice" value="card" checked><span>Credit/Debit Card</span><span class="nlx-card-logos">'+logo('visa','Visa')+logo('amex','American Express')+'</span></label><div class="nlx-payment-choice-body"><p>Pay with your credit card</p><label>Card number *<input disabled autocomplete="off" placeholder="•••• •••• •••• ••••" aria-label="Card number unavailable until processor activation"></label><div class="nlx-two"><label>Expiry (MM/YY) *<input disabled placeholder="MM / YY"></label><label>Card code *<input disabled placeholder="CVC"></label></div><small>Card payments are not available until processor activation.</small></div></div>'
+     +'<div class="nlx-payment-choice"><label class="nlx-payment-option"><input type="radio" name="payment_choice" value="other_card"><span>Credit/Debit Cards (All Types)</span><span class="nlx-phone-icon">▯</span><b class="nlx-fee-pill">No Fees!</b></label><div class="nlx-payment-choice-body" hidden><p>Bank/Card Statement Information: Your statement descriptor will be provided by the approved payment processor.</p><small>This payment method is not active.</small></div></div>'
+     +'<div class="nlx-payment-choice"><label class="nlx-payment-option"><input type="radio" name="payment_choice" value="bank"><span>Same-Day Bank Payment</span><span class="nlx-bank-icon">▤</span><b class="nlx-fee-pill">5% off</b></label><div class="nlx-payment-choice-body" hidden><p>Pay with your bank account through our secured payment process. Bank instructions are provided after your order is placed and payment is verified before fulfillment.</p><div class="nlx-bank-logos"><span>CHASE</span><span>Bank of America</span><span>WF</span><span>&amp; more</span></div><small>'+(bank?'Bank transfer is available through the verified receiving method.':'Bank payment is awaiting activation.')+'</small></div></div></div>'
+     +'<div class="nlx-inline-nmi" data-nlx-nmi hidden></div>'
+     +'<div class="nlx-we-accept"><span>WE ACCEPT</span><div>'+payCards.map(([type,label])=>logo(type,label)).join('')+'</div><small>Card and wallet methods shown for reference; not yet activated.</small></div>'
+     +'<div class="nlx-terms"><label><input type="checkbox" name="ruo" required><span>'+esc(terms1)+'</span></label><label><input type="checkbox" name="responsibility" required><span>'+esc(terms2)+'</span></label></div>'
+     +'<div class="nlx-status" data-nlx-status role="status" aria-live="polite"></div><button type="button" class="nlx-primary" data-nlx-place disabled>Place order · '+amount+'</button>'
      +trustMarkup+'</section>';
   }
   function renderStep(){
@@ -275,7 +277,7 @@
       +'<div class="nlx-next"><button type="button" class="nlx-primary" data-nlx-next>Continue to payment</button></div>'+trustMarkup+'</div>';
     all('[name=delivery_speed]',form).forEach(x=>x.addEventListener('change',()=>{state.shipping=x.value;schedule();renderStep()}));
     all('[data-nlx-extra]',form).forEach(x=>x.addEventListener('change',()=>{x.checked?state.extras.add(x.dataset.nlxExtra):state.extras.delete(x.dataset.nlxExtra);schedule();renderSummary()}));
-    all('[name=nxl_period]',form).forEach(x=>x.addEventListener('change',()=>{state.priorityPeriod=x.value;renderStep()}));
+    all('[data-nlx-plan]',form).forEach(x=>x.addEventListener('click',()=>{state.priorityPeriod=x.dataset.nlxPlan;renderStep()}));
     view('[data-nlx-skip]',form)?.addEventListener('click',()=>view('.nlx-member-offer',form)?.remove());
     view('[data-nlx-back-edit]',form).addEventListener('click',()=>{state.note=form.elements.note?.value||'';showStep(0);});
     view('[data-nlx-next]',form).addEventListener('click',goNext);
@@ -292,7 +294,29 @@
       +'<div><strong>DELIVERY</strong><span>'+esc(optionsById[state.shipping]?.label||'Standard delivery')+' · '+usd(currentPreview?.pricing?.delivery?.shipping_cents||0)+(state.extras.has('protection')?' <em class="nlx-protection-confirm">✓ Shipping Protection</em>':'')+'</span><button type="button" data-nlx-edit="1">Edit</button></div></div>'
       +paymentLayout()+'</div>';
     all('[data-nlx-edit]',form).forEach(x=>x.addEventListener('click',()=>showStep(Number(x.dataset.nlxEdit))));
-    all('[name=ruo], [name=responsibility]',form).forEach(x=>x.addEventListener('change',async()=>{invalidate();await preparePayment();}));
+    const bank=(data.methods||[]).find(m=>m.kind==='bank_transfer'&&m.active!==false);
+    const choosePayment=()=>{
+      const selected=form.querySelector('[name=payment_choice]:checked')?.value;
+      all('.nlx-payment-choice',form).forEach(row=>{row.querySelector('.nlx-payment-choice-body').hidden=row.querySelector('[name=payment_choice]').value!==selected;row.classList.toggle('nlx-selected',row.querySelector('[name=payment_choice]').value===selected);});
+      const btn=view('[data-nlx-place]',form);
+      btn.disabled=!(selected==='bank'&&bank&&form.elements.ruo?.checked&&form.elements.responsibility?.checked);
+      btn.textContent=selected==='bank'&&bank?'Place bank transfer order · '+usd(currentPreview?.total_cents||0):'Payment method awaiting activation · '+usd(currentPreview?.total_cents||0);
+    };
+    all('[name=payment_choice], [name=ruo], [name=responsibility]',form).forEach(x=>x.addEventListener('change',choosePayment));
+    view('[data-nlx-place]',form).addEventListener('click',async()=>{
+      if(!bank||form.querySelector('[name=payment_choice]:checked')?.value!=='bank'||!form.elements.ruo?.checked||!form.elements.responsibility?.checked)return;
+      const button=view('[data-nlx-place]',form);button.disabled=true;
+      try{
+        const body={...draft(true),method_id:bank.id,research_use:true,consent:true};
+        const q=await window.DirectCheckout.api(auth,{...body,action:'quote'});
+        if(!q?.quote)throw Error('Unable to verify bank transfer total.');
+        const result=await window.DirectCheckout.api(auth,{...body,action:'place',quote:q.quote});
+        if(!result?.id)throw Error('Bank transfer order was not confirmed.');
+        lastPlaced=result.id;
+        location.assign('/account/purchases?id='+encodeURIComponent(result.id));
+      }catch(error){note(error.message||'Unable to place bank transfer order.',true);button.disabled=false;}
+    });
+    choosePayment();
    }
    renderSummary();
   }
