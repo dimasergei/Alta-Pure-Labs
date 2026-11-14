@@ -235,3 +235,6 @@ body.ap-checkout-page #account-root{box-shadow:none!important;border:0!important
 .nlx-bank-logos .nlx-wf-mark{color:#b52425!important;font-family:Georgia,serif;font-size:18px!important;font-weight:900}
 .nlx-bank-logos .nlx-more-mark{width:auto;min-width:70px;color:#222!important;font-size:13px!important;font-weight:800}
 @media(max-width:520px){.nlx-wallets{gap:6px}.nlx-wallet-unavailable{font-size:18px!important;min-height:46px!important}.nlx-wallet-unavailable b{font-size:18px!important}.nlx-card-logos{gap:3px!important;margin-left:3px!important}.nlx-visa-logo,.nlx-amex-logo{width:48px;height:30px;font-size:17px}.nlx-amex-logo{font-size:9px}.nlx-bank-logos .nlx-bank-link{width:100%}}
+
+.nlx-card-logos .nlx-card-brand{display:block;width:62px;height:38px;object-fit:fill;border:0;border-radius:3px;background:none;flex:none}
+@media(max-width:520px){.nlx-card-logos .nlx-card-brand{width:48px;height:31px}}
