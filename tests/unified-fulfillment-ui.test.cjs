@@ -12,7 +12,7 @@ test('single Manage order screen shows checkout orders and safe cancellation wit
  const manage=[...w.document.querySelectorAll('button')].find(b=>b.textContent==='Manage order');assert.ok(manage);manage.click();await tick();
  assert.match(w.document.querySelector('dialog').textContent,/Fixture · 5mg/);
  assert.match(w.document.querySelector('dialog').textContent,/Cancel unpaid order/);
- assert.doesNotMatch(w.document.querySelector('dialog').textContent,/Lotus|Advanced|Payment desk/);
+ assert.match(w.document.querySelector('dialog').textContent,/Supplier fulfillment/); assert.doesNotMatch(w.document.querySelector('dialog').textContent,/Advanced|Payment desk|Attach purchased label/);
  const cancel=[...w.document.querySelectorAll('dialog button')].find(b=>b.textContent==='Cancel unpaid order');
  await cancel.onclick();assert.equal(calls.filter(c=>c.options?.body&&JSON.parse(c.options.body).action==='cancel_order').length,1);
  w.AltaFulfillment.clear();assert.equal(w.document.querySelector('dialog'),null);dom.window.close();
