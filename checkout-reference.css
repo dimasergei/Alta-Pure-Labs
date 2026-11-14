@@ -355,3 +355,12 @@ body.ap-checkout-page #account-root{box-shadow:none!important;border:0!important
 .nlx-wallets .nlx-apple-pay .nlx-wallet-wordmark{font-family:-apple-system,BlinkMacSystemFont,"SF Pro Display","Helvetica Neue",Arial,sans-serif!important;font-weight:500!important;font-size:19px!important;letter-spacing:-.055em!important;color:#fff!important}
 .nlx-wallets .nlx-google-pay .nlx-wallet-wordmark{font-family:"Google Sans","Product Sans",Arial,Helvetica,sans-serif!important;font-weight:400!important;font-size:19px!important;letter-spacing:-.05em!important;color:#fff!important}
 @media(max-width:520px){.nlx-wallets .nlx-apple-pay .nlx-wallet-wordmark,.nlx-wallets .nlx-google-pay .nlx-wallet-wordmark{font-size:17px!important}.nlx-wallets .nlx-apple-pay .nlx-apple-symbol,.nlx-wallets .nlx-google-pay .nlx-google-symbol{width:18px!important;height:18px!important;max-width:18px!important;max-height:18px!important;flex-basis:18px!important}}
+
+/* November wallet-artwork correction: the icon files are isolated from global SVG rules. */
+.nlx-wallets .nlx-wallet-lockup{display:inline-flex!important;align-items:center!important;justify-content:center!important;gap:3px!important;white-space:nowrap!important}
+.nlx-wallets .nlx-wallet-unavailable img.nlx-wallet-symbol{display:block!important;position:static!important;object-fit:contain!important;object-position:center!important;max-width:none!important;max-height:none!important;min-width:0!important;min-height:0!important;flex:none!important;padding:0!important;margin:0!important;border:0!important;border-radius:0!important;background:none!important;box-shadow:none!important;filter:none!important;transform:none!important}
+.nlx-wallets .nlx-wallet-unavailable img.nlx-apple-symbol{width:18px!important;height:24px!important}
+.nlx-wallets .nlx-wallet-unavailable img.nlx-google-symbol{width:21px!important;height:21px!important}
+.nlx-wallets .nlx-apple-pay .nlx-wallet-wordmark{font-family:-apple-system,BlinkMacSystemFont,"SF Pro Display","Helvetica Neue",Arial,sans-serif!important}
+.nlx-wallets .nlx-google-pay .nlx-wallet-wordmark{font-family:"Google Sans","Product Sans",Arial,Helvetica,sans-serif!important}
+@media(max-width:520px){.nlx-wallets .nlx-wallet-unavailable img.nlx-apple-symbol{width:16px!important;height:21px!important}.nlx-wallets .nlx-wallet-unavailable img.nlx-google-symbol{width:19px!important;height:19px!important}}
