@@ -473,7 +473,7 @@ body.ap-site {
 }
 
 
-/* Hero typography and countdown parity: electric orange, no flashing indicator. */
+/* Hero typography and countdown parity: electric red, no flashing indicator. */
 .ap-site .nl-hero .nl-hero-copy h1 em{
   display:inline-block;
   font-size:1.2em!important;
@@ -503,11 +503,11 @@ body.ap-site {
   align-items:center;
   justify-content:space-between;
   gap:18px;
-  border:1px solid #fa813d!important;
+  border:1px solid #ff3657!important;
   border-radius:16px!important;
-  background:linear-gradient(110deg,#31180c 0%,#5b2810 58%,#74330e 100%)!important;
-  color:#fff4e5!important;
-  box-shadow:inset 0 0 0 1px #ffb05830,0 0 17px #ff8b2863,0 10px 26px #ff6a112e!important;
+  background:linear-gradient(110deg,#370817 0%,#65091f 58%,#830b2b 100%)!important;
+  color:#fff0f4!important;
+  box-shadow:inset 0 0 0 1px #ff5b7c4a,0 0 20px #ff164e8c,0 10px 30px #df003f59!important;
 }
 .ap-site .nl-hero .ap-promo-clock[hidden]{display:none!important}
 .ap-site .nl-hero .ap-promo-clock-copy{
@@ -521,7 +521,7 @@ body.ap-site {
 .ap-site .nl-hero .ap-promo-clock-copy>strong{
   display:block;
   margin:0!important;
-  color:#ffb16d!important;
+  color:#ff9bb2!important;
   font-size:11px!important;
   line-height:1.25;
   font-weight:900!important;
@@ -535,7 +535,7 @@ body.ap-site {
   max-width:100%;
   padding:4px 10px;
   color:#fff!important;
-  background:linear-gradient(110deg,#fa8127,#ed621d);
+  background:linear-gradient(110deg,#ff2252,#ed0044);
   border-radius:999px;
   font-size:10px!important;
   line-height:1.2;
@@ -559,10 +559,10 @@ body.ap-site {
   align-items:center;
   justify-content:center;
   gap:4px;
-  background:#250f09b8;
-  border:1px solid #f89b5c7d;
+  background:#250411dd;
+  border:1px solid #ff608c9c;
   border-radius:9px;
-  box-shadow:inset 0 1px 8px #f18e2e20;
+  box-shadow:inset 0 1px 9px #ff29563d;
   font-variant-numeric:tabular-nums;
 }
 .ap-site .nl-hero .ap-promo-time-cell>strong{
@@ -576,7 +576,7 @@ body.ap-site {
 }
 .ap-site .nl-hero .ap-promo-time-cell>small{
   display:block;
-  color:#ffd4a8;
+  color:#ffb3c6;
   font-size:10px;
   line-height:1;
   font-weight:700;
