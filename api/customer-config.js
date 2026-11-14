@@ -6,6 +6,7 @@ module.exports=async(req,res)=>{
  if(url.searchParams.has('partner'))return require('../lib/partner-program').handle(req,res,url.searchParams);
  if(url.searchParams.get('instagram')==='callback')return require('../lib/admin-marketing-platform').oauthCallback(req,res);
  if(url.searchParams.has('marketing'))return require('../lib/admin-marketing')(req,res);
+ if(url.searchParams.has('workspace_orders'))return require('../lib/admin-workspace-orders')(req,res);
  if(url.searchParams.has('checkout'))return require('../lib/direct-checkout').handle(req,res,url.searchParams);
  if(url.searchParams.has('commerce'))return require('../lib/manual-commerce-integrated').handle(req,res,url.searchParams);
  if(url.searchParams.has('admin_operations'))return require('../lib/admin-operations').handle(req,res,url.searchParams);
