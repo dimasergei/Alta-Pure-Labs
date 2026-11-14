@@ -22,6 +22,6 @@ test('wallet branding, payment amount and delivery estimate appear in cart',()=>
  assert.match(cart,/data-nlc-estimate/);
  assert.match(cart,/dateLabel\(7\).*dateLabel\(13\)/);
  assert.match(cart,/RUO Agreement/);
- assert.match(cart,/\+'\+free\+' FREE'/);
+ assert.match(cart,/\+'\+displayFree\+' FREE'/);
  assert.doesNotMatch(cart,/FREE · BOGO/);
 });
