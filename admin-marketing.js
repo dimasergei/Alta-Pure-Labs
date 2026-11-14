@@ -13,7 +13,16 @@
   let data = read(), selected='',draftId='', password='', aiAvailable=false, loggedIn=false;
   let revision=0,remoteReady=false,syncTimer=null,syncRunning=false,syncQueued=false;
   let instagram={connected:false,credentials_configured:false},igMessages=[];
-  const igProfiles={};
+  const igProfileKey='altapure_ig_participant_names_v1';
+  let igProfiles={};
+  try{const saved=JSON.parse(localStorage.getItem(igProfileKey)||'{}');if(saved&&typeof saved==='object'&&!Array.isArray(saved))igProfiles=saved;}catch{}
+  function rememberIgProfiles(items){
+    if(!items||typeof items!=='object'||Array.isArray(items))return;
+    for(const [id,profile] of Object.entries(items)){
+      if(/^\d{5,30}$/.test(id)&&/^[a-zA-Z0-9._]{1,30}$/.test(profile?.username||''))igProfiles[id]={username:profile.username,name:clean(profile.name,120)};
+    }
+    try{localStorage.setItem(igProfileKey,JSON.stringify(igProfiles));}catch{}
+  }
   function participantLabel(id){const profile=igProfiles[id];return profile?.username?'@'+profile.username:'Instagram user '+id;}
 
   function read(){
@@ -327,11 +336,9 @@
       $('mk-ig-status').textContent=sync?'Syncing recent Instagram conversations…':'Refreshing account status…';
       if(sync){
         const result=await endpoint({action:'instagram_sync'});
-        if(result.participant_profiles&&typeof result.participant_profiles==='object'){
-          for(const [id,profile] of Object.entries(result.participant_profiles)){
-            if(/^\d{5,30}$/.test(id)&&/^[a-zA-Z0-9._]{1,30}$/.test(profile?.username||''))igProfiles[id]={username:profile.username,name:clean(profile.name,120)};
-          }
-        }
+        rememberIgProfiles(result.participant_profiles);
+        const lookup=result.profile_lookup;
+        if(lookup&&lookup.unresolved)notice('Instagram usernames: '+lookup.resolved+' resolved, '+lookup.unresolved+' unavailable. Lookup HTTP status counts: '+JSON.stringify(lookup.failures||{}),true);
       }
       const status=await endpoint();
       instagram=status.instagram||{connected:false};
