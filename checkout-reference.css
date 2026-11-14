@@ -212,3 +212,5 @@ body.ap-checkout-page #account-root{box-shadow:none!important;border:0!important
 .nlx-terms label{font-size:13px;line-height:1.65}.nlx-terms label span{flex:1}
 .nlx-quote-note:empty{display:none}
 @media(max-width:770px){.nlx-product{grid-template-columns:14px 48px minmax(0,1fr) auto}.nlx-product>img{width:48px}.nlx-product-name strong{font-size:12px}.nlx-payment-choice .nlx-payment-option{font-size:12px}.nlx-member-types{gap:7px}.nlx-trust span{font-size:9px}}
+
+.nlx-member-actions .nlx-member-unavailable{border:0;border-radius:30px;background:#103e83;color:white;font-size:13px;font-weight:800;opacity:.65;padding:12px;cursor:not-allowed}
