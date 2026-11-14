@@ -22,11 +22,19 @@ test('marketing endpoint refuses unauthenticated requests',async()=>{
   assert.equal(res.statusCode,401);
   assert.equal(res.headers['Cache-Control'],'no-store');
 });
-test('marketing endpoint reports AI status only after authentication',async()=>{
+test('marketing endpoint returns authenticated shared CRM and Instagram status',async()=>{
   const res=response();
-  await handle(req(),res,{env:{...env,OPENAI_API_KEY:''}});
+  const db={from(name){return {select(){return this;},eq(){return this;},order(){return this;},limit(){return this;},async maybeSingle(){
+    return {error:null,data:name==='ap_marketing_workspaces'?{workspace_id:'main',revision:0,payload:{leads:[],messages:[],style:'Test'},updated_at:'2026-11-13T00:00:00Z'}:null};
+  }};}};
+  await handle(req(),res,{env:{...env,OPENAI_API_KEY:''},db});
   assert.equal(res.statusCode,200);
-  assert.deepEqual(res.payload,{authenticated:true,ai_enabled:false});
+  assert.equal(res.payload.authenticated,true);
+  assert.equal(res.payload.ai_enabled,false);
+  assert.equal(res.payload.revision,0);
+  assert.deepEqual(res.payload.workspace.leads,[]);
+  assert.equal(res.payload.instagram.connected,false);
+  assert.equal(res.payload.instagram.credentials_configured,false);
 });
 test('marketing drafting rejects cross-origin POST',async()=>{
   const res=response();
@@ -74,4 +82,30 @@ test('Marketing browser script parses and uses official review-only draft flow',
   assert.doesNotThrow(()=>new Function(source));
   assert.match(source,/draft-output/);
   assert.doesNotMatch(source,/graph\.facebook\.com|api\.instagram\.com|ig\.me\/m/);
+});
+
+test('workspace validation requires bounded, typed records',()=>{
+  const platform=require('../lib/admin-marketing-platform');
+  assert.throws(()=>platform.validWorkspace({leads:[{id:'x'}],messages:[]}),/Invalid creator/);
+  assert.throws(()=>platform.validWorkspace({leads:[],messages:[{lead_id:7,text:'test'}]}),/Invalid conversation/);
+  const clean=platform.validWorkspace({leads:[{id:'x',name:'Creator'}],messages:[],style:'Hello'});
+  assert.equal(clean.leads[0].name,'Creator');
+});
+test('Instagram access tokens are encrypted at rest and decrypt correctly',()=>{
+  const platform=require('../lib/admin-marketing-platform');
+  const testEnv={INSTAGRAM_TOKEN_ENCRYPTION_KEY:'a'.repeat(64)};
+  const encrypted=platform.encrypt('secret-IG-token',testEnv);
+  assert.doesNotMatch(encrypted,/secret-IG-token/);
+  assert.equal(platform.decrypt(encrypted,testEnv),'secret-IG-token');
+  assert.throws(()=>platform.decrypt(encrypted,{INSTAGRAM_TOKEN_ENCRYPTION_KEY:'b'.repeat(64)}));
+});
+test('Meta OAuth URL is disabled until Instagram credentials are configured',async()=>{
+  const platform=require('../lib/admin-marketing-platform');
+  await assert.rejects(()=>platform.connectUrl({},{}),/INSTAGRAM_APP_ID/);
+});
+test('all Instagram reply sends require explicit manual actions',()=>{
+  const frontend=fs.readFileSync(path.join(__dirname,'../admin-marketing.js'),'utf8');
+  assert.match(frontend,/confirm\\('Send this exact reply/);
+  assert.match(frontend,/action:'instagram_send'/);
+  assert.doesNotMatch(frontend,/setInterval\\([^)]*instagram_send/);
 });
