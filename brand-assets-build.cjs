@@ -10,7 +10,7 @@ for(const [source,target] of [['altapure-favicon.svg','favicon.svg'],['altapure-
 // Self-host authentic payment marks from the reviewed assets directory.
 fs.mkdirSync(path.join(out,'assets','payment-brands'),{recursive:true});
 fs.cpSync(path.join(process.cwd(),'assets','payment-brands'),path.join(out,'assets','payment-brands'),{recursive:true});
-const iconLinks=`<meta name="altapure-promo-end" content="${promoEnd}">`+'<link rel="icon" type="image/svg+xml" href="/favicon.svg"><link rel="icon" type="image/png" sizes="48x48" href="/favicon-48.png"><link rel="shortcut icon" href="/favicon.ico"><link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png"><meta name="theme-color" content="#ffffff">';
+const iconLinks=`<meta name="altapure-promo-end" content="${promoEnd}">`+'<link rel="icon" type="image/svg+xml" href="/favicon.svg?v=20261114"><link rel="shortcut icon" type="image/svg+xml" href="/favicon.svg?v=20261114"><meta name="theme-color" content="#ffffff">';
 const organization='<script type="application/ld+json">{"@context":"https://schema.org","@type":"Organization","name":"AltaPure Labs","url":"https://altapurelabs.com/","logo":"https://altapurelabs.com/brand-logo.png"}</script>';
 let count=0;
 for(const file of fs.readdirSync(out,{recursive:true}).filter(f=>f.endsWith('.html'))){
