@@ -471,3 +471,133 @@ body.ap-site {
     max-width: 100%;
   }
 }
+
+
+/* Hero typography and countdown parity: electric orange, no flashing indicator. */
+.ap-site .nl-hero .nl-hero-copy h1 em{
+  display:inline-block;
+  font-size:1.2em!important;
+  line-height:.99!important;
+  letter-spacing:-.045em!important;
+  font-weight:900!important;
+  background-image:linear-gradient(90deg,#9c70ff 0%,#659bff 44%,#40c7ff 100%)!important;
+}
+.ap-site .nl-hero .nl-hero-copy .nl-hero-sale-description{
+  max-width:565px;
+  margin:25px 0 31px!important;
+  color:#c6c2da!important;
+  font-family:Poppins,Arial,sans-serif;
+  font-size:17px!important;
+  line-height:1.56!important;
+  letter-spacing:0!important;
+  font-weight:400!important;
+}
+.ap-site .nl-hero .ap-actions{margin-bottom:0!important}
+.ap-site .nl-hero .ap-promo-clock{
+  width:fit-content!important;
+  max-width:100%;
+  min-height:78px;
+  margin:43px 0 0!important;
+  padding:11px 14px!important;
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:18px;
+  border:1px solid #fa813d!important;
+  border-radius:16px!important;
+  background:linear-gradient(110deg,#31180c 0%,#5b2810 58%,#74330e 100%)!important;
+  color:#fff4e5!important;
+  box-shadow:inset 0 0 0 1px #ffb05830,0 0 17px #ff8b2863,0 10px 26px #ff6a112e!important;
+}
+.ap-site .nl-hero .ap-promo-clock[hidden]{display:none!important}
+.ap-site .nl-hero .ap-promo-clock-copy{
+  display:flex;
+  flex-direction:column;
+  align-items:flex-start;
+  justify-content:center;
+  gap:7px;
+  min-width:0;
+}
+.ap-site .nl-hero .ap-promo-clock-copy>strong{
+  display:block;
+  margin:0!important;
+  color:#ffb16d!important;
+  font-size:11px!important;
+  line-height:1.25;
+  font-weight:900!important;
+  letter-spacing:.12em;
+  white-space:nowrap;
+}
+.ap-site .nl-hero .ap-promo-black-friday{
+  display:inline-flex;
+  align-items:center;
+  width:max-content;
+  max-width:100%;
+  padding:4px 10px;
+  color:#fff!important;
+  background:linear-gradient(110deg,#fa8127,#ed621d);
+  border-radius:999px;
+  font-size:10px!important;
+  line-height:1.2;
+  font-weight:900;
+  letter-spacing:.02em;
+}
+.ap-site .nl-hero .ap-promo-time-cells{
+  display:grid;
+  grid-template-columns:repeat(4, minmax(47px,1fr));
+  gap:6px;
+  align-items:center;
+  flex:none;
+  margin:0!important;
+  color:#fff!important;
+}
+.ap-site .nl-hero .ap-promo-time-cell{
+  min-width:47px;
+  height:51px;
+  padding:6px 5px;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  gap:4px;
+  background:#250f09b8;
+  border:1px solid #f89b5c7d;
+  border-radius:9px;
+  box-shadow:inset 0 1px 8px #f18e2e20;
+  font-variant-numeric:tabular-nums;
+}
+.ap-site .nl-hero .ap-promo-time-cell>strong{
+  display:block;
+  margin:0!important;
+  color:#fff!important;
+  font-size:24px!important;
+  line-height:1!important;
+  font-weight:900;
+  letter-spacing:-.04em;
+}
+.ap-site .nl-hero .ap-promo-time-cell>small{
+  display:block;
+  color:#ffd4a8;
+  font-size:10px;
+  line-height:1;
+  font-weight:700;
+}
+.ap-site .nl-hero .nl-offer-grid{margin-top:49px!important}
+@media(max-width:1100px){
+ .ap-site .nl-hero .ap-promo-clock{gap:9px;padding:10px!important}
+ .ap-site .nl-hero .ap-promo-clock-copy>strong{font-size:10px!important;letter-spacing:.04em}
+ .ap-site .nl-hero .ap-promo-time-cells{grid-template-columns:repeat(4,minmax(38px,1fr));gap:4px}
+ .ap-site .nl-hero .ap-promo-time-cell{min-width:38px;padding:5px 3px}
+ .ap-site .nl-hero .ap-promo-time-cell>strong{font-size:20px!important}
+}
+@media(max-width:700px){
+ .ap-site .nl-hero .nl-hero-copy h1 em{font-size:1.14em!important}
+ .ap-site .nl-hero .nl-hero-copy .nl-hero-sale-description{font-size:14px!important;line-height:1.55!important;margin:19px 0 24px!important}
+ .ap-site .nl-hero .ap-promo-clock{margin-top:31px!important;flex-wrap:wrap;justify-content:center;gap:12px;min-height:unset}
+ .ap-site .nl-hero .ap-promo-clock-copy{align-items:center;text-align:center}
+ .ap-site .nl-hero .ap-promo-time-cells{grid-template-columns:repeat(4,minmax(44px,1fr));gap:6px}
+ .ap-site .nl-hero .ap-promo-time-cell{min-width:44px}
+ .ap-site .nl-hero .nl-offer-grid{margin-top:38px!important}
+}
+@media(prefers-reduced-motion:reduce){
+ .ap-site .nl-hero .ap-promo-clock,.ap-site .nl-hero .ap-promo-time-cell{animation:none!important}
+}
