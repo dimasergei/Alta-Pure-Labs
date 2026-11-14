@@ -120,3 +120,199 @@
 .nlc-wallet-row button img.nlc-google-mark{width:20px!important;height:20px!important}
 .nlc-wallet-row button .nlc-apple-pay-word{font-family:-apple-system,BlinkMacSystemFont,"SF Pro Display","Helvetica Neue",Arial,sans-serif!important;font-size:18px!important;letter-spacing:-.05em;color:#fff!important;font-weight:500!important}
 .nlc-wallet-row button .nlc-google-pay-word{font-family:"Google Sans","Product Sans",Arial,Helvetica,sans-serif!important;font-size:18px!important;letter-spacing:-.035em;color:#fff!important;font-weight:400!important}
+
+/* Compact cart item stack: product and strength share a line, with the
+   free-unit badge beside the quantity pill. Keeps existing cart actions. */
+.ap-cart-dialog .nlc-unlock {
+  padding: 9px 15px 9px !important;
+}
+.ap-cart-dialog .nlc-unlock p {
+  font-size: 11px !important;
+  line-height: 1.35 !important;
+  margin: 0 0 6px !important;
+}
+.ap-cart-dialog .nlc-progress {
+  margin: 6px 15px 5px 0 !important;
+}
+.ap-cart-dialog .nlc-cart-lines {
+  padding: 0 16px !important;
+}
+.ap-cart-dialog .nlc-line {
+  grid-template-columns: 56px minmax(0,1fr) auto !important;
+  gap: 9px !important;
+  align-items: start !important;
+  padding: 10px 0 !important;
+  min-height: 0 !important;
+}
+.ap-cart-dialog .nlc-line > img {
+  width: 56px !important;
+  height: 68px !important;
+  object-fit: contain !important;
+}
+.ap-cart-dialog .nlc-line .nlc-name {
+  min-width: 0;
+}
+.ap-cart-dialog .nlc-product-title {
+  display: flex;
+  align-items: baseline;
+  flex-wrap: wrap;
+  column-gap: 4px;
+  row-gap: 0;
+  min-width: 0;
+  font-size: 11px;
+  line-height: 1.32;
+}
+.ap-cart-dialog .nlc-product-title strong {
+  display: inline !important;
+  font-size: 11px !important;
+  line-height: 1.32 !important;
+  font-weight: 800;
+  color: #152339;
+}
+.ap-cart-dialog .nlc-product-title .nlc-size {
+  display: inline !important;
+  margin: 0 !important;
+  color: #4c6080 !important;
+  font-size: 11px !important;
+  line-height: 1.32 !important;
+  font-weight: 600;
+  white-space: nowrap;
+}
+.ap-cart-dialog .nlc-product-actions {
+  display: flex;
+  align-items: center;
+  justify-content: flex-start;
+  flex-wrap: wrap;
+  gap: 7px;
+  margin-top: 7px;
+  min-height: 32px;
+}
+.ap-cart-dialog .nlc-name [data-nlc-bogo-line]:not([hidden]) {
+  display: inline-flex !important;
+  align-items: center;
+  margin: 0 !important;
+  padding: 3px 6px !important;
+  min-height: 19px;
+  font-size: 9px !important;
+  line-height: 1.1;
+  border-radius: 6px;
+  white-space: nowrap;
+}
+.ap-cart-dialog .nlc-line .nlc-quantity-row {
+  display: flex !important;
+  align-items: center !important;
+  margin: 0 !important;
+  width: auto !important;
+}
+.ap-cart-dialog .nlc-line .nlc-quantity-row .ap-quantity {
+  display: grid !important;
+  grid-template-columns: 31px 38px 31px !important;
+  gap: 0 !important;
+  width: 102px !important;
+  min-width: 0 !important;
+  max-width: 100% !important;
+  height: 32px !important;
+  margin: 0 !important;
+  border: 1px solid #cdd3db !important;
+  border-radius: 20px !important;
+  overflow: hidden !important;
+  background: #fff !important;
+}
+.ap-cart-dialog .nlc-line .nlc-quantity-row .ap-quantity button {
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  width: 31px !important;
+  min-width: 0 !important;
+  height: 32px !important;
+  padding: 0 !important;
+  margin: 0 !important;
+  font-size: 17px !important;
+  line-height: 1 !important;
+  background: #f2f6fb !important;
+  border: 0 !important;
+}
+.ap-cart-dialog .nlc-line .nlc-quantity-row .ap-quantity input {
+  display: block !important;
+  width: 38px !important;
+  min-width: 0 !important;
+  height: 32px !important;
+  margin: 0 !important;
+  padding: 0 !important;
+  font-size: 13px !important;
+  line-height: 32px !important;
+  text-align: center !important;
+  background: #fff !important;
+  border-left: 1px solid #d2d7df !important;
+  border-right: 1px solid #d2d7df !important;
+}
+.ap-cart-dialog .nlc-price {
+  gap: 8px !important;
+  min-width: 50px;
+}
+.ap-cart-dialog .nlc-price strong {
+  font-size: 11px !important;
+  line-height: 1.2;
+  white-space: nowrap;
+}
+.ap-cart-dialog .nlc-price button {
+  padding: 0 4px !important;
+  font-size: 17px !important;
+  min-height: 24px;
+}
+/* Put the recommended items directly beneath the item rows; make their
+   full images, prices, and buttons visible without initial extra scrolling. */
+.ap-cart-dialog .nlc-recs {
+  margin-top: 2px !important;
+  padding: 9px 12px 11px !important;
+}
+.ap-cart-dialog .nlc-recs h3 {
+  margin: 0 0 8px !important;
+  font-size: 9px !important;
+}
+.ap-cart-dialog .nlc-rec-track {
+  gap: 9px !important;
+}
+.ap-cart-dialog .nlc-rec {
+  flex: 0 0 179px;
+  gap: 8px !important;
+  min-height: 100px;
+  padding: 8px !important;
+}
+.ap-cart-dialog .nlc-rec img {
+  width: 48px !important;
+  height: 60px !important;
+  flex: none;
+}
+.ap-cart-dialog .nlc-rec strong {
+  font-size: 10px;
+  line-height: 1.2;
+}
+.ap-cart-dialog .nlc-rec-prices {
+  gap: 5px;
+  margin-top: 4px;
+}
+.ap-cart-dialog .nlc-rec small {
+  margin: 3px 0 5px;
+}
+.ap-cart-dialog .nlc-rec button {
+  padding: 6px 10px !important;
+  font-size: 9px;
+}
+/* Let the item content wrap rather than crop on small phones. */
+@media (max-width: 480px) {
+  .ap-cart-dialog .nlc-cart-lines { padding: 0 12px !important; }
+  .ap-cart-dialog .nlc-line {
+    grid-template-columns: 50px minmax(0,1fr) auto !important;
+    gap: 7px !important;
+  }
+  .ap-cart-dialog .nlc-line > img {
+    width: 50px !important;
+    height: 64px !important;
+  }
+  .ap-cart-dialog .nlc-product-title strong,
+  .ap-cart-dialog .nlc-product-title .nlc-size {
+    font-size: 10px !important;
+  }
+}
+
