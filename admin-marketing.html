@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width,initial-scale=1">
   <meta name="robots" content="noindex,nofollow">
   <meta name="referrer" content="no-referrer">
-  <title>Marketing — AltaPure Labs Admin</title>
+  <title>AltaPure Labs — Admin Workspace</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
@@ -15,21 +15,22 @@
   <link rel="shortcut icon" type="image/svg+xml" href="/favicon.svg?v=20261114-neon-admin-v3">
   <link rel="stylesheet" href="/admin-ui-polish.css">
   <link rel="stylesheet" href="/admin-experience.css?v=1">
+  <link rel="stylesheet" href="/admin-fulfillment.css">
+  <link rel="stylesheet" href="/admin-workspace-orders.css?v=1">
 </head>
 <body class="mk-body">
 <main class="admin-page">
   <div class="shell">
     <section id="mk-login" class="mk-login panel">
       <div class="admin-login-brand"><img class="ap-brand-symbol" src="/favicon.svg?v=20261114-neon-admin-v3" alt="" width="34" height="34"><span><strong>AltaPure Labs</strong><small>ADMIN</small></span></div>
-      <h1>Marketing access</h1>
-      <p>Use your existing AltaPure admin password. This workspace does not send Instagram messages automatically.</p>
+      <h1>Admin access</h1>
+      <p>Orders and Marketing in one secure workspace.</p>
       <form id="mk-login-form">
         <label for="mk-password">Admin password</label>
         <input id="mk-password" type="password" required autocomplete="current-password">
-        <button class="mk-button" type="submit">Open Marketing</button>
+        <button class="mk-button" type="submit">Open workspace</button>
       </form>
       <p id="mk-login-error" class="mk-error" role="alert" hidden></p>
-      <a href="/admin-orders.html">Return to Orders</a>
     </section>
 
     <section id="mk-app" hidden>
@@ -44,8 +45,8 @@
           </div>
         </div>
         <nav class="admin-nav" aria-label="Admin sections">
-          <a class="admin-nav-link" href="/admin-orders.html">Orders</a>
-          <a class="admin-nav-link is-active" href="/admin-marketing.html" aria-current="page">Marketing</a>
+          <a class="admin-nav-link" href="#orders" data-ap-workspace="orders">Orders</a>
+          <a class="admin-nav-link is-active" href="#marketing" data-ap-workspace="marketing" aria-current="page">Marketing</a>
         </nav>
       </div>
 
@@ -118,6 +119,29 @@
             <p><strong>Sync status:</strong> <span id="mk-sync-status">Connecting…</span></p><p class="mk-muted">Records are stored privately in Supabase and saved across devices. Browser storage remains a recovery copy. Export a backup before deleting prospects.</p></div>
         </div>
       </section>
+      <section id="ap-orders-panel" class="ap-orders-workspace" aria-label="Orders" hidden>
+        <header class="mk-title ap-orders-heading">
+          <div><span class="ap-content-kicker">ORDER OPERATIONS</span><h1>Orders</h1><p>All customer orders, one place to manage each order.</p></div>
+          <button id="ap-orders-refresh" class="mk-button mk-outline" type="button">Refresh orders</button>
+        </header>
+        <p id="ap-orders-feedback" class="mk-alert" role="status" aria-live="polite"></p>
+        <div class="mk-toolbar ap-orders-toolbar">
+          <label><span class="mk-sr">Search orders</span><input id="ap-orders-search" type="search" placeholder="Search orders or customers…"></label>
+          <label><span class="mk-sr">Order status</span><select id="ap-orders-status"><option value="all">All orders</option><option value="active">Active</option><option value="pending">Awaiting payment</option><option value="paid">Paid</option><option value="processing">Processing</option><option value="shipped">Shipped</option><option value="delivered">Delivered</option><option value="canceled">Canceled</option><option value="refunded">Refunded</option></select></label>
+          <label><span class="mk-sr">Sort orders</span><select id="ap-orders-sort"><option value="newest">Newest first</option><option value="oldest">Oldest first</option><option value="highest_total">Highest total</option></select></label>
+          <button class="mk-button mk-outline" type="button" id="ap-orders-export">Export CSV</button>
+        </div>
+        <div class="mk-table-wrap ap-orders-table-wrap">
+          <table class="mk-table ap-orders-table">
+            <thead><tr><th>Order</th><th>Customer</th><th>Date</th><th>Total</th><th>Payment</th><th>Fulfillment</th><th>Action</th></tr></thead>
+            <tbody id="ap-orders-rows"><tr><td colspan="7">Sign in to view orders.</td></tr></tbody>
+          </table>
+        </div>
+        <div class="mk-bottom-tools ap-orders-pager">
+          <span id="ap-orders-page-summary">0 orders</span>
+          <span class="ap-orders-page-buttons"><button id="ap-orders-previous" class="mk-button mk-outline" type="button" disabled>Previous</button><button id="ap-orders-next" class="mk-button mk-outline" type="button" disabled>Next</button></span>
+        </div>
+      </section>
     </section>
   </div>
 </main>
@@ -156,6 +180,8 @@
   </form>
 </dialog>
 <script src="/admin-marketing.js" defer></script>
+<script src="/admin-fulfillment.js" defer></script>
+<script src="/admin-workspace-orders.js?v=1" defer></script>
   <script src="/admin-experience.js?v=1" defer></script>
 </body>
 </html>
