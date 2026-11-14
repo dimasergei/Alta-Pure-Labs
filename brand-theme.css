@@ -374,3 +374,24 @@ body.ap-site {
 .ap-site .ap-announcement .ap-promo-shop{color:#162741}
 .ap-checkout-page .ap-announcement .ap-locale-controls{display:none!important}
 @media(max-width:600px){.ap-site .ap-announcement{gap:5px;padding-inline:8px}.ap-site .ap-announcement .ap-promo-main{font-size:9px}.ap-site .ap-announcement .ap-promo-shop{font-size:8px;padding:5px 7px}.ap-site .ap-announcement .ap-promo-bogo{padding:4px 7px;font-size:8px}}
+
+/* Purple/blue neon hero benefits with a gently travelling border shimmer. */
+.ap-site .nl-hero .nl-offer-grid>.ap-offer-box{
+ position:relative;isolation:isolate;overflow:hidden;
+ border:1px solid transparent!important;
+ background:linear-gradient(115deg,rgba(83,46,149,.88),rgba(68,64,178,.93),rgba(80,153,247,.86)) padding-box,
+ linear-gradient(105deg,#b68bff,#72cbff,#a97af8,#ebc5ff,#58baff) border-box!important;
+ background-size:100% 100%,250% 100%!important;
+ box-shadow:0 0 14px #b273ff66,0 3px 14px #3b51f255!important;
+ animation:ap-hero-border-sweep 4.2s linear infinite!important;
+}
+.ap-site .nl-hero .nl-offer-grid>.ap-offer-box:nth-child(2){
+ background:linear-gradient(115deg,rgba(64,37,130,.88),rgba(63,56,149,.94),rgba(28,95,187,.9)) padding-box,
+ linear-gradient(105deg,#84adff,#cf8bff,#7deaff,#b57cff,#84adff) border-box!important;
+ background-size:100% 100%,250% 100%!important;
+}
+.ap-site .nl-hero .nl-offer-grid>.ap-offer-box:before{content:"";position:absolute;inset:0;pointer-events:none;z-index:-1;background:linear-gradient(100deg,transparent 25%,#ffffff22 50%,transparent 74%);background-size:220% 100%;animation:ap-hero-card-glint 5.6s linear infinite}
+@keyframes ap-hero-border-sweep{from{background-position:0 0,0 0}to{background-position:0 0,250% 0}}
+@keyframes ap-hero-card-glint{from{background-position:210% 0}to{background-position:-110% 0}}
+@media(prefers-reduced-motion:reduce){.ap-site .nl-hero .nl-offer-grid>.ap-offer-box,.ap-site .nl-hero .nl-offer-grid>.ap-offer-box:before{animation:none!important}}
+.ap-site .ap-locale-controls{display:none!important}
