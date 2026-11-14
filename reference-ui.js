@@ -29,12 +29,12 @@
   const input=document.getElementById('ap-detail-quantity');
   if(!group||!input)return;
   const qty=Number(input.value),unit=Number(group.dataset.unitPrice);
-  if(!Number.isInteger(qty)||qty<1||qty>100)return;
-  const total=(active()?Math.ceil(qty/2):qty)*unit;
+  if(!Number.isInteger(qty)||qty<1||qty>(active()?50:100))return;
+  const total=qty*unit;
   const format=n=>window.AltaLocale?.formatMoney?window.AltaLocale.formatMoney(n):new Intl.NumberFormat('en-US',{style:'currency',currency:'USD'}).format(n);
   for(const button of group.querySelectorAll('[data-bundle-quantity]'))button.setAttribute('aria-pressed',String(Number(button.dataset.bundleQuantity)===qty));
   const estimate=document.querySelector('[data-bundle-estimate]');
-  if(estimate)estimate.textContent=format(total)+' total · '+format(total/qty)+' per vial before additional discounts';
+  if(estimate)estimate.textContent=format(total)+' for '+qty+' purchased unit'+(qty===1?'':'s')+(active()?' + '+qty+' free':'')+' · before additional discounts';
   const mobile=document.querySelector('[data-mobile-total]');
   if(mobile)mobile.textContent=format(total)+' estimated total';
  }
