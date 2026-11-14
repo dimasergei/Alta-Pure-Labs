@@ -114,7 +114,7 @@
         status:statusField().value, sort:$('ap-orders-sort').value,
         search:$('ap-orders-search').value.trim(), page:String(page), page_size:'25'
       });
-      const data = await request('/api/admin-workspace-orders?' + params);
+      const data = await request('/api/customer-config?workspace_orders=1&' + params);
       if (ticket !== epoch || scope() !== 'orders') return;
       visible = Array.isArray(data.orders) ? data.orders : [];
       total = Number(data.pagination?.total || 0);
@@ -201,7 +201,7 @@
       for(let p=1;p<=100;p++){
         const params=new URLSearchParams({status:statusField().value,sort:$('ap-orders-sort').value,
           search:$('ap-orders-search').value.trim(),page:String(p),page_size:'100'});
-        const data=await request('/api/admin-workspace-orders?'+params);
+        const data=await request('/api/customer-config?workspace_orders=1&'+params);
         orders.push(...(data.orders||[]));
         if(!data.pagination?.has_next)break;
         if(p===100)throw Error('Export exceeds 10,000 orders; narrow the filters.');
