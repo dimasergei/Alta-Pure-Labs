@@ -623,3 +623,135 @@ body.ap-site {
 /* Limited-time label: accessible inline clock mark, preserving the hero capsule. */
 .ap-site .nl-hero .nl-capsule.nl-limited-time{display:inline-flex;align-items:center;gap:7px}
 .ap-site .nl-hero .nl-limited-time svg{width:15px;height:15px;flex:none;display:block;fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
+
+/* 2026-11-14: stable countdown geometry + seamless sale/checkout motion.
+   No desktop hero rearrangement, cart logic, prices, or mobile layout changes. */
+@media screen and (min-width: 768px) {
+  .ap-site .nl-hero .ap-promo-clock {
+    box-sizing: border-box;
+    width: min(100%, 500px) !important;
+    min-width: 0 !important;
+    max-width: 100% !important;
+  }
+  .ap-site .nl-hero .ap-promo-time-cells {
+    box-sizing: border-box;
+    grid-template-columns: repeat(4, minmax(0, 58px)) !important;
+    width: 250px !important;
+    min-width: 250px !important;
+    flex: 0 0 250px !important;
+    gap: 6px !important;
+  }
+  .ap-site .nl-hero .ap-promo-time-cell {
+    box-sizing: border-box;
+    min-width: 0 !important;
+    width: 58px !important;
+    max-width: 58px !important;
+    padding: 6px 3px !important;
+    gap: 2px !important;
+    justify-content: center;
+  }
+  .ap-site .nl-hero .ap-promo-time-cell > strong {
+    display: block;
+    flex: 0 0 38px;
+    min-width: 38px;
+    font-variant-numeric: tabular-nums !important;
+    font-feature-settings: "tnum" 1;
+    letter-spacing: 0 !important;
+    text-align: center;
+  }
+  .ap-site .nl-hero .ap-promo-time-cell > small {
+    display: block;
+    flex: 0 0 8px;
+    text-align: left;
+  }
+  .ap-site .ap-announcement {
+    animation: ap-promo-glint 3.6s ease-in-out infinite !important;
+  }
+  .ap-site .ap-announcement::before {
+    /* Travel fully beyond both edges before returning off-screen. */
+    animation: ap-checkout-shimmer 3.2s ease-in-out infinite !important;
+  }
+}
+@media screen and (min-width: 768px) and (max-width: 1100px) {
+  .ap-site .nl-hero .ap-promo-clock {
+    width: min(100%, 422px) !important;
+  }
+  .ap-site .nl-hero .ap-promo-time-cells {
+    grid-template-columns: repeat(4, minmax(0, 52px)) !important;
+    width: 220px !important;
+    min-width: 220px !important;
+    flex: 0 0 220px !important;
+    gap: 4px !important;
+  }
+  .ap-site .nl-hero .ap-promo-time-cell {
+    width: 52px !important;
+    max-width: 52px !important;
+    padding: 5px 1px !important;
+  }
+  .ap-site .nl-hero .ap-promo-time-cell > strong {
+    flex: 0 0 36px;
+    min-width: 36px;
+  }
+}
+@media screen and (min-width: 768px) and (max-width: 940px) {
+  .ap-site .nl-hero .ap-promo-time-cells {
+    flex: 0 0 auto !important;
+    height: auto !important;
+  }
+  .ap-site .nl-hero .ap-promo-clock {
+    flex-direction: column;
+    justify-content: center;
+    gap: 9px !important;
+    min-height: 122px;
+  }
+  .ap-site .nl-hero .ap-promo-clock-copy {
+    align-items: center;
+    text-align: center;
+  }
+}
+
+/* Gradient borders glide out and return with matching endpoints;
+   inner light bands reset only while completely outside the clipping box. */
+@keyframes ap-seamless-border-loop {
+  0%, 100% { background-position: 0 0, 0% 0; }
+  50% { background-position: 0 0, 100% 0; }
+}
+@keyframes ap-seamless-glint-slide {
+  0% { transform: translate3d(-160%, 0, 0); }
+  100% { transform: translate3d(160%, 0, 0); }
+}
+.ap-site .nl-hero .nl-primary {
+  animation: ap-seamless-border-loop 5.0s ease-in-out infinite !important;
+}
+.ap-site .nl-hero .nl-primary::before {
+  background-size: 100% 100% !important;
+  animation: ap-seamless-glint-slide 4.3s linear infinite !important;
+}
+.ap-site .nl-hero .nl-offer-grid > .ap-offer-box {
+  animation: ap-seamless-border-loop 5.0s ease-in-out infinite !important;
+}
+.ap-site .nl-hero .nl-offer-grid > .ap-offer-box::before {
+  background-size: 100% 100% !important;
+  animation: ap-seamless-glint-slide 4.3s linear infinite !important;
+}
+
+/* The shipping threshold bar now goes out and back rather than snapping
+   instantly from its last gradient frame to its first frame. */
+@keyframes ap-seamless-shipping-progress {
+  0%, 100% { background-position: 100% 50%; }
+  50% { background-position: 0% 50%; }
+}
+.ap-site .nlc-progress-fill {
+  animation: ap-seamless-shipping-progress 2.8s ease-in-out infinite !important;
+}
+@media (prefers-reduced-motion: reduce) {
+  .ap-site .ap-announcement::before,
+  .ap-site .nl-hero .nl-primary,
+  .ap-site .nl-hero .nl-primary::before,
+  .ap-site .nl-hero .nl-offer-grid > .ap-offer-box,
+  .ap-site .nl-hero .nl-offer-grid > .ap-offer-box::before,
+  .ap-site .nlc-progress-fill {
+    animation: none !important;
+  }
+}
+
