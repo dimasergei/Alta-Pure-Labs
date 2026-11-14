@@ -63,7 +63,7 @@
     sessionStorage.setItem(cartKey(items),JSON.stringify([...selected]));
     const request=await fetch('/api/customer-config?checkout=cart',{method:'POST',
       headers:{'Content-Type':'application/json'},
-      body:JSON.stringify({items:(window.AltaStore.cart||[]).map(({id,size,qty})=>({id,size,qty})),
+      body:JSON.stringify({items:(window.AltaStore.cart||[]).map(({id,size,qty})=>({id,size,qty:Date.now()<Date.parse(settings.config.promotions.ends_at)&&settings.config.promotions.bogo?qty*2:qty})),
        method_id:method?.id||null,coupon:localStorage.getItem('ap-checkout-coupon')||'',
        country,delivery:{shipping:'standard',extras:[...selected].sort()}})});
     const data=await request.json();
@@ -71,19 +71,20 @@
     // An explicit server line entitlement is required before showing a BOGO badge.
     const quotedLines=Array.isArray(data.pricing?.lines)?data.pricing.lines:[];
     root.querySelectorAll('[data-nlc-bogo-line]').forEach((node,index)=>{
-     const item=items[index],confirmed=quotedLines.find(line=>line.id===item.id&&line.size===item.size&&line.qty===item.qty);
+     const item=items[index],confirmed=quotedLines.find(line=>line.id===item.id&&line.size===item.size&&line.qty===(Date.now()<Date.parse(settings.config.promotions.ends_at)&&settings.config.promotions.bogo?item.qty*2:item.qty));
      const n=confirmed?.bogo_free_units;
      const free=Number.isSafeInteger(n)&&n>0&&n<=item.qty&&['bogo','bogo+coupon_bogo'].includes(confirmed?.discount_reason)?n:0;
      // The badge advertises the active buy-one-get-one offer even when the
      // shopper has only one unit. Only the quote can confirm earned free units.
      const offerActive=Date.now()<Date.parse('2026-11-26T23:59:59-06:00');
-     const displayFree=free||(offerActive&&item.qty===1?1:0);
+     const displayFree=offerActive?free:0;
      node.hidden=!displayFree;node.textContent=displayFree?'+'+displayFree+' FREE':'';
     });
     const shipping=data.pricing?.delivery?.shipping_cents||0;
     const features=data.pricing?.delivery?.extras||[];
-    const nodes=[['Subtotal',data.subtotal_cents]];
-    if(data.discount_cents)nodes.push(['Discounts',-data.discount_cents]);
+    const freeValue=(data.pricing?.lines||[]).reduce((n,line)=>n+(line.bogo_free_units||0)*(line.unit_price_cents||0),0);
+    const nodes=[['Subtotal',data.subtotal_cents-freeValue]];
+    if(data.discount_cents-freeValue>0)nodes.push(['Discounts',-(data.discount_cents-freeValue)]);
     nodes.push(['Shipping',shipping]);
     for(const f of features.filter(x=>x.id!=='protection'))nodes.push([f.label,f.amount_cents]);
     const includedProtection=features.find(x=>x.id==='protection');
