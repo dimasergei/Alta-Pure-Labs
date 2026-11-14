@@ -49,5 +49,47 @@
  const form=el('form');form.className='fh-form';const action=select(form,'Action','action',[['assign','Assign / change supplier for whole order'],['shipment','Record fulfillment']],f.status==='shipped'?'shipment':'assign');select(form,'Routing for whole order','route',[['manual','Manual / one other supplier'],['lotus','Lotus (all lines must map)']],f.route);const name=field(form,'One supplier for the complete order (manual)','supplier_name',f.supplier_name);name.maxLength=180;select(form,'Fulfillment status','status',[['ordered','Ordered from supplier'],['shipped','Dispatched'],['delivered','Delivered']],f.status==='shipped'?'delivered':'ordered');field(form,'Carrier','tracking_carrier',f.tracking_carrier).maxLength=100;field(form,'Tracking number','tracking_number',f.tracking_number).maxLength=160;const note=field(form,'Audit note','note');note.required=true;note.minLength=8;note.maxLength=2000;const save=el('button','Save allocation');save.className='primary';form.append(save);form.onsubmit=async e=>{e.preventDefault();save.disabled=true;try{await write({...Object.fromEntries(new FormData(form)),id,variant_key:f.variant_key,version:f.version});await detail(id);await load();}catch(err){out.textContent=err.message;}finally{save.disabled=false;}};box.append(form);}
  dialog.append(box);}
  if(!dialog.open)dialog.showModal();}
- window.AltaFulfillment={mount(client){api=client;root=document.getElementById('fulfillment-hub');clearInterval(timer);timer=setInterval(()=>{if(!document.hidden&&!dialog?.open&&!embedded?.open&&!root.contains(document.activeElement))load();},60000);load();},refresh:load,clear:close,openPayments(){document.dispatchEvent(new CustomEvent('alta-open-payment-desk'));},paymentDesk(password){embedded?.remove();embedded=el('dialog');embedded.className='fh-dialog fh-payments';embedded.append(button('Close payment desk',()=>{embedded.remove();embedded=null;load();}));const frame=el('iframe');frame.title='Payment and refund controls';frame.src='/admin-payments.html';frame.onload=()=>{const doc=frame.contentDocument;const input=doc?.getElementById('pay-password'),form=doc?.getElementById('pay-login');if(input&&form){input.value=password;form.requestSubmit();password='';}};embedded.append(frame);document.body.append(embedded);embedded.showModal();}};
+ let unifiedTicket=0;
+ async function syncRows({statusFilter='active',search='',page=1,sort='newest',paymentFilter='',fulfillmentFilter=''}={}){
+  const host=document.getElementById('orders-list');if(!host||!api)return;
+  const ticket=++unifiedTicket;
+  host.querySelectorAll('[data-commerce-invoice]').forEach(n=>n.remove());
+  if(page!==1)return;
+  let offset=0,rows=[];
+  try{
+   // Fetch all invoice pages up to a bounded maximum; never omit later pages silently.
+   for(let i=0;i<40;i++){const d=await api(route('orders','&offset='+offset));if(ticket!==unifiedTicket)return;rows.push(...(d.orders||[]));if(!d.has_more)break;offset+=25;if(i===39)throw Error('Commerce invoice list exceeds the supported display limit.');}
+  }catch(e){const warning=el('p','Commerce orders could not be loaded: '+e.message);warning.dataset.commerceInvoice='error';warning.setAttribute('role','alert');host.prepend(warning);return;}
+  const term=search.trim().toLowerCase();
+  const visible=rows.filter(r=>{
+   const paid=['paid','processing','shipped','delivered'].includes(r.status);
+   const payment=paid?'paid':r.status==='void'?'expired':r.status==='refunded'?'refunded':'pending';
+   const fulfillment=r.status==='shipped'?'shipped':r.status==='delivered'?'delivered':r.status==='void'?'canceled':r.status==='processing'?'processing':'unfulfilled';
+   if(term&&!['ORD-'+r.id.slice(0,8).toUpperCase(),r.customer_name,r.customer_email,r.id].some(v=>String(v||'').toLowerCase().includes(term)))return false;
+   if(paymentFilter&&payment!==paymentFilter)return false;
+   if(fulfillmentFilter&&fulfillment!==fulfillmentFilter)return false;
+   if(statusFilter==='active'||statusFilter==='needs_action')return paid&&!['delivered','canceled'].includes(fulfillment);
+   if(statusFilter==='all')return true;
+   if(statusFilter==='archived')return false;
+   if(statusFilter==='completed')return fulfillment==='delivered';
+   if(statusFilter==='paid'||statusFilter==='pending'||statusFilter==='refunded'||statusFilter==='expired')return payment===statusFilter;
+   return fulfillment===statusFilter;
+  });
+  visible.sort((a,b)=>sort==='oldest'?Date.parse(a.created_at)-Date.parse(b.created_at):sort==='highest_total'?b.total_cents-a.total_cents:Date.parse(b.created_at)-Date.parse(a.created_at));
+  for(const r of visible){
+   const article=el('article');article.className='order';article.dataset.commerceInvoice=r.id;
+   const head=el('div');head.className='order-head';
+   const toggle=el('button');toggle.type='button';toggle.className='order-toggle';toggle.setAttribute('aria-label','Manage order ORD-'+r.id.slice(0,8).toUpperCase());
+   const number=el('span');number.className='number';number.append(el('span','ORD-'+r.id.slice(0,8).toUpperCase()),el('span',new Date(r.created_at).toLocaleString()));
+   const customer=el('span');customer.className='customer';customer.append(el('strong',r.customer_name||'Customer'),el('span',r.customer_email||''));
+   const total=el('span',money(r));total.className='total';
+   const state=el('span');state.className='status order-status-stack';const payment=el('span',r.status);payment.className='badge';state.append(payment);
+   const manage=el('span','Manage order');manage.className='chevron';
+   toggle.append(number,customer,total,state,manage);head.append(toggle);article.append(head);
+   toggle.addEventListener('click',()=>detail(r.id).catch(e=>{const note=el('p',e.message);note.setAttribute('role','alert');article.append(note);}));
+   host.append(article);
+  }
+  if(visible.length&&host.querySelector('.empty'))host.querySelector('.empty').remove();
+ }
+ window.AltaFulfillment={mount(client){api=client;root=document.getElementById('fulfillment-hub');if(root)root.hidden=true;clearInterval(timer);},syncRows,refresh:load,clear:close,openPayments(){document.dispatchEvent(new CustomEvent('alta-open-payment-desk'));},paymentDesk(password){embedded?.remove();embedded=el('dialog');embedded.className='fh-dialog fh-payments';embedded.append(button('Close payment desk',()=>{embedded.remove();embedded=null;load();}));const frame=el('iframe');frame.title='Payment and refund controls';frame.src='/admin-payments.html';frame.onload=()=>{const doc=frame.contentDocument;const input=doc?.getElementById('pay-password'),form=doc?.getElementById('pay-login');if(input&&form){input.value=password;form.requestSubmit();password='';}};embedded.append(frame);document.body.append(embedded);embedded.showModal();}};
 })();
