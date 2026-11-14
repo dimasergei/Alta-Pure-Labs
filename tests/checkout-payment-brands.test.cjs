@@ -9,7 +9,7 @@ test('Express wallets use transparent inline brand symbols without card logos',(
  assert.match(js,/fill="#4285F4"/);
 });
 test('Card and bank choices have distinct logos and phone and bank icons',()=>{
- for(const x of ['nlx-visa-logo','nlx-amex-logo','nlx-phone-symbol','nlx-bank-symbol','nlx-chase-mark','nlx-bofa-mark','nlx-wf-mark','Link a new bank account'])assert.ok(js.includes(x),x);
+ for(const x of ['visa-blue.svg','amex-blue.svg','nlx-phone-symbol','nlx-bank-symbol','nlx-chase-mark','nlx-bofa-mark','nlx-wf-mark','Link a new bank account'])assert.ok(js.includes(x),x);
 });
 test('Payment UI remains nonfunctional for card and wallets',()=>{
  assert.match(js,/nlx-wallet-unavailable" disabled/);
