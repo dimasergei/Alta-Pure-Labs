@@ -25,3 +25,19 @@
 .ap-promo-off{color:#b9d6ff}.ap-promo-shop{background:#e6ecff;border-radius:999px;color:#14243c!important;font-size:9px;font-weight:800;padding:5px 13px;white-space:nowrap}
 .ap-nav-new{display:inline-block;margin-left:4px;padding:2px 5px;background:#278aff;color:#fff;border-radius:999px;font-size:8px;font-weight:800;line-height:1.1;vertical-align:middle;letter-spacing:0}
 @media(prefers-reduced-motion:reduce){.ap-announcement::before{animation:none}}
+
+/* Reference video: small animated underline, chevron and hover inversion. */
+@media (min-width:1051px){
+ .ap-header-compact .ap-nav>a, .ap-header-compact .ap-nav-more{position:relative;transition:color .18s ease}
+ .ap-header-compact .ap-nav>a::after{content:"";position:absolute;bottom:3px;left:0;right:0;height:2px;background:#1254a4;transform:scaleX(0);transform-origin:center;transition:transform .22s ease;pointer-events:none;border:0}
+ .ap-header-compact .ap-nav>a:hover::after,.ap-header-compact .ap-nav>a:focus-visible::after{transform:scaleX(1)}
+ .ap-header-compact .ap-nav-more::before{content:"";position:absolute;bottom:3px;left:0;right:0;height:2px;background:#1254a4;transform:scaleX(0);transform-origin:center;transition:transform .22s ease}
+ .ap-header-compact .ap-nav-more:hover::before,.ap-header-compact .ap-nav-more:focus-visible::before,.ap-menu-open .ap-nav-more::before{transform:scaleX(1)}
+}
+.ap-nav-more{gap:3px!important}
+.ap-nav-more:hover,.ap-menu-open .ap-nav-more{color:#0c5aa7!important}
+.ap-nav-chevron{font-size:0!important;display:inline-flex;width:11px;height:11px;align-items:center;justify-content:center;transition:transform .18s ease}
+.ap-nav-chevron svg{width:11px!important;height:11px!important;fill:none!important;stroke:currentColor!important;stroke-width:1.8!important;stroke-linecap:round;stroke-linejoin:round}
+.ap-menu-open .ap-nav-chevron{transform:rotate(180deg)}
+.ap-header-compact .ap-nav-new{margin-left:4px}
+@media(prefers-reduced-motion:reduce){.ap-header-compact .ap-nav>a::after,.ap-header-compact .ap-nav-more::before,.ap-nav-chevron{transition:none}}
