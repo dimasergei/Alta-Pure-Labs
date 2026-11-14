@@ -3,7 +3,7 @@
   "private": true,
   "version": "0.3.0",
   "scripts": {
-    "build": "node install-store.cjs && node site-build.cjs && node manual-commerce-build.cjs && node manual-policy-build.cjs && node invoice-automation-build.cjs && node payment-options-build.cjs && node native-gateway-build.cjs && node operations-build.cjs && node marketing-build.cjs && node direct-checkout-build.cjs && node account-experience-build.cjs && node reference-ui-build.cjs && node conversion-build.cjs && node readiness-build.cjs && node tests/direct-checkout-build-output.cjs && node tests/account-experience-build-output.cjs && node brand-assets-build.cjs",
+    "build": "node install-store.cjs && node site-build.cjs && node manual-commerce-build.cjs && node manual-policy-build.cjs && node invoice-automation-build.cjs && node payment-options-build.cjs && node native-gateway-build.cjs && node operations-build.cjs && node marketing-build.cjs && node direct-checkout-build.cjs && node account-experience-build.cjs && node reference-ui-build.cjs && node conversion-build.cjs && node readiness-build.cjs && node tests/direct-checkout-build-output.cjs && node tests/account-experience-build-output.cjs && node brand-assets-build.cjs && node --test tests/checkout-paid-unit-bogo.test.cjs",
     "test": "node --test tests/*.test.cjs",
     "test:account-dom": "node tests/account-experience-dom.cjs && node tests/storefront-navigation-dom.cjs && node tests/reference-ui-dom.cjs && node tests/conversion-dom.cjs"
   },
