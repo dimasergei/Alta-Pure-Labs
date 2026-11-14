@@ -155,7 +155,7 @@ test('VIS-12 short-mobile cart keeps product browsing and checkout accessible',a
 test('VIS-13 BOGO free badges follow confirmed quote lines and disappear after quantity changes',async({page})=>{
  await pageReady(page,'cart');
  const cartFree=page.locator('[data-testid="cart-bogo-free"]:not([hidden])');
- await expect(cartFree).toHaveCount(1);
+ await expect(cartFree).toHaveCount(2); // One earned free unit, one active single-unit BOGO offer
  await expect(cartFree.first()).toHaveText('+1 FREE');
  await capture(page,'cart-server-confirmed-bogo');
  await pageReady(page,'shipping');
