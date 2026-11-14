@@ -313,3 +313,35 @@ body.ap-checkout-page #account-root{box-shadow:none!important;border:0!important
 .nlx-protection-lock{display:inline-flex;align-items:center;justify-content:center;color:#174b95}
 .nlx-protection-lock svg{width:13px;height:13px;fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round}
 @media(max-width:520px){.nlx-wallets{gap:5px!important}.nlx-wallets .nlx-wallet-unavailable{height:42px!important;min-height:42px!important;padding-inline:7px!important}.nlx-wallets .nlx-wallet-unavailable b{font-size:17px!important}.nlx-wallets .nlx-wallet-unavailable .nlx-wallet-symbol{width:17px!important;height:17px!important;flex-basis:17px!important}}
+
+/* November 14 annotated checkout parity refinements. */
+.nlx-progress button{font-weight:800!important;color:#131a22!important}
+.nlx-progress button:not(:last-child)::after{background:#195399!important;height:2px!important}
+.nlx-delivery-desc small{font-size:11px!important;color:#65758b;text-decoration:underline;text-underline-offset:2px}
+.nlx-arrival-confirm{font-weight:800;color:#162435;white-space:nowrap}
+.nlx-confirm>div:last-child>span{font-weight:650}
+.nlx-extra-priority{background:#ffd0d0!important;border-color:#ff6973!important;color:#b82420!important}
+.nlx-extra-cold_chain{background:#d7edff!important;border-color:#71b9ff!important}
+.nlx-extra-box{min-height:62px;padding:12px 15px!important;border-width:2px!important}
+.nlx-extra-box strong{font-size:14px!important;font-weight:800!important}
+.nlx-extra-priority strong{color:#b52825!important}
+.nlx-extra-cold_chain strong{color:#172d43!important}
+.nlx-extra-box .nlx-disclosure-trigger{display:block;margin-top:4px;font-size:12px!important;font-weight:650!important}
+.nlx-member-offer h3{font-size:26px!important;font-weight:900!important;letter-spacing:-.045em!important;line-height:1.12;margin:12px 0 5px!important}
+.nlx-member-offer h3 em{font-style:normal;color:#164e9c}
+.nlx-member-actions{grid-template-columns:110px minmax(0,1fr)!important;gap:12px!important;align-items:stretch}
+.nlx-member-actions button[data-nlx-skip]{height:52px;padding:10px 12px!important;background:#fff!important;border:1px solid #c5d7ec!important;border-radius:999px!important;font-size:12px!important;color:#152033!important;white-space:nowrap}
+.nlx-member-actions .nlx-member-unavailable{height:52px!important;min-width:0!important;padding:10px 16px!important;background:#0b3676!important;color:#fff!important;font-size:14px!important;font-weight:800!important;opacity:.7!important;border-radius:999px!important}
+.nlx-size-line{display:flex;align-items:center;flex-wrap:wrap;gap:6px;min-height:18px}
+.nlx-size-line small{display:inline-block!important;margin:0!important;font-size:12px!important;color:#73849b!important}
+.nlx-size-line .nlx-promo-free{display:inline-flex;margin:0!important;padding:2px 7px!important;font-size:10px!important;line-height:1.2!important}
+.nlx-product-name .nlx-qty{margin-top:5px!important;height:32px!important}
+.nlx-product-name .nlx-qty button{width:35px!important;height:32px!important;font-size:17px!important}
+.nlx-product-name .nlx-qty span{min-width:35px!important;padding:0 13px!important;font-size:13px!important}
+.nlx-card-logos .nlx-card-brand{width:46px!important;height:29px!important;object-fit:contain!important;border-radius:2px!important}
+.nlx-card-logos{gap:5px!important;align-items:center!important}
+.nlx-bank-logos img.nlx-bank-logo{width:35px!important;height:35px!important;flex-basis:35px!important;border-radius:5px!important;object-fit:contain!important;padding:2px!important}
+.nlx-bank-logos .nlx-more-mark{height:35px!important;min-width:55px!important;font-size:11px!important;padding:3px 5px!important}
+.nlx-bank-logos{gap:6px!important}
+.nlx-payment-option .nlx-bank-symbol{width:20px!important;height:20px!important;stroke-width:2.4!important}
+@media(max-width:520px){.nlx-member-actions{grid-template-columns:95px minmax(0,1fr)!important;gap:8px!important}.nlx-member-actions .nlx-member-unavailable{font-size:11px!important}.nlx-member-offer h3{font-size:22px!important}.nlx-arrival-confirm{white-space:normal}}
