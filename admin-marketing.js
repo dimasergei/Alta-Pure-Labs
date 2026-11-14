@@ -14,6 +14,8 @@
   let revision=0,remoteReady=false,syncTimer=null,syncRunning=false,syncQueued=false;
   let instagram={connected:false,credentials_configured:false},igMessages=[];
   let igMedia={};
+  const igMediaChecked=new Set();
+  let igMediaLoading=false;
   const igProfileKey='altapure_ig_participant_names_v1';
   let igProfiles={};
   try{const saved=JSON.parse(localStorage.getItem(igProfileKey)||'{}');if(saved&&typeof saved==='object'&&!Array.isArray(saved))igProfiles=saved;}catch{}
@@ -324,7 +326,7 @@
         title=elem('strong',item.direction==='incoming'?participantLabel(item.participant_id):'AltaPure'),
         date=elem('small',new Date(item.message_at).toLocaleString()),
         body=elem('p',item.body||'[Media message]');
-      if((igMedia[item.provider_message_id]||[]).length&&!item.body)body.textContent='';
+      if((igMedia[item.provider_message_id]||[]).length&&(!item.body||/^\\[Media (attachment|message)\\]$/i.test(item.body)))body.textContent='';
       el.append(title,date,body);
       for(const media of (igMedia[item.provider_message_id]||[])){
         try{
@@ -347,6 +349,27 @@
     $('mk-ig-reply').disabled=!canReply;
     $('mk-ig-send').disabled=!canReply;
     $('mk-ig-reply').placeholder=canReply?'Write a manual reply…':'Reply available only during the standard messaging window after an inbound DM';
+    if(connected)void loadSelectedMedia(events);
+  }
+  async function loadSelectedMedia(events){
+    if(igMediaLoading)return;
+    const candidates=events.filter(m=>/\\[Media (attachment|message)\\]/i.test(m.body||'')&&!igMedia[m.provider_message_id]?.length&&!igMediaChecked.has(m.provider_message_id)).slice(-3).reverse();
+    if(!candidates.length)return;
+    igMediaLoading=true;
+    const selected=$('mk-ig-thread').value;
+    try{
+      for(const item of candidates){
+        igMediaChecked.add(item.provider_message_id);
+        try{
+          const result=await endpoint({action:'instagram_media',message_id:item.provider_message_id});
+          if(Array.isArray(result.media)&&result.media.length)igMedia[item.provider_message_id]=result.media;
+          else notice('Instagram media '+result.status+': Meta did not provide a playable attachment for this message.',true);
+        }catch(err){notice('Instagram media lookup: '+err.message,true);}
+      }
+    }finally{
+      igMediaLoading=false;
+      if($('mk-ig-thread').value===selected)renderInstagram();
+    }
   }
   async function refreshInstagram(sync=false){
     try{
@@ -355,6 +378,7 @@
         const result=await endpoint({action:'instagram_sync'});
         rememberIgProfiles(result.participant_profiles);
         igMedia=result.media&&typeof result.media==='object'&&!Array.isArray(result.media)?result.media:{};
+        igMediaChecked.clear();
         const mediaStatus=result.media_diagnostics;
         if(mediaStatus?.unavailable)notice('Instagram media: '+mediaStatus.resolved+' attachments resolved; '+mediaStatus.unavailable+' unavailable from Meta. Older media may have expired.',true);
         const lookup=result.profile_lookup;
