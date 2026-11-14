@@ -241,3 +241,5 @@ body.ap-site{font-family:Poppins,Arial,sans-serif;background:#fff;color:#101317}
 @media(max-width:480px){.nl-bulk-hero>.ap-container,.nl-bulk-benefits,.nl-bulk-layout.ap-container,.nl-bulk-faq{width:calc(100% - 32px)}.nl-bulk-hero h1{font-size:36px}.nl-bulk-hero>div>p{font-size:13px}.nl-bulk-grid{grid-template-columns:1fr}.nl-bulk-image{height:260px}.nl-bulk-benefits{grid-template-columns:repeat(2,minmax(0,1fr))}}
 
 .nl-bulk-line-price{display:flex;flex-direction:column;align-items:flex-end;gap:3px;white-space:nowrap}.nl-bulk-line-price del{font-size:9px;color:#7b8797}
+
+.nl-bulk-benefits>div:nth-child(2) span{color:#fff}.nl-bulk-benefits>div:nth-child(2) small{color:#d2def1}
