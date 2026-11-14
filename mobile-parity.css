@@ -1,0 +1,479 @@
+/* AltaPure mobile-only storefront refinement. Desktop rules are not changed.
+   Loaded only for viewport widths at or below 767px after the shared theme. */
+@media screen and (max-width: 767px) {
+  html { scroll-padding-top: 116px; }
+  body.ap-site { overflow-x: clip; }
+
+  /* Persistent, compact two-tier banner and navigation. */
+  .ap-site .ap-announcement {
+    position: sticky !important;
+    top: 0 !important;
+    z-index: 110 !important;
+    box-sizing: border-box;
+    display: block !important;
+    width: 100%;
+    height: 40px !important;
+    min-height: 40px !important;
+    max-height: 40px;
+    margin: 0 !important;
+    padding: 0 !important;
+    overflow: hidden !important;
+    background: linear-gradient(100deg,#120b29 0%,#32166d 62%,#4c2098 100%) !important;
+    animation: none !important;
+  }
+  .ap-site .ap-announcement::before { display: none !important; }
+  .ap-site .ap-announcement::after {
+    content: "";
+    position: absolute;
+    inset: 0 0 0 auto;
+    width: 154px;
+    pointer-events: none;
+    z-index: 2;
+    background: linear-gradient(90deg,transparent 0%,#3c1b7b 18%,#4c2098 100%);
+  }
+  .ap-site .ap-announcement .ap-promo-bogo { display: none !important; }
+  .ap-site .ap-announcement .ap-promo-main {
+    position: absolute;
+    top: 0;
+    left: 0;
+    display: flex !important;
+    align-items: center;
+    flex-wrap: nowrap;
+    justify-content: flex-start;
+    gap: 0 !important;
+    width: max-content;
+    height: 40px;
+    max-width: none !important;
+    margin: 0;
+    padding: 0;
+    font-size: 0 !important;
+    line-height: 1;
+    white-space: nowrap;
+    color: #fff !important;
+    animation: ap-mobile-promo-loop 11s linear infinite !important;
+    will-change: transform;
+  }
+  .ap-site .ap-announcement .ap-promo-main > svg,
+  .ap-site .ap-announcement .ap-promo-main .ap-promo-off { display: none !important; }
+  .ap-site .ap-announcement .ap-promo-main::before,
+  .ap-site .ap-announcement .ap-promo-main::after {
+    content: "Buy More Get More FREE     ·     ";
+    box-sizing: border-box;
+    flex: 0 0 auto;
+    display: inline-flex;
+    align-items: center;
+    height: 40px;
+    padding: 0 25px 0 36px;
+    color: #fff;
+    font: 800 12px/1.3 Poppins,Arial,sans-serif;
+    white-space: pre;
+    background: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath d='M4 10h16v11H4z M2 7h20v4H2z M12 7v14 M12 7C5 7 5 2 8 2c3 0 4 5 4 5Zm0 0c7 0 7-5 4-5-3 0-4 5-4 5Z' fill='none' stroke='white' stroke-width='1.7'/%3E%3C/svg%3E") no-repeat 10px center / 18px 18px;
+  }
+  @keyframes ap-mobile-promo-loop {
+    from { transform: translateX(0); }
+    to { transform: translateX(-50%); }
+  }
+  .ap-site .ap-announcement .ap-promo-shop {
+    position: absolute !important;
+    z-index: 4;
+    right: 8px;
+    top: 50%;
+    transform: translateY(-50%);
+    box-sizing: border-box;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    height: 28px;
+    max-width: calc(100% - 24px);
+    margin: 0 !important;
+    padding: 0 11px !important;
+    border: 0;
+    border-radius: 999px;
+    background: #f5efff !important;
+    color: #29134b !important;
+    font-size: 0 !important;
+    white-space: nowrap;
+    box-shadow: 0 2px 7px #10052f33;
+  }
+  .ap-site .ap-announcement .ap-promo-shop::before {
+    content: "SHOP THE BOGO SALE →";
+    font: 800 9px/1 Poppins,Arial,sans-serif;
+    color: #29134b;
+  }
+  .ap-site .ap-header.ap-header-compact {
+    position: sticky !important;
+    top: 40px !important;
+    z-index: 105 !important;
+    margin: 0 !important;
+    background: #fffffff7 !important;
+    backdrop-filter: blur(14px);
+    -webkit-backdrop-filter: blur(14px);
+    box-shadow: 0 2px 6px #10152b12;
+  }
+  .ap-site .ap-header-compact .ap-header-main {
+    box-sizing: border-box;
+    width: 100% !important;
+    max-width: 100% !important;
+    min-height: 72px !important;
+    height: 72px !important;
+    padding: 0 14px !important;
+    gap: 8px !important;
+  }
+  .ap-site .ap-header-compact .ap-header-main:has(.ap-nav.ap-open) {
+    height: auto !important;
+    min-height: 72px !important;
+    padding-bottom: 10px !important;
+  }
+  .ap-site .ap-header-compact .ap-brand {
+    min-width: 0 !important;
+    gap: 6px !important;
+    white-space: nowrap;
+  }
+  .ap-site .ap-header-compact .ap-brand > span:last-child {
+    font-size: clamp(10px,3.3vw,14px) !important;
+  }
+  .ap-site .ap-header-compact .ap-header-actions {
+    gap: 5px !important;
+    min-width: 0;
+  }
+  .ap-site .ap-header-compact .ap-header-actions .ap-icon {
+    width: 30px;
+    height: 38px;
+    flex: 0 0 auto;
+  }
+  .ap-site .ap-header-compact .ap-menu-toggle {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 0 !important;
+    width: 34px !important;
+  }
+  .ap-site .ap-header-compact .ap-menu-toggle::before {
+    content: "";
+    display: block;
+    width: 23px;
+    height: 19px;
+    background: linear-gradient(#152844,#152844) 0 1px/100% 1.5px no-repeat,
+                linear-gradient(#152844,#152844) 0 9px/100% 1.5px no-repeat,
+                linear-gradient(#152844,#152844) 0 17px/100% 1.5px no-repeat;
+  }
+  .ap-site .ap-header-compact .ap-nav.ap-open {
+    max-height: calc(100dvh - 120px);
+    overflow-y: auto;
+    overscroll-behavior: contain;
+  }
+
+  /* Flatten wrappers only on the live-sale mobile hero. The source DOM
+     and all desktop two-column positioning remain exactly as before. */
+  .ap-site .nl-hero .nl-hero-inner {
+    display: flex !important;
+    flex-direction: column !important;
+    align-items: center !important;
+    justify-content: flex-start !important;
+    width: calc(100% - 32px) !important;
+    min-height: 0 !important;
+    padding: 26px 0 27px !important;
+    gap: 0 !important;
+    text-align: center;
+  }
+  html:not(.ap-promo-ended) .ap-site .nl-hero .nl-hero-copy,
+  html:not(.ap-promo-ended) .ap-site .nl-hero .nl-hero-copy > [data-promo-active] {
+    display: contents;
+  }
+  .ap-site .nl-hero .nl-hero-copy .nl-limited-time {
+    order: 1;
+    align-self: center;
+    max-width: 100%;
+    padding: 9px 17px;
+    font-size: 10px !important;
+    line-height: 1.2;
+    white-space: nowrap;
+  }
+  .ap-site .nl-hero .nl-hero-copy h1 {
+    order: 2;
+    width: 100%;
+    max-width: 100%;
+    margin: 17px 0 0 !important;
+    font-size: clamp(33px,10.8vw,54px) !important;
+    line-height: 1.09 !important;
+    letter-spacing: -.043em !important;
+    text-align: center;
+    white-space: nowrap;
+    overflow-wrap: normal !important;
+  }
+  .ap-site .nl-hero .nl-hero-copy h1 em {
+    font-size: 1.25em !important;
+    line-height: 1.1 !important;
+  }
+  .ap-site .nl-hero .nl-hero-copy .nl-hero-sale-description {
+    order: 3;
+    align-self: center;
+    width: 100%;
+    max-width: 355px !important;
+    padding: 0 3px;
+    margin: 20px auto 4px !important;
+    font-size: 14px !important;
+    line-height: 1.52 !important;
+    text-align: center;
+    color: #cfcbdf !important;
+  }
+  .ap-site .nl-hero .nl-vial-stage {
+    order: 4;
+    flex: none;
+    align-self: center;
+    width: 100% !important;
+    max-width: 395px !important;
+    height: clamp(244px,74vw,320px) !important;
+    margin: 5px auto 2px !important;
+    overflow: visible;
+  }
+  .ap-site .nl-hero .nl-vial-stage .nl-vial-0 {
+    top: 28px !important;
+    left: 0 !important;
+    width: 45% !important;
+  }
+  .ap-site .nl-hero .nl-vial-stage .nl-vial-1 {
+    top: 0 !important;
+    left: 24% !important;
+    width: 52% !important;
+  }
+  .ap-site .nl-hero .nl-vial-stage .nl-vial-2 {
+    top: 41px !important;
+    right: 0 !important;
+    width: 44% !important;
+  }
+  .ap-site .nl-hero .nl-stage-word { display: none !important; }
+  .ap-site .nl-hero .nl-hero-copy .ap-actions {
+    order: 5;
+    width: 100%;
+    max-width: 480px;
+    margin: 0 auto !important;
+    display: flex;
+    justify-content: center;
+    flex-wrap: nowrap;
+    gap: 10px !important;
+  }
+  .ap-site .nl-hero .ap-actions > a.nl-primary,
+  .ap-site .nl-hero .ap-actions > a.nl-outline {
+    box-sizing: border-box;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: auto !important;
+    max-width: none !important;
+    min-width: 0 !important;
+    min-height: 50px;
+    margin: 0 !important;
+    padding: 12px 8px !important;
+    font-size: clamp(10px,3.05vw,12px) !important;
+    line-height: 1.25;
+    border-radius: 13px;
+    white-space: nowrap;
+  }
+  .ap-site .nl-hero .ap-actions > a.nl-primary { flex: 1.5 1 0; }
+  .ap-site .nl-hero .ap-actions > a.nl-outline { flex: 1 1 0; }
+  .ap-site .nl-hero .ap-promo-clock {
+    order: 6;
+    box-sizing: border-box;
+    align-self: center;
+    width: 100% !important;
+    max-width: 480px !important;
+    min-height: 0 !important;
+    margin: 23px auto 0 !important;
+    padding: 13px 10px !important;
+    display: flex !important;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 11px !important;
+    text-align: center;
+  }
+  .ap-site .nl-hero .ap-promo-clock[hidden] { display: none !important; }
+  .ap-site .nl-hero .ap-promo-clock-copy { align-items: center; }
+  .ap-site .nl-hero .ap-promo-clock-copy > strong {
+    font-size: 10px !important;
+    line-height: 1.4;
+    letter-spacing: .08em;
+  }
+  .ap-site .nl-hero .ap-promo-time-cells {
+    display: grid;
+    width: min(100%,270px);
+    flex: none;
+    grid-template-columns: repeat(4,minmax(0,1fr)) !important;
+    gap: 6px !important;
+  }
+  .ap-site .nl-hero .ap-promo-time-cell {
+    box-sizing: border-box;
+    min-width: 0 !important;
+    height: 51px;
+    padding: 6px 2px !important;
+  }
+  .ap-site .nl-hero .ap-promo-time-cell > strong {
+    font-size: 21px !important;
+  }
+  .ap-site .nl-hero .nl-offer-grid {
+    order: 7;
+    box-sizing: border-box;
+    align-self: center;
+    display: grid !important;
+    grid-template-columns: repeat(2,minmax(0,1fr)) !important;
+    width: 100%;
+    max-width: 480px;
+    gap: 10px !important;
+    margin: 25px auto 0 !important;
+  }
+  .ap-site .nl-hero .nl-offer-grid > .ap-offer-box {
+    box-sizing: border-box;
+    min-width: 0;
+    min-height: 88px !important;
+    padding: 12px 9px !important;
+    gap: 7px !important;
+  }
+  .ap-site .nl-hero .nl-offer-grid > .ap-offer-box strong {
+    font-size: clamp(10px,2.85vw,12px) !important;
+    line-height: 1.27;
+    overflow-wrap: break-word;
+  }
+  .ap-site .nl-hero .nl-offer-grid > .ap-offer-box span:not(.ap-offer-icon) {
+    font-size: 10px !important;
+    line-height: 1.45;
+  }
+  .ap-site .nl-hero .nl-trust {
+    order: 8;
+    align-self: center;
+    width: 100%;
+    max-width: 480px;
+    display: grid !important;
+    grid-template-columns: repeat(2,minmax(0,1fr)) !important;
+    gap: 18px 12px !important;
+    margin-top: 26px !important;
+    padding: 20px 0 3px !important;
+  }
+  .ap-site .nl-hero .nl-trust > div {
+    box-sizing: border-box;
+    min-width: 0;
+    padding: 0 8px !important;
+    text-align: left;
+  }
+  .ap-site .nl-hero .nl-trust strong {
+    font-size: clamp(13px,3.5vw,17px) !important;
+    line-height: 1.2;
+    overflow-wrap: break-word;
+  }
+  .ap-site .nl-hero .nl-trust span { font-size: 9px !important; }
+  .ap-site .nl-hero .ap-hero-standard {
+    order: 1;
+    text-align: center;
+    width: 100%;
+    margin: 12px auto 5px;
+  }
+
+  /* Large, horizontally swipeable product cards with a visible next-card peek. */
+  .ap-site .nl-featured {
+    box-sizing: border-box;
+    padding-top: 36px !important;
+    padding-bottom: 38px !important;
+  }
+  .ap-site .nl-featured .ap-section-head { align-items: center; gap: 8px; }
+  .ap-site .nl-featured .ap-section-head h2 {
+    font-size: clamp(20px,5.5vw,25px) !important;
+    letter-spacing: -.035em;
+  }
+  .ap-site .nl-featured .nl-carousel-controls {
+    flex: 0 0 auto;
+    gap: 8px;
+  }
+  .ap-site .nl-featured .nl-carousel-controls button {
+    width: 36px;
+    height: 36px;
+    flex: none;
+  }
+  .ap-site .nl-featured .nl-carousel {
+    display: grid;
+    grid-auto-flow: column;
+    grid-auto-columns: clamp(248px,78%,380px) !important;
+    gap: 14px !important;
+    padding: 2px 1px 18px !important;
+    overflow-x: auto;
+    scroll-snap-type: x mandatory;
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: none;
+  }
+  .ap-site .nl-featured .nl-carousel > .ap-product-card {
+    width: 100%;
+    min-width: 0;
+    border-radius: 16px;
+    scroll-snap-align: start;
+    scroll-snap-stop: always;
+  }
+  .ap-site .nl-featured .nl-carousel .ap-product-image {
+    width: 100%;
+    aspect-ratio: 4 / 5;
+    overflow: hidden;
+  }
+  .ap-site .nl-featured .nl-carousel .ap-product-image img {
+    display: block;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+  }
+  .ap-site .nl-featured .nl-carousel .nl-badge {
+    top: 14px;
+    left: 13px;
+    padding: 6px 15px;
+    border-radius: 999px;
+    border-color: #81d5f8;
+    background: linear-gradient(115deg,#35d0f7,#8f80fc 65%,#b84eec) !important;
+    color: #101e3f;
+    font-size: 11px !important;
+  }
+  .ap-site .nl-featured .nl-carousel .ap-card-body {
+    padding: 14px 14px 17px !important;
+  }
+  .ap-site .nl-featured .nl-carousel .ap-pair-offer {
+    font-size: 12px;
+    line-height: 1.4;
+    margin-bottom: 9px;
+  }
+  .ap-site .nl-featured .nl-carousel .ap-card-body h3 {
+    font-size: 16px !important;
+    line-height: 1.2;
+    min-height: 42px !important;
+    margin: 5px 0 11px;
+  }
+  .ap-site .nl-featured .nl-carousel .nl-size-label {
+    max-width: 160px;
+    margin-bottom: 12px;
+  }
+  .ap-site .nl-featured .nl-carousel .ap-card-size {
+    min-height: 34px;
+    font-size: 13px;
+  }
+  .ap-site .nl-featured .nl-carousel .nl-prices { gap: 5px; margin-bottom: 15px; }
+  .ap-site .nl-featured .nl-carousel .nl-prices del { font-size: 12px; }
+  .ap-site .nl-featured .nl-carousel .ap-card-price { font-size: 23px !important; }
+  .ap-site .nl-featured .nl-carousel .nl-prices small {
+    font-size: 10px !important;
+    line-height: 1.35;
+  }
+  .ap-site .nl-featured .nl-carousel .nl-card-actions {
+    display: grid;
+    grid-template-columns: minmax(0,1fr) minmax(0,1fr);
+    gap: 9px;
+    width: 100%;
+  }
+  .ap-site .nl-featured .nl-carousel .nl-card-actions > :is(a,button) {
+    box-sizing: border-box;
+    width: 100% !important;
+    min-height: 42px !important;
+    padding: 9px 5px !important;
+    font-size: 11px !important;
+    white-space: nowrap;
+    border-radius: 24px !important;
+  }
+}
+@media screen and (max-width: 767px) and (prefers-reduced-motion: reduce) {
+  .ap-site .ap-announcement .ap-promo-main {
+    animation: none !important;
+  }
+}

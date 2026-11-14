@@ -1,0 +1,43 @@
+/* Orders lives in the same AltaPure administration shell as Marketing. */
+body.mk-body .ap-orders-workspace{width:100%;min-width:0;padding-bottom:24px}
+body.mk-body .ap-orders-heading{margin-bottom:20px}
+body.mk-body .ap-orders-heading p{font-size:13px;color:#60728a;margin:5px 0 0}
+body.mk-body .ap-orders-toolbar{display:grid;grid-template-columns:minmax(200px,2.5fr) minmax(150px,1fr) minmax(145px,1fr) auto;gap:12px;align-items:end;margin-bottom:18px}
+body.mk-body .ap-orders-toolbar label{display:grid;gap:6px;min-width:0}
+body.mk-body .ap-orders-toolbar input,body.mk-body .ap-orders-toolbar select{width:100%;min-height:44px}
+body.mk-body .ap-orders-toolbar button{min-height:44px;white-space:nowrap}
+body.mk-body .ap-orders-table-wrap{background:#fff;overflow:auto;min-height:130px}
+body.mk-body .ap-orders-table{width:100%;min-width:750px}
+body.mk-body .ap-orders-table td,body.mk-body .ap-orders-table th{vertical-align:middle}
+body.mk-body .ap-orders-table td:first-child{font-weight:780;color:#142f52}
+body.mk-body .ap-orders-table .ap-order-name{font-weight:740;display:block;color:#1b3557}
+body.mk-body .ap-orders-table .ap-order-email{display:block;color:#617186;font-size:11px;overflow-wrap:anywhere}
+body.mk-body .ap-orders-table .ap-order-status{display:inline-flex;border-radius:999px;font-size:11px;font-weight:750;padding:4px 9px;background:#edf3fc;color:#224e85;white-space:nowrap}
+body.mk-body .ap-orders-table .ap-order-status.paid,body.mk-body .ap-orders-table .ap-order-status.delivered{background:#e7f6ee;color:#20664a}
+body.mk-body .ap-orders-table .ap-order-status.pending,body.mk-body .ap-orders-table .ap-order-status.unfulfilled{background:#f2f4f7;color:#58687a}
+body.mk-body .ap-orders-table .ap-order-status.refunded,body.mk-body .ap-orders-table .ap-order-status.canceled{background:#faeded;color:#9e3b4d}
+body.mk-body .ap-orders-table button{font-size:12px;white-space:nowrap;min-height:36px}
+body.mk-body .ap-orders-pager{display:flex;justify-content:space-between;align-items:center;gap:16px;margin-top:14px;color:#53657a}
+body.mk-body .ap-orders-page-buttons{display:flex;gap:9px}
+body.mk-body .ap-orders-workspace #ap-orders-feedback:empty{display:none}
+body.mk-body .ap-orders-workspace #ap-orders-feedback{margin:0 0 12px}
+body.mk-body .ap-orders-workspace .ap-orders-error{color:#a42b3e}
+
+/* Keep the existing Manage Order controls, but visually match Marketing's polished panels. */
+body.mk-body .fh-dialog.uc-dialog{color:#1c3048;background:#fff!important;border:1px solid #dbe4ef!important;border-radius:18px;box-shadow:0 24px 90px #071b3370}
+body.mk-body .uc-dialog h2,body.mk-body .uc-dialog h3,body.mk-body .uc-dialog h4,body.mk-body .uc-dialog .uc-field strong{color:#142d50}
+body.mk-body .uc-dialog .uc-field span,body.mk-body .uc-dialog .uc-dialog-head small,body.mk-body .uc-dialog .uc-hint,body.mk-body .uc-dialog .uc-address{color:#607186}
+body.mk-body .uc-dialog .uc-info,body.mk-body .uc-dialog .uc-item,body.mk-body .uc-dialog .uc-total,body.mk-body .uc-dialog .uc-action-form{border-color:#e0e9f3}
+body.mk-body .uc-dialog .uc-item,body.mk-body .uc-dialog .uc-message{color:#1c3048}
+body.mk-body .uc-dialog .uc-input-field{color:#35506d}
+body.mk-body .uc-dialog .uc-input-field input,body.mk-body .uc-dialog .uc-input-field select{color:#142c46!important;background:#fff!important;border-color:#bdcadb}
+body.mk-body .uc-dialog button.primary,body.mk-body .uc-dialog button.mk-button{border-radius:9px}
+body.mk-body .uc-dialog .uc-action-form .uc-hint{font-size:12px}
+body.mk-body .uc-dialog .uc-supplier-section{background:#f6f9fd;border:1px solid #e2eaf4;border-radius:12px;margin:15px 0;padding:16px}
+body.mk-body .uc-dialog .uc-supplier-section h3{margin:0 0 10px}
+body.mk-body .uc-dialog .uc-supplier-section p{font-size:12px;line-height:1.6;overflow-wrap:anywhere}
+body.mk-body .uc-dialog .uc-supplier-section .uc-item{margin:0;border-bottom-color:#e1e9f3}
+body.mk-body .uc-dialog .uc-supplier-section .uc-action-form{padding-top:12px}
+body.mk-body .uc-dialog .uc-message.failed{color:#9d3243}
+@media(max-width:950px){body.mk-body .ap-orders-toolbar{grid-template-columns:minmax(160px,1fr) minmax(150px,1fr)}body.mk-body .ap-orders-toolbar label:first-child{grid-column:1/-1}body.mk-body .ap-orders-toolbar button{align-self:end}}
+@media(max-width:600px){body.mk-body .ap-orders-toolbar{grid-template-columns:1fr}body.mk-body .ap-orders-toolbar label:first-child{grid-column:auto}body.mk-body .ap-orders-pager{flex-wrap:wrap}body.mk-body .ap-orders-page-buttons{width:100%;justify-content:space-between}}

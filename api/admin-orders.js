@@ -7,7 +7,7 @@ const {
 const { clients, checked } = require('../lib/backend');
 
 const {
-  unifiedAdminOrders
+  listAdminOrders
 } = require('../lib/admin-order-query');
 
 const {
@@ -107,7 +107,7 @@ module.exports = async (req, res) => {
         'https://admin.internal'
       ).searchParams;
 
-      const result = await unifiedAdminOrders(db, params);
+      const result = await listAdminOrders(db, params);
 
       return res.status(200).json(result);
     }

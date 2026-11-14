@@ -1,0 +1,124 @@
+/* AltaPure Admin UI 2026 — shared visual system
+   Loaded after legacy admin CSS. Scope is deliberately limited to admin pages. */
+:root {
+  color-scheme:light!important;
+  --bg:#f5f7fb!important;--panel:#ffffff!important;--panel-soft:#f1f5fa!important;
+  --border:#dbe3ed!important;--text:#16243a!important;--muted:#53647a!important;
+  --teal:#18407e!important;--teal-dark:#e8f0fb!important;--red:#a42b3e!important;
+  --mk-bg:#f5f7fb;--mk-green:#132b51;--mk-teal:#184b95;--mk-border:#dbe3ed;--mk-muted:#52637a;
+  --ap-ink:#16243a;--ap-subtle:#52637a;--ap-blue:#18407e;--ap-blue-hover:#103064;--ap-line:#dbe3ed;
+}
+html,html body,body.mk-body {background:#f5f7fb!important;color:#16243a!important;color-scheme:light!important;}
+body,body.mk-body,button,input,select,textarea{font-family:"Plus Jakarta Sans",Arial,sans-serif!important;}
+body{font-size:13px!important;line-height:1.55!important;}
+body .admin-page{padding:clamp(16px,2.4vw,32px) clamp(14px,3vw,44px) 64px!important;min-height:100vh!important;}
+body .shell{width:100%!important;max-width:1440px!important;margin-inline:auto!important;}
+body .admin-brandbar{display:flex!important;align-items:center!important;justify-content:space-between!important;gap:20px!important;
+ background:#fff!important;border:1px solid #dbe3ed!important;border-radius:17px!important;
+ box-shadow:0 7px 25px rgba(20,49,89,.045)!important;padding:14px 20px!important;margin:0 0 30px!important;}
+body .admin-brand-name,body .admin-login-brand strong{color:#132b51!important;font-weight:800!important;}
+body .admin-brand-label,body .admin-login-brand small{color:#52637a!important;}
+body .admin-brand-mark span{background:#18407e!important;}
+body .admin-nav{display:flex!important;align-items:center!important;gap:6px!important;flex-wrap:wrap!important;}
+body .admin-nav-link{background:transparent!important;color:#34445b!important;border:1px solid transparent!important;
+ min-height:40px!important;border-radius:10px!important;padding:10px 18px!important;font-weight:700!important;
+ text-decoration:none!important;opacity:1!important;box-shadow:none!important;}
+body .admin-nav-link:hover{background:#edf3fb!important;color:#163b75!important;}
+body .admin-nav-link.is-active,body .admin-nav-link[aria-current="page"]{background:#18407e!important;border-color:#18407e!important;color:#fff!important;}
+body .admin-section-heading h1,body .mk-title h1{font-size:clamp(26px,3vw,35px)!important;color:#132b51!important;letter-spacing:-.045em!important;font-weight:800!important;}
+body .admin-section-heading .subtitle,body .mk-title p{color:#52637a!important;}
+body .mk-title .mk-eyebrow{color:#184b95!important;}
+body .panel,body .mk-card,body .mk-metrics article,body .mk-table-wrap,body .order,body .details,body .items,
+body .batch-card,body .notification-card,body .supplier-card,body .empty{
+ background:#fff!important;color:#16243a!important;border:1px solid #dbe3ed!important;
+ border-radius:15px!important;box-shadow:0 5px 20px rgba(17,42,78,.035)!important;}
+body .panel,body .mk-card{padding:clamp(16px,2vw,24px)!important;}
+body .mk-metrics article{padding:20px!important;}
+body .mk-metrics article span,body .mk-metrics article small{color:#53647a!important;}
+body .mk-metrics article strong{color:#132b51!important;font-size:30px!important;}
+body h1,body h2,body h3,body h4,body .panel-head h2,body .mk-card h2,body .mk-card h3,
+body .mk-dialog h2,body .mk-name,body .mk-table .mk-name{color:#132b51!important;}
+body p,body label,body .field,body .mk-muted,body .mk-card p,body .mk-login p,body .mk-title p,
+body .mk-table td,body .mk-entry p,body .mk-entry small,body .mk-secondary,body .mk-bottom-tools{
+ color:#34445b!important;}
+body .mk-table th,body .mk-table thead{background:#edf3fa!important;color:#34445b!important;}
+body .mk-table td{border-color:#e7edf4!important;}
+body .mk-table tbody tr:hover{background:#f6f9fd!important;}
+body .mk-table .mk-stage-label{background:#e7f0fb!important;color:#18407e!important;font-weight:750!important;}
+body .mk-actions button{background:#e8f0fb!important;color:#18407e!important;}
+body .mk-subnav{border-bottom:1px solid #dbe3ed!important;gap:7px!important;}
+body .mk-subtab{color:#34445b!important;background:#edf2f9!important;border:1px solid #e0e8f3!important;}
+body .mk-subtab:hover{background:#e4edf9!important;}
+body .mk-subtab.is-active{background:#18407e!important;color:#fff!important;border-color:#18407e!important;}
+body button.primary,body .primary,body button.mk-button:not(.mk-outline),body .mk-button:not(.mk-outline){
+ background:#18407e!important;color:#fff!important;border:1px solid #18407e!important;opacity:1!important;
+ box-shadow:none!important;}
+body button.primary:hover:not(:disabled),body .mk-button:not(.mk-outline):hover:not(:disabled){background:#103064!important;border-color:#103064!important;}
+body .ghost,body .mk-button.mk-outline,body .mk-quiet{background:#fff!important;color:#18407e!important;border:1px solid #c7d5e8!important;}
+body .ghost:hover:not(:disabled),body .mk-button.mk-outline:hover:not(:disabled),body .mk-quiet:hover{background:#edf3fb!important;color:#103064!important;}
+body button:disabled{opacity:.53!important;cursor:not-allowed!important;}
+body input,body select,body textarea,body .mk-toolbar input,body .mk-toolbar select,
+body .mk-dialog input,body .mk-dialog select,body .mk-dialog textarea,body .mk-card input,
+body .mk-card textarea,body .mk-card select,body .mk-login input{
+ background:#fff!important;color:#17283e!important;border:1px solid #c7d3e3!important;
+ border-radius:10px!important;min-height:40px!important;box-shadow:none!important;opacity:1!important;}
+body input::placeholder,body textarea::placeholder{color:#697b90!important;opacity:1!important;}
+body input:focus,body select:focus,body textarea:focus{border-color:#184b95!important;outline:2px solid rgba(24,75,149,.18)!important;outline-offset:0!important;}
+body :focus-visible{outline:3px solid #3479c7!important;outline-offset:2px!important;}
+body a:not(.admin-nav-link):not(.admin-brand){color:#184b95!important;}
+body a:not(.admin-nav-link):not(.admin-brand):hover{text-decoration:underline!important;}
+body .mk-info{background:#eaf2fc!important;color:#243f65!important;border:1px solid #c8d9ee!important;border-radius:12px!important;}
+body #mk-sync-status{color:#16457f!important;}
+body .mk-alert{color:#18407e!important;}
+body .mk-ig-code{background:#f0f4fa!important;color:#183759!important;border-color:#dbe3ed!important;}
+body .mk-ig-timeline{background:#f7f9fd!important;border-color:#dbe3ed!important;}
+body .mk-stage-track{background:#e5edf7!important;}
+body .mk-stage-fill{background:#18407e!important;}
+body .mk-status{background:#fff3dd!important;color:#79500c!important;}
+body .mk-dialog{background:#fff!important;color:#16243a!important;border:1px solid #cbd8e9!important;
+ border-radius:18px!important;box-shadow:0 24px 90px rgba(13,35,65,.22)!important;}
+body .mk-dialog label,body .mk-card label,body .mk-login label{color:#263d59!important;}
+body .mk-danger{background:#fff3f4!important;color:#a42b3e!important;border-color:#edc7ce!important;}
+body .status-paid,body .status-delivered{background:#e6f5ee!important;color:#176345!important;}
+body .status-processing,body .status-awaiting_supplier{background:#fff2d9!important;color:#79520c!important;}
+body .status-shipped{background:#e8f0fc!important;color:#24508b!important;}
+body .status-canceled,body .status-refunded{background:#fce9eb!important;color:#922e40!important;}
+body .bulkbar{background:#eaf2fc!important;border-color:#c8d9ee!important;color:#193b66!important;}
+body .notice.failed,body .error,body .mk-error{color:#a42b3e!important;}
+body .login,body #login-view,body #mk-login{
+ width:min(100%,465px)!important;max-width:465px!important;margin:clamp(28px,8vh,88px) auto!important;
+ background:#fff!important;color:#16243a!important;border:1px solid #dbe3ed!important;
+ border-radius:22px!important;padding:clamp(24px,4vw,38px)!important;
+ box-shadow:0 20px 65px rgba(24,50,87,.11)!important;}
+body .login h2,body #login-view h2,body #mk-login h1{color:#132b51!important;font-size:26px!important;letter-spacing:-.045em!important;}
+body #login-view p,body #mk-login p{color:#52637a!important;}
+body #login-view form,body #mk-login form{display:grid!important;gap:14px!important;}
+body #login-view input,body #mk-login input{width:100%!important;min-height:46px!important;}
+body #login-view button[type="submit"],body #mk-login button[type="submit"]{
+ background:#18407e!important;color:#fff!important;border-color:#18407e!important;
+ border-radius:10px!important;min-height:46px!important;font-weight:750!important;}
+body #login-view button[type="submit"]:hover,body #mk-login button[type="submit"]:hover{background:#103064!important;}
+body .admin-login-brand{display:flex!important;align-items:center!important;gap:12px!important;margin-bottom:22px!important;}
+body .admin-login-brand strong{font-size:17px!important;display:block!important;}
+body .admin-login-brand small{font-size:10px!important;letter-spacing:.17em!important;display:block!important;}
+body .mk-card,body .mk-table-wrap{overflow-wrap:anywhere!important;}
+body .mk-timeline{border-color:#dbe3ed!important;}
+body .mk-entry{border-color:#e3eaf3!important;}
+body .mk-bottom-tools button,body .mk-text-link{color:#18407e!important;}
+body .mk-card .mk-muted,body .mk-muted{color:#52637a!important;}
+body .mk-table-wrap{overflow-x:auto!important;}
+body .mk-two-col{align-items:start!important;}
+@media(max-width:780px){
+ body .admin-brandbar{align-items:stretch!important;flex-direction:column!important;gap:14px!important;padding:16px!important;}
+ body .admin-nav{width:100%!important;}
+ body .admin-nav-link{flex:1!important;text-align:center!important;}
+ body .mk-metrics{grid-template-columns:repeat(2,minmax(0,1fr))!important;}
+ body .mk-two-col{grid-template-columns:1fr!important;}
+ body .mk-header-actions{width:100%!important;}
+}
+@media(max-width:440px){
+ body .admin-page{padding-inline:12px!important;}
+ body .mk-metrics article{padding:14px!important;}
+ body .mk-header-actions button{flex:1!important;}
+ body .mk-subtab{flex:1 1 auto!important;}
+}

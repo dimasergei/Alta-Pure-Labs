@@ -5,7 +5,8 @@ const read=p=>fs.readFileSync(path.join(__dirname,'..',p),'utf8');
 const dom=new JSDOM(read('public-build/index.html'),{url:'https://altapurelabs.test/',runScripts:'outside-only'}),w=dom.window,d=w.document;
 w.matchMedia=()=>({matches:true});w.eval(read('storefront-navigation.js'));
 const nav=d.querySelector('#ap-nav'),more=d.querySelector('#ap-more-menu'),trigger=d.querySelector('[aria-controls="ap-more-menu"]'),group=trigger.parentElement;
-assert.deepEqual([...nav.children].map(n=>n.matches('a')?n.textContent:n.querySelector('button').textContent.trim().replace('⌄','')),['Products','Research Builder','Bulk Orders','Memberships','COAS','Contact Us','More']);
+// Validate navigation destinations independent of optional NEW promotional badges.
+assert.deepEqual([...nav.children].map(n=>(n.matches('a')?n.textContent:n.querySelector('button').textContent.trim().replace('⌄','')).replace(/\s*NEW\s*$/,'').trim()),['Products','Research Builder','Bulk Orders','Memberships','COAS','Contact Us','More']);
 assert.equal(nav.querySelector('a[href="/about"]'),null);assert.equal(nav.querySelector('.ap-mega'),null);
 assert.equal(more.hidden,true);
 const enter=new w.Event('pointerenter');Object.defineProperty(enter,'pointerType',{value:'mouse'});group.dispatchEvent(enter);assert.equal(more.hidden,false);assert.equal(trigger.getAttribute('aria-expanded'),'true');
