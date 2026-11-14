@@ -18,7 +18,7 @@
  async function detail(id){const ticket=epoch;const d=await api(route('detail','&id='+encodeURIComponent(id))),r=d.order;if(ticket!==epoch)return;if(!dialog){dialog=el('dialog');dialog.className='fh-dialog';document.body.append(dialog);}dialog.replaceChildren(button('Close',()=>dialog.close()),el('h2','ORD-'+r.id.slice(0,8).toUpperCase()+' · '+r.status),el('p',r.customer_name+' · '+r.customer_email+' · '+money(r)),el('pre',Object.values(r.request_data.address||{}).filter(Boolean).join('\n')));const out=el('p');out.setAttribute('role','status');dialog.append(out,button('Payment, refund & balance controls',()=>window.AltaFulfillment.openPayments()));
  const overview=el('section');overview.className='fh-card';overview.append(el('h3','Fulfillment routing · this order'));
  const addr=r.request_data?.address||{},country=String(addr.country||'').toUpperCase();
- const supported=country==='US'&&/^[A-Z]{2}$/.test(String(addr.region||''))&&/^\\d{5}(?:-\\d{4})?$/.test(String(addr.postal_code||''));
+ const supported=country==='US'&&/^[A-Z]{2}$/.test(String(addr.region||''))&&/^\d{5}(?:-\d{4})?$/.test(String(addr.postal_code||''));
  const items=Array.isArray(r.request_data?.items)?r.request_data.items:[];
  const mapped=new Map((d.mappings||[]).filter(m=>m.verified_at).map(m=>[m.variant_key,m]));
  const unmapped=items.filter(x=>!mapped.has(String(x.id)+'|'+String(x.size)));
