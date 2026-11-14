@@ -94,7 +94,7 @@
    const res=await fetch('/api/customer-config?checkout=cart',{method:'POST',cache:'no-store',
      headers:{'Content-Type':'application/json',...(token?{Authorization:'Bearer '+token}:{})},
      body:JSON.stringify({items:snapshotCart().map(({id,size,qty})=>({id,size,qty})),
-       method_id:method?.id||previewMethod?.id||null,coupon:state.coupon,delivery:selection(),country:addr})});
+       method_id:(stage===2&&form.querySelector('[name=payment_choice]:checked')?.value==='bank'?(data.methods||[]).find(m=>m.kind==='bank_transfer'&&m.active!==false)?.id:null)||method?.id||previewMethod?.id||null,coupon:state.coupon,delivery:selection(),country:addr})});
    const result=await res.json().catch(()=>null);
    if(current!==quoteVersion)return null;
    loadingPreview=false;
@@ -302,7 +302,7 @@
       btn.disabled=!(selected==='bank'&&bank&&form.elements.ruo?.checked&&form.elements.responsibility?.checked);
       btn.textContent=selected==='bank'&&bank?'Place bank transfer order · '+usd(currentPreview?.total_cents||0):'Payment method awaiting activation · '+usd(currentPreview?.total_cents||0);
     };
-    all('[name=payment_choice], [name=ruo], [name=responsibility]',form).forEach(x=>x.addEventListener('change',choosePayment));
+    all('[name=payment_choice], [name=ruo], [name=responsibility]',form).forEach(x=>x.addEventListener('change',()=>{choosePayment();if(x.name==='payment_choice')refresh();}));
     view('[data-nlx-place]',form).addEventListener('click',async()=>{
       if(!bank||form.querySelector('[name=payment_choice]:checked')?.value!=='bank'||!form.elements.ruo?.checked||!form.elements.responsibility?.checked)return;
       const button=view('[data-nlx-place]',form);button.disabled=true;
