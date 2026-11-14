@@ -458,3 +458,16 @@ body.ap-site {
 @media(prefers-reduced-motion:reduce){
   .ap-site .nl-hero .nl-primary,.ap-site .nl-hero .nl-primary::before{animation:none!important}
 }
+
+/* Homepage only: wider BOGO CTA, unchanged COAS companion button. */
+.ap-site .nl-hero .ap-actions > a.nl-primary{
+  min-width: 310px;
+  justify-content: center;
+  text-align: center;
+}
+@media(max-width:600px){
+  .ap-site .nl-hero .ap-actions > a.nl-primary{
+    min-width: min(310px,100%);
+    max-width: 100%;
+  }
+}
