@@ -11,6 +11,8 @@
   const safeURL = value => { try {const u=new URL(value);return ['https:','http:'].includes(u.protocol)?u.href:'';}catch{return '';} };
   const original = {leads:[],messages:[],style:'Direct and professional. Ask whether the creator is open to a long-term collaboration; do not imply we reviewed content we have not seen. No unverified claims.'};
   let data = read(), selected='',draftId='', password='', aiAvailable=false, loggedIn=false;
+  let revision=0,remoteReady=false,syncTimer=null,syncRunning=false,syncQueued=false;
+  let instagram={connected:false,credentials_configured:false},igMessages=[];
 
   function read(){
     try{
@@ -35,8 +37,37 @@
     return v;
   }
   function save(){
-    try{localStorage.setItem(key,JSON.stringify(data));return true;}
-    catch{notice('Could not save browser data. Export a backup and check browser storage.',true);return false;}
+    try{
+      localStorage.setItem(key,JSON.stringify(data));
+      if(remoteReady)queueCloudSave();
+      return true;
+    }catch{notice('Could not save browser backup. Export JSON and check browser storage.',true);return false;}
+  }
+  function queueCloudSave(){
+    syncQueued=true;
+    $('mk-sync-status').textContent='Saving…';
+    clearTimeout(syncTimer);
+    syncTimer=setTimeout(persistCloud,350);
+  }
+  async function persistCloud(){
+    if(!remoteReady||syncRunning)return;
+    syncRunning=true;
+    try{
+      while(syncQueued){
+        syncQueued=false;
+        const snapshot=JSON.parse(JSON.stringify(data));
+        const reply=await endpoint({action:'save_workspace',revision,payload:snapshot});
+        revision=reply.revision;
+        $('mk-sync-status').textContent='Cloud saved';
+        $('mk-crm-state').textContent='Synced';
+      }
+    }catch(err){
+      $('mk-sync-status').textContent='Cloud sync needs attention';
+      $('mk-crm-state').textContent='Sync error';
+      notice(err.message+' Local backup is preserved. Do not clear this browser until synced.',true);
+    }finally{
+      syncRunning=false;
+    }
   }
   function notice(message,error=false){const el=$('mk-alert');el.textContent=message||'';el.style.color=error?'#a93434':'#1c7a73';}
   function elem(tag,text,cls){const e=document.createElement(tag);if(text!==undefined)e.textContent=String(text);if(cls)e.className=cls;return e;}
@@ -54,12 +85,40 @@
     if(!r.ok)throw Error(payload.error||'Marketing endpoint unavailable.');
     return payload;
   }
-  function showApp(){loggedIn=true;$('mk-login').hidden=true;$('mk-app').hidden=false;$('mk-style').value=data.style;render();notice('Local creator workspace ready. No messages are sent automatically.');}
-  function showLogin(message){loggedIn=false;password='';$('mk-app').hidden=true;$('mk-login').hidden=false;if(message){$('mk-login-error').hidden=false;$('mk-login-error').textContent=message;}}
+  function showApp(){loggedIn=true;$('mk-login').hidden=true;$('mk-app').hidden=false;$('mk-style').value=data.style;render();notice('Shared Marketing CRM loaded. No outreach is sent automatically.');}
+  function showLogin(message){loggedIn=false;remoteReady=false;password='';$('mk-app').hidden=true;$('mk-login').hidden=false;if(message){$('mk-login-error').hidden=false;$('mk-login-error').textContent=message;}}
   async function login(value){
     password=value;
-    try{const status=await endpoint();aiAvailable=status.ai_enabled===true;$('mk-ai-state').textContent=aiAvailable?'Available — draft review required':'Not configured — templates available';setPassword(value);$('mk-login-error').hidden=true;showApp();}
-    catch(err){setPassword('');showLogin(err.message);}
+    try{
+      const status=await endpoint();
+      aiAvailable=status.ai_enabled===true;
+      $('mk-ai-state').textContent=aiAvailable?'Available — draft review required':'Not configured — editable templates available';
+      const cached=data;
+      const remote=status.workspace;
+      if(remote&&Array.isArray(remote.leads)&&Array.isArray(remote.messages)){
+        data={leads:remote.leads.map(normalize),messages:remote.messages,style:remote.style||original.style};
+      }
+      revision=Number(status.revision)||0;
+      instagram=status.instagram||{connected:false};
+      igMessages=Array.isArray(status.instagram_messages)?status.instagram_messages:[];
+      remoteReady=true;
+      try{localStorage.setItem(key,JSON.stringify(data));}catch{}
+      setPassword(value);$('mk-login-error').hidden=true;showApp();
+      $('mk-sync-status').textContent='Connected to Supabase';
+      $('mk-crm-state').textContent='Synced';
+      const existingIds=new Set(data.leads.map(x=>x.id));
+      const existingHandles=new Set(data.leads.map(x=>String(x.handle||'').toLowerCase()).filter(Boolean));
+      const localOnly=cached.leads.filter(x=>!existingIds.has(x.id)&&!(x.handle&&existingHandles.has(String(x.handle).toLowerCase())));
+      const existingMessageIds=new Set(data.messages.map(x=>x.id));
+      const localMessages=cached.messages.filter(x=>x.id&&!existingMessageIds.has(x.id));
+      if(localOnly.length||localMessages.length){
+        // Preserve previous browser-only CRM work even if the cloud has been seeded.
+        data.leads.push(...localOnly);data.messages.push(...localMessages);
+        save();render();notice('Recovered '+localOnly.length+' previous creator records and '+localMessages.length+' conversation notes into the shared CRM.');
+      }
+      const result=new URLSearchParams(location.search).get('instagram');
+      if(result){switchPanel('instagram');notice(result==='connected'?'Instagram connected. Inbox synchronization is ready.':'Instagram connection status: '+result.replaceAll('_',' '));history.replaceState(null,'',location.pathname);}
+    }catch(err){setPassword('');showLogin(err.message);}
   }
 
   function find(id){return data.leads.find(x=>x.id===id);}
@@ -70,7 +129,7 @@
     $('mk-contacted').textContent=fmt(data.leads.filter(x=>['Contacted','Replied','Negotiating','Partner'].includes(x.stage)).length);
     $('mk-replied').textContent=fmt(data.leads.filter(x=>['Replied','Negotiating','Partner'].includes(x.stage)).length);
     $('mk-due').textContent=fmt(due.length);
-    renderLeads();renderConversations();renderStages();
+    renderLeads();renderConversations();renderStages();renderInstagram();
   }
   function renderLeads(){
     const q=$('mk-search').value.trim().toLowerCase(),stage=$('mk-filter').value;
@@ -221,9 +280,60 @@
     if(!save())return;render();notice('Imported '+added+' new prospects. Existing matching handles/URLs were skipped.');
   }
   async function fileText(file){if(!file||file.size>5_000_000)throw Error('Choose a file smaller than 5 MB.');return file.text();}
+
+  function renderInstagram(){
+    const connected=instagram?.connected===true,configured=instagram?.credentials_configured===true;
+    $('mk-ig-connection-badge').textContent=connected?'Connected: @'+(instagram.username||'Instagram'):'Not connected';
+    $('mk-ig-settings-status').textContent=connected?'@'+(instagram.username||'Instagram'):'Not connected';
+    $('mk-ig-status').textContent=connected?
+      '@'+(instagram.username||'Instagram')+(instagram.webhook_subscribed?' · Webhook subscribed':' · Webhook subscription pending'):
+      'Connect an Instagram professional account to see messages';
+    $('mk-ig-setup-state').textContent=configured?
+      'Meta OAuth app credentials detected. Connect your professional account; verify the webhook callback and permissions in Meta Developer Dashboard.':
+      'Meta app credentials not yet configured. Add INSTAGRAM_APP_ID and INSTAGRAM_APP_SECRET in Vercel Production. Set INSTAGRAM_APP_SECRET and INSTAGRAM_WEBHOOK_VERIFY_TOKEN as Supabase Edge Function secrets for webhook verification. Then open Connect Instagram.';
+    $('mk-ig-connect').disabled=!configured;
+    $('mk-ig-sync').disabled=!connected;
+    $('mk-ig-disconnect').disabled=!connected;
+    $('mk-ig-callback').textContent=instagram.callback_url||'https://altapurelabs.com/api/instagram/callback';
+    $('mk-ig-webhook').textContent=instagram.webhook_url||'https://mqtitxfsdphqbsxhwdma.supabase.co/functions/v1/alta-instagram-webhook';
+    const select=$('mk-ig-thread'),prior=select.value;
+    const participants=[...new Set(igMessages.map(x=>x.participant_id).filter(Boolean))];
+    select.replaceChildren();
+    if(!connected)select.append(new Option('Connect Instagram first',''));
+    else if(!participants.length)select.append(new Option('No synced conversations yet',''));
+    else for(const id of participants)select.append(new Option('Instagram user '+id,id));
+    if(prior&&participants.includes(prior))select.value=prior;
+    const id=select.value;
+    const events=igMessages.filter(x=>x.participant_id===id).sort((a,b)=>new Date(a.message_at)-new Date(b.message_at));
+    const root=$('mk-ig-messages');root.replaceChildren();
+    if(!events.length)root.append(elem('p','No conversation selected. Sync the Instagram inbox or wait for a new incoming DM.','mk-muted'));
+    for(const item of events){
+      const el=elem('article',undefined,'mk-entry'),
+        title=elem('strong',item.direction==='incoming'?'Instagram user':'AltaPure'),
+        date=elem('small',new Date(item.message_at).toLocaleString()),
+        body=elem('p',item.body||'[Media message]');
+      el.append(title,date,body);root.append(el);
+    }
+    const latest=events.filter(x=>x.direction==='incoming').at(-1);
+    const canReply=connected&&Boolean(latest)&&Date.now()-Date.parse(latest.message_at)<24*3600000;
+    $('mk-ig-reply').disabled=!canReply;
+    $('mk-ig-send').disabled=!canReply;
+    $('mk-ig-reply').placeholder=canReply?'Write a manual reply…':'Reply available only during the standard messaging window after an inbound DM';
+  }
+  async function refreshInstagram(sync=false){
+    try{
+      $('mk-ig-status').textContent=sync?'Syncing recent Instagram conversations…':'Refreshing account status…';
+      if(sync)await endpoint({action:'instagram_sync'});
+      const status=await endpoint();
+      instagram=status.instagram||{connected:false};
+      igMessages=Array.isArray(status.instagram_messages)?status.instagram_messages:[];
+      renderInstagram();notice('Instagram account and messages refreshed.');
+    }catch(err){notice(err.message,true);renderInstagram();}
+  }
+
   function switchPanel(name){
     for(const b of document.querySelectorAll('.mk-subtab')){const active=b.dataset.panel===name;b.classList.toggle('is-active',active);b.setAttribute('aria-selected',String(active));}
-    for(const panel of ['pipeline','conversations','insights','settings'])$('mk-panel-'+panel).hidden=panel!==name;
+    for(const panel of ['pipeline','conversations','instagram','insights','settings'])$('mk-panel-'+panel).hidden=panel!==name;
   }
 
   $('mk-login-form').addEventListener('submit',e=>{e.preventDefault();const v=$('mk-password').value;$('mk-password').value='';login(v);});
@@ -272,6 +382,29 @@
       data={leads:raw.leads.slice(0,5000).map(normalize),messages:Array.isArray(raw.messages)?raw.messages.slice(-10000):[],style:clean(raw.style,2000)||original.style};
       if(save()){render();notice('Backup restored.');}
     }catch(err){notice(err.message,true);}finally{e.target.value='';}
+  });
+
+  $('mk-ig-thread').addEventListener('change',renderInstagram);
+  $('mk-ig-connect').addEventListener('click',async()=>{
+    try{
+      const result=await endpoint({action:'instagram_connect'});
+      if(result.authorization_url)location.assign(result.authorization_url);
+    }catch(err){notice(err.message,true);}
+  });
+  $('mk-ig-sync').addEventListener('click',()=>refreshInstagram(true));
+  $('mk-ig-disconnect').addEventListener('click',async()=>{
+    if(!confirm('Disconnect this Instagram account and delete its stored inbox history?'))return;
+    try{await endpoint({action:'instagram_disconnect'});await refreshInstagram();notice('Instagram disconnected.');}catch(err){notice(err.message,true);}
+  });
+  $('mk-ig-send').addEventListener('click',async()=>{
+    const recipient_id=$('mk-ig-thread').value,message=$('mk-ig-reply').value.trim();
+    if(!recipient_id||!message)return;
+    if(!confirm('Send this exact reply through the connected Instagram account?'))return;
+    $('mk-ig-send').disabled=true;
+    try{
+      await endpoint({action:'instagram_send',recipient_id,message});
+      $('mk-ig-reply').value='';await refreshInstagram();notice('Instagram confirmed the reply was sent.');
+    }catch(err){notice(err.message,true);renderInstagram();}
   });
   const existing=accountPassword();
   if(existing)login(existing);

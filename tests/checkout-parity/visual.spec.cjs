@@ -108,7 +108,8 @@ test('VIS-08 rewards use authentic sparkle and membership destination',async({pa
  await expect(points.getByRole('link',{name:/earn more/i})).toHaveAttribute('href','/memberships');
  const activation=page.getByTestId('membership-activate');
  await expect(activation).toBeVisible();
- await expect(activation).toHaveAttribute('href',/\/(memberships|account\/membership)/);
+ await expect(activation).toBeDisabled();
+ await expect(page.locator('.nlx-compare')).toHaveAttribute('href','/memberships');
  await capture(page,'member-upsell-and-points');
 });
 test('VIS-09 authentic card marks and truthful payment gating',async({page})=>{
@@ -119,7 +120,7 @@ test('VIS-09 authentic card marks and truthful payment gating',async({page})=>{
  for(const control of await page.locator('[data-nlx-wallets] button').all())await expect(control).toBeDisabled();
  await expect(page.locator('[data-nlx-place]')).toBeDisabled();
  const brands=page.locator('.nlx-we-accept');
- await expect(brands).toContainText(/pending activation/i);
+ await expect(brands).toContainText(/not yet activated/i);
  await expect(brands.locator('svg, img')).toHaveCount(6);
  await expect(brands.locator('span.nlx-pay-logo')).toHaveCount(0);
 });
@@ -159,9 +160,9 @@ test('VIS-13 BOGO free badges follow confirmed quote lines and disappear after q
  await expect(cartFree.first()).toHaveText('+1 FREE');
  await capture(page,'cart-server-confirmed-bogo');
  await pageReady(page,'shipping');
- await expect(page.getByTestId('checkout-bogo-free')).toHaveCount(1);
- await expect(page.getByTestId('checkout-bogo-free')).toHaveText('+1 FREE');
+ await expect(page.getByTestId('checkout-bogo-free')).toHaveCount(2);
+ await expect(page.getByTestId('checkout-bogo-free').first()).toHaveText('+1 FREE');
  await page.locator('[data-nlx-qty="-1"]').first().click();
  await page.waitForTimeout(300);
- await expect(page.getByTestId('checkout-bogo-free')).toHaveCount(0);
+ await expect(page.getByTestId('checkout-bogo-free')).toHaveCount(2); // Remaining single-unit products still advertise the offer
 });

@@ -168,3 +168,49 @@ body.ap-checkout-page #account-root{box-shadow:none!important;border:0!important
 @media(max-width:480px){.nlx-express-label{align-items:flex-start;gap:8px}.nlx-wallets{flex-wrap:wrap}.nlx-wallet-unavailable{flex:1;min-width:115px}.nlx-protection-body{flex-wrap:wrap}.nlx-member-actions{grid-template-columns:1fr}}
 
 .nlx-promo-free{display:inline-flex;width:max-content;max-width:100%;align-items:center;margin:1px 0 7px;padding:3px 7px;border:1px solid #a5c7ed;border-radius:7px;background:#eaf4ff;color:#164a91;font-size:10px;font-weight:800;line-height:1.2;white-space:nowrap}
+
+/* Checkout parity v3 */
+.nlx-trust{display:flex;justify-content:space-around;gap:12px;margin:19px 0 3px;text-align:center}
+.nlx-trust span{display:flex;flex-direction:column;align-items:center;gap:8px;color:#72829b;font-size:11px;letter-spacing:.09em;font-weight:800}
+.nlx-trust svg{width:22px;height:22px;fill:none;stroke:#72829b;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
+.nlx-email-help{color:#7889a2;font-size:11px;margin:5px 0 14px}
+.nlx-sms{align-items:flex-start!important}.nlx-sms span{display:block;flex:1}.nlx-sms strong{display:block;font-size:13px;color:#111;font-weight:800}
+.nlx-sms small{display:block;font-size:11px;color:#6d7f9b;line-height:1.6;margin-top:7px}.nlx-sms a{color:#234c85;text-decoration:underline}
+.nlx-address-lines{display:flex!important;flex-direction:column;gap:3px;color:#45536a;line-height:1.45;font-size:13px}
+.nlx-address-lines b{color:#171c25;font-weight:800}
+.nlx-address-confirm{align-items:start}.nlx-address-confirm .nlx-address-lines{flex:1}
+.nlx-protection-confirm{display:inline-block;background:#e7f7ed;color:#078345;border-radius:20px;padding:3px 9px;font-style:normal;font-weight:800;margin-left:7px}
+.nlx-product{grid-template-columns:18px 60px minmax(0,1fr) auto;gap:9px}
+.nlx-product>img{width:60px;height:68px}.nlx-product-name strong{font-size:14px;line-height:1.35}.nlx-product-name small{font-size:12px}
+.nlx-remove{align-self:center;border:0;background:none;color:#a0a9b7;font-size:19px;cursor:pointer;padding:0}
+.nlx-remove:hover{color:#1a4b8c}
+.nlx-member-offer{padding:19px 20px;border-radius:18px}.nlx-member-offer h3{font-size:24px;letter-spacing:-.04em;margin:10px 0 5px}
+.nlx-member-offer h3 em{font-style:normal;color:#164e99}.nlx-member-offer p{font-size:13px}
+.nlx-member-types button{display:block;width:100%;text-align:left;border:2px solid #cbdff8;background:#fff;color:#15263d;padding:14px;border-radius:13px;font-size:14px;cursor:pointer}
+.nlx-member-types button.selected{background:#103b7a;color:#fff;border-color:#103b7a}
+.nlx-member-types button strong{display:block}.nlx-member-types button small{display:block;margin-top:4px;font-size:12px}
+.nlx-annual-badge{display:inline-block;border-radius:6px;background:#2588f4;color:white;padding:2px 7px;font-size:11px}
+.nlx-member-actions button{font-size:13px}.nlx-member-actions a{font-size:13px}.nlx-compare{display:block;text-align:center;margin-top:8px;color:#174f99;text-decoration:underline;font-size:12px}
+.nlx-wallet-unavailable{width:50%;min-height:51px;border-radius:30px;background:#08090c!important;color:#fff!important;display:flex;gap:4px;align-items:center;justify-content:center;opacity:.55;border:0;font-size:20px}
+.nlx-wallet-unavailable .nlx-payment-mark{width:26px;height:27px;border:0;background:transparent;object-fit:contain}
+.nlx-wallet-card-logos{display:flex;align-items:center;border-left:1px solid #aaa;margin-left:9px;padding-left:8px;gap:4px}
+.nlx-wallet-card-logos .nlx-payment-mark{width:32px;height:24px}
+.nlx-payment-rows{display:grid;gap:12px}
+.nlx-payment-choice{border:1px solid #d8dde5;border-radius:14px;overflow:hidden;background:#fafbfc}
+.nlx-payment-choice.nlx-selected{border:2px solid #123d7d;background:#f0f3f7}
+.nlx-payment-choice .nlx-payment-option{border:0;border-radius:0;background:transparent;font-size:15px;min-height:56px}
+.nlx-payment-choice-body{padding:17px 19px;background:#eef0f4;border-top:1px solid #d8dde5}
+.nlx-payment-choice-body p{font-size:13px;color:#666;margin:0 0 12px}
+.nlx-payment-choice-body label{display:block;font-size:12px;font-weight:700;margin-bottom:12px}
+.nlx-payment-choice-body input{display:block;width:100%;padding:12px;border:1px solid #c8cbd4;background:#fff;border-radius:10px;margin-top:6px}
+.nlx-payment-choice-body input:disabled{opacity:.65}
+.nlx-payment-choice-body small{font-size:11px;color:#687b92}
+.nlx-fee-pill{border-radius:18px;background:#174f9c;color:#fff;font-size:11px;padding:4px 10px;white-space:nowrap}
+.nlx-phone-icon,.nlx-bank-icon{color:#16509b;font-size:21px}
+.nlx-bank-logos{display:flex;gap:7px;flex-wrap:wrap;margin:14px 0}
+.nlx-bank-logos span{display:inline-flex;padding:8px 10px;background:#fff;border-radius:7px;font-size:11px;font-weight:800;color:#174c8c}
+.nlx-terms label{font-size:13px;line-height:1.65}.nlx-terms label span{flex:1}
+.nlx-quote-note:empty{display:none}
+@media(max-width:770px){.nlx-product{grid-template-columns:14px 48px minmax(0,1fr) auto}.nlx-product>img{width:48px}.nlx-product-name strong{font-size:12px}.nlx-payment-choice .nlx-payment-option{font-size:12px}.nlx-member-types{gap:7px}.nlx-trust span{font-size:9px}}
+
+.nlx-member-actions .nlx-member-unavailable{border:0;border-radius:30px;background:#103e83;color:white;font-size:13px;font-weight:800;opacity:.65;padding:12px;cursor:not-allowed}
