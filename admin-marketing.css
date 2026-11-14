@@ -60,3 +60,15 @@
 #mk-draft-output{font-size:13px;line-height:1.6}
 @media(max-width:760px){.mk-metrics{grid-template-columns:repeat(2,minmax(0,1fr))}.mk-two-col{grid-template-columns:1fr}.mk-header .admin-nav{margin-left:0}.mk-form-grid{grid-template-columns:1fr}.mk-form-grid .mk-wide{grid-column:auto}.mk-title{align-items:flex-start}}
 @media(max-width:400px){.mk-metrics{grid-template-columns:1fr 1fr}.mk-metrics article{padding:13px}.mk-header-actions{width:100%}.mk-header-actions button{flex:1}}
+
+
+/* Instagram inbox section shares the existing AltaPure admin tokens. */
+.mk-ig-heading{display:flex;justify-content:space-between;align-items:flex-start;gap:16px;flex-wrap:wrap;margin-bottom:10px}
+.mk-ig-heading .mk-header-actions{gap:8px}
+.mk-ig-timeline{min-height:220px;max-height:480px;overflow-y:auto;padding-right:6px;background:#fafcfc;border:1px solid var(--mk-border);border-radius:12px;padding:15px}
+.mk-ig-timeline .mk-entry:first-child{border-top:0}
+.mk-ig-timeline .mk-entry{border-color:#e3eeea}
+.mk-ig-code{display:block;margin:7px 0 15px;white-space:normal;overflow-wrap:anywhere;font-size:11px;line-height:1.5;background:#f4f8f7;border:1px solid var(--mk-border);padding:10px 12px;border-radius:9px;color:#143832}
+#mk-ig-reply:disabled{background:#f6f8f8;color:#8d9c97}
+#mk-sync-status{font-weight:750;color:#1c7a73}
+@media (max-width:760px){.mk-ig-heading .mk-header-actions{width:100%}.mk-ig-heading .mk-header-actions button{flex:1}}
