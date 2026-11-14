@@ -286,7 +286,9 @@
     $('mk-ig-connection-badge').textContent=connected?'Connected: @'+(instagram.username||'Instagram'):'Not connected';
     $('mk-ig-settings-status').textContent=connected?'@'+(instagram.username||'Instagram'):'Not connected';
     $('mk-ig-status').textContent=connected?
-      '@'+(instagram.username||'Instagram')+(instagram.webhook_subscribed?' · Webhook subscribed':' · Webhook subscription pending'):
+      '@'+(instagram.username||'Instagram')+(instagram.webhook_subscribed?' · Webhook subscribed':' · Webhook subscription pending')
+       +(instagram.token_expired?' · Token expired — reconnect Instagram':
+         instagram.token_expiring?' · Token renewal due; use Sync inbox':''):
       'Connect an Instagram professional account to see messages';
     $('mk-ig-setup-state').textContent=configured?
       'Meta OAuth app credentials detected. Connect your professional account; verify the webhook callback and permissions in Meta Developer Dashboard.':
@@ -315,7 +317,7 @@
       el.append(title,date,body);root.append(el);
     }
     const latest=events.filter(x=>x.direction==='incoming').at(-1);
-    const canReply=connected&&Boolean(latest)&&Date.now()-Date.parse(latest.message_at)<24*3600000;
+    const canReply=connected&&instagram.can_send===true&&Boolean(latest)&&Date.now()-Date.parse(latest.message_at)<24*3600000;
     $('mk-ig-reply').disabled=!canReply;
     $('mk-ig-send').disabled=!canReply;
     $('mk-ig-reply').placeholder=canReply?'Write a manual reply…':'Reply available only during the standard messaging window after an inbound DM';
