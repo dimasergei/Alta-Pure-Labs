@@ -409,14 +409,14 @@ body.ap-site {
   position:relative;
   isolation:isolate;
   overflow:hidden;
-  background:linear-gradient(110deg,#654dff 0%,#9455fa 39%,#cf47ea 75%,#ef49ce 100%) padding-box,
-             linear-gradient(105deg,#94b8ff,#b2eaff,#f5a9ff,#d48aff,#68beff) border-box!important;
+  background:linear-gradient(110deg,#124ddd 0%,#1d76ee 36%,#279ff5 70%,#6e7cff 100%) padding-box,
+             linear-gradient(105deg,#47c4ff,#8cf0ff,#b0c9ff,#6989ff,#48d9ff) border-box!important;
   background-size:100% 100%,230% 100%!important;
   border:2px solid transparent!important;
   color:#fff!important;
   font-weight:850!important;
   text-shadow:0 1px 2px #27105644;
-  box-shadow:0 0 0 1px #795bff33,0 0 24px #874fff88,0 8px 31px #9a3de94a!important;
+  box-shadow:0 0 0 1px #4c9bff55,0 0 24px #319dff96,0 8px 31px #3f62ee5c!important;
   animation:ap-neon-cta-border 5s linear infinite;
   transition:filter .22s ease,transform .22s ease,box-shadow .22s ease!important;
 }
@@ -428,13 +428,13 @@ body.ap-site {
   animation:ap-neon-cta-glint 5.2s linear infinite;
 }
 .ap-site .nl-hero .nl-primary:hover,.ap-site .nl-hero .nl-primary:focus-visible{
-  background:linear-gradient(110deg,#7664ff,#af60fb 45%,#e554e9) padding-box,
-             linear-gradient(105deg,#98dcff,#e4acff,#9cf0ff,#e8aaff) border-box!important;
+  background:linear-gradient(110deg,#1b5cf2,#188dea 45%,#5daaff) padding-box,
+             linear-gradient(105deg,#8af2ff,#d0eaff,#6bcfff,#93a9ff) border-box!important;
   background-size:100% 100%,230% 100%!important;
   color:#fff!important;
   filter:brightness(1.08);
   transform:translateY(-2px);
-  box-shadow:0 0 0 1px #9dd8ff77,0 0 32px #a85affb5,0 10px 34px #a143ee6b!important;
+  box-shadow:0 0 0 1px #9dd8ff88,0 0 32px #48b9ffba,0 10px 34px #426feb80!important;
 }
 @keyframes ap-neon-cta-border{from{background-position:0 0,0 0}to{background-position:0 0,230% 0}}
 @keyframes ap-neon-cta-glint{from{background-position:210% 0}to{background-position:-110% 0}}
