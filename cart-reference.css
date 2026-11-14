@@ -11,9 +11,9 @@
 .nlc-line img{width:61px;height:72px;object-fit:contain;background:#f2f5fa;border-radius:10px}
 .nlc-line .nlc-name strong{display:block;font-size:12px;line-height:1.4;color:#152339}
 .nlc-line .nlc-name small{display:block;font-size:11px;color:#6c7e98;margin-top:3px}
-.nlc-line .ap-quantity{display:inline-flex;align-items:center;margin-top:9px;border:1px solid #d7e1ed;border-radius:22px;overflow:hidden;height:30px}
-.nlc-line .ap-quantity button{width:30px;height:30px;border:0;background:#f3f7fc;color:#164e96;font-size:15px}
-.nlc-line .ap-quantity input{width:28px;font-size:12px;border:0;text-align:center;padding:0!important;background:transparent}
+.nlc-line .ap-quantity{display:inline-flex;align-items:center;margin-top:0;border:1px solid #c7d1df;border-radius:24px;overflow:hidden;height:34px}
+.nlc-line .ap-quantity button{width:36px;height:34px;border:0;background:#f3f7fc;color:#164e96;font-size:15px}
+.nlc-line .ap-quantity input{width:36px;font-size:12px;border:0;text-align:center;padding:0!important;background:transparent}
 .nlc-price{text-align:right;display:grid;justify-items:end;gap:15px}
 .nlc-price strong{font-size:12px;color:#164a92}
 .nlc-price button{background:none;border:0;color:#939eab;font-size:17px}
@@ -24,34 +24,90 @@
 .nlc-rec img{width:49px;height:58px;object-fit:contain;background:#f1f3f8;border-radius:6px}
 .nlc-rec strong{display:block;font-size:10px;line-height:1.3}.nlc-rec span{display:block;font-size:10px;color:#1c4b85;margin:5px 0}
 .nlc-rec button{background:#0b0c10;border:0;border-radius:22px;color:#fff;font-size:9px;font-weight:800;padding:8px 12px;white-space:nowrap}
-.nlc-cart-checkout{height:min(520px,60dvh);flex:none;overflow-y:auto;overscroll-behavior:contain;margin-top:auto;padding:13px 18px 20px;border-top:1px solid #dfe7ef;background:#fff;box-shadow:0 -8px 20px #1d32440c}
-.nlc-coupon{border-top:1px solid #e8edf2;padding-top:9px}
-.nlc-coupon summary{font-size:12px;font-weight:800;padding:8px 0;cursor:pointer}
-.nlc-coupon>div{display:flex;gap:8px;padding:8px 0}
-.nlc-coupon input{min-width:0;flex:1;height:43px;border:1px solid #c9d8e7;border-radius:24px;padding:10px 14px;font-size:12px}
+.nlc-cart-checkout{flex:none;overflow:visible;margin-top:auto;padding:7px 14px 10px;border-top:1px solid #dfe7ef;background:#fff;box-shadow:0 -8px 20px #1d32440c}
+.nlc-coupon{border-top:1px solid #e8edf2;padding-top:3px}
+.nlc-coupon summary{font-size:12px;font-weight:800;padding:5px 0;cursor:pointer}
+.nlc-coupon>div{display:flex;gap:8px;padding:4px 0}
+.nlc-coupon input{min-width:0;flex:1;height:36px;border:1px solid #c9d8e7;border-radius:24px;padding:10px 14px;font-size:12px}
 .nlc-coupon button{border:1px solid #d5dce5;border-radius:22px;background:#fff;padding:0 17px;font-size:11px;font-weight:800}
-.nlc-delivery-est{border-bottom:1px solid #e8edf2;padding:8px 0 13px;margin:0;font-size:11px;color:#6b8099}
-.nlc-cart-totals{padding:8px 0}
-.nlc-cart-totals>div{display:flex;justify-content:space-between;gap:14px;padding:6px 0;font-size:12px;color:#51647e}
+.nlc-delivery-est{display:flex;justify-content:center;align-items:center;gap:4px;border-bottom:1px solid #e8edf2;padding:6px 0;margin:0;font-size:10px;color:#6b8099;white-space:nowrap}.nlc-delivery-est svg{color:#164c97;flex:none}.nlc-delivery-est strong{color:#152a45}
+.nlc-cart-totals{padding:4px 0}
+.nlc-cart-totals>div{display:flex;justify-content:space-between;gap:14px;padding:3px 0;font-size:11px;color:#51647e}
 .nlc-cart-totals strong{color:#1c2c42}
 .nlc-cart-totals label{display:flex;align-items:center;gap:8px;font-size:12px;margin:5px 0;padding:6px 0;color:#31445f}
 .nlc-cart-totals label input{width:17px;height:17px;accent-color:#18519e}
 .nlc-cart-totals label strong{margin-left:auto}
-.nlc-cart-totals .nlc-subtotal{border-top:1px solid #e7ecf3;margin-top:5px;padding-top:10px;font-weight:800;color:#152a45;font-size:14px}
-.nlc-cart-totals .nlc-subtotal strong{font-size:17px}
-.nlc-proceed{display:block;border-radius:28px;background:#174c98!important;color:white!important;text-decoration:none;text-align:center;font-size:13px;font-weight:800;padding:16px;margin:8px 0 15px}
-.nlc-wallet-area{padding-top:10px;text-align:center;border-top:1px solid #e5ebf1}
+.nlc-cart-totals .nlc-subtotal{border-top:1px solid #e7ecf3;margin-top:3px;padding-top:6px;font-weight:800;color:#152a45;font-size:12px}
+.nlc-cart-totals .nlc-subtotal strong{font-size:14px}
+.nlc-proceed{display:block;border-radius:28px;background:#174c98!important;color:white!important;text-decoration:none;text-align:center;font-size:12px;font-weight:800;padding:12px;margin:5px 0 9px}
+.nlc-wallet-area{padding-top:5px;text-align:center;border-top:1px solid #e5ebf1}
 .nlc-wallet-area>small{color:#8b99ae;display:block;font-size:10px;letter-spacing:.1em;margin-bottom:11px}
 .nlc-wallet-row{display:flex;align-items:center;gap:7px}
-.nlc-wallet-row button{height:40px;border-radius:25px;background:#050609;border:0;color:#fff;flex:1;font-weight:800;font-size:14px;letter-spacing:-.025em}
-.nlc-wallet-row button:disabled{opacity:.45;cursor:not-allowed}
+.nlc-wallet-row button{height:37px;border-radius:25px;background:#050609;border:0;color:#fff;flex:1;font-family:Arial,sans-serif;font-weight:500;font-size:20px;letter-spacing:-.04em;display:flex;align-items:center;justify-content:center;gap:3px}
+.nlc-wallet-row button:disabled{opacity:1;cursor:not-allowed;filter:grayscale(.45)}
 .nlc-wallet-row span{font-size:11px;color:#8091a5}
 .nlc-g{font-size:17px;background:conic-gradient(#4285f4 0 90deg,#34a853 90deg 175deg,#fbbc05 175deg 250deg,#ea4335 250deg 330deg,#4285f4 330deg);-webkit-background-clip:text;background-clip:text;color:transparent}
-.nlc-wallet-area p{font-size:10px;color:#8a97aa;line-height:1.5;margin:9px 0}
+.nlc-wallet-area p{font-size:9px;color:#8a97aa;line-height:1.35;margin:5px 0 0}
 .nlc-wallet-area p a{color:#31588c}
 @media(max-width:480px){.ap-cart-dialog{width:100vw!important}.nlc-cart-checkout{padding:12px}.nlc-line{grid-template-columns:55px minmax(0,1fr) auto}.nlc-line img{width:55px}}
 
-@media(max-height:700px){.nlc-cart-checkout{height:min(420px,62dvh)}.nlc-cart-lines .nlc-line{padding-block:10px}}
-.nlc-scrollable-items:focus-visible,.nlc-cart-checkout:focus-visible{outline:2px solid #164b99;outline-offset:-2px}
+@media(max-height:700px){.nlc-cart-checkout{padding-block:4px}.nlc-cart-lines .nlc-line{padding-block:10px}.nlc-coupon summary{padding:3px 0}.nlc-wallet-area p{font-size:8px}}
+.nlc-scrollable-items:focus-visible{outline:2px solid #164b99;outline-offset:-2px}
 
 .nlc-name [data-nlc-bogo-line]:not([hidden]){display:inline-block;margin-top:5px;padding:3px 7px;border:1px solid #a5c7ed;border-radius:7px;background:#eaf4ff;color:#164a91;font-size:10px;font-weight:800;line-height:1.2;white-space:nowrap}
+
+/* Cart footer is static; only product rows and add-ons may scroll. */
+.nlc-protection-static{color:#31445f!important}
+.nlc-pay-divider{display:flex;align-items:center;justify-content:center;gap:5px;margin-bottom:7px;color:#8190a7;font-size:10px;letter-spacing:.09em;font-weight:700}
+.nlc-pay-divider strong{color:#152a45;letter-spacing:0;font-size:12px}
+.nlc-apple-mark{font-family:Arial,sans-serif;font-size:25px;line-height:1}
+.nlc-google-mark{font-family:Arial,sans-serif;font-weight:700;font-size:23px;line-height:1;background:conic-gradient(#4285f4 0deg 90deg,#34a853 90deg 175deg,#fbbc05 175deg 250deg,#ea4335 250deg 330deg,#4285f4 330deg);-webkit-background-clip:text;background-clip:text;color:transparent}
+.nlc-wallet-or{font-size:11px;color:#8091a5}
+@media(max-height:650px){.nlc-cart-checkout{padding:3px 10px 5px}.nlc-cart-totals>div{padding:2px 0}.nlc-proceed{padding:9px;margin:3px 0 5px}.nlc-wallet-row button{height:32px}.nlc-delivery-est{padding:3px 0}.nlc-coupon input{height:32px}}
+
+/* Cart reference polish */
+.ap-cart-dialog .ap-dialog-head>button{border:0!important;outline:0!important;box-shadow:none!important;width:40px;height:40px;background:#eaf0f7!important;color:#233149!important;font-size:23px;line-height:1;border-radius:50%;cursor:pointer}
+.ap-cart-dialog .ap-dialog-head>button:focus-visible{outline:2px solid #1c57a5!important;outline-offset:2px!important}
+.nlc-quantity-row{display:flex;align-items:center;gap:10px;margin-top:11px}
+.nlc-name [data-nlc-bogo-line]:not([hidden]){display:inline-block;margin:5px 0 0}
+.nlc-quantity-row .ap-quantity{margin:0!important}
+.nlc-unlock{padding:11px 15px 13px;border-bottom:1px solid #e0e5ec;background:#fff}
+.nlc-unlock p{font-size:12px;line-height:1.35;margin:0 0 10px;color:#636b78}
+.nlc-unlock p strong{color:#111a29;font-weight:800}
+.nlc-progress{position:relative;height:7px;border-radius:12px;background:#e3e6e9;margin:0 15px 8px 0}
+.nlc-progress-fill{display:block;height:100%;border-radius:12px;background:linear-gradient(100deg,#58b6ff,#0750a6 65%,#8acaff);background-size:200% 100%;animation:nlc-shimmer 2.8s ease-in-out infinite}
+@keyframes nlc-shimmer{0%{background-position:100% 50%}100%{background-position:0 50%}}
+@media(prefers-reduced-motion:reduce){.nlc-progress-fill{animation:none}}
+.nlc-gift{position:absolute;top:50%;transform:translate(-50%,-50%);display:flex;align-items:center;justify-content:center;width:26px;height:26px;border:3px solid #fff;border-radius:50%;background:#07080a;color:#fff;font-size:16px;box-shadow:0 1px 6px #0005;cursor:help}
+.nlc-gift-one{left:83.61%}.nlc-gift-two{left:100%}
+.nlc-gift-tip{position:absolute;bottom:calc(100% + 12px);right:0;display:none;min-width:180px;max-width:210px;background:#07080a;color:#fff;padding:12px;border-radius:12px;text-align:center;font-size:12px;line-height:1.5;box-shadow:0 3px 14px #0004;white-space:normal;z-index:8}
+.nlc-gift:hover .nlc-gift-tip,.nlc-gift:focus .nlc-gift-tip{display:block}
+.nlc-cart-totals .nlc-first-subtotal{font-size:13px;color:#111e32}
+.nlc-cart-totals .nlc-first-subtotal strong{font-size:16px;color:#13243d}
+.nlc-bank-discount{color:#12884c!important;font-weight:800}
+.nlc-bank-discount strong{color:#12884c!important}
+.nlc-rec-prices{display:flex;gap:7px;align-items:center;flex-wrap:wrap;margin-top:6px;font-size:11px}
+.nlc-rec-prices s{color:#8c97a8;font-weight:400}
+.nlc-rec-prices b{color:#174d94;font-weight:800}
+.nlc-rec small{display:block;font-size:10px;color:#078447;font-weight:700;margin:4px 0 7px}
+.nlc-wallet-row svg.nlc-google-mark{display:block!important;width:23px;height:23px;flex:none;background:none!important;clip-path:none!important;color:initial!important}
+
+/* Screenshot fixes: tooltip must open below the milestone, never behind the header. */
+.nlc-unlock{position:relative;isolation:isolate;z-index:2;padding-top:12px;padding-bottom:15px}
+.nlc-progress{margin-top:10px;margin-bottom:10px}
+.nlc-gift{z-index:3}
+.nlc-gift-tip{top:calc(100% + 11px)!important;bottom:auto!important;right:50%!important;transform:translateX(50%);z-index:20!important;white-space:normal;min-width:190px;max-width:220px;pointer-events:none}
+.nlc-gift-two .nlc-gift-tip{right:-8px!important;transform:none}
+.nlc-gift-one .nlc-gift-tip{right:-50px!important;transform:none}
+.nlc-gift-tip::before{content:"";position:absolute;bottom:100%;right:21px;border:7px solid transparent;border-bottom-color:#07080a}
+.nlc-gift:focus-visible{outline:3px solid #1267bf;outline-offset:3px}
+.nlc-scrollable-items{overflow-x:hidden;scroll-padding-top:18px}
+/* The reference uses one connected pill: pale endcaps, white quantity and full capsule outline. */
+.ap-cart-dialog .nlc-line .nlc-quantity-row{display:block!important;margin-top:14px!important}
+.ap-cart-dialog .nlc-line .nlc-quantity-row .ap-quantity{display:grid!important;grid-template-columns:49px 57px 49px!important;align-items:stretch!important;gap:0!important;width:max-content!important;height:47px!important;margin:0!important;border:1px solid #cdd3db!important;border-radius:25px!important;background:#fff!important;overflow:hidden!important;box-shadow:none!important}
+.ap-cart-dialog .nlc-line .nlc-quantity-row .ap-quantity button{display:flex!important;align-items:center!important;justify-content:center!important;width:49px!important;min-width:49px!important;height:47px!important;padding:0!important;margin:0!important;border:0!important;border-radius:0!important;background:#f2f6fb!important;color:#164e96!important;font-size:23px!important;font-weight:700!important;line-height:1!important}
+.ap-cart-dialog .nlc-line .nlc-quantity-row .ap-quantity input{display:block!important;width:57px!important;height:47px!important;min-width:57px!important;padding:0!important;margin:0!important;border:0!important;border-left:1px solid #d2d7df!important;border-right:1px solid #d2d7df!important;border-radius:0!important;background:#fff!important;color:#121820!important;text-align:center!important;font-size:18px!important;font-weight:500!important;line-height:47px!important;box-shadow:none!important}
+.ap-cart-dialog .nlc-line .nlc-quantity-row .ap-quantity button:hover{background:#e7f0fa!important}
+.ap-cart-dialog .nlc-line .nlc-quantity-row .ap-quantity button:focus-visible{outline:2px solid #1d5ab1!important;outline-offset:-3px!important}
+.ap-cart-dialog .nlc-line .nlc-name [data-nlc-bogo-line]:not([hidden]){display:inline-block!important;margin:9px 0 0!important}
+@media(max-width:480px){.ap-cart-dialog .nlc-line .nlc-quantity-row .ap-quantity{grid-template-columns:42px 47px 42px!important;height:42px!important}.ap-cart-dialog .nlc-line .nlc-quantity-row .ap-quantity button{width:42px!important;min-width:42px!important;height:42px!important}.ap-cart-dialog .nlc-line .nlc-quantity-row .ap-quantity input{width:47px!important;min-width:47px!important;height:42px!important;line-height:42px!important}}

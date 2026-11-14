@@ -12,6 +12,8 @@
   <link rel="stylesheet" href="/admin-dashboard.css">
   <link rel="stylesheet" href="/admin-marketing.css">
   <link rel="icon" href="/favicon.svg">
+  <link rel="stylesheet" href="/admin-ui-polish.css">
+  <link rel="stylesheet" href="/admin-experience.css?v=1">
 </head>
 <body class="mk-body">
 <main class="admin-page">
@@ -51,7 +53,7 @@
         <div class="mk-header-actions"><button id="mk-import-button" class="mk-button mk-outline" type="button">Import CSV</button><button id="mk-add-button" class="mk-button" type="button">+ Add prospect</button></div>
       </header>
       <p id="mk-alert" class="mk-alert" role="status" aria-live="polite"></p>
-      <div class="mk-info"><strong>Workspace preview:</strong> prospect records are saved in this browser only until a shared database is connected. Export a backup regularly. AI drafts require a server-side API key. No messages are sent by this page.</div>
+      <div class="mk-info"><strong>Cloud CRM:</strong> prospects, drafts, history and follow-up dates synchronize through your private Supabase workspace. Browser backup is retained for recovery. Instagram messages require Meta authorization. This tool never sends outreach automatically. <span id="mk-sync-status">Connecting…</span></div>
 
       <div class="mk-metrics" aria-label="Marketing snapshot">
         <article><span>Prospects</span><strong id="mk-total">0</strong><small>Tracked profiles</small></article>
@@ -63,6 +65,7 @@
       <div class="mk-subnav" role="tablist" aria-label="Marketing sections">
         <button type="button" class="mk-subtab is-active" role="tab" aria-selected="true" data-panel="pipeline">Prospects</button>
         <button type="button" class="mk-subtab" role="tab" aria-selected="false" data-panel="conversations">Conversations</button>
+        <button type="button" class="mk-subtab" role="tab" aria-selected="false" data-panel="instagram">Instagram Inbox</button>
         <button type="button" class="mk-subtab" role="tab" aria-selected="false" data-panel="insights">Analytics</button>
         <button type="button" class="mk-subtab" role="tab" aria-selected="false" data-panel="settings">Settings</button>
       </div>
@@ -79,8 +82,37 @@
 
       <section id="mk-panel-conversations" class="mk-panel" hidden>
         <div class="mk-two-col">
-          <div class="mk-card"><h2>Conversation tracker</h2><p class="mk-muted">Log contact attempts and inbound replies manually. Instagram inbox synchronization is not connected.</p><label for="mk-conversation-select">Creator</label><select id="mk-conversation-select"></select><div id="mk-conversation-timeline" class="mk-timeline"></div><form id="mk-message-form"><label for="mk-message-type">Message type</label><select id="mk-message-type"><option value="outbound">Outbound — sent manually</option><option value="inbound">Inbound — received</option><option value="note">Internal note</option></select><label for="mk-message-text">Record message or note</label><textarea id="mk-message-text" rows="4" maxlength="4000" required></textarea><button class="mk-button" type="submit">Save to history</button></form></div>
+          <div class="mk-card"><h2>Conversation tracker</h2><p class="mk-muted">Log manual business contact attempts and replies. Instagram inbox messages have their own connected tab.</p><label for="mk-conversation-select">Creator</label><select id="mk-conversation-select"></select><div id="mk-conversation-timeline" class="mk-timeline"></div><form id="mk-message-form"><label for="mk-message-type">Message type</label><select id="mk-message-type"><option value="outbound">Outbound — sent manually</option><option value="inbound">Inbound — received</option><option value="note">Internal note</option></select><label for="mk-message-text">Record message or note</label><textarea id="mk-message-text" rows="4" maxlength="4000" required></textarea><button class="mk-button" type="submit">Save to history</button></form></div>
           <div class="mk-card"><h2>Instagram connection</h2><span class="mk-status">Not connected</span><p>Meta's official Instagram messaging integration can support inbox synchronization after you authorize a professional Instagram account and obtain the required messaging permissions.</p><p class="mk-muted">This version does not scrape profiles, initiate bulk DMs, or automatically contact anyone. Drafts stay in your control.</p><a href="https://developers.facebook.com/docs/instagram-platform/" target="_blank" rel="noopener noreferrer">Instagram platform setup documentation</a><h3>Draft a response</h3><p>Use the Draft button on any prospect to prepare a first approach, follow-up or reply.</p></div>
+        </div>
+      </section>
+
+
+      <section id="mk-panel-instagram" class="mk-panel" hidden>
+        <div class="mk-two-col">
+          <div class="mk-card">
+            <div class="mk-ig-heading"><div><h2>Instagram inbox</h2><p id="mk-ig-status" class="mk-muted">Checking account connection…</p></div>
+              <div class="mk-header-actions"><button id="mk-ig-sync" type="button" class="mk-button mk-outline">Sync inbox</button><button id="mk-ig-connect" type="button" class="mk-button">Connect Instagram</button></div>
+            </div>
+            <label for="mk-ig-thread">Conversations</label>
+            <select id="mk-ig-thread" aria-label="Instagram conversations"><option value="">Connect an account to load conversations</option></select>
+            <div id="mk-ig-messages" class="mk-timeline mk-ig-timeline" aria-live="polite"><p class="mk-muted">Incoming direct messages appear after Meta authorization and webhook configuration.</p></div>
+            <label for="mk-ig-reply">Reply to the selected conversation</label>
+            <textarea id="mk-ig-reply" rows="4" maxlength="1000" placeholder="Write a response to someone who already messaged AltaPure…" disabled></textarea>
+            <div class="mk-dialog-actions"><button id="mk-ig-send" type="button" class="mk-button" disabled>Send Instagram reply</button></div>
+            <p class="mk-muted">Replies require a recent inbound message. No bulk DMs, scraping or automated cold outreach. Messages are sent only when you click Send.</p>
+          </div>
+          <div class="mk-card">
+            <h2>Connect your professional account</h2>
+            <span id="mk-ig-connection-badge" class="mk-status">Not connected</span>
+            <p id="mk-ig-setup-state">Meta app credentials are checked when Marketing loads.</p>
+            <p><strong>OAuth redirect URI</strong><code class="mk-ig-code" id="mk-ig-callback">https://altapurelabs.com/api/instagram/callback</code></p>
+            <p><strong>Webhook callback URL</strong><code class="mk-ig-code" id="mk-ig-webhook">https://mqtitxfsdphqbsxhwdma.supabase.co/functions/v1/alta-instagram-webhook</code></p>
+            <p><strong>Meta permission scopes</strong><code class="mk-ig-code">instagram_business_basic, instagram_business_manage_messages</code></p>
+            <p class="mk-muted">Meta App Dashboard → Instagram API with Instagram Login. Add the redirect URL, configure the webhook callback and verify token, enable the messaging subscription, then authorize your own Instagram Business/Creator account. Messaging access beyond app roles can require App Review.</p>
+            <a href="https://developers.facebook.com/apps/" target="_blank" rel="noopener noreferrer">Open Meta Developer Dashboard</a>
+            <div class="mk-dialog-actions"><button id="mk-ig-disconnect" type="button" class="mk-danger" disabled>Disconnect Instagram</button></div>
+          </div>
         </div>
       </section>
 
@@ -91,7 +123,7 @@
       <section id="mk-panel-settings" class="mk-panel" hidden>
         <div class="mk-two-col">
           <div class="mk-card"><h2>Drafting voice</h2><p class="mk-muted">Additional context for the AI writing assistant. Sent only when you request a draft.</p><label for="mk-style">Brand voice and outreach preferences</label><textarea id="mk-style" rows="7" maxlength="2000" placeholder="Short, direct, professional. Long-term collaboration..."></textarea><button id="mk-save-settings" class="mk-button" type="button">Save preferences</button></div>
-          <div class="mk-card"><h2>Integration status</h2><p><strong>Outreach sending:</strong> manual review and send only</p><p><strong>Instagram inbox:</strong> not connected</p><p><strong>AI drafting:</strong> <span id="mk-ai-state">Checking…</span></p><p><strong>Shared CRM database:</strong> not connected</p><p class="mk-muted">Until a shared backend exists, browser data is not synchronized between devices or browsers. Export a backup before clearing browser storage.</p></div>
+          <div class="mk-card"><h2>Integration status</h2><p><strong>Outreach sending:</strong> manual review and send only</p><p><strong>Instagram inbox:</strong> <span id="mk-ig-settings-status">Not connected</span></p><p><strong>AI drafting:</strong> <span id="mk-ai-state">Checking…</span></p><p><strong>Shared CRM database:</strong> <span id="mk-crm-state">Checking…</span></p><p class="mk-muted">Records are stored privately in Supabase and saved across devices. Browser storage remains a recovery copy. Export a backup before deleting prospects.</p></div>
         </div>
       </section>
     </section>
@@ -132,5 +164,6 @@
   </form>
 </dialog>
 <script src="/admin-marketing.js" defer></script>
+  <script src="/admin-experience.js?v=1" defer></script>
 </body>
 </html>

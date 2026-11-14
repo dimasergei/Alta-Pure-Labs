@@ -26,7 +26,11 @@ test('cart has editable rows, product recommendations, coupon, protection, check
   assert.ok(f.cart.querySelector('[data-action="add"][data-id="extra"]'));
   assert.ok(f.cart.querySelector('[data-action="cart-quantity"]'));
   assert.ok(f.cart.querySelector('[name=nlc_coupon]'));
-  assert.equal(f.cart.querySelector('[name=nlc_protection]').checked,true);
+  assert.equal(f.cart.querySelector('[name=nlc_protection]'),null,'No shipping protection checkbox or removal action');
+  assert.ok(f.cart.querySelector('.nlc-protection-static'),'Shipping protection must appear as a fixed line item');
+  assert.match(f.cart.textContent,/OR PAY INSTANTLY\s*\$119\.95/);
+  assert.ok(f.cart.querySelector('[data-nlc-estimate]').textContent.includes('–'));
+  assert.match(f.cart.querySelector('[data-nlc-wallets]').textContent,/Pay/);
   assert.match(f.cart.textContent,/Shipping Protection/);
   assert.match(f.cart.textContent,/Proceed to Checkout/);
   assert.equal(f.cart.querySelectorAll('[data-nlc-wallets] button').length,2);
