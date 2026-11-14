@@ -9,7 +9,12 @@
       "annual_cents": 0,
       "points_per_dollar": 2.5,
       "discount_bps": 0,
-      "free_shipping": false
+      "free_shipping": false,
+      "early_access": false,
+      "priority_fulfillment": false,
+      "monthly_credit_cents": 0,
+      "monthly_credit_min_order_cents": 0,
+      "free_bac_water_3ml": false
     },
     "vip": {
       "name": "Alta GOLD",
@@ -17,15 +22,25 @@
       "annual_cents": 19190,
       "points_per_dollar": 5,
       "discount_bps": 500,
-      "free_shipping": true
+      "free_shipping": true,
+      "early_access": true,
+      "priority_fulfillment": false,
+      "monthly_credit_cents": 0,
+      "monthly_credit_min_order_cents": 0,
+      "free_bac_water_3ml": false
     },
     "elite": {
-      "name": "ATLA PLATINUM",
+      "name": "ALTA PLATINUM",
       "monthly_cents": 9999,
       "annual_cents": 95990,
       "points_per_dollar": 10,
       "discount_bps": 1000,
-      "free_shipping": true
+      "free_shipping": true,
+      "early_access": true,
+      "priority_fulfillment": true,
+      "monthly_credit_cents": 5000,
+      "monthly_credit_min_order_cents": 15000,
+      "free_bac_water_3ml": true
     }
   },
   "annual_saving_percent": 20,
