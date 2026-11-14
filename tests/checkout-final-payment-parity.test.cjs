@@ -9,12 +9,12 @@ test('shipping protection is preselected at initial US checkout but remains user
  assert.match(checkout,/x\.checked\?state\.extras\.add\('protection'\):state\.extras\.delete\('protection'\)/);
  assert.match(checkout,/data-nlx-extra="protection"/);
 });
-test('the requested ByteNFT and future-bank-link text appears verbatim in the inactive or preview sections',()=>{
+test('current checkout labels the ByteNFT statement and bank-link preview accurately',()=>{
  assert.ok(checkout.includes('Bank/Card Statement Information: This transaction will appear as from *ByteNFT.'));
- assert.ok(checkout.includes('Pay with your bank account through our secured gateway. You’ll be redirected to your bank to sign in and approve the payment. Your credentials remain with your bank.'));
+ assert.ok(checkout.includes('Place your order by bank transfer. Receiving instructions follow submission; the bank logos and link-account preview below are illustrative and do not open a live bank login.'));
  assert.ok(checkout.includes('Link a new bank account'));
  assert.ok(checkout.includes('aria-checked="true"'));
- assert.ok(checkout.includes('non-operational preview'));
+ assert.ok(checkout.includes('Card and wallet methods shown for reference; not yet activated.'));
 });
 test('bank artwork comes from user screenshot assets rather than icon approximations',()=>{
  for(const name of ['chase','bofa','wf']){
