@@ -1034,7 +1034,7 @@
         </header>
 
         <section id="admin-orders-section" class="admin-view-section">
-<div id="fulfillment-hub"></div><details class="fh-legacy"><summary>Historical orders & supplier batches</summary>
+<div id="fulfillment-hub" hidden></div>
         <div class="controls">
           <div class="orders-toolbar">
             <div class="search-wrap">
@@ -1187,7 +1187,7 @@
           </div>
         </div>
 
-        </details></section>
+        </section>
 
         <section id="admin-lotus-section" class="admin-view-section" hidden><iframe id="lotus-embedded" title="Lotus catalog mappings and operations" style="width:100%;height:76vh;border:0"></iframe></section>
         <section id="admin-batches-section" class="admin-view-section" hidden>
@@ -1776,6 +1776,8 @@
       if (thisRequest !== requestNumber) return;
 
       loadedOrders = Array.isArray(data.orders) ? data.orders : [];
+      // Commerce invoices are displayed and exported, but never sent to legacy batch/update endpoints.
+      selectedOrders = new Set([...selectedOrders].filter(id => loadedOrders.some(o => o.id === id && o.source !== 'commerce')));
 
       pagination = data.pagination || {
         page: currentPage,
@@ -1815,6 +1817,20 @@
       }
 
       ordersList.innerHTML = loadedOrders.map((order, index) => {
+        if (order.source === 'commerce') {
+          return `<article class="order" data-order-id="${escapeHtml(order.id)}" data-commerce-invoice="${escapeHtml(order.id)}">
+            <div class="order-head">
+              <span class="order-select" aria-hidden="true"></span>
+              <button class="order-toggle" type="button" data-manage-commerce="${escapeHtml(order.id)}" aria-label="Manage order ${escapeHtml(order.order_number)}">
+                <span class="number"><span class="order-number">${escapeHtml(order.order_number)}</span><span class="order-date">${escapeHtml(formatDate(order.created_at))}</span></span>
+                <span class="customer"><strong>${escapeHtml(order.customer_name || 'Customer')}</strong><span>${escapeHtml(order.customer_email || '')}</span></span>
+                <span class="total">${escapeHtml(money(order.total_cents, order.currency))}</span>
+                <span class="status order-status-stack"><span class="badge">${escapeHtml(formatStatus(order.payment_status))}</span><span class="badge">${escapeHtml(formatStatus(order.fulfillment_status))}</span></span>
+                <span class="chevron">Manage order</span>
+              </button>
+            </div>
+          </article>`;
+        }
         const isOpen = openOrderId === order.id;
         const status = order.fulfillment_status || 'unfulfilled';
         const badgeClass = STATUSES.includes(status)
@@ -2085,10 +2101,10 @@
       bulkbar.hidden = selectedOrders.size === 0;
       $('#bulk-count').textContent = `${selectedOrders.size} selected`;
 
-      selectAll.disabled = loadedOrders.length === 0;
+      selectAll.disabled = !loadedOrders.some(order => order.source !== 'commerce');
       selectAll.checked =
         loadedOrders.length > 0 &&
-        loadedOrders.every((order) => selectedOrders.has(order.id));
+        loadedOrders.filter(order => order.source !== 'commerce').every((order) => selectedOrders.has(order.id));
 
       selectAll.indeterminate =
         selectedOrders.size > 0 && !selectAll.checked;
@@ -2111,6 +2127,11 @@
 
     ordersList.addEventListener('click', async (event) => {
       const toggle = event.target.closest('.order-toggle');
+      if (toggle?.dataset.manageCommerce) {
+        try { await window.AltaFulfillment.manage(toggle.dataset.manageCommerce); }
+        catch (error) { setNotice(error.message, true); }
+        return;
+      }
 
       if (toggle) {
         const article = toggle.closest('.order');
