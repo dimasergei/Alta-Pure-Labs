@@ -214,3 +214,27 @@ body.ap-checkout-page #account-root{box-shadow:none!important;border:0!important
 @media(max-width:770px){.nlx-product{grid-template-columns:14px 48px minmax(0,1fr) auto}.nlx-product>img{width:48px}.nlx-product-name strong{font-size:12px}.nlx-payment-choice .nlx-payment-option{font-size:12px}.nlx-member-types{gap:7px}.nlx-trust span{font-size:9px}}
 
 .nlx-member-actions .nlx-member-unavailable{border:0;border-radius:30px;background:#103e83;color:white;font-size:13px;font-weight:800;opacity:.65;padding:12px;cursor:not-allowed}
+
+/* Payment brand visual parity: brand marks sit directly on the dark express buttons. */
+.nlx-wallets{display:flex;align-items:center;gap:14px}
+.nlx-wallet-unavailable{background:#050506!important;border-radius:999px!important;opacity:.5!important;min-height:55px!important;gap:3px!important;font-family:Arial,Helvetica,sans-serif!important;font-size:24px!important;font-weight:500!important;letter-spacing:-.05em}
+.nlx-wallet-unavailable .nlx-wallet-symbol{display:block!important;flex:none;max-width:30px;max-height:30px;background:transparent!important;border:0!important;filter:none!important}
+.nlx-wallet-unavailable .nlx-google-symbol{width:27px!important;height:27px!important}
+.nlx-wallet-unavailable .nlx-apple-symbol{width:28px!important;height:28px!important}
+.nlx-wallet-unavailable b{font-size:24px!important;line-height:1!important;font-weight:500!important}
+.nlx-card-logos{display:inline-flex!important;align-items:center!important;gap:7px!important;margin-left:8px!important;flex-wrap:nowrap}
+.nlx-visa-logo,.nlx-amex-logo{display:inline-flex;align-items:center;justify-content:center;flex:none;width:62px;height:38px;border-radius:3px;color:white!important;font-style:italic;font-family:Arial,Helvetica,sans-serif;font-size:21px;font-weight:900;letter-spacing:-.06em;background:#114a9a}
+.nlx-amex-logo{background:#2262c8;font-style:normal;font-size:11px;line-height:.86;letter-spacing:-.04em;text-align:center}
+.nlx-payment-choice .nlx-payment-option{justify-content:flex-start!important;gap:11px!important}
+.nlx-payment-choice .nlx-payment-option>span:nth-of-type(1){flex:0 1 auto!important}
+.nlx-phone-icon,.nlx-bank-icon{display:inline-flex!important;align-items:center;justify-content:center;flex:none;color:#164b9a!important;font-size:0!important}
+.nlx-bank-logos{display:flex;align-items:center;flex-wrap:wrap;gap:7px;margin:14px 0}
+.nlx-bank-logos .nlx-bank-link{display:flex;align-items:center;gap:12px;margin:0 15px 0 0!important;font-size:13px!important;font-weight:400!important;color:#666;white-space:nowrap}
+.nlx-bank-link input{display:inline-block!important;appearance:auto!important;accent-color:#1c6bd4!important;width:16px!important;height:16px!important;margin:0!important}
+.nlx-bank-logos .nlx-bank-logo{display:inline-flex;align-items:center;justify-content:center;width:48px;height:43px;background:#fff;border-radius:7px;padding:5px!important}
+.nlx-bank-logos .nlx-wf-mark{color:#b52425!important;font-family:Georgia,serif;font-size:18px!important;font-weight:900}
+.nlx-bank-logos .nlx-more-mark{width:auto;min-width:70px;color:#222!important;font-size:13px!important;font-weight:800}
+@media(max-width:520px){.nlx-wallets{gap:6px}.nlx-wallet-unavailable{font-size:18px!important;min-height:46px!important}.nlx-wallet-unavailable b{font-size:18px!important}.nlx-card-logos{gap:3px!important;margin-left:3px!important}.nlx-visa-logo,.nlx-amex-logo{width:48px;height:30px;font-size:17px}.nlx-amex-logo{font-size:9px}.nlx-bank-logos .nlx-bank-link{width:100%}}
+
+.nlx-card-logos .nlx-card-brand{display:block;width:62px;height:38px;object-fit:fill;border:0;border-radius:3px;background:none;flex:none}
+@media(max-width:520px){.nlx-card-logos .nlx-card-brand{width:48px;height:31px}}
