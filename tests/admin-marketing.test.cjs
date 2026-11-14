@@ -109,3 +109,44 @@ test('all Instagram reply sends require explicit manual actions',()=>{
   assert.ok(frontend.includes("action:'instagram_send'"));
   assert.ok(!frontend.includes('setInterval(()=>endpoint({action:\'instagram_send\''));
 });
+
+
+test('Instagram accessToken rejects expiry before calling Meta',async()=>{
+  const platform=require('../lib/admin-marketing-platform');
+  const env={INSTAGRAM_TOKEN_ENCRYPTION_KEY:'d'.repeat(64),INSTAGRAM_APP_ID:'123456789012',INSTAGRAM_APP_SECRET:'for-test-only'};
+  const row={ciphertext:platform.encrypt('sample-IG-token-from-a-valid-session',env),token_expires_at:new Date(Date.now()-10000).toISOString()};
+  const db={from(){return {select(){return this;},eq(){return this;},single:async()=>({data:row,error:null})};}};
+  let remoteRequests=0;
+  await assert.rejects(()=>platform.accessToken(db,{ig_user_id:'17895695668004550'},env,async()=>{remoteRequests++;}),/expired/i);
+  assert.equal(remoteRequests,0);
+});
+test('Instagram accessToken refreshes expiring tokens without exposing them to the client',async()=>{
+  const platform=require('../lib/admin-marketing-platform');
+  const env={INSTAGRAM_TOKEN_ENCRYPTION_KEY:'c'.repeat(64),INSTAGRAM_APP_ID:'123456789012',INSTAGRAM_APP_SECRET:'for-test-only'};
+  const oldToken='old-IG-long-lived-token-abcdefghijklmnopqrstuvwxyz';
+  const freshToken='fresh-IG-long-lived-token-0123456789abcdefgh';
+  let update=null,calls=0;
+  const row={ciphertext:platform.encrypt(oldToken,env),token_expires_at:new Date(Date.now()+5*86400000).toISOString()};
+  const db={from(){return {
+    select(){return this;},
+    update(values){update=values;return this;},
+    eq(){return this;},
+    single:async()=>({data:row,error:null}),
+    then(resolve){return Promise.resolve({data:null,error:null}).then(resolve);}
+  };}};
+  const fetched=async(url,opts)=>{
+    calls++;
+    assert.equal(url.hostname,'graph.instagram.com');
+    assert.equal(url.pathname,'/refresh_access_token');
+    assert.equal(url.searchParams.get('grant_type'),'ig_refresh_token');
+    assert.equal(url.searchParams.get('access_token'),oldToken);
+    assert.equal(opts.method,'GET');
+    return {ok:true,json:async()=>({access_token:freshToken,expires_in:5184000})};
+  };
+  const result=await platform.accessToken(db,{ig_user_id:'17895695668004550'},env,fetched);
+  assert.equal(result,freshToken);
+  assert.equal(calls,1);
+  assert.ok(update?.token_expires_at);
+  assert.doesNotMatch(update.ciphertext,/fresh-IG-long-lived-token/);
+  assert.equal(platform.decrypt(update.ciphertext,env),freshToken);
+});
