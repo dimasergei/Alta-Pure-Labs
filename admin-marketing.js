@@ -13,6 +13,7 @@
   let data = read(), selected='',draftId='', password='', aiAvailable=false, loggedIn=false;
   let revision=0,remoteReady=false,syncTimer=null,syncRunning=false,syncQueued=false;
   let instagram={connected:false,credentials_configured:false},igMessages=[];
+  let igMedia={};
   const igProfileKey='altapure_ig_participant_names_v1';
   let igProfiles={};
   try{const saved=JSON.parse(localStorage.getItem(igProfileKey)||'{}');if(saved&&typeof saved==='object'&&!Array.isArray(saved))igProfiles=saved;}catch{}
@@ -323,7 +324,22 @@
         title=elem('strong',item.direction==='incoming'?participantLabel(item.participant_id):'AltaPure'),
         date=elem('small',new Date(item.message_at).toLocaleString()),
         body=elem('p',item.body||'[Media message]');
-      el.append(title,date,body);root.append(el);
+      el.append(title,date,body);
+      for(const media of (igMedia[item.provider_message_id]||[])){
+        try{
+          const u=new URL(media.url);
+          if(u.protocol!=='https:'||u.username||u.password)continue;
+          if(media.type==='image'){
+            const link=document.createElement('a');link.href=u.href;link.target='_blank';link.rel='noopener noreferrer';
+            const img=document.createElement('img');img.src=u.href;img.alt='Instagram image attachment';img.loading='lazy';img.referrerPolicy='no-referrer';img.className='mk-ig-media-image';link.append(img);el.append(link);
+          }else if(media.type==='video'||media.type==='audio'){
+            const player=document.createElement(media.type);player.src=u.href;player.controls=true;player.preload='metadata';player.className='mk-ig-media-player';el.append(player);
+          }else{
+            const link=document.createElement('a');link.href=u.href;link.target='_blank';link.rel='noopener noreferrer';link.textContent='Open Instagram attachment';el.append(link);
+          }
+        }catch{}
+      }
+      root.append(el);
     }
     const latest=events.filter(x=>x.direction==='incoming').at(-1);
     const canReply=connected&&Boolean(latest)&&Date.now()-Date.parse(latest.message_at)<24*3600000;
@@ -337,6 +353,7 @@
       if(sync){
         const result=await endpoint({action:'instagram_sync'});
         rememberIgProfiles(result.participant_profiles);
+        igMedia=result.media&&typeof result.media==='object'&&!Array.isArray(result.media)?result.media:{};
         const lookup=result.profile_lookup;
         if(lookup&&lookup.unresolved)notice('Instagram usernames: '+lookup.resolved+' resolved, '+lookup.unresolved+' unavailable. Lookup HTTP status counts: '+JSON.stringify(lookup.failures||{}),true);
       }
