@@ -16,15 +16,15 @@ const faq=[
  ['What happens if I let my membership lapse?','Your account returns to the free Member tier when the prepaid term expires. Order history and eligible points remain accessible, while paid-tier discounts and free standard US delivery stop. You can purchase a new term when your previous one has ended.']
 ];
 const features=id=>{
- const p=plans[id],free=id==='member',gold=id==='vip',platinum=id==='elite';
+ const p=plans[id];
  const entries=[
   [true,p.points_per_dollar+'× points per eligible $1 spent'],
-  [!free,'Free standard US shipping on eligible orders'],
-  [!free,(free?'5':String(p.discount_bps/100))+'% off eligible orders, applied automatically'],
-  [!free,'Early access to eligible new releases'],
-  [platinum,'Priority fulfillment — ships first where available'],
-  [platinum,'$50 monthly store credit on orders $150+'],
-  [platinum,'Free BAC Water (3mL) with every eligible purchase']
+  [!!p.free_shipping,'Free standard US shipping on eligible orders'],
+  [p.discount_bps>0,(p.discount_bps?String(p.discount_bps/100):'5')+'% off eligible orders, applied automatically'],
+  [!!p.early_access,'Early access to eligible new releases'],
+  [!!p.priority_fulfillment,'Priority fulfillment — ships first where available'],
+  [p.monthly_credit_cents>0,'$50 monthly store credit after a paid $150+ order'],
+  [!!p.free_bac_water_3ml,'Free BAC Water (3mL) with every eligible purchase']
  ];
  return entries.map(([enabled,label])=>'<li class="'+(enabled?'':'mx-unavailable')+'"><span class="mx-icon" aria-hidden="true">'+(enabled?'✓':'○')+'</span><span>'+esc(label)+'</span></li>').join('');
 };
