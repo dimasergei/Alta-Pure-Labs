@@ -57,6 +57,12 @@
   const status=()=>view('[data-nlx-status]',form);
   const note=(message,error=false)=>{const target=status();if(target){target.textContent=message;target.classList.toggle('nlx-error',error);}};
   const snapshotCart=()=>window.AltaStore?.cart||[];
+  const promoActive=()=>Boolean(data.config.promotions?.bogo)&&Date.now()<Date.parse(data.config.promotions.ends_at);
+  // Cart quantity is the number purchased. Quote/order quantity includes the matching BOGO gifts.
+  const checkoutItems=()=>snapshotCart().map(({id,size,qty})=>{
+   if(promoActive()&&(!Number.isSafeInteger(qty)||qty<1||qty>50))throw Error('During BOGO, choose 1 to 50 purchased units per item.');
+   return {id,size,qty:promoActive()?qty*2:qty};
+  });
   const shippingCountry=()=>form.elements.country?.value||state.shippingData?.country||state.country;
   const selection=()=>({shipping:state.shipping,extras:[...state.extras].sort()});
   const formatAddress=()=>state.shippingData||{
@@ -78,7 +84,7 @@
   }
 
   const draft=consent=>({
-    id:orderId,kind:'goods',items:snapshotCart().map(({id,size,qty})=>({id,size,qty})),
+    id:orderId,kind:'goods',items:checkoutItems(),
     name:((state.firstName||nameFirst)+' '+(state.lastName||nameLast)).trim(),
     phone:state.phone||'',email:user.email,organization:'',
     address:formatAddress(),research_use:!!form.elements.ruo?.checked,consent:!!consent,
@@ -93,7 +99,7 @@
    const s=await auth.auth.getSession(),token=s.data?.session?.access_token;
    const res=await fetch('/api/customer-config?checkout=cart',{method:'POST',cache:'no-store',
      headers:{'Content-Type':'application/json',...(token?{Authorization:'Bearer '+token}:{})},
-     body:JSON.stringify({items:snapshotCart().map(({id,size,qty})=>({id,size,qty})),
+     body:JSON.stringify({items:checkoutItems(),
        method_id:(stage===2&&form.querySelector('[name=payment_choice]:checked')?.value==='bank'?(data.methods||[]).find(m=>m.kind==='bank_transfer'&&m.active!==false)?.id:null)||method?.id||previewMethod?.id||null,coupon:state.coupon,delivery:selection(),country:addr})});
    const result=await res.json().catch(()=>null);
    if(current!==quoteVersion)return null;
@@ -104,11 +110,12 @@
   function moneyLines(){
    const p=currentPreview;
    const subtotal=p?.subtotal_cents??snapshotCart().reduce((n,x)=>n+Math.round(x.price*100)*x.qty,0);
-   const savings=p?.discount_cents??0;
+   const includedGifts=p?.pricing?.lines?.reduce((n,line)=>n+(line.bogo_free_units||0)*(line.unit_price_cents||0),0)||0;
+   const savings=Math.max(0,(p?.discount_cents??0)-includedGifts);
    const delivery=p?.pricing?.delivery||{};
    const ships=p?.shipping_cents??0,shipBase=delivery.shipping_cents??0;
    const fees=delivery.extras||[];
-   const counts=[['Subtotal',subtotal]];
+   const counts=[['Subtotal',subtotal-includedGifts]];
    if(savings)counts.push(['Discounts',-savings]);
    counts.push(['Shipping',shipBase]);
    for(const x of fees)counts.push([x.label,x.amount_cents]);
@@ -136,7 +143,7 @@
   // Only the authoritative quote can certify free promotional units.
   function quotedFreeUnits(line,preview=currentPreview){
    const matching=Array.isArray(preview?.pricing?.lines)?preview.pricing.lines.find(row=>
-    row.id===line.id&&row.size===line.size&&row.qty===line.qty):null;
+    row.id===line.id&&row.size===line.size&&row.qty===(promoActive()?line.qty*2:line.qty)):null;
    const n=matching?.bogo_free_units;
    return Number.isSafeInteger(n)&&n>0&&n<=line.qty&&['bogo','bogo+coupon_bogo'].includes(matching?.discount_reason)?n:0;
   }
@@ -146,7 +153,7 @@
    view('[data-nlx-protection]',detail).innerHTML=isActive('protection')&&state.country==='US'?'<div class="nlx-protection-body"><span class="nlx-shield">'+shieldIcon+'</span><div class="nlx-protection-copy"><strong><span class="nlx-protection-lock" aria-hidden="true"><svg viewBox="0 0 24 24"><rect x="5" y="10" width="14" height="11" rx="2"/><path d="M8 10V7a4 4 0 0 1 8 0v3"/></svg></span>Shipping Protection</strong><button type="button" class="nlx-disclosure-trigger" data-testid="protection-disclosure" data-nlx-info="protection" aria-controls="nlx-protection-detail" aria-expanded="false">Read more</button><div class="nlx-disclosure" id="nlx-protection-detail" data-testid="protection-disclosure-panel" data-nlx-panel hidden><p>'+esc(optionsById.protection.description||'Optional protection for eligible shipments.')+'</p><a href="/shipping-protection.html">Full shipping protection policy</a></div></div><span class="nlx-protection-price">'+usd(optionsById.protection.price_cents)+'</span><label class="nlx-mini-check"><input type="checkbox" data-nlx-extra="protection" '+(state.extras.has('protection')?'checked':'')+' aria-label="Shipping protection"></label></div>':'';
    view('[data-nlx-products]',detail).innerHTML='<div class="nlx-product-head"><span>PRODUCT</span><span>SUBTOTAL</span></div>'+items.map(x=>{
     const image=window.AltaStore?.image?.(window.AltaStore.product(x.id),x.size)||'';
-    const free=quotedFreeUnits(x)||(Date.now()<Date.parse('2026-11-26T23:59:59-06:00')&&x.qty===1?1:0);
+    const free=promoActive()?quotedFreeUnits(x):0;
     return '<div class="nlx-product"><button type="button" class="nlx-remove" data-nlx-remove="'+esc(x.key)+'" aria-label="Remove '+esc(x.name)+'">×</button><img src="'+esc(image)+'" alt=""><div class="nlx-product-name"><strong>'+esc(x.name)+'</strong><div class="nlx-size-line"><small>'+esc(x.size)+'</small>'+(free?'<span class="nlx-promo-free" data-testid="checkout-bogo-free">+'+free+' FREE</span>':'')+'</div><div class="nlx-qty"><button data-nlx-qty="-1" data-key="'+esc(x.key)+'" aria-label="Decrease quantity">−</button><span>'+x.qty+'</span><button data-nlx-qty="1" data-key="'+esc(x.key)+'" aria-label="Increase quantity">+</button></div></div><strong class="nlx-product-price">'+usd(Math.round(x.price*100)*x.qty)+'</strong></div>';
    }).join('');
    view('[data-nlx-totals]',detail).innerHTML=moneyLines().map(([n,v])=>'<div class="'+(n==='Total'?'nlx-grand':'')+'"><span>'+esc(n)+'</span><strong>'+usd(v)+'</strong></div>').join('');
@@ -167,6 +174,7 @@
    all('[data-nlx-qty]',detail).forEach(b=>b.addEventListener('click',()=>{
     const before=snapshotCart().find(x=>x.key===b.dataset.key);
     if(!before)return;
+    if(promoActive()&&Number(b.dataset.nlxQty)>0&&before.qty>=50)return;
     window.AltaStore?.adjustQuantity?.(before.key,Number(b.dataset.nlxQty));
     invalidate();
     renderSummary();refresh();
