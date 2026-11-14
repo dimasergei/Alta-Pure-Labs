@@ -9,7 +9,7 @@
 html,html body{background:var(--ap-admin-bg)!important;color:var(--ap-admin-text)!important}
 body .admin-page{padding:0!important;min-height:100vh!important;background:radial-gradient(ellipse at 80% -25%,#e6f0fc 0,transparent 50%),var(--ap-admin-bg)!important}
 body .admin-page>.shell{width:100%!important;max-width:none!important;margin:0!important}
-body .ap-workspace[hidden],body #login-view.ap-auth-layout[hidden],body #mk-login.ap-auth-layout[hidden],
+body #orders-view.ap-workspace[hidden],body #mk-app.ap-workspace[hidden],body #login-view.ap-auth-layout[hidden],body #mk-login.ap-auth-layout[hidden],
 body .ap-workspace .mk-panel[hidden],body .ap-workspace .admin-view-section[hidden]{display:none!important}
 .ap-workspace *{box-sizing:border-box}
 body #orders-view.ap-workspace,body #mk-app.ap-workspace{
