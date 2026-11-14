@@ -13,6 +13,8 @@
   let data = read(), selected='',draftId='', password='', aiAvailable=false, loggedIn=false;
   let revision=0,remoteReady=false,syncTimer=null,syncRunning=false,syncQueued=false;
   let instagram={connected:false,credentials_configured:false},igMessages=[];
+  const igProfiles={};
+  function participantLabel(id){const profile=igProfiles[id];return profile?.username?'@'+profile.username:'Instagram user '+id;}
 
   function read(){
     try{
@@ -301,7 +303,7 @@
     select.replaceChildren();
     if(!connected)select.append(new Option('Connect Instagram first',''));
     else if(!participants.length)select.append(new Option('No synced conversations yet',''));
-    else for(const id of participants)select.append(new Option('Instagram user '+id,id));
+    else for(const id of participants)select.append(new Option(participantLabel(id),id));
     if(prior&&participants.includes(prior))select.value=prior;
     const id=select.value;
     const events=igMessages.filter(x=>x.participant_id===id).sort((a,b)=>new Date(a.message_at)-new Date(b.message_at));
@@ -309,7 +311,7 @@
     if(!events.length)root.append(elem('p','No conversation selected. Sync the Instagram inbox or wait for a new incoming DM.','mk-muted'));
     for(const item of events){
       const el=elem('article',undefined,'mk-entry'),
-        title=elem('strong',item.direction==='incoming'?'Instagram user':'AltaPure'),
+        title=elem('strong',item.direction==='incoming'?participantLabel(item.participant_id):'AltaPure'),
         date=elem('small',new Date(item.message_at).toLocaleString()),
         body=elem('p',item.body||'[Media message]');
       el.append(title,date,body);root.append(el);
@@ -323,7 +325,14 @@
   async function refreshInstagram(sync=false){
     try{
       $('mk-ig-status').textContent=sync?'Syncing recent Instagram conversations…':'Refreshing account status…';
-      if(sync)await endpoint({action:'instagram_sync'});
+      if(sync){
+        const result=await endpoint({action:'instagram_sync'});
+        if(result.participant_profiles&&typeof result.participant_profiles==='object'){
+          for(const [id,profile] of Object.entries(result.participant_profiles)){
+            if(/^\\d{5,30}$/.test(id)&&/^[a-zA-Z0-9._]{1,30}$/.test(profile?.username||''))igProfiles[id]={username:profile.username,name:clean(profile.name,120)};
+          }
+        }
+      }
       const status=await endpoint();
       instagram=status.instagram||{connected:false};
       igMessages=Array.isArray(status.instagram_messages)?status.instagram_messages:[];
