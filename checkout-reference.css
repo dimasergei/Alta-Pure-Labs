@@ -282,3 +282,34 @@ body.ap-checkout-page #account-root{box-shadow:none!important;border:0!important
   .nlx-bank-logos .nlx-bank-link{width:100%!important;margin-bottom:5px!important}
   .nlx-bank-logos img.nlx-bank-logo{width:43px!important;height:43px!important;flex-basis:43px!important}
 }
+
+/* Annotated checkout reference: proportional rather than browser zoom. */
+@media(min-width:1100px){
+ body.ap-checkout-page .account-page{padding:17px 24px 56px!important}
+ body.ap-checkout-page .account-shell{width:min(1360px,100%)!important}
+ .nlx-page{width:min(1340px,100%)}
+ .nlx-columns{grid-template-columns:minmax(0,1.96fr) minmax(340px,1fr);gap:38px}
+ .nlx-left{padding:26px 32px 28px;border-radius:23px}
+ .nlx-heading{margin-bottom:22px}
+ .nlx-heading h1{font-size:36px}
+ .nlx-confirm{margin-bottom:19px}
+ .nlx-confirm>div{padding:12px 15px}
+ .nlx-progress{padding-bottom:17px;margin-bottom:19px}
+ .nlx-summary{border-radius:23px}
+}
+.nlx-wallets{display:grid!important;grid-template-columns:minmax(0,1fr) auto minmax(0,1fr);gap:9px!important}
+.nlx-wallets .nlx-wallet-unavailable,.nlx-wallets .nlx-wallet-unavailable:disabled{width:100%!important;height:43px!important;min-height:43px!important;max-height:43px!important;padding:0 12px!important;border-radius:999px!important;display:inline-flex!important;align-items:center!important;justify-content:center!important;gap:2px!important;background:#000!important;color:#fff!important;opacity:1!important;font-family:Arial,Helvetica,sans-serif!important;font-weight:400!important;font-size:19px!important;letter-spacing:-.07em!important}
+.nlx-wallets .nlx-wallet-unavailable b{font-weight:400!important;font-size:19px!important;line-height:1!important;letter-spacing:-.075em!important}
+.nlx-wallets .nlx-wallet-unavailable .nlx-wallet-symbol{width:19px!important;height:19px!important;max-width:19px!important;max-height:19px!important;flex:0 0 19px!important}
+.nlx-wallets .nlx-wallet-unavailable .nlx-apple-symbol{width:20px!important;height:20px!important;max-width:20px!important;max-height:20px!important;flex-basis:20px!important;transform:translateY(-1px)}
+.nlx-wallets .nlx-or{font-size:11px!important;font-weight:400;color:#6b7c91;line-height:1}
+.nlx-product-name{display:flex!important;flex-direction:column;align-items:flex-start;gap:3px;min-width:0}
+.nlx-product-name small{margin:0!important}
+.nlx-promo-free{margin:0!important;padding:2px 6px!important}
+.nlx-qty{height:27px!important;margin-top:3px}
+.nlx-qty button{width:28px!important;height:27px!important}
+.nlx-qty span{padding-inline:12px!important;min-width:31px;text-align:center}
+.nlx-protection-copy strong{display:flex;align-items:center;gap:5px}
+.nlx-protection-lock{display:inline-flex;align-items:center;justify-content:center;color:#174b95}
+.nlx-protection-lock svg{width:13px;height:13px;fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round}
+@media(max-width:520px){.nlx-wallets{gap:5px!important}.nlx-wallets .nlx-wallet-unavailable{height:42px!important;min-height:42px!important;padding-inline:7px!important}.nlx-wallets .nlx-wallet-unavailable b{font-size:17px!important}.nlx-wallets .nlx-wallet-unavailable .nlx-wallet-symbol{width:17px!important;height:17px!important;flex-basis:17px!important}}
