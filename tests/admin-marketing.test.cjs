@@ -109,3 +109,28 @@ test('all Instagram reply sends require explicit manual actions',()=>{
   assert.ok(frontend.includes("action:'instagram_send'"));
   assert.ok(!frontend.includes('setInterval(()=>endpoint({action:\'instagram_send\''));
 });
+
+test('marketing Instagram connection uses Meta Unified Login and a one-time state',async()=>{
+  const platform=require('../lib/admin-marketing-platform');
+  let inserted;
+  const db={from(table){
+    assert.equal(table,'ap_marketing_ig_oauth_states');
+    return {async insert(value){inserted=value;return {error:null,data:value};}};
+  }};
+  const auth=await platform.connectUrl(db,{
+    SITE_URL:'https://altapurelabs.com',
+    INSTAGRAM_APP_ID:'2526228261196996',
+    INSTAGRAM_CONFIG_ID:'1599102845567340',
+    INSTAGRAM_APP_SECRET:'unit-test-secret',
+    INSTAGRAM_TOKEN_ENCRYPTION_KEY:'a'.repeat(64)
+  });
+  const url=new URL(auth.authorization_url);
+  assert.equal(url.origin,'https://www.facebook.com');
+  assert.equal(url.pathname,'/dialog/oauth');
+  assert.equal(url.searchParams.get('config_id'),'1599102845567340');
+  assert.equal(url.searchParams.get('redirect_uri'),'https://altapurelabs.com/api/instagram/callback');
+  assert.equal(url.searchParams.get('response_type'),'code');
+  assert.match(url.searchParams.get('state'),/^[a-f0-9]{64}$/);
+  assert.equal(inserted.state_hash.length,64);
+  assert.equal(url.searchParams.has('scope'),false);
+});
