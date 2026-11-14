@@ -12,9 +12,15 @@ test('custom referral codes normalize, reserve promotions and remain signed agai
  const now=1794410000000,value=partner.cookieToken('MY-LAB_20','fixture-key',now);assert.equal(partner.readCookie('ap_ref='+value,'fixture-key',now),'MY-LAB_20');assert.equal(partner.readCookie('ap_ref='+value.replace('MY-LAB','OTHER'),'fixture-key',now),null);
 });
 test('delivery extras are opt-in, disabled services are rejected, and only standard shipping is waived',()=>{
- assert.equal(delivery.price(undefined,false).total_cents,2500);assert.equal(delivery.price(undefined,true).total_cents,0);
- assert.throws(()=>delivery.price({shipping:'express',extras:[]},false),/unavailable/);assert.throws(()=>delivery.price({shipping:'standard',extras:['protection']},true),/unavailable/);assert.throws(()=>delivery.selection({shipping:'standard',extras:['priority','priority']}));
- const enabled=delivery.defaults.map(x=>({...x,enabled:true}));assert.equal(delivery.price({shipping:'express',extras:['priority','protection']},true,enabled).total_cents,4994);
+ assert.equal(delivery.price(undefined,false).total_cents,1495);assert.equal(delivery.price(undefined,true).total_cents,0);
+ assert.equal(delivery.price({shipping:'express',extras:[]},false).total_cents,3495);
+ assert.equal(delivery.price({shipping:'standard',extras:['protection']},true).total_cents,500);
+ assert.throws(()=>delivery.selection({shipping:'standard',extras:['priority','priority']}));
+ assert.equal(delivery.price({shipping:'express',extras:['priority','protection']},true).total_cents,4994);
+ assert.equal(delivery.price({shipping:'standard',extras:['priority','protection']},false,delivery.defaults,'CA').total_cents,5494);
+ assert.equal(delivery.price({shipping:'standard',extras:[]},false,delivery.defaults,'DE').total_cents,5995);
+ assert.throws(()=>delivery.price({shipping:'next_day',extras:[]},false,delivery.defaults,'CA'),/unavailable/);
+ assert.throws(()=>delivery.price({shipping:'standard',extras:[]},false,delivery.defaults,'IR'),/available/);
 });
 test('Lotus client uses the fixed provider origin, exact decimal amounts and safe errors',async()=>{
  let calls=[];const api=lotus.client({env:{LOTUS_PARTNER_API_KEY:'ptr_test_'+'A'.repeat(43)},fetchImpl:async(u,o)=>{calls.push({u,o});return{ok:false,status:429,json:async()=>({error:{code:'rate_limited',message:'should not propagate keys or PII'}})};}});
@@ -27,7 +33,13 @@ test('supplier worker cannot make a request while either activation gate is off'
 });
 test('wallet availability requires a verified live native method and never exposes tokenization credentials',()=>{
  const checkout=require('../lib/direct-checkout');assert.deepEqual(checkout.capabilities([],{}),{card:false,card_method_id:null,apple_pay:false,google_pay:false});
- const c=checkout.capabilities([{id:'native-id',native_provider:'nmi'}],{NMI_APPLE_PAY_ENABLED:'true',NMI_GOOGLE_PAY_ENABLED:'true'});assert.equal(c.apple_pay,true);assert.equal(c.card_method_id,'native-id');assert.equal(c.tokenization_key,undefined);
+ const m=[{id:'native-id',native_provider:'nmi'}];
+ assert.equal(checkout.capabilities(m,{NMI_APPLE_PAY_ENABLED:'true'}).card,false);
+ const config={NMI_API_KEY:'fixture-key',NMI_TOKENIZATION_KEY:'public-fixture-token',NMI_WEBHOOK_KEY:'fixture-webhook',
+ NMI_MERCHANT_ID:'fixture-merchant',NMI_CURRENCIES:'USD',NMI_MODE:'live',NMI_ENABLED:'true',NMI_APPLE_PAY_ENABLED:'true',NMI_GOOGLE_PAY_ENABLED:'true'};
+ const c=checkout.capabilities(m,config);assert.equal(c.apple_pay,true);assert.equal(c.google_pay,true);
+ assert.equal(c.card_method_id,'native-id');assert.equal(c.tokenization_key,undefined);
+ assert.equal(JSON.stringify(checkout.nmiPublicConfig(m,config)).includes('fixture-webhook'),false);
 });
 test('supplier operations reject unauthenticated and cross-origin writes before querying data',async()=>{
  const handler=require('../lib/lotus-admin').handle;let queried=false;

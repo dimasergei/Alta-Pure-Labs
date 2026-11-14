@@ -1,53 +1,152 @@
 (()=>{'use strict';
- const el=(tag,text)=>{const e=document.createElement(tag);if(text!==undefined)e.textContent=String(text);return e;};
- let api,offset=0,root,dialog,embedded,epoch=0,timer;
- const money=r=>new Intl.NumberFormat('en-US',{style:'currency',currency:r.currency||'USD'}).format((r.total_cents||0)/100);
- const route=(view,extra='')=>'/api/customer-config?lotus=admin&view='+view+extra;
- const write=b=>api(route('write'),{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(b)});
- function button(label,fn){const b=el('button',label);b.type='button';b.className='ghost';b.onclick=async()=>{b.disabled=true;try{await fn();}catch(e){status(e.message);}finally{b.disabled=false;}};return b;}
- function status(t){const x=dialog?.open?dialog.querySelector('[role=status]'):root?.querySelector('[role=status]');if(x)x.textContent=t;}
- function field(form,label,name,value='',type='text'){const l=el('label',label),i=el('input');i.name=name;i.type=type;i.value=value;l.append(i);form.append(l);return i;}
- function select(form,label,name,values,current){const l=el('label',label),s=el('select');s.name=name;for(const [value,text]of values){const o=el('option',text);o.value=value;s.append(o);}s.value=current;l.append(s);form.append(l);return s;}
- function close(){epoch++;clearInterval(timer);dialog?.remove();dialog=null;embedded?.remove();embedded=null;root?.replaceChildren();api=null;}
- async function load(){if(!api||!root)return;const ticket=epoch;root.replaceChildren(el('h2','Checkout orders & fulfillment'));const bar=el('div');bar.className='actions';bar.append(button('Refresh checkout orders',load),button('Payments & refunds',()=>window.AltaFulfillment.openPayments()));root.append(bar,el('p','Orders ship together from one supplier. Lotus receives a paid order only when it carries every line; otherwise assign the complete order to one manual supplier. Settlement and postage labels still require action in Lotus.'));const out=el('p');out.setAttribute('role','status');root.append(out);
- try{const d=await api(route('orders','&offset='+offset));if(ticket!==epoch)return;
- const table=el('table');table.className='fh-table';const head=el('tr');for(const t of ['Order','Customer','Payment','Fulfillment','Actions'])head.append(el('th',t));table.append(head);
- for(const r of d.orders){const tr=el('tr'),ref=el('td','ORD-'+r.id.slice(0,8).toUpperCase());ref.append(el('small',new Date(r.created_at).toLocaleString()));const customer=el('td',r.customer_name);customer.append(el('small',r.customer_email));const f=d.allocations.filter(x=>x.invoice_id===r.id),j=d.jobs.find(x=>x.invoice_id===r.id);const state=el('td',r.kind==='membership'?'Membership':f.length?f.filter(x=>['shipped','delivered'].includes(x.status)).length+'/'+f.length+' lines dispatched':'Awaiting payment');if(f.some(x=>x.route==='manual'&&!x.supplier_name))state.append(el('small','Needs supplier assignment'));if(j)state.append(el('small','Lotus: '+j.status+(j.last_error?' · '+j.last_error:'')+' · settlement '+(j.settlement||'pending')));const actions=el('td');actions.append(button('Manage order',()=>detail(r.id)));tr.append(ref,customer,el('td',r.status+' · '+money(r)),state,actions);table.append(tr);}
- if(!d.orders.length)root.append(el('p','No checkout orders yet. Historical orders remain below.'));else{const wrap=el('div');wrap.className='fh-scroll';wrap.append(table);root.append(wrap);}const pages=el('div');pages.className='actions';const prev=button('Previous',()=>{offset=Math.max(0,offset-25);return load();}),next=button('Next',()=>{offset+=25;return load();});prev.disabled=!offset;next.disabled=!d.has_more;pages.append(prev,el('span','Page '+(offset/25+1)),next);root.append(pages);
- }catch(e){out.textContent=e.message;}}
- async function detail(id){const ticket=epoch;const d=await api(route('detail','&id='+encodeURIComponent(id))),r=d.order;if(ticket!==epoch)return;if(!dialog){dialog=el('dialog');dialog.className='fh-dialog';document.body.append(dialog);}dialog.replaceChildren(button('Close',()=>dialog.close()),el('h2','ORD-'+r.id.slice(0,8).toUpperCase()+' · '+r.status),el('p',r.customer_name+' · '+r.customer_email+' · '+money(r)),el('pre',Object.values(r.request_data.address||{}).filter(Boolean).join('\n')));const out=el('p');out.setAttribute('role','status');dialog.append(out,button('Payment, refund & balance controls',()=>window.AltaFulfillment.openPayments()));
- const overview=el('section');overview.className='fh-card';overview.append(el('h3','Fulfillment routing · this order'));
- const addr=r.request_data?.address||{},country=String(addr.country||'').toUpperCase();
- const supported=country==='US'&&/^[A-Z]{2}$/.test(String(addr.region||''))&&/^\d{5}(?:-\d{4})?$/.test(String(addr.postal_code||''));
- const items=Array.isArray(r.request_data?.items)?r.request_data.items:[];
- const mapped=new Map((d.mappings||[]).filter(m=>m.verified_at).map(m=>[m.variant_key,m]));
- const unmapped=items.filter(x=>!mapped.has(String(x.id)+'|'+String(x.size)));
- const allLotus=d.allocations.length===items.length&&d.allocations.every(x=>x.route==='lotus');
- const job=d.jobs[0];
+const e=(t,text,cls)=>{const x=document.createElement(t);if(text!==undefined)x.textContent=String(text);if(cls)x.className=cls;return x};
+const dollar=(n,c='USD')=>new Intl.NumberFormat('en-US',{style:'currency',currency:c}).format((+n||0)/100);
+const ref=id=>'AP'+String(id||'').replace(/-/g,'').slice(0,10).toUpperCase();
+const status=s=>({accepted:'Awaiting payment',requested:'Pending review',issued:'Payment pending',paid:'Paid',processing:'Processing',shipped:'Shipped',delivered:'Delivered',refunded:'Refunded',void:'Canceled'}[s]||String(s||'Pending'));
+let client,root,dlg,offset=0,records=[],search='',sort='newest',epoch=0,poll;
+const url=(view,extra='')=>'/api/customer-config?lotus=admin&view='+view+extra;
+const write=b=>client(url('write'),{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(b)});
+function msg(t,bad=false){const x=dlg?.open?dlg.querySelector('[data-unified-message]'):root?.querySelector('[data-unified-message]');if(x){x.textContent=t;x.classList.toggle('failed',bad);}}
+function button(t,fn,cls='ghost'){const x=e('button',t,cls);x.type='button';x.onclick=async()=>{x.disabled=true;try{await fn()}catch(err){msg(err.message,true)}finally{x.disabled=false}};return x;}
+function close(){epoch++;clearInterval(poll);dlg?.remove();dlg=null;root?.replaceChildren();root=null;client=null;records=[];}
+function field(k,v){const x=e('div',undefined,'uc-field');x.append(e('span',k),e('strong',v||'—'));return x;}
+function input(f,txt,name,value='',required=false){const l=e('label',txt,'uc-input-field'),x=e('input');x.name=name;x.value=value||'';x.required=required;l.append(x);f.append(l);return x;}
+function select(f,txt,name,values){const l=e('label',txt,'uc-input-field'),x=e('select');x.name=name;for(const [val,t]of values){const o=e('option',t);o.value=val;x.append(o)}l.append(x);f.append(l);return x;}
+function rows(){
+ const host=root?.querySelector('[data-unified-list]');if(!host)return;host.replaceChildren();
+ let list=records.filter(x=>!search||[x.id,ref(x.id),x.customer_name,x.customer_email,x.status].some(y=>String(y||'').toLowerCase().includes(search.toLowerCase())));
+ if(sort==='oldest')list=list.reverse();
+ if(!list.length){host.append(e('p',search?'No matching orders.':'No checkout orders yet.','uc-empty'));return}
+ for(const r of list){const card=e('article',undefined,'uc-order-row'),l=e('div',undefined,'uc-order-identity'),total=e('div',undefined,'uc-order-total');
+  l.append(e('strong',ref(r.id)),e('small',new Date(r.created_at).toLocaleString()),e('span',r.customer_name||r.customer_email));
+  total.append(e('strong',dollar(r.total_cents,r.currency)),e('small',status(r.status)));
+  card.append(l,total,button('Manage order',()=>detail(r.id),'primary'));host.append(card);
+ }
+}
+async function load(){
+ if(!client||!root)return;const ticket=++epoch;root.replaceChildren();
+ const head=e('div',undefined,'uc-header');
+ head.append(button('Refresh',load));root.append(head);
+ const tools=e('div',undefined,'uc-search'),q=e('input');q.type='search';q.placeholder='Search orders or customers';q.setAttribute('aria-label','Search orders');q.value=search;q.oninput=()=>{search=q.value;rows()};
+ const sorting=e('select');for(const [v,t]of [['newest','Newest first'],['oldest','Oldest first']]){const o=e('option',t);o.value=v;sorting.append(o)}sorting.value=sort;sorting.onchange=()=>{sort=sorting.value;rows()};tools.append(q,sorting);root.append(tools);
+ const note=e('p','', 'uc-message');note.setAttribute('data-unified-message','');note.setAttribute('role','status');root.append(note);
+ const list=e('div',undefined,'uc-list');list.setAttribute('data-unified-list','');root.append(list);
+ try{const d=await client(url('orders','&offset='+offset));if(epoch!==ticket)return;records=d.orders||[];rows();
+   const pager=e('div',undefined,'uc-pager'),prev=button('Previous',async()=>{offset=Math.max(0,offset-25);await load()}),next=button('Next',async()=>{offset+=25;await load()});
+   prev.disabled=!offset;next.disabled=!d.has_more;pager.append(prev,e('span','Page '+(offset/25+1)),next);root.append(pager);
+ }catch(err){msg(err.message,true);}
+}
+async function detail(id){
+ const ticket=epoch;const d=await client(url('detail','&id='+encodeURIComponent(id)));if(ticket!==epoch)return;
+ const r=d.order;if(!dlg){dlg=e('dialog');dlg.className='fh-dialog uc-dialog';document.body.append(dlg)}dlg.replaceChildren();
+ const h=e('div',undefined,'uc-dialog-head'),left=e('div');left.append(e('h2',ref(r.id)),e('small',status(r.status)));h.append(left,button('Close',()=>dlg.close()));dlg.append(h);
+ const note=e('p','', 'uc-message');note.setAttribute('role','status');note.setAttribute('data-unified-message','');dlg.append(note);
+ const info=e('section',undefined,'uc-info');info.append(field('Customer',r.customer_name),field('Email',r.customer_email),field('Payment status',status(r.status)),field('Total',dollar(r.total_cents,r.currency)),field('Placed',new Date(r.created_at).toLocaleString()));dlg.append(info);
+ const items=e('section',undefined,'uc-items');items.append(e('h3','Order items'));
+ for(const x of r.pricing?.lines||r.request_data?.items||[]){const item=e('div',undefined,'uc-item');item.append(e('span',(x.name||'Product')+' · '+(x.size||'')+' × '+(x.qty||1)),e('strong',dollar(x.line_total_cents??x.gross_cents??((x.unit_price_usd_cents||0)*(x.qty||1)),r.currency)));items.append(item)}dlg.append(items);
+ const total=e('section',undefined,'uc-total');total.append(field('Subtotal',dollar(r.subtotal_cents,r.currency)),field('Discounts','−'+dollar(r.discount_cents,r.currency)),field('Delivery',dollar(r.shipping_cents,r.currency)),field('Total',dollar(r.total_cents,r.currency)));dlg.append(total);
+ const addr=r.request_data?.address||{},address=[r.request_data?.name||r.customer_name,addr.line1,addr.line2,[addr.city,addr.region,addr.postal_code].filter(Boolean).join(', '),addr.country].filter(Boolean).join(' · ');if(address)dlg.append(e('p','Ship to: '+address,'uc-address'));
+ if(r.tracking_number)dlg.append(e('p','Tracking: '+(r.tracking_carrier||'')+' '+r.tracking_number,'uc-address'));
+
+ // All supplier information belongs to this individual Manage Order dialog.
+ const supplier=e('section',undefined,'uc-supplier-section');
+ supplier.append(e('h3','Supplier fulfillment'));
+ const allocations=Array.isArray(d.allocations)?d.allocations:[],jobs=Array.isArray(d.jobs)?d.jobs:[],job=jobs[0]||null;
+ const orderItems=Array.isArray(r.request_data?.items)?r.request_data.items:[];
+ const verified=new Map((d.mappings||[]).filter(m=>m.verified_at).map(m=>[String(m.variant_key),m]));
+ const country=String(addr.country||'').toUpperCase(),region=String(addr.region||'').toUpperCase(),zip=String(addr.postal_code||'');
+ const supported=country==='US'&&/^[A-Z]{2}$/.test(region)&&/^\d{5}(?:-\d{4})?$/.test(zip);
+ const unmatched=orderItems.filter(item=>!verified.has(String(item.id)+'|'+String(item.size)));
+ const allLotus=allocations.length===orderItems.length&&allocations.length>0&&allocations.every(a=>a.route==='lotus');
  const reasons=[];
- if(!['paid','processing'].includes(r.status))reasons.push('Payment is not confirmed');
+ if(!['paid','processing'].includes(r.status))reasons.push('Payment not confirmed for fulfillment');
  if(r.kind!=='goods')reasons.push('Not a physical goods order');
- if(!supported)reasons.push('Lotus supports U.S. destinations only');
- if(!items.length)reasons.push('No order items');
- if(unmapped.length)reasons.push(unmapped.length+' item variant(s) have no verified Lotus mapping');
- if(!allLotus&&d.allocations.length)reasons.push('Entire order is not allocated to Lotus');
- if(!d.supplier_enabled)reasons.push('Automatic Lotus worker is disabled');
+ if(!supported)reasons.push('Destination requires manual fulfillment');
+ if(unmatched.length)reasons.push(unmatched.length+' product variant(s) not mapped to Lotus');
+ if(allocations.length&&!allLotus)reasons.push('Order allocated to manual fulfillment');
+ if(d.supplier_enabled===false)reasons.push('Lotus automatic worker is disabled');
  if(job?.last_error)reasons.push('Supplier exception: '+job.last_error);
- const headline=job?.supplier_id?'Existing Lotus supplier order':reasons.length?'Manual review / fulfillment':'Lotus candidate — stock and live quote still required';
- overview.append(el('p',headline),el('p',reasons.length?reasons.join(' · '):'The worker must confirm stock, a current supplier quote and its safety limits before submission.'));
- const list=el('ul');
- for(const item of items){const m=mapped.get(String(item.id)+'|'+String(item.size));list.append(el('li',String(item.name||item.id)+' · '+String(item.size||'')+' × '+String(item.qty||0)+' — '+(m?'Mapped to Lotus #'+m.product+' / '+m.vials+' vial pack':'Manual / unmapped')));}
- overview.append(list,el('p','All items stay in one shipment. Manual orders remain here for supplier assignment and tracking. Supplier settlement and postage labels are managed separately.'));
- dialog.append(overview);
- for(const j of d.jobs){const box=el('section');box.className='fh-card';box.append(el('h3','Lotus '+j.status),el('p','Reference: '+j.reference),el('p','Supplier order: '+(j.supplier_id||'Not submitted')+' · '+(j.provider_status||'')),el('p','Settlement: '+(j.settlement||'pending')+' · Amount owed: '+(j.owed_total||'Not quoted')),el('p',j.last_error||'No supplier error'));const link=el('a','Open Lotus for settlement / postage label');link.href='https://partners.lotuspeptide.com/orders';link.target='_blank';link.rel='noopener noreferrer';box.append(link);
- if(j.supplier_id&&!['shipped','cancelled'].includes(j.status)&&!j.takeover_requested){const lf=el('form');lf.className='fh-form';const url=field(lf,'Purchased Pirate Ship label share link','url','','url');url.required=true;const tracking=field(lf,'USPS / UPS tracking number','tracking');tracking.required=true;const send=el('button','Attach purchased shipping label');send.className='ghost';lf.append(send);lf.onsubmit=async e=>{e.preventDefault();send.disabled=true;try{await write({action:'label',id,url:url.value,tracking:tracking.value});out.textContent='Label attached. Dispatch will sync only after Lotus confirms shipment.';}catch(err){out.textContent=err.message;}finally{send.disabled=false;}};box.append(lf);}
- if(j.takeover_requested&&j.status!=='cancelled')box.append(el('p','Manual takeover requested. Do not place a replacement order until cancellation is confirmed.'));
- for(const [action,label]of [['retry','Retry blocked Lotus job'],['takeover','Cancel Lotus & switch to manual']]){if(action==='retry'&&j.status!=='blocked'||action==='takeover'&&['shipped','cancelled'].includes(j.status))continue;const f=el('form');f.className='fh-form';const n=field(f,'Reason', 'note');n.required=true;n.minLength=8;const b=el('button',label);b.className='ghost';f.append(b);f.onsubmit=async e=>{e.preventDefault();b.disabled=true;try{await write({action,id,note:n.value});await detail(id);await load();}catch(err){out.textContent=err.message;}finally{b.disabled=false;}};box.append(f);}dialog.append(box);}
- if(!d.allocations.length){const list=el('ul');for(const x of r.request_data.items||[])list.append(el('li',x.name+' · '+x.size+' × '+x.qty));dialog.append(list,el('p',r.kind==='goods'?'Supplier allocations are created after verified payment.':'Membership purchases do not create supplier shipments.'));}
- for(const f of d.allocations){const box=el('section');box.className='fh-card';box.append(el('h3',f.item.name+' · '+f.item.size+' × '+f.item.qty),el('p',(f.supplier_name||'Unassigned supplier')+' · '+f.route+' · '+f.status),el('p',f.tracking_number?f.tracking_carrier+' · '+f.tracking_number:'No dispatch tracking'),el('p',f.note));
- if(['paid','processing','shipped'].includes(r.status)&&f.status!=='delivered'){
- const form=el('form');form.className='fh-form';const action=select(form,'Action','action',[['assign','Assign / change supplier for whole order'],['shipment','Record fulfillment']],f.status==='shipped'?'shipment':'assign');select(form,'Routing for whole order','route',[['manual','Manual / one other supplier'],['lotus','Lotus (all lines must map)']],f.route);const name=field(form,'One supplier for the complete order (manual)','supplier_name',f.supplier_name);name.maxLength=180;select(form,'Fulfillment status','status',[['ordered','Ordered from supplier'],['shipped','Dispatched'],['delivered','Delivered']],f.status==='shipped'?'delivered':'ordered');field(form,'Carrier','tracking_carrier',f.tracking_carrier).maxLength=100;field(form,'Tracking number','tracking_number',f.tracking_number).maxLength=160;const note=field(form,'Audit note','note');note.required=true;note.minLength=8;note.maxLength=2000;const save=el('button','Save allocation');save.className='primary';form.append(save);form.onsubmit=async e=>{e.preventDefault();save.disabled=true;try{await write({...Object.fromEntries(new FormData(form)),id,variant_key:f.variant_key,version:f.version});await detail(id);await load();}catch(err){out.textContent=err.message;}finally{save.disabled=false;}};box.append(form);}
- dialog.append(box);}
- if(!dialog.open)dialog.showModal();}
- window.AltaFulfillment={mount(client){api=client;root=document.getElementById('fulfillment-hub');if(root)root.hidden=true;clearInterval(timer);},manage:detail,refresh:load,clear:close,openPayments(){document.dispatchEvent(new CustomEvent('alta-open-payment-desk'));},paymentDesk(password){embedded?.remove();embedded=el('dialog');embedded.className='fh-dialog fh-payments';embedded.append(button('Close payment desk',()=>{embedded.remove();embedded=null;load();}));const frame=el('iframe');frame.title='Payment and refund controls';frame.src='/admin-payments.html';frame.onload=()=>{const doc=frame.contentDocument;const input=doc?.getElementById('pay-password'),form=doc?.getElementById('pay-login');if(input&&form){input.value=password;form.requestSubmit();password='';}};embedded.append(frame);document.body.append(embedded);embedded.showModal();}};
+ supplier.append(e('p',job?.supplier_id?'Existing Lotus supplier order':reasons.length?reasons.join(' · '):'Lotus candidate. A live supplier quote and stock check are required before submission.','uc-hint'));
+ for(const item of orderItems){
+  const key=String(item.id)+'|'+String(item.size),mapping=verified.get(key);
+  const row=e('div',undefined,'uc-item');
+  row.append(e('span',(item.name||item.id)+' · '+(item.size||'')+' × '+(item.qty||1)),
+   e('strong',mapping?'Mapped: Lotus #'+mapping.product+' · pack '+mapping.vials:'Manual / unmapped'));
+  supplier.append(row);
+ }
+ if(job){
+  supplier.append(e('p','Lotus: '+(job.status||'pending')+' · Reference: '+(job.reference||'—'),'uc-hint'));
+  supplier.append(e('p','Supplier order: '+(job.supplier_id||'Not submitted')+
+   ' · Settlement: '+(job.settlement||'pending')+
+   ' · Amount owed: '+(job.owed_total||'Not quoted'),'uc-hint'));
+  if(job.tracking_number)supplier.append(e('p','Tracking: '+(job.carrier||'')+' '+job.tracking_number,'uc-hint'));
+  if(job.last_error)supplier.append(e('p','Last exception: '+job.last_error,'uc-hint'));
+  const link=e('a','Open Lotus partner portal for settlement and shipping labels');
+  link.href='https://partners.lotuspeptide.com/orders';link.rel='noopener noreferrer';link.target='_blank';supplier.append(link);
+  if(job.status==='blocked'&&!job.takeover_requested){
+   const form=e('form',undefined,'uc-action-form');
+   const reason=input(form,'Reason for retry','note','',true);reason.minLength=8;
+   const save=e('button','Retry blocked Lotus order','mk-button');form.append(save);
+   form.onsubmit=async event=>{event.preventDefault();save.disabled=true;try{await write({action:'retry',id:r.id,note:reason.value});await detail(id);window.AltaOrdersWorkspace?.refresh?.()}catch(err){msg(err.message,true)}finally{save.disabled=false}};
+   supplier.append(form);
+  }
+  if(!['shipped','cancelled'].includes(job.status)&&!job.takeover_requested){
+   const form=e('form',undefined,'uc-action-form');
+   form.append(e('p','Switch to manual only after Lotus cancellation is confirmed. No replacement order is created automatically.','uc-hint'));
+   const reason=input(form,'Cancellation / manual takeover reason','note','',true);reason.minLength=8;
+   const save=e('button','Request Lotus cancellation and manual takeover','ghost');form.append(save);
+   form.onsubmit=async event=>{event.preventDefault();if(!window.confirm('Request supplier cancellation? Do not reorder until Lotus confirms cancellation.'))return;save.disabled=true;try{await write({action:'takeover',id:r.id,note:reason.value});await detail(id);window.AltaOrdersWorkspace?.refresh?.()}catch(err){msg(err.message,true)}finally{save.disabled=false}};
+   supplier.append(form);
+  }
+  if(job.takeover_requested&&job.status!=='cancelled')supplier.append(e('p','Manual takeover requested — wait for confirmed cancellation before assigning another supplier.','uc-hint'));
+  if(job.supplier_id&&!job.takeover_requested&&!['cancelled','shipped'].includes(job.status)){
+   const form=e('form',undefined,'uc-action-form');
+   form.append(e('p','Attach a shipping label already purchased in Pirate Ship. This does not buy a label or charge the supplier.','uc-hint'));
+   const label=input(form,'Pirate Ship HTTPS share link','url','',true);label.type='url';
+   const tracking=input(form,'Tracking number','tracking','',true);
+   const save=e('button','Attach purchased label','mk-button');form.append(save);
+   form.onsubmit=async event=>{event.preventDefault();save.disabled=true;try{await write({action:'label',id:r.id,url:label.value,tracking:tracking.value});msg('Label submitted. Tracking updates after Lotus confirms dispatch.');await detail(id)}catch(err){msg(err.message,true)}finally{save.disabled=false}};
+   supplier.append(form);
+  }
+ }
+ if(allocations.length&&['paid','processing'].includes(r.status)&&allocations.every(a=>!['shipped','delivered'].includes(a.status))){
+  const first=allocations[0],form=e('form',undefined,'uc-action-form');
+  form.append(e('h4','Manual fulfillment — one supplier for the entire order'));
+  const chosen=input(form,'Supplier name','supplier_name',allocations.find(a=>a.route==='manual'&&a.supplier_name)?.supplier_name||'',true);
+  chosen.maxLength=180;chosen.minLength=2;
+  const reason=input(form,'Audit note','note','',true);reason.minLength=8;reason.maxLength=2000;
+  const save=e('button','Assign complete order to manual supplier','mk-button');form.append(save);
+  form.onsubmit=async event=>{event.preventDefault();save.disabled=true;try{
+   await write({action:'assign',id:r.id,variant_key:first.variant_key,version:first.version,route:'manual',supplier_name:chosen.value,note:reason.value});
+   await detail(id);window.AltaOrdersWorkspace?.refresh?.();
+  }catch(err){msg(err.message,true)}finally{save.disabled=false}};
+  supplier.append(form);
+ }
+ if(!allocations.length)supplier.append(e('p',r.status==='paid'?'No supplier allocations recorded yet; review automatic routing.':'Supplier allocations are created only after confirmed payment.','uc-hint'));
+ if(allocations.some(a=>a.route==='manual'&&a.supplier_name)){
+  const a=allocations.find(x=>x.route==='manual'&&x.supplier_name);
+  supplier.append(e('p','Manual supplier: '+a.supplier_name+' · Fulfillment: '+(a.status||'pending'),'uc-hint'));
+  if(a.tracking_number)supplier.append(e('p','Tracking: '+(a.tracking_carrier||'')+' '+a.tracking_number,'uc-hint'));
+  if(allocations.length>1)supplier.append(e('p','One combined shipment only. Use the order-level status and tracking controls; do not split items.','uc-hint'));
+ }
+ dlg.append(supplier);
+
+ const actions=e('section',undefined,'uc-actions');actions.append(e('h3','Manage order'));dlg.append(actions);
+ if(r.status==='accepted'){actions.append(e('p','Only cancel if no funds were sent. Existing payment links may remain payable; late funds require manual refund review.','uc-hint'));
+  actions.append(button('Cancel unpaid order',async()=>{
+   if(!window.confirm('Cancel '+ref(r.id)+'? Verify that no payment has been sent. Any existing payment link may remain usable.'))return;
+   const result=await write({action:'cancel_order',id:r.id,confirm_unpaid:true});if(result.status!=='void')throw Error('Cancellation was not confirmed.');
+   dlg.close();await load();msg(ref(r.id)+' canceled. No refund was issued.');
+  },'uc-danger'));}
+ const steps={paid:[['processing','Processing'],['shipped','Shipped']],processing:[['shipped','Shipped']],shipped:[['delivered','Delivered']]};
+ if(steps[r.status]){const f=e('form',undefined,'uc-action-form');f.append(e('h4','Update order status'));const s=select(f,'Next status','status',steps[r.status]),carrier=input(f,'Carrier','tracking_carrier',r.tracking_carrier),tracking=input(f,'Tracking number','tracking_number',r.tracking_number),reason=input(f,'Reason / note','note','',true);reason.minLength=8;const save=e('button','Save status','primary');f.append(save);
+ f.onsubmit=async event=>{event.preventDefault();save.disabled=true;try{if(s.value==='shipped'&&(!carrier.value.trim()||!tracking.value.trim()))throw Error('Carrier and tracking are required to mark shipped.');await write({action:'update_order',id:r.id,version:r.version,status:s.value,note:reason.value,tracking_carrier:carrier.value,tracking_number:tracking.value});await load();await detail(id)}catch(err){msg(err.message,true)}finally{save.disabled=false}};actions.append(f);}
+ if(['paid','processing','shipped','delivered'].includes(r.status)){const f=e('form',undefined,'uc-action-form');f.append(e('h4','Record a completed refund'),e('p','This records a FULL refund that you have already completed with the provider. This button does not send money.','uc-hint'));const transaction=input(f,'Verified provider refund transaction ID','external_reference','',true);transaction.minLength=8;
+ const confirm=e('label',undefined,'uc-check'),cb=e('input');cb.type='checkbox';cb.required=true;confirm.append(cb,e('span','I verified the full external refund was completed.'));f.append(confirm);const save=e('button','Record verified refund','ghost');f.append(save);
+ f.onsubmit=async event=>{event.preventDefault();save.disabled=true;try{if(!cb.checked)throw Error('Confirm the external refund first.');if(!window.confirm('Record the completed external refund for '+ref(r.id)+'? This does not return money.'))return;await write({action:'record_verified_refund',id:r.id,version:r.version,confirm_external_refund:true,external_reference:transaction.value});await load();await detail(id)}catch(err){msg(err.message,true)}finally{save.disabled=false}};actions.append(f);}
+ if(r.status==='void')actions.append(e('p','Canceled. Any late payment must be reconciled before refund; no order fulfillment is authorized.','uc-hint'));
+ if(r.status==='refunded')actions.append(e('p','Full external refund recorded.','uc-hint'));
+ if(!dlg.open)dlg.showModal();
+}
+window.AltaFulfillment={mount(fn){client=fn;root=document.getElementById('fulfillment-hub');clearInterval(poll);poll=setInterval(()=>{if(!document.hidden&&!dlg?.open&&!root.contains(document.activeElement))load()},60000);load()},bind(fn){client=fn;},manage:detail,refresh:load,clear:close,openPayments(){},paymentDesk(){}};
 })();

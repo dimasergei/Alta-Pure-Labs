@@ -13,6 +13,10 @@
   },
   "rewrites": [
     {
+      "source": "/api/instagram/callback",
+      "destination": "/api/customer-config?instagram=callback"
+    },
+    {
       "source": "/checkout",
       "destination": "/account.html"
     },
@@ -83,5 +87,17 @@
   ],
   "git": {
     "deploymentEnabled": false
-  }
+  },
+  "redirects": [
+    {
+      "source": "/admin-orders.html",
+      "destination": "/admin-marketing.html?view=orders",
+      "permanent": false
+    },
+    {
+      "source": "/admin-orders",
+      "destination": "/admin-marketing.html?view=orders",
+      "permanent": false
+    }
+  ]
 }

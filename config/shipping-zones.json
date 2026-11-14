@@ -1,0 +1,26 @@
+{
+  "version": "shipping-2026-11-v1",
+  "currency": "USD",
+  "US": {
+    "standard": 1495,
+    "express": 3495,
+    "next_day": 6995
+  },
+  "CA": {
+    "standard": 3995,
+    "express": 5995
+  },
+  "OTHER": {
+    "standard": 5995,
+    "express": 9995
+  },
+  "unavailable_countries": [
+    "RU",
+    "BY",
+    "IR",
+    "KP",
+    "CU",
+    "SY"
+  ],
+  "notice": "Rates are flat checkout charges, not live UPS quotations. Carrier availability and customs/import restrictions are reviewed before dispatch; import duties are the recipient\u2019s responsibility."
+}

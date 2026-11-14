@@ -8,3 +8,5 @@
 @media(max-width:1100px){.ap-hero-product:nth-of-type(2){width:175px;left:26%;top:95px}.ap-hero-product:nth-of-type(2) img{height:210px}.ap-hero-product:nth-of-type(3){width:140px;left:62%;top:175px}.ap-hero-product:nth-of-type(3) img{height:150px}}
 @media(max-width:800px){.ap-hero-product:nth-of-type(2){left:33%;top:35px;width:165px}.ap-hero-product:nth-of-type(2) img{height:185px}.ap-hero-product:nth-of-type(3){left:64%;top:95px;width:120px}.ap-hero-product:nth-of-type(3) img{height:135px}}
 @media(max-width:420px){.ap-hero-product:nth-of-type(2){left:28%;width:160px}.ap-hero-product:nth-of-type(3){left:64%;width:112px}}
+
+.ap-nmi-express-dialog{width:min(1100px,96vw);max-height:90dvh;overflow:auto}.ap-nmi-modal-body{padding:10px}.ap-cart-express{margin:14px 0;padding:16px 0;border-block:1px solid #dce6e3}.ap-cart-express .ap-button{width:100%}

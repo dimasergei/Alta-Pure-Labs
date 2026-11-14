@@ -1,0 +1,40 @@
+name: Admin single-workspace regression
+on:
+  push:
+    branches:
+      - 'fix/single-workspace-orders-marketing-20261114'
+  pull_request:
+    paths:
+      - 'admin-marketing.html'
+      - 'admin-marketing.js'
+      - 'admin-workspace-orders.js'
+      - 'admin-workspace-orders.css'
+      - 'admin-fulfillment.js'
+      - 'lib/admin-workspace-orders.js'
+      - 'lib/admin-order-query.js'
+      - 'api/customer-config.js'
+      - 'tests/admin-single-workspace.test.cjs'
+      - 'tests/unified-admin-orders.test.cjs'
+      - '.github/workflows/admin-single-workspace.yml'
+permissions:
+  contents: read
+jobs:
+  unit-and-dom:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020
+        with:
+          node-version: '22'
+      - run: npm ci --ignore-scripts
+      - name: Syntax
+        run: |
+          node --check admin-workspace-orders.js
+          node --check admin-marketing.js
+          node --check admin-fulfillment.js
+          node --check lib/admin-workspace-orders.js
+          node --check lib/admin-order-query.js
+      - name: DOM and unified data tests
+        run: node --test tests/admin-single-workspace.test.cjs tests/unified-admin-orders.test.cjs tests/admin-marketing.test.cjs tests/unified-fulfillment-ui.test.cjs
