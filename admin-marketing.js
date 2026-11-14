@@ -85,7 +85,7 @@
     if(!r.ok)throw Error(payload.error||'Marketing endpoint unavailable.');
     return payload;
   }
-  function showApp(){loggedIn=true;$('mk-login').hidden=true;$('mk-app').hidden=false;$('mk-style').value=data.style;render();notice('Shared Marketing CRM loaded. No outreach is sent automatically.');}
+  function showApp(){loggedIn=true;$('mk-login').hidden=true;$('mk-app').hidden=false;$('mk-style').value=data.style;render();notice('');}
   function showLogin(message){loggedIn=false;remoteReady=false;password='';$('mk-app').hidden=true;$('mk-login').hidden=false;if(message){$('mk-login-error').hidden=false;$('mk-login-error').textContent=message;}}
   async function login(value){
     password=value;

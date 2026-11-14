@@ -19,7 +19,7 @@
     left.setAttribute('aria-label','AltaPure Labs secure business workspace');
     const logo=el('div','ap-auth-symbol');
     const img=document.createElement('img');
-    img.src='/brand-logo.png';
+    img.src='/favicon.svg?v=20261114-neon-admin-v3';
     img.alt='';
     img.width=76;
     img.height=76;
@@ -85,8 +85,7 @@
     crumb.append(el('span','','ADMINISTRATION'));
     crumb.append(el('span','ap-breadcrumb-divider','/'));
     crumb.append(el('strong','',isOrders?'ORDERS':'MARKETING'));
-    const small=el('span','ap-workspace-context-sub',isOrders?'Store operations':'Creator acquisition');
-    context.append(crumb,small);
+    context.append(crumb);
     const controls=el('div','ap-workspace-top-actions');
     const site=document.createElement('a');
     site.href='/';site.className='ap-workspace-store-link';
@@ -105,8 +104,8 @@
     if(pageHead){
       pageHead.classList.add('ap-page-intro');
       const copy=pageHead.querySelector('h1');
-      if(copy){
-        copy.before(el('div','ap-section-eyebrow',isOrders?'COMMERCE OPERATIONS':'PARTNER DEVELOPMENT'));
+      if(copy && isOrders){
+        copy.before(el('div','ap-section-eyebrow','COMMERCE OPERATIONS'));
       }
     }
     if(isOrders)ordersWorkarea(body);
@@ -126,9 +125,6 @@
     label.append(title);
     section.insertBefore(surface,hub);
     surface.append(label,hub);
-    const info=el('div','ap-safe-note');
-    info.textContent='Actions are performed against live order data. Review each order before making a fulfillment change.';
-    label.after(info);
     section.classList.add('ap-orders-section');
   }
   function marketingWorkarea(body){
@@ -163,14 +159,6 @@
         const hint=card.querySelector('small');
         if(hint)hint.textContent=names[i]||hint.textContent;
       }
-    }
-    const info=body.querySelector('.mk-info');
-    if(info)info.classList.add('ap-system-notice');
-    const original=body.querySelector('.mk-title');
-    if(original){
-      const helper=el('p','ap-page-helper','One organized workspace for creator relationships and Instagram conversations.');
-      const first=original.querySelector('h1');
-      if(first)first.after(helper);
     }
   }
   function init(){

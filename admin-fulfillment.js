@@ -25,8 +25,8 @@ function rows(){
 }
 async function load(){
  if(!client||!root)return;const ticket=++epoch;root.replaceChildren();
- const head=e('div',undefined,'uc-header'),h=e('div');h.append(e('p','Manage all new checkout orders in one place.','uc-hint'));
- head.append(h,button('Refresh',load));root.append(head);
+ const head=e('div',undefined,'uc-header');
+ head.append(button('Refresh',load));root.append(head);
  const tools=e('div',undefined,'uc-search'),q=e('input');q.type='search';q.placeholder='Search orders or customers';q.setAttribute('aria-label','Search orders');q.value=search;q.oninput=()=>{search=q.value;rows()};
  const sorting=e('select');for(const [v,t]of [['newest','Newest first'],['oldest','Oldest first']]){const o=e('option',t);o.value=v;sorting.append(o)}sorting.value=sort;sorting.onchange=()=>{sort=sorting.value;rows()};tools.append(q,sorting);root.append(tools);
  const note=e('p','', 'uc-message');note.setAttribute('data-unified-message','');note.setAttribute('role','status');root.append(note);

@@ -75,7 +75,7 @@ test('admin navigation is Orders and Marketing only; existing operational sectio
   const marketing=fs.readFileSync(path.join(__dirname,'../admin-marketing.html'),'utf8');
   assert.match(marketing,/href="\/admin-orders\.html">Orders/);
   assert.match(marketing,/href="\/admin-marketing\.html" aria-current="page">Marketing/);
-  assert.match(marketing,/never sends outreach automatically/);
+  assert.match(marketing,/This workspace does not send Instagram messages automatically/);
 });
 test('Marketing browser script parses and uses official review-only draft flow',()=>{
   const source=fs.readFileSync(path.join(__dirname,'../admin-marketing.js'),'utf8');
