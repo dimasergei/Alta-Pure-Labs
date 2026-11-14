@@ -15,8 +15,12 @@
   const clock=document.querySelector('[data-promo-clock]');
   if(!clock)return;
   clock.hidden=seconds===0;
-  const units=[Math.floor(seconds/86400)+'d',Math.floor(seconds/3600)%24+'h',Math.floor(seconds/60)%60+'m',seconds%60+'s'];
-  clock.querySelector('[data-promo-time]').textContent=units.join(' ');
+  const units=[Math.floor(seconds/86400),Math.floor(seconds/3600)%24,Math.floor(seconds/60)%60,seconds%60];
+  const cells=['days','hours','minutes','seconds'];
+  cells.forEach((key,index)=>{
+   const cell=clock.querySelector('[data-promo-'+key+']');
+   if(cell)cell.textContent=String(units[index]).padStart(2,'0');
+  });
  };
  tick();
  setInterval(tick,1000);
