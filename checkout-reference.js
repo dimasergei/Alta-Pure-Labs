@@ -176,7 +176,7 @@
   const refresh=async()=>{
    if(lastPlaced)return;
    try{
-    const q=await fetchPreview();if(q){renderSummary();if(stage===2&&form.elements.ruo?.checked&&form.elements.responsibility?.checked)await preparePayment();}
+    const q=await fetchPreview();if(q){renderSummary();if(stage===2){const btn=view('[data-nlx-place]',form);if(btn){const bank=(data.methods||[]).find(m=>m.kind==='bank_transfer'&&m.active!==false);const selected=form.querySelector('[name=payment_choice]:checked')?.value;btn.disabled=!(selected==='bank'&&bank&&form.elements.ruo?.checked&&form.elements.responsibility?.checked);btn.textContent=selected==='bank'&&bank?'Place bank transfer order · '+usd(q.total_cents):'Payment method awaiting activation · '+usd(q.total_cents);}}}
    }catch(error){view('[data-nlx-quote-note]',detail).textContent=error.message;note(error.message,true);}
   };
   function schedule(){if(lastPlaced)return;invalidate();clearTimeout(quoteTimer);quoteTimer=setTimeout(refresh,180);}
