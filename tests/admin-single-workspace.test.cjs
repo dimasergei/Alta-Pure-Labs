@@ -24,7 +24,7 @@ test('same-page navigation preserves marketing panels and opens only the request
  let opened=null,header=null;
  w.AltaFulfillment={bind(fn){header=fn},manage:async received=>{opened=received},clear(){}};
  w.fetch=async(url,options)=>{
-  assert.match(url,/\/api\/admin-workspace-orders\?/);
+  assert.match(url,/\/api\/customer-config\?workspace_orders=1&/);
   assert.equal(options.headers['x-admin-password'],'a'.repeat(48));
   return {ok:true,json:async()=>({orders:[{
    id,source:'commerce',order_number:'ORD-TEST',customer_name:'Fixture Customer',
@@ -53,6 +53,6 @@ test('same-page navigation preserves marketing panels and opens only the request
 test('browser-side order code uses one authenticated feed and parses',()=>{
  assert.doesNotThrow(()=>new Function(read('admin-workspace-orders.js')));
  assert.doesNotThrow(()=>new Function(read('admin-fulfillment.js')));
- assert.match(read('admin-workspace-orders.js'),/api\/admin-workspace-orders/);
+ assert.match(read('admin-workspace-orders.js'),/api\/customer-config\?workspace_orders/);
  assert.doesNotMatch(read('admin-marketing.html'),/<a[^>]*href="\/admin-orders\.html"/);
 });
