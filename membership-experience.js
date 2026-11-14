@@ -48,4 +48,9 @@ function render(){
  root.querySelectorAll('[data-mx-period]').forEach(b=>b.addEventListener('click',()=>{if(period===b.dataset.mxPeriod)return;period=b.dataset.mxPeriod;render();}));
 }
 render();
+/* A legacy storefront initializer may replace #ap-main after this script runs.
+   Restore this scoped membership view without intercepting unrelated routes. */
+new MutationObserver(()=>{
+ if(!root.querySelector('.mx-membership-page'))render();
+}).observe(root,{childList:true});
 })();
