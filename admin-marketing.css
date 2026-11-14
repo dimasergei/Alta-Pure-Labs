@@ -72,3 +72,13 @@
 #mk-ig-reply:disabled{background:#f6f8f8;color:#8d9c97}
 #mk-sync-status{font-weight:750;color:#1c7a73}
 @media (max-width:760px){.mk-ig-heading .mk-header-actions{width:100%}.mk-ig-heading .mk-header-actions button{flex:1}}
+
+/* Marketing-only full-width Instagram conversation workspace. */
+.mk-inbox-full{display:block;min-width:0}
+.mk-inbox-full>.mk-card{width:100%;min-width:0}
+.mk-inbox-full .mk-ig-timeline{max-height:620px}
+.mk-ig-media-image{display:block;width:auto;max-width:min(100%,460px);max-height:520px;object-fit:contain;border-radius:12px;margin-top:10px}
+.mk-ig-media-player{display:block;width:min(100%,460px);max-height:520px;margin-top:10px;border-radius:12px}
+.mk-ig-settings-controls{margin-top:16px;padding-top:16px;border-top:1px solid var(--mk-border)}
+.mk-ig-settings-controls .mk-header-actions{display:flex;gap:10px;flex-wrap:wrap;margin:12px 0}
+.mk-ig-settings-controls details{margin-top:12px}
