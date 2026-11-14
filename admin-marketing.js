@@ -106,9 +106,15 @@
       setPassword(value);$('mk-login-error').hidden=true;showApp();
       $('mk-sync-status').textContent='Connected to Supabase';
       $('mk-crm-state').textContent='Synced';
-      if(!data.leads.length&&cached.leads.length){
-        // First-time migration of any records created before cloud storage was enabled.
-        data=cached;save();render();notice('Previous local records found. Importing them into the shared CRM.');
+      const existingIds=new Set(data.leads.map(x=>x.id));
+      const existingHandles=new Set(data.leads.map(x=>String(x.handle||'').toLowerCase()).filter(Boolean));
+      const localOnly=cached.leads.filter(x=>!existingIds.has(x.id)&&!(x.handle&&existingHandles.has(String(x.handle).toLowerCase())));
+      const existingMessageIds=new Set(data.messages.map(x=>x.id));
+      const localMessages=cached.messages.filter(x=>x.id&&!existingMessageIds.has(x.id));
+      if(localOnly.length||localMessages.length){
+        // Preserve previous browser-only CRM work even if the cloud has been seeded.
+        data.leads.push(...localOnly);data.messages.push(...localMessages);
+        save();render();notice('Recovered '+localOnly.length+' previous creator records and '+localMessages.length+' conversation notes into the shared CRM.');
       }
       const result=new URLSearchParams(location.search).get('instagram');
       if(result){switchPanel('instagram');notice(result==='connected'?'Instagram connected. Inbox synchronization is ready.':'Instagram connection status: '+result.replaceAll('_',' '));history.replaceState(null,'',location.pathname);}
