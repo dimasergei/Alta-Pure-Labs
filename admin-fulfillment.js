@@ -36,7 +36,7 @@
  const headline=job?.supplier_id?'Existing Lotus supplier order':reasons.length?'Manual review / fulfillment':'Lotus candidate — stock and live quote still required';
  overview.append(el('p',headline),el('p',reasons.length?reasons.join(' · '):'The worker must confirm stock, a current supplier quote and its safety limits before submission.'));
  const list=el('ul');
- for(const item of items){const m=mapped.get(String(item.id)+'|'+String(item.size));list.append(el('li',String(item.name||item.id)+' · '+String(item.size||'')+' × '+String(item.qty||0)+' — '+(m?'Mapped to Lotus #'+m.product+' / '+m.vials+' vial pack':'Manual / unmapped'));}
+ for(const item of items){const m=mapped.get(String(item.id)+'|'+String(item.size));list.append(el('li',String(item.name||item.id)+' · '+String(item.size||'')+' × '+String(item.qty||0)+' — '+(m?'Mapped to Lotus #'+m.product+' / '+m.vials+' vial pack':'Manual / unmapped')));}
  overview.append(list,el('p','All items stay in one shipment. Manual orders remain here for supplier assignment and tracking. Supplier settlement and postage labels are managed separately.'));
  dialog.append(overview);
  for(const j of d.jobs){const box=el('section');box.className='fh-card';box.append(el('h3','Lotus '+j.status),el('p','Reference: '+j.reference),el('p','Supplier order: '+(j.supplier_id||'Not submitted')+' · '+(j.provider_status||'')),el('p','Settlement: '+(j.settlement||'pending')+' · Amount owed: '+(j.owed_total||'Not quoted')),el('p',j.last_error||'No supplier error'));const link=el('a','Open Lotus for settlement / postage label');link.href='https://partners.lotuspeptide.com/orders';link.target='_blank';link.rel='noopener noreferrer';box.append(link);
