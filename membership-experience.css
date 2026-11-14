@@ -43,3 +43,27 @@
 @media(max-width:850px){.mx-membership-page{padding:35px 17px 65px}.mx-card-grid{gap:12px}.mx-card{padding:24px 14px 17px}.mx-card h3{font-size:14px}.mx-price{font-size:26px}.mx-benefits li{font-size:11px}}
 @media(max-width:680px){.mx-membership-page{padding:31px 16px 60px}.mx-hero h1{font-size:clamp(31px,8.3vw,43px)}.mx-card-grid{grid-template-columns:1fr;gap:27px;max-width:430px}.mx-card{min-height:0;padding:25px 21px 20px}.mx-card-vip{transform:none}.mx-faq{margin-top:57px}.mx-faq h2{font-size:28px}}
 @media(prefers-reduced-motion:reduce){.mx-metal-gold,.mx-metal-platinum{animation:none}.mx-choose{transition:none}}
+
+/* Comparison parity: seven shared benefit rows, with unavailable perks visibly
+   struck through. Platinum uses an ink-black premium surface for contrast. */
+.mx-card{min-height:495px}
+.mx-benefits{gap:10px;margin:20px 0 22px!important}
+.mx-benefits li{font-size:11.5px;line-height:1.45}
+.mx-card-member .mx-benefits li.mx-unavailable,
+.mx-card-vip .mx-benefits li.mx-unavailable{color:#98a2b1!important;text-decoration:line-through;text-decoration-thickness:1px}
+.mx-card-vip .mx-benefits li.mx-unavailable{color:#91a7c2!important}
+.mx-card-vip .mx-benefits li.mx-unavailable .mx-icon{color:#b6c9df;background:transparent!important;border:1.5px solid #9ab2ca}
+.mx-card-elite{background:linear-gradient(158deg,#11151d 0%,#080b10 48%,#020407 100%)!important;border-color:#303944!important;color:#f8fafc!important;box-shadow:0 16px 30px #060b1670}
+.mx-card-elite .mx-card-top{border-bottom:1px solid #38414a}
+.mx-card-elite h3{color:#fff!important}
+.mx-card-elite .mx-price{color:#fff!important}
+.mx-card-elite .mx-price small{color:#c6d2df!important}
+.mx-card-elite .mx-card-top p{color:#cbd3dd!important}
+.mx-card-elite .mx-benefits li{color:#eff5fa!important}
+.mx-card-elite .mx-icon{background:#dce4ed!important;color:#17202b!important}
+.mx-card-elite .mx-choose{background:linear-gradient(115deg,#e8edf4,#bec9d7 55%,#f8fbff)!important;color:#0b1522!important;border-color:#c3cfdd;font-weight:900}
+.mx-card-elite .mx-choose:hover{background:linear-gradient(115deg,#fff,#d8e4ef 55%,#fff)!important}
+.mx-card-elite .mx-metal-platinum{background-image:linear-gradient(100deg,#a6b4c7 0%,#eff6ff 21%,#8291a5 40%,#fff 53%,#acbbcd 71%,#e7f0ff 86%,#9babbf 100%);background-size:300% 100%;filter:drop-shadow(0 0 2px #dde9fa55)}
+.mx-card-vip .mx-metal-gold{filter:drop-shadow(0 0 2px #f5d79555)}
+@media(max-width:850px){.mx-benefits li{font-size:11px}}
+@media(max-width:680px){.mx-card{min-height:0}.mx-benefits{gap:11px}}
