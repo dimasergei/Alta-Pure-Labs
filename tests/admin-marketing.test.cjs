@@ -105,7 +105,7 @@ test('Meta OAuth URL is disabled until Instagram credentials are configured',asy
 });
 test('all Instagram reply sends require explicit manual actions',()=>{
   const frontend=fs.readFileSync(path.join(__dirname,'../admin-marketing.js'),'utf8');
-  assert.match(frontend,/confirm\\('Send this exact reply/);
-  assert.match(frontend,/action:'instagram_send'/);
-  assert.doesNotMatch(frontend,/setInterval\\([^)]*instagram_send/);
+  assert.ok(frontend.includes("confirm('Send this exact reply"));
+  assert.ok(frontend.includes("action:'instagram_send'"));
+  assert.ok(!frontend.includes('setInterval(()=>endpoint({action:\'instagram_send\''));
 });
