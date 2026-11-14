@@ -238,3 +238,47 @@ body.ap-checkout-page #account-root{box-shadow:none!important;border:0!important
 
 .nlx-card-logos .nlx-card-brand{display:block;width:62px;height:38px;object-fit:fill;border:0;border-radius:3px;background:none;flex:none}
 @media(max-width:520px){.nlx-card-logos .nlx-card-brand{width:48px;height:31px}}
+
+/* Exact checkout-reference payment brand refinements. The visual card/wallet rail remains disabled. */
+.nlx-wallets .nlx-wallet-unavailable,
+.nlx-wallets .nlx-wallet-unavailable:disabled{
+  background:#050506!important;color:#fff!important;opacity:1!important;
+  filter:none!important;border:0!important;box-shadow:none!important;
+}
+.nlx-wallets .nlx-wallet-unavailable .nlx-wallet-symbol{
+  background:transparent!important;border:0!important;filter:none!important;
+}
+.nlx-wallets .nlx-wallet-unavailable .nlx-google-symbol path{opacity:1!important}
+.nlx-wallets .nlx-wallet-unavailable .nlx-apple-symbol path{fill:#fff!important}
+.nlx-bank-logos{gap:7px!important;align-items:center!important;margin:15px 0 5px!important}
+.nlx-bank-logos .nlx-bank-link{
+  display:inline-flex!important;align-items:center!important;gap:12px!important;
+  margin:0 15px 0 0!important;white-space:nowrap;line-height:1.25;
+}
+.nlx-bank-logos .nlx-bank-link>span:not(.nlx-bank-link-dot){
+  background:none!important;border:0!important;box-shadow:none!important;
+  padding:0!important;color:#777!important;font-size:14px!important;font-weight:400!important;
+}
+.nlx-bank-link-dot{
+  width:18px!important;height:18px!important;min-width:18px!important;
+  padding:0!important;display:inline-flex!important;align-items:center;justify-content:center;
+  border:2px solid #2287ff!important;border-radius:50%;background:#fff!important;
+  box-shadow:none!important;
+}
+.nlx-bank-link-dot::after{content:"";display:block;width:10px;height:10px;border-radius:50%;background:#2287ff}
+.nlx-bank-logos img.nlx-bank-logo{
+  display:inline-block!important;object-fit:cover!important;object-position:center!important;
+  width:45px!important;height:45px!important;padding:0!important;flex:0 0 45px!important;
+  border:0!important;border-radius:7px!important;background:#fff!important;
+}
+.nlx-bank-logos .nlx-more-mark{
+  height:45px!important;min-width:73px!important;background:#fff!important;
+  padding:7px!important;font-weight:800!important;font-size:13px!important;color:#262626!important;
+}
+.nlx-payment-choice-body .nlx-bank-logos+small{
+  display:block;font-size:10px;line-height:1.35;color:#728198;margin-top:8px;
+}
+@media(max-width:520px){
+  .nlx-bank-logos .nlx-bank-link{width:100%!important;margin-bottom:5px!important}
+  .nlx-bank-logos img.nlx-bank-logo{width:43px!important;height:43px!important;flex-basis:43px!important}
+}

@@ -8,7 +8,7 @@ const billingData={terms:{conversion:require('../config/conversion.json')},balan
 const user={id:'22222222-2222-4222-8222-222222222222',email:'buyer@example.test',user_metadata:{full_name:'Sample Researcher',alta_profile:{shipping:{name:'Sample Researcher',line1:'123 Research Lane',city:'Miami',region:'FL',postal_code:'33101',country:'US',phone:'305-555-0157'}}}};
 const wait=()=>new Promise(resolve=>setTimeout(resolve,35));
 const source=fs.readFileSync(path.join(base,'checkout-reference.js'),'utf8');
-function fixture(ready=false){
+function fixture(ready=false,seedUnselected=false){
  const dom=new JSDOM('<main id="checkout"></main>',{url:'https://altapurelabs.com/checkout',runScripts:'outside-only'});
  const w=dom.window,orders=[],quotes=[];
  w.HTMLElement.prototype.scrollIntoView=()=>{};
@@ -43,6 +43,7 @@ function fixture(ready=false){
   return{ok:true,json:async()=>q};
  };
  const auth={auth:{getSession:async()=>({data:{session:{access_token:'fixture-access-token'}}})}};
+ if(seedUnselected)w.sessionStorage.setItem('ap-v2-cart-extras:'+JSON.stringify([{id:'fixture',size:'5mg',qty:2}]),'[]');
  w.eval(source);
  return{dom,w,root:w.document.getElementById('checkout'),data,orders,quotes,auth};
 }
@@ -130,5 +131,20 @@ test('card and wallet displays stay disabled even with legacy NMI configuration'
   assert.ok([...f.root.querySelectorAll('.nlx-wallet-unavailable')].every(b=>b.disabled));
   assert.equal(f.root.querySelector('[data-nlx-place]').disabled,true);
   assert.equal(f.orders.filter(x=>x.action==='place').length,0);
+ }finally{f.dom.window.close();}
+});
+
+test('a cart with previously unchecked protection defaults checked on entry to checkout, then remains user-uncheckable',async()=>{
+ const f=fixture(false,true);
+ try{
+  await f.w.DirectCheckout.checkout(f.root,f.auth,user);await wait();
+  const box=f.root.querySelector('[data-nlx-extra="protection"]');
+  assert.ok(box,'Shipping Protection must be available for eligible US checkout');
+  assert.equal(box.checked,true,'Previously unchecked cart must default to checked at checkout');
+  assert.equal(f.quotes.at(-1).total_cents,21995);
+  box.checked=false;box.dispatchEvent(new f.w.Event('change',{bubbles:true}));
+  await new Promise(resolve=>setTimeout(resolve,250));
+  assert.equal(f.root.querySelector('[data-nlx-extra="protection"]').checked,false);
+  assert.equal(f.quotes.at(-1).total_cents,21495);
  }finally{f.dom.window.close();}
 });
