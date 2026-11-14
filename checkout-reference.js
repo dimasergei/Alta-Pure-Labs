@@ -239,7 +239,7 @@
      +'<button type="button" class="nlx-wallet-unavailable nlx-apple-pay" disabled aria-label="Apple Pay unavailable">'
      +'<span class="nlx-wallet-lockup"><svg class="nlx-wallet-symbol nlx-apple-symbol" viewBox="0 0 24 24" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" stroke="none">'
      +'<path fill="#fff" d="M18.08 12.63c-.03-2.13 1.75-3.16 1.83-3.21-1-1.44-2.56-1.64-3.1-1.67-1.32-.14-2.57.78-3.24.78-.68 0-1.72-.77-2.85-.75-1.47.02-2.84.85-3.59 2.13-1.54 2.66-.4 6.61 1.1 8.78.75 1.06 1.56 2.24 2.67 2.19 1.07-.04 1.48-.71 2.8-.71 1.3 0 1.67.71 2.85.69 1.17-.03 1.91-1.07 2.65-2.14.84-1.22 1.19-2.43 1.21-2.49-2.58-.99-2.3-3.47-2.33-3.6Z"/>'
-     +'<path fill="#fff" d="M14.35 5.58c.8-.96 1.29-2.24 1.14-3.52-1.2.05-2.62.79-3.44 1.77-.75.87-1.39 2.14-1.21 3.36 1.36.11 2.69-.7 3.51-1.61Z"/>'
+     +'<path transform="translate(0,-1.15)" fill="#fff" d="M14.35 5.58c.8-.96 1.29-2.24 1.14-3.52-1.2.05-2.62.79-3.44 1.77-.75.87-1.39 2.14-1.21 3.36 1.36.11 2.69-.7 3.51-1.61Z"/>'
      +'</svg><span class="nlx-wallet-wordmark">Pay</span></span></button>'
      +'<span class="nlx-or">or</span>'
      +'<button type="button" class="nlx-wallet-unavailable nlx-google-pay" disabled aria-label="Google Pay unavailable">'
