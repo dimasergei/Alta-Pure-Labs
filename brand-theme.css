@@ -395,3 +395,66 @@ body.ap-site {
 @keyframes ap-hero-card-glint{from{background-position:210% 0}to{background-position:-110% 0}}
 @media(prefers-reduced-motion:reduce){.ap-site .nl-hero .nl-offer-grid>.ap-offer-box,.ap-site .nl-hero .nl-offer-grid>.ap-offer-box:before{animation:none!important}}
 .ap-site .ap-locale-controls{display:none!important}
+
+
+/* 2026-11-14: focused homepage hero neon contrast pass. No payment or layout changes. */
+.ap-site .nl-hero{
+  background:
+    radial-gradient(ellipse 50% 59% at 78% 39%,rgba(65,54,153,.36) 0%,transparent 76%),
+    radial-gradient(ellipse 44% 61% at 91% 82%,rgba(73,23,112,.18) 0%,transparent 76%),
+    radial-gradient(ellipse 41% 55% at 26% 77%,rgba(30,24,94,.2) 0%,transparent 78%),
+    linear-gradient(120deg,#050411 0%,#0b071c 37%,#0e0a23 68%,#080512 100%)!important;
+}
+.ap-site .nl-hero .nl-primary{
+  position:relative;
+  isolation:isolate;
+  overflow:hidden;
+  background:linear-gradient(110deg,#654dff 0%,#9455fa 39%,#cf47ea 75%,#ef49ce 100%) padding-box,
+             linear-gradient(105deg,#94b8ff,#b2eaff,#f5a9ff,#d48aff,#68beff) border-box!important;
+  background-size:100% 100%,230% 100%!important;
+  border:2px solid transparent!important;
+  color:#fff!important;
+  font-weight:850!important;
+  text-shadow:0 1px 2px #27105644;
+  box-shadow:0 0 0 1px #795bff33,0 0 24px #874fff88,0 8px 31px #9a3de94a!important;
+  animation:ap-neon-cta-border 5s linear infinite;
+  transition:filter .22s ease,transform .22s ease,box-shadow .22s ease!important;
+}
+.ap-site .nl-hero .nl-primary span{color:#fff!important}
+.ap-site .nl-hero .nl-primary::before{
+  content:"";position:absolute;inset:0;z-index:-1;pointer-events:none;
+  background:linear-gradient(103deg,transparent 24%,#ffffff27 49%,transparent 76%);
+  background-size:220% 100%;
+  animation:ap-neon-cta-glint 5.2s linear infinite;
+}
+.ap-site .nl-hero .nl-primary:hover,.ap-site .nl-hero .nl-primary:focus-visible{
+  background:linear-gradient(110deg,#7664ff,#af60fb 45%,#e554e9) padding-box,
+             linear-gradient(105deg,#98dcff,#e4acff,#9cf0ff,#e8aaff) border-box!important;
+  background-size:100% 100%,230% 100%!important;
+  color:#fff!important;
+  filter:brightness(1.08);
+  transform:translateY(-2px);
+  box-shadow:0 0 0 1px #9dd8ff77,0 0 32px #a85affb5,0 10px 34px #a143ee6b!important;
+}
+@keyframes ap-neon-cta-border{from{background-position:0 0,0 0}to{background-position:0 0,230% 0}}
+@keyframes ap-neon-cta-glint{from{background-position:210% 0}to{background-position:-110% 0}}
+/* First card remains luminous violet-blue; the $299 card reads distinctly darker. */
+.ap-site .nl-hero .nl-offer-grid>.ap-offer-box:first-child{
+  background:linear-gradient(115deg,rgba(109,80,222,.96),rgba(141,113,243,.95) 52%,rgba(117,178,251,.91)) padding-box,
+             linear-gradient(105deg,#9d8bff,#9ce2ff,#e2a7ff,#9c7aff,#85cbff) border-box!important;
+  background-size:100% 100%,250% 100%!important;
+  box-shadow:0 0 17px #b68aff70,0 4px 19px #8c5aff50!important;
+}
+.ap-site .nl-hero .nl-offer-grid>.ap-offer-box:nth-child(2){
+  background:linear-gradient(118deg,rgba(24,13,55,.98),rgba(44,24,94,.98) 52%,rgba(25,36,93,.98)) padding-box,
+             linear-gradient(105deg,#9d8aff,#ad70ff,#63d6ff,#c590ff,#82aeff) border-box!important;
+  background-size:100% 100%,250% 100%!important;
+  box-shadow:0 0 15px #8d58fb74,0 3px 20px #4a32b46b!important;
+}
+.ap-site .nl-hero .nl-offer-grid>.ap-offer-box:nth-child(2) .ap-offer-icon{
+  background:#ab83ff32;border-color:#b994ff81;
+}
+.ap-site .nl-hero .nl-offer-grid>.ap-offer-box:nth-child(2) :is(strong,span){color:#f6eeff!important}
+@media(prefers-reduced-motion:reduce){
+  .ap-site .nl-hero .nl-primary,.ap-site .nl-hero .nl-primary::before{animation:none!important}
+}
