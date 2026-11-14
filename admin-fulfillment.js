@@ -64,5 +64,6 @@ async function detail(id){
  if(r.status==='refunded')actions.append(e('p','Full external refund recorded.','uc-hint'));
  if(!dlg.open)dlg.showModal();
 }
-window.AltaFulfillment={mount(fn){client=fn;root=document.getElementById('fulfillment-hub');clearInterval(poll);poll=setInterval(()=>{if(!document.hidden&&!dlg?.open&&!root.contains(document.activeElement))load()},60000);load()},refresh:load,clear:close,openPayments(){},paymentDesk(){}};
+window.AltaFulfillment={manage:detail,mount(fn){client=fn;root=document.getElementById('fulfillment-hub');clearInterval(poll);poll=setInterval(()=>{if(!document.hidden&&!dlg?.open&&!root.contains(document.activeElement))load()},60000);load()},refresh:load,clear:close,openPayments(){},paymentDesk(){}};
+
 })();

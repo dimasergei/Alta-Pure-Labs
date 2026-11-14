@@ -1,4 +1,5 @@
-const test=require('node:test'),assert=require('node:assert/strict'),fs=require('fs'),{JSDOM}=require('jsdom');
+'use strict';
+const test=require('node:test'),assert=require('node:assert/strict'),fs=require('node:fs'),{JSDOM}=require('jsdom');
 const source=fs.readFileSync('admin-fulfillment.js','utf8'),tick=()=>new Promise(r=>setImmediate(r));
 test('single Manage order screen shows checkout orders and safe cancellation without legacy Lotus links',async()=>{
  const dom=new JSDOM('<div id="fulfillment-hub"></div>',{url:'https://altapurelabs.com/admin-orders.html',runScripts:'outside-only'});
@@ -17,3 +18,4 @@ test('single Manage order screen shows checkout orders and safe cancellation wit
  await cancel.onclick();assert.equal(calls.filter(c=>c.options?.body&&JSON.parse(c.options.body).action==='cancel_order').length,1);
  w.AltaFulfillment.clear();assert.equal(w.document.querySelector('dialog'),null);dom.window.close();
 });
+
