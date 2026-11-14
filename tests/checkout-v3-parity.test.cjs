@@ -2,7 +2,7 @@
 const {test}=require('node:test'),assert=require('node:assert/strict'),fs=require('node:fs');
 const js=fs.readFileSync('checkout-reference.js','utf8'),css=fs.readFileSync('checkout-reference.css','utf8');
 test('shipping trust, email help, SMS opt-in and linked legal notices',()=>{
- for(const t of ['3RD PARTY TESTED','Order confirmation and tracking go here. Leave blank to use your account email.','Consent is not a condition of purchase.','Reply HELP for help or STOP to cancel.','/privacy.html'])assert.ok(js.includes(t),t);
+ for(const t of ['3RD PARTY TESTED','Order confirmation and tracking go here. Leave blank to use your account email.','Consent is not a condition of purchase.','Reply HELP for help or STOP to cancel.','/privacy-policy.html'])assert.ok(js.includes(t),t);
 });
 test('summary supports removal, active BOGO offer and no extra quote note',()=>{
  assert.match(js,/data-nlx-remove/);assert.match(js,/checkout-bogo-free/);
