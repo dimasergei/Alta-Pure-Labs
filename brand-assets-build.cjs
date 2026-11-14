@@ -41,25 +41,5 @@ for(const file of fs.readdirSync(out,{recursive:true}).filter(f=>f.endsWith('.ht
   count++;
 }
 
-/* Allow both approved prepaid billing terms in the generated checkout client.
-   The server remains the authority for quoted prices and membership activation. */
-{
-  const file=path.join(out,'direct-checkout-client.js');
-  let js=fs.readFileSync(file,'utf8');
-  const edits=[
-    ["membershipPeriod=goods?null:(params.get('period')||'annual')","membershipPeriod=goods?null:(params.get('period')||'monthly')"],
-    ["if(!goods&&membershipPeriod!=='annual'){","if(!goods&&!['monthly','annual'].includes(membershipPeriod)){"],
-    ["Monthly membership checkout is not offered in this flow. Review the annual plan before paying.","Choose a valid monthly or annual membership term."],
-    ["data.terms?.conversion?.plans?.[plan]?.annual_cents","data.terms?.conversion?.plans?.[plan]?.[membershipPeriod+'_cents']"],
-    ["data.terms.conversion.plans[plan].annual_cents<=0","data.terms.conversion.plans[plan][membershipPeriod+'_cents']<=0"],
-    ["size:'Annual membership · no automatic renewal'","size:(new URLSearchParams(location.search).get('period')==='annual'?'Annual':'Monthly')+' membership · no automatic renewal'"],
-    ["price:data.terms.conversion.plans[plan].annual_cents/100","price:data.terms.conversion.plans[plan][(new URLSearchParams(location.search).get('period')||'monthly')+'_cents']/100"]
-  ];
-  for(const [before,after] of edits){
-    if(!js.includes(before))throw Error('Membership checkout integration point missing: '+before);
-    js=js.replace(before,after);
-  }
-  fs.writeFileSync(file,js);
-}
-
+/* Membership billing is already integrated by conversion-build.cjs. */
 console.log(`Applied AltaPure favicon metadata and shared theme to ${count} public HTML pages.`);
