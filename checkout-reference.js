@@ -235,9 +235,36 @@
   }
   const plan=data.terms?.conversion?.plans?.vip;
   function offerBox(){
-   if(!plan)return '';
-   const monthly='$19.99',annual='$191.90'; // Display-only Gold offer; backend plan pricing differs, so activation is gated.
-   return '<section class="nlx-member-offer"><div><span class="nlx-optional">OPTIONAL</span><strong class="nlx-member-label">ALTA GOLD MEMBERSHIP</strong></div><h3>Save <em>$21.73</em> today</h3><p>Free express shipping on every order · 5% off every order · 5x points per $1</p><div class="nlx-member-types"><button type="button" data-nlx-plan="monthly" class="'+(state.priorityPeriod==='monthly'?'selected':'')+'"><strong>Monthly</strong><small>'+monthly+'/mo</small></button><button type="button" data-nlx-plan="annual" class="'+(state.priorityPeriod==='annual'?'selected':'')+'"><strong>Annual <span class="nlx-annual-badge">-20%</span></strong><small>'+annual+'/yr</small></button></div><div class="nlx-member-actions"><button type="button" data-nlx-skip>No thanks</button><button type="button" data-testid="membership-activate" class="nlx-member-unavailable" disabled title="Gold membership pricing requires activation in the membership system">Activate · '+(state.priorityPeriod==='annual'?annual+'/yr':monthly+'/mo')+' →</button></div><small>The membership checks out on its own. Your cart is saved and comes back with your member pricing.</small><a class="nlx-compare" href="/memberships">Compare plans</a></section>';
+   if(!plan||data.membership)return '';
+   const monthly=usd(plan.monthly_cents),annual=usd(plan.annual_cents),period=state.priorityPeriod;
+   return '<section class="nlx-member-offer"><div><span class="nlx-optional">OPTIONAL</span><strong class="nlx-member-label">ALTA GOLD MEMBERSHIP</strong></div>'
+    +'<h3 data-nlx-member-savings>Unlock free standard US shipping + 5× points</h3>'
+    +'<p>5% member pricing on eligible products · free standard US shipping · 5 points per eligible $1. BOGO or member pricing, whichever is better.</p>'
+    +'<div class="nlx-member-types"><button type="button" data-nlx-plan="monthly" class="'+(period==='monthly'?'selected':'')+'"><strong>Monthly</strong><small>'+monthly+'/mo</small></button><button type="button" data-nlx-plan="annual" class="'+(period==='annual'?'selected':'')+'"><strong>Annual <span class="nlx-annual-badge">−20%</span></strong><small>'+annual+'/yr</small></button></div>'
+    +'<div class="nlx-member-actions"><button type="button" data-nlx-skip>No thanks</button><a data-testid="membership-activate" class="nlx-member-activate" href="/checkout?plan=vip&amp;period='+period+'">Activate · '+(period==='annual'?annual+'/yr':monthly+'/mo')+' →</a></div>'
+    +'<small>Purchased separately; your existing cart stays saved. Benefits apply after payment is confirmed. Savings estimates exclude the membership fee.</small><a class="nlx-compare" href="/memberships">Compare plans</a></section>';
+  }
+  let memberEstimateGeneration=0;
+  async function refreshMemberSavings(){
+   const offer=view('.nlx-member-offer',form);
+   if(!offer||data.membership)return;
+   const current=++memberEstimateGeneration;
+   const label=view('[data-nlx-member-savings]',offer);
+   try{
+    const session=await auth.auth.getSession(),token=session?.data?.session?.access_token;
+    if(!token)return;
+    const active=Date.now()<Date.parse(data.config?.promotions?.ends_at)&&data.config?.promotions?.bogo===true;
+    const selected=(data.methods||[]).find(m=>m.kind==='bank_transfer'&&m.active!==false)||data.methods?.[0];
+    const body={items:cart.map(x=>({id:x.id,size:x.size,qty:x.qty*(active?2:1)})),country:state.country,method_id:selected?.id||null,coupon:state.coupon||'',delivery:{shipping:state.shipping,extras:[...state.extras]}};
+    const r=await fetch('/api/customer-config?checkout=cart',{method:'POST',credentials:'same-origin',headers:{'Content-Type':'application/json',Authorization:'Bearer '+token},body:JSON.stringify(body)});
+    if(!r.ok)return;
+    const q=await r.json();
+    if(current!==memberEstimateGeneration||!label.isConnected)return;
+    if(Number.isSafeInteger(q.membership_savings_cents)&&q.membership_savings_cents>0)
+      label.innerHTML='Estimated savings after activation: <em>'+usd(q.membership_savings_cents)+'</em>';
+    else if(Number.isSafeInteger(q.membership_savings_cents))
+      label.textContent='5× points + free standard US shipping on eligible orders';
+   }catch{ /* Membership activation remains available if preview service is unavailable. */ }
   }
   function paymentLayout(){
    const amount=usd(currentPreview?.total_cents||0);
@@ -344,6 +371,7 @@
     choosePayment();
    }
    renderSummary();
+   if(stage===1)void refreshMemberSavings();
   }
   async function preparePayment(){
    const target=view('[data-nlx-nmi]',form);
