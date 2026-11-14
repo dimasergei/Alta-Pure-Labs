@@ -619,3 +619,7 @@ body.ap-site {
  .ap-site .nl-hero .nl-vial-stage .nl-vial-1{top:-13px!important}
  .ap-site .nl-hero .nl-vial-stage .nl-vial-2{top:56px!important}
 }
+
+/* Limited-time label: accessible inline clock mark, preserving the hero capsule. */
+.ap-site .nl-hero .nl-capsule.nl-limited-time{display:inline-flex;align-items:center;gap:7px}
+.ap-site .nl-hero .nl-limited-time svg{width:15px;height:15px;flex:none;display:block;fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
