@@ -329,7 +329,7 @@
         const result=await endpoint({action:'instagram_sync'});
         if(result.participant_profiles&&typeof result.participant_profiles==='object'){
           for(const [id,profile] of Object.entries(result.participant_profiles)){
-            if(/^\\d{5,30}$/.test(id)&&/^[a-zA-Z0-9._]{1,30}$/.test(profile?.username||''))igProfiles[id]={username:profile.username,name:clean(profile.name,120)};
+            if(/^\d{5,30}$/.test(id)&&/^[a-zA-Z0-9._]{1,30}$/.test(profile?.username||''))igProfiles[id]={username:profile.username,name:clean(profile.name,120)};
           }
         }
       }
