@@ -13,6 +13,10 @@
   },
   "rewrites": [
     {
+      "source": "/api/instagram/callback",
+      "destination": "/api/customer-config?instagram=callback"
+    },
+    {
       "source": "/checkout",
       "destination": "/account.html"
     },
