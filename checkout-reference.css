@@ -364,3 +364,11 @@ body.ap-checkout-page #account-root{box-shadow:none!important;border:0!important
 .nlx-wallets .nlx-apple-pay .nlx-wallet-wordmark{font-family:-apple-system,BlinkMacSystemFont,"SF Pro Display","Helvetica Neue",Arial,sans-serif!important}
 .nlx-wallets .nlx-google-pay .nlx-wallet-wordmark{font-family:"Google Sans","Product Sans",Arial,Helvetica,sans-serif!important}
 @media(max-width:520px){.nlx-wallets .nlx-wallet-unavailable img.nlx-apple-symbol{width:16px!important;height:21px!important}.nlx-wallets .nlx-wallet-unavailable img.nlx-google-symbol{width:19px!important;height:19px!important}}
+
+
+/* Real prepaid membership offer: button-shaped link to dedicated checkout. */
+.nlx-member-actions .nlx-member-activate{display:inline-flex;align-items:center;justify-content:center;min-height:42px;padding:10px 18px;border-radius:9px;background:#1751a1;color:#fff!important;text-decoration:none!important;font-size:12px;font-weight:800;white-space:nowrap;box-shadow:0 5px 13px #10469024}
+.nlx-member-actions .nlx-member-activate:hover{background:#0e3b7c}
+.nlx-member-actions .nlx-member-activate:focus-visible{outline:3px solid #65b7ff;outline-offset:3px}
+.nlx-member-offer h3 em{font-style:normal;color:#125fb6}
+@media(max-width:600px){.nlx-member-actions .nlx-member-activate{white-space:normal;text-align:center}}
