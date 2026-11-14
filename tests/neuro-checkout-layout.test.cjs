@@ -85,7 +85,7 @@ test('customer-selected country updates authoritative quote; US-only next-day ex
   f.root.querySelector('[data-nlx-next]').click();await wait();
   assert.match(f.root.textContent,/EXPRESS CHECKOUT/);
   assert.match(f.root.textContent,/OR PAY ANOTHER WAY/);
-  assert.match(f.root.textContent,/PAYMENT METHODS · PENDING ACTIVATION/);
+  assert.match(f.root.textContent,/Card payments are not available until processor activation/);
   assert.equal(f.root.querySelectorAll('.nlx-terms input[type=checkbox]').length,2);
   assert.equal(f.root.querySelectorAll('.nlx-wallet-unavailable').length,2);
   assert.ok([...f.root.querySelectorAll('.nlx-wallet-unavailable')].every(b=>b.disabled),'Wallet buttons cannot claim acceptance before onboarding');
@@ -115,30 +115,20 @@ test('NMI absent never submits an order or creates a fake wallet payment',async(
  }finally{f.dom.window.close();}
 });
 
-test('approved NMI wallet payment uses same-page server quote, a single order and native payment confirmation',async()=>{
+test('card and wallet displays stay disabled even with legacy NMI configuration',async()=>{
  const f=fixture(true);
- let callback,mountCount=0,chargeTotal=0,destroyed=false;
- f.w.AltaNmiInline={
-  available:(c,id)=>c?.ready===true&&c.method_id===id,
-  mount:async({onPayment,amount,methodId})=>{callback=onPayment;mountCount++;chargeTotal=amount;return{destroy(){destroyed=true}};}
- };
+ let mounts=0;
+ f.w.AltaNmiInline={available:()=>true,mount:async()=>{mounts++;return{destroy(){}}}};
  try{
   await f.w.DirectCheckout.checkout(f.root,f.auth,user);await wait();
   f.root.querySelector('[data-nlx-next]').click();await wait();
   f.root.querySelector('[data-nlx-next]').click();await wait();
   const boxes=f.root.querySelectorAll('.nlx-terms input[type=checkbox]');
-  boxes[0].checked=true;boxes[0].dispatchEvent(new f.w.Event('change',{bubbles:true}));
-  boxes[1].checked=true;boxes[1].dispatchEvent(new f.w.Event('change',{bubbles:true}));
-  await new Promise(r=>setTimeout(r,45));
-  assert.equal(mountCount,1);
-  assert.equal(chargeTotal,21995);
-  assert.equal(f.orders.filter(x=>x.action==='quote').length,1);
-  assert.equal(f.root.querySelector('[data-nlx-place]').hidden,true,'The processor-owned Place Order button is used, never a fake second charge button');
-  const result=await callback({token:'one-time-token-fixture',billing:{country:'US'}});
-  assert.equal(result.paid,true);
-  assert.equal(f.orders.filter(x=>x.action==='place').length,1);
-  assert.equal(f.orders.filter(x=>x.action==='native_pay').length,1);
-  assert.ok(destroyed);
-  assert.match(f.root.textContent,/Payment confirmed/);
+  boxes.forEach(b=>{b.checked=true;b.dispatchEvent(new f.w.Event('change',{bubbles:true}));});
+  await wait();
+  assert.equal(mounts,0,'No card processor should mount in the bank-only layout');
+  assert.ok([...f.root.querySelectorAll('.nlx-wallet-unavailable')].every(b=>b.disabled));
+  assert.equal(f.root.querySelector('[data-nlx-place]').disabled,true);
+  assert.equal(f.orders.filter(x=>x.action==='place').length,0);
  }finally{f.dom.window.close();}
 });
