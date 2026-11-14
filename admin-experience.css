@@ -462,3 +462,43 @@ body .ap-auth-layout .ap-auth-content .error{color:#ae3348!important}
 @media(prefers-reduced-motion:reduce){
  body .ap-workspace .ap-workspace-sidebar{transition:none!important}
 }
+
+
+/* Unified, exact neon-blue AltaPure mark, shared by admin favicon and all in-page logos. */
+body .admin-login-brand img.ap-brand-symbol,
+body .admin-brand img.ap-brand-symbol{
+  display:block!important;
+  flex:0 0 34px!important;
+  width:34px!important;
+  height:34px!important;
+  max-width:34px!important;
+  max-height:34px!important;
+  object-fit:contain!important;
+  transform:none!important;
+  opacity:1!important;
+}
+body .ap-workspace-sidebar .admin-brand img.ap-brand-symbol{
+  filter:drop-shadow(0 0 7px rgba(0,191,255,.28));
+}
+body .ap-auth-form-panel .admin-login-brand img.ap-brand-symbol{
+  filter:drop-shadow(0 1px 1px rgba(0,91,170,.22));
+}
+body .ap-auth-layout .ap-auth-symbol{
+  background:rgba(114,195,255,.09)!important;
+  border-color:rgba(156,212,255,.35)!important;
+}
+body .ap-auth-layout .ap-auth-symbol img{
+  width:100%!important;
+  height:100%!important;
+  object-fit:contain!important;
+  filter:drop-shadow(0 0 10px rgba(0,191,255,.25));
+}
+body .ap-workspace .uc-header{
+  justify-content:flex-end!important;
+}
+/* Status updates remain available for errors and saves, without reserving blank space. */
+body #mk-alert:empty{
+  display:none!important;
+  min-height:0!important;
+  margin:0!important;
+}
