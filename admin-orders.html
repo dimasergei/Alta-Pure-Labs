@@ -1801,6 +1801,14 @@
       loginView.hidden = true;
       ordersView.hidden = false;
       window.AltaFulfillment.mount(api);
+      await window.AltaFulfillment.syncRows({
+        statusFilter: currentStatus,
+        search: currentSearch,
+        page: currentPage,
+        sort: appliedFilters.sort,
+        paymentFilter: appliedFilters.paymentStatus,
+        fulfillmentFilter: appliedFilters.fulfillmentStatus
+      });
     }
 
     function renderOrders() {
