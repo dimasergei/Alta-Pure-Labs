@@ -108,7 +108,8 @@ test('VIS-08 rewards use authentic sparkle and membership destination',async({pa
  await expect(points.getByRole('link',{name:/earn more/i})).toHaveAttribute('href','/memberships');
  const activation=page.getByTestId('membership-activate');
  await expect(activation).toBeVisible();
- await expect(activation).toHaveAttribute('href',/\/(memberships|account\/membership)/);
+ await expect(activation).toBeDisabled();
+ await expect(page.locator('.nlx-compare')).toHaveAttribute('href','/memberships');
  await capture(page,'member-upsell-and-points');
 });
 test('VIS-09 authentic card marks and truthful payment gating',async({page})=>{
