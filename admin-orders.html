@@ -979,6 +979,7 @@
 .quick-cancel:focus-visible{outline:2px solid #ffaaa8}
 @media(max-width:640px){.order-head{grid-template-columns:18px minmax(0,1fr);gap:7px}.quick-cancel{grid-column:2;justify-self:end;margin:0 11px 10px 0}.order-toggle{padding-bottom:7px}}
 </style>  <link rel="stylesheet" href="/admin-ui-polish.css">
+  <link rel="stylesheet" href="/admin-experience.css?v=1">
 </head>
 
 <body>
@@ -2668,7 +2669,8 @@
             Share only with the supplier responsible for these orders.
             Retail prices and internal admin notes are intentionally omitted.
           </div>
-        </body>
+          <script src="/admin-experience.js?v=1" defer></script>
+</body>
         </html>
       `);
       report.document.close();
