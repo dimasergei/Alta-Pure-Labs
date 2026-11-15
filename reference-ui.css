@@ -477,3 +477,7 @@ body.ap-site{font-family:Poppins,Arial,sans-serif;background:#fff;color:#101317}
 .nl-bulk-product-foot [data-bulk-progress]:empty{display:none}
 .nl-bulk-menu-line-price{flex-direction:column;align-items:flex-end;gap:0}
 .nl-bulk-totals del{color:#78818f}
+
+.nl-bulk-summary .nl-bulk-totals>div:nth-child(2){font-weight:700}
+.nl-bulk-summary .nl-bulk-totals>div:first-child del{text-decoration:line-through;color:#78818f}
+.nl-bulk-product-body>.ap-eyebrow,.nl-bulk-product-body>h3{text-align:center}
