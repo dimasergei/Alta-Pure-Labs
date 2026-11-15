@@ -379,3 +379,8 @@ body.ap-site:has(.nl-bulk-hero) .ap-announcement{display:none!important}
 @media(max-width:760px){
  .nl-bulk-benefits>.nl-bulk-benefit-shipping{grid-template-columns:32px minmax(0,1fr);column-gap:9px}
 }
+
+/* Keep the HPLC + MS proof as a short horizontal capsule like the reference. */
+.nl-bulk-coa-proof{width:190px;min-height:52px;height:auto}
+.nl-bulk-coa-proof>span:last-child{margin:0;gap:2px}
+.nl-bulk-coa-proof strong,.nl-bulk-coa-proof small{white-space:nowrap}
