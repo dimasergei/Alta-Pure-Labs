@@ -429,3 +429,7 @@ body.ap-site:has(.nl-bulk-hero) .ap-announcement{display:none!important}
  .nl-bulk-summary .nl-bulk-totals>div{font-size:10px}
  .nl-bulk-summary .nl-bulk-estimate-total strong{font-size:16px}
 }
+
+/* Account for the compact sticky storefront header when sizing the bulk panel. */
+.ap-summary.nl-bulk-summary{top:96px!important;padding:16px!important}
+@media(max-width:760px){.ap-summary.nl-bulk-summary{top:78px!important;padding:12px!important}}
