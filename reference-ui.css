@@ -535,3 +535,14 @@ body.ap-site{font-family:Poppins,Arial,sans-serif;background:#fff;color:#101317}
  .ap-site .ap-contact-layout .ap-panel{padding:22px 18px}
  .ap-site .ap-inquiry-form>.ap-button{width:100%;justify-content:center}
 }
+/* Homepage document and planning cards */
+.ap-site .nl-doc-art{border-top-color:#3a1765;box-shadow:20px 25px 0 #eee9f4,0 30px 60px #25153d1a}
+.ap-site .nl-doc-art>a.ap-button,.ap-site .nl-editorial .ap-button{display:inline-flex;background:#4b2189;color:#fff;border:0;border-radius:14px;text-decoration:none;padding:12px 20px;font-weight:700;box-shadow:none}
+.ap-site .ap-feature .ap-text-link,.ap-site .nl-contact .ap-contact-card .ap-text-link,.ap-site .nl-partner-details .ap-text-link{display:inline-flex;align-items:center;justify-content:center;background:#4b2189;color:#fff;border:0;border-radius:13px;text-decoration:none;padding:12px 18px;font-weight:700;margin-top:12px}
+.ap-site .ap-feature .ap-text-link:hover,.ap-site .nl-contact .ap-contact-card .ap-text-link:hover,.ap-site .nl-partner-details .ap-text-link:hover{background:#642ab2;color:#fff}
+.ap-site .ap-feature.ap-dark .ap-text-link{background:#fff;color:#3b176c}
+.ap-site .ap-mini-product{display:flex;align-items:center;gap:8px;min-width:0}
+.ap-site .ap-mini-product img{width:32px;height:36px;object-fit:contain;border-radius:5px;background:#fff}
+.ap-site .ap-slot-products{display:flex;gap:8px;align-items:center;margin-top:20px}
+.ap-site .ap-slot-products img{width:22%;height:85px;object-fit:contain;background:#fff;border-radius:8px}
+.ap-site .ap-mini-matrix span:nth-child(3n){font-weight:800;color:#e6c6ff}

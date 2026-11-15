@@ -61,10 +61,6 @@
       "destination": "/memberships.html"
     },
     {
-      "source": "/rewards",
-      "destination": "/rewards.html"
-    },
-    {
       "source": "/offers",
       "destination": "/offers.html"
     },
@@ -83,13 +79,21 @@
     {
       "source": "/partner-program",
       "destination": "/partner-program.html"
-    },
-    {
-      "source": "/track-order",
-      "destination": "/track-order.html"
     }
   ],
   "git": {
     "deploymentEnabled": false
-  }
+  },
+  "redirects": [
+    {
+      "source": "/track-order",
+      "destination": "/account/purchases",
+      "permanent": false
+    },
+    {
+      "source": "/rewards",
+      "destination": "/account/points",
+      "permanent": false
+    }
+  ]
 }
