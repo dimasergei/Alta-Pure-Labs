@@ -121,14 +121,13 @@
  .ap-site .nl-builder-product .ap-card-body h3{font-size:14px}
 }
 @media(min-width:1001px) and (max-height:700px){
- .ap-site .ap-summary.nl-builder-summary{padding:12px!important}
- .ap-site .nl-builder-summary-heading{margin-bottom:8px}
+ .ap-site .ap-summary.nl-builder-summary{padding:10px!important}
+ .ap-site .nl-builder-summary-heading{margin-bottom:6px}
  .ap-site .nl-builder-summary .nl-price-list{margin-top:6px;padding-top:6px}
- .ap-site .nl-builder-summary .nl-price-list>div{padding:3px 0;font-size:11px}
+ .ap-site .nl-builder-summary .nl-price-list>div{padding:1px 0;font-size:11px}
  .ap-site .nl-builder-summary .nl-price-total>strong{font-size:21px}
- .ap-site .nl-builder-tier-box{margin-top:4px;padding:8px}
- .ap-site .nl-builder-summary .nl-builder-terms{font-size:9px;line-height:1.35}
- .ap-site .nl-builder-summary .ap-summary-actions{margin-top:8px;gap:5px}
+ .ap-site .nl-builder-summary .nl-builder-terms{font-size:9px;line-height:1.25}
+ .ap-site .nl-builder-summary .ap-summary-actions{margin-top:6px;gap:5px}
  .ap-site .nl-builder-summary .ap-summary-actions>.ap-button{min-height:32px;font-size:11px}
 }
 @media(min-width:1001px) and (max-height:590px){
