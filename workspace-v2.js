@@ -2,6 +2,7 @@
 (() => {
  'use strict';
  const A=window.AltaStore;if(!A)return;
+ let membershipsPage,contactPage,partnerPage;
  const {$,$$,esc,t,money,product,image,heading}=A;
  const draftKey='ap-research-builder-v2',bulkKey='ap-bulk-draft-v2';
  const cached=A.read(draftKey,{});
