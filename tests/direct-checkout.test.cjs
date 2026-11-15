@@ -70,3 +70,108 @@ test('price-only checkout preview works without any active card processor and ne
  assert.equal(res.body.total_cents,14495);
  assert.deepEqual(db.calls,[],'A price preview must not write orders, payments, points or supplier records');
 });
+
+test('bulk discounts use total quantities per product across strengths, not other products',async()=>{
+ const cat=[{id:'a',name:'A',variants:[{size:'5mg',price:100},{size:'10mg',price:200}]},{id:'b',name:'B',variants:[{size:'5mg',price:100}]}];
+ const b={...body,bulk_order:true,items:[{id:'a',size:'5mg',qty:5},{id:'a',size:'10mg',qty:5},{id:'b',size:'5mg',qty:49}]};
+ let rec=await checkout.normalize({},user,b,cat),q=checkout.price(rec,method,null,{points:0,credit_cents:0});
+ assert.equal(q.discount_cents,320000);assert.equal(q.total_cents,320000);assert.equal(q.shipping_cents,0);
+ assert.deepEqual(q.pricing.lines.map(x=>x.discount_bps),[5000,5000,5000]);
+ b.items[2].qty=50;rec=await checkout.normalize({},user,b,cat);q=checkout.price(rec,method,null,{points:0,credit_cents:0});
+ assert.deepEqual(q.pricing.lines.map(x=>x.discount_bps),[5000,5000,6000]);assert.equal(q.total_cents,275000);
+ b.items[2].qty=9;rec=await checkout.normalize({},user,b,cat);assert.throws(()=>checkout.price(rec,method,null,{points:0,credit_cents:0}),/at least 10/);
+});
+test('bulk quote is bound to items and server catalog prices',async()=>{
+ const b={...body,bulk_order:true,items:[{id:'fixture-product',size:'5mg',qty:10,price:0.01}]},db=dbMock(),quoted=response();
+ await checkout.handle(request({...b,action:'quote'}),quoted,new URLSearchParams(),{env,db,catalog,rateLimit:async()=>{}});
+ assert.equal(quoted.code,200);assert.equal(quoted.body.total_cents,50000);assert.equal(quoted.body.shipping_cents,0);
+ const denied=response();await checkout.handle(request({...b,items:[{id:'fixture-product',size:'5mg',qty:11}],action:'place',quote:quoted.body.quote}),denied,new URLSearchParams(),{env,db,catalog,rateLimit:async()=>{}});assert.equal(denied.code,409);assert.equal(db.calls.length,0);
+});
+
+test('bulk placement persists the quoted canonical prices, combined-strength tiers and free express delivery',async()=>{
+ const cat=[{id:'a',name:'A',variants:[{size:'5mg',price:10.01},{size:'10mg',price:20.03}]},{id:'b',name:'B',variants:[{size:'5mg',price:30.07}]}];
+ const b={...body,bulk_order:true,items:[{id:'a',size:'5mg',qty:3,price:0},{id:'a',size:'10mg',qty:7,price:0},{id:'b',size:'5mg',qty:50,price:0}],subtotal_cents:1,discount_cents:1,total_cents:1,
+  pricing:{bulk_order:true,discount_cents:999999,lines:[{discount_bps:10000}]}};
+ const db=dbMock({membership:{plan:'elite',invoice_id:id}}),quoted=response();
+ await checkout.handle(request({...b,action:'quote'}),quoted,new URLSearchParams(),{env,db,catalog:cat,rateLimit:async()=>{}});
+ assert.equal(quoted.code,200);
+ // Discounts round down on each authoritative line; the undiscounted cents stay payable.
+ assert.equal(quoted.body.subtotal_cents,167374);assert.equal(quoted.body.discount_cents,98721);assert.equal(quoted.body.total_cents,68653);
+ assert.deepEqual(quoted.body.pricing.lines.map(x=>x.discount_bps),[5000,5000,6000]);
+ assert.deepEqual(quoted.body.pricing.lines.map(x=>x.line_total_cents),[1502,7011,60140]);
+ assert.equal(quoted.body.shipping_cents,0);assert.equal(db.calls.length,0);
+ const placed=response();
+ await checkout.handle(request({...b,action:'place',quote:quoted.body.quote}),placed,new URLSearchParams(),{env,db,catalog:cat,rateLimit:async()=>{}});
+ assert.equal(placed.code,201);assert.equal(db.calls.length,1);
+ const saved=db.calls[0].args.p_data;
+ assert.equal(saved.total_cents,quoted.body.total_cents);assert.equal(saved.currency,'USD');assert.equal(saved.request.bulk_order,true);
+ assert.deepEqual(saved.request.checkout.delivery,{shipping:'express',extras:[]});
+ assert.deepEqual(saved.pricing.delivery.selection,{shipping:'express',extras:[]});
+ assert.deepEqual(saved.request.items.map(x=>x.unit_price_usd_cents),[1001,2003,3007]);
+ assert.deepEqual(saved.pricing.lines.map(x=>x.discount_reason),['bulk','bulk','bulk']);
+ assert.equal(saved.pricing.bogo_free_units,undefined);assert.equal(saved.pricing.referral,undefined);
+ assert.equal(saved.pricing.bank_discount_cents,undefined);assert.equal(saved.points_redeemed,0);assert.equal(saved.credit_redeemed_cents,0);
+});
+
+test('bulk discounts cannot stack with coupons, points, credit, member pricing or bank discounts',async()=>{
+ const b={...body,bulk_order:true,items:[{id:'fixture-product',size:'5mg',qty:10}]};
+ for(const extra of [{coupon:'BOGO'},{points:100},{credit_cents:1}]){
+  const db=dbMock(),res=response();
+  await checkout.handle(request({...b,...extra,action:'quote'}),res,new URLSearchParams(),{env,db,catalog,rateLimit:async()=>{}});
+  assert.equal(res.code,400);assert.match(res.body.error,/bulk orders/);assert.deepEqual(db.calls,[]);
+ }
+ const rec=await checkout.normalize({},user,b,catalog);
+ const ordinary=checkout.price(rec,method,null,{points:0,credit_cents:0});
+ const member=checkout.price(rec,method,{plan:'elite',invoice_id:id},{points:10000,credit_cents:100000},
+  {customer_id:uid,code:'FIXTURE',first_order:true});
+ assert.equal(ordinary.total_cents,50000);assert.equal(member.total_cents,ordinary.total_cents);
+ assert.equal(member.pricing.referral,undefined);assert.equal(member.pricing.bogo_free_units,undefined);
+});
+
+test('bulk minimums cannot be met by combining different products or duplicate variants',async()=>{
+ const cat=[...catalog,{id:'other-product',name:'Other',variants:[{size:'5mg',price:100}]}];
+ const cases=[
+  [{id:'fixture-product',size:'5mg',qty:9}],
+  [{id:'fixture-product',size:'5mg',qty:5},{id:'other-product',size:'5mg',qty:5}],
+  [{id:'fixture-product',size:'5mg',qty:5},{id:'fixture-product',size:'5mg',qty:5}],
+  [{id:'fixture-product',size:'5mg',qty:10.5}],
+  [{id:'fixture-product',size:'unknown',qty:10}]
+ ];
+ for(const items of cases){const db=dbMock(),res=response();
+  await checkout.handle(request({...body,bulk_order:true,items,action:'quote'}),res,new URLSearchParams(),{env,db,catalog:cat,rateLimit:async()=>{}});
+  assert.equal(res.code,400);assert.deepEqual(db.calls,[]);
+ }
+});
+
+test('bulk quotes fail closed when catalog prices, bulk mode or the quoted digest change',async()=>{
+ const b={...body,bulk_order:true,items:[{id:'fixture-product',size:'5mg',qty:10}]};
+ const db=dbMock(),quoted=response();
+ await checkout.handle(request({...b,action:'quote'}),quoted,new URLSearchParams(),{env,db,catalog,rateLimit:async()=>{}});
+ assert.equal(quoted.code,200);
+ const changes=[
+  {delta:{},cat:[{...catalog[0],variants:[{size:'5mg',price:101}]}]},
+  {delta:{bulk_order:false},cat:catalog},
+  {delta:{quote:'0'.repeat(64)},cat:catalog}
+ ];
+ for(const {delta,cat} of changes){const denied=response();
+  await checkout.handle(request({...b,action:'place',quote:quoted.body.quote,...delta}),denied,new URLSearchParams(),{env,db,catalog:cat,rateLimit:async()=>{}});
+  assert.equal(denied.code,409);assert.deepEqual(db.calls,[]);
+ }
+ for(const bulk_order of ['true',1,{},null]){const denied=response();
+  await checkout.handle(request({...b,bulk_order,action:'quote'}),denied,new URLSearchParams(),{env,db,catalog,rateLimit:async()=>{}});
+  assert.equal(denied.code,400);assert.deepEqual(db.calls,[]);
+ }
+});
+
+test('public bulk preview uses the same tiers and shipping as authenticated checkout without writes',async()=>{
+ const b={...body,bulk_order:true,items:[{id:'fixture-product',size:'5mg',qty:50}],country:'US'};
+ const db=dbMock({paymentMethods:[]}),preview=response();
+ await checkout.handle(request(b,{authorization:''}),preview,new URLSearchParams('checkout=cart'),{env,db,catalog,rateLimit:async()=>{}});
+ assert.equal(preview.code,200);assert.equal(preview.body.total_cents,200000);assert.equal(preview.body.discount_cents,300000);
+ assert.equal(preview.body.shipping_cents,0);assert.equal(preview.body.pricing.bulk_order,true);
+ assert.deepEqual(preview.body.pricing.delivery.selection,{shipping:'express',extras:[]});
+ assert.deepEqual(db.calls,[]);
+ const invalid=response();
+ await checkout.handle(request({...b,items:[{id:'fixture-product',size:'5mg',qty:9}]},{authorization:''}),invalid,new URLSearchParams('checkout=cart'),{env,db,catalog,rateLimit:async()=>{}});
+ assert.equal(invalid.code,400);assert.deepEqual(db.calls,[]);
+});

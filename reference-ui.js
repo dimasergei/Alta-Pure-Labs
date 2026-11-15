@@ -55,3 +55,11 @@
  if(main)new MutationObserver(records=>{if(records.some(r=>[...r.addedNodes].some(n=>n.nodeType===1&&(n.matches?.('.nl-detail')||n.querySelector?.('.nl-detail')))))updateQuantity();}).observe(main,{childList:true});
  updateQuantity();
 })();
+
+// Both research workspaces share the current sticky navigation offset.
+(() => {
+ const header=document.querySelector('.ap-header');if(!header)return;
+ const update=()=>{const top=parseFloat(getComputedStyle(header).top)||0;document.documentElement.style.setProperty('--ap-workspace-sticky-top',Math.ceil(header.getBoundingClientRect().height+top+16)+'px');};
+ update();window.addEventListener('resize',update,{passive:true});
+ if(typeof ResizeObserver!=='undefined')new ResizeObserver(update).observe(header);
+})();

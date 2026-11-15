@@ -7,6 +7,7 @@ const {ends_at: promoEnd}=require('./config/checkout.json').promotions;
 if(!fs.existsSync(out))throw new Error('public-build output is missing.');
 fs.copyFileSync(theme,path.join(out,theme));
 fs.copyFileSync('mobile-parity.css',path.join(out,'mobile-parity.css'));
+fs.copyFileSync('research-builder-parity.css',path.join(out,'research-builder-parity.css'));
 for(const f of ['membership-experience.js','membership-experience.css'])fs.copyFileSync(f,path.join(out,f));
 for(const [source,target] of [['altapure-favicon.svg','favicon.svg'],['altapure-favicon-48.png','favicon-48.png'],['altapure-favicon.ico','favicon.ico'],['altapure-touch-icon.png','apple-touch-icon.png'],['altapure-logo-mark.png','brand-logo.png']])fs.copyFileSync(path.join(process.cwd(),'assets',source),path.join(out,target));
 // Self-host authentic payment marks from the reviewed assets directory.
@@ -23,7 +24,7 @@ for(const file of fs.readdirSync(out,{recursive:true}).filter(f=>f.endsWith('.ht
   html=html.replace(/<meta\b[^>]*\bname=["'](?:theme-color|altapure-promo-end)["'][^>]*>/gi,'');
   const themeLink=html.includes('href="/brand-theme.css"')?'':'<link rel="stylesheet" href="/brand-theme.css">';
   const mobileLink=html.includes('href="/mobile-parity.css')?'':'<link rel="stylesheet" media="(max-width: 767px)" href="/mobile-parity.css?v=20261114">';
-  html=html.replace('</head>',`${themeLink}${mobileLink}${iconLinks}</head>`);
+  html=html.replace('</head>',`${themeLink}${mobileLink}<link rel="stylesheet" href="/research-builder-parity.css?v=1">${iconLinks}</head>`);
   const body=html.match(/<body\b([^>]*)>/i);
   if(body){
     let attrs=body[1];

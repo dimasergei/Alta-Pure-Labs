@@ -2,7 +2,7 @@
 const fs=require('node:fs'),path=require('node:path');
 const out='public-build';
 function patch(file,fn){const p=path.join(out,file);fs.writeFileSync(p,fn(fs.readFileSync(p,'utf8')));}
-patch('account.html',s=>s.replace('<script src="/account.js">','<script src="/nmi-inline-checkout.js"></script><script src="/direct-checkout-client.js"></script><script src="/checkout-reference.js"></script><script src="/account.js">'));
+patch('account.html',s=>s.replace('<script src="/account.js">','<script src="/nmi-inline-checkout.js"></script><script src="/direct-checkout-client.js?v=bulk-1"></script><script src="/checkout-reference.js?v=bulk-1"></script><script src="/account.js">'));
 patch('account.js',s=>{
  const continuation=`function safeCheckoutReturn(value){if(typeof value!=='string'||/[\\\\\\r\\n]/.test(value)||!value.startsWith('/')||value.startsWith('//'))return null;try{const u=new URL(value,location.origin);if(u.origin!==location.origin||!/^\\/(?:checkout|pay\\.html|account\\/(?:purchases|membership|points|store-credit|orders(?:\\/[A-Za-z0-9_-]+)?))$/.test(u.pathname))return null;return u.pathname+u.search;}catch{return null;}}\nfunction consumeCheckoutReturn(value){const next=safeCheckoutReturn(value)||safeCheckoutReturn(sessionStorage.getItem('ap-account-return'));sessionStorage.removeItem('ap-account-return');return next;}\n`;
  s=s.replace('function route(){',continuation+'function route(){');

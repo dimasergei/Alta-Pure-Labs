@@ -20,8 +20,8 @@
  // Keep the original membership-only checkout before overriding goods checkout.
  const membershipCheckout=window.DirectCheckout?.checkout;
  async function checkout(root,auth,user,options={}){
-  if(['vip','elite'].includes(new URLSearchParams(location.search).get('plan'))){
-   if(!membershipCheckout){root.replaceChildren(el('p','nlx-error','Membership checkout is unavailable.'));return;}
+  if(new URLSearchParams(location.search).get('bulk')==='1'||['vip','elite'].includes(new URLSearchParams(location.search).get('plan'))){
+   if(!membershipCheckout){root.replaceChildren(el('p','nlx-error','Checkout is unavailable.'));return;}
    return membershipCheckout(root,auth,user,options);
   }
   const cart=window.AltaStore?.cart||[];

@@ -16,7 +16,7 @@ patch('workspace-v2.js',s=>s.replace(' window.AltaWorkspace=',`\n membershipsPag
 patch('account-experience.js',s=>{const a=s.indexOf(' async function membership('),b=s.indexOf(' async function orders(',a);if(a<0||b<0)throw Error('Membership integration missing');return s.slice(0,a)+' async function membership(root,auth){return window.ConversionUI.mountMembership(root,auth);}\n'+s.slice(b);});
 patch('direct-checkout-client.js',s=>s.replace("plan=new URLSearchParams(location.search).get('plan'),goods=", "plan=new URLSearchParams(location.search).get('plan'),period=new URLSearchParams(location.search).get('period')||'monthly',goods=")
  .replaceAll("data.terms.memberships[plan].name", "data.terms.conversion.plans[plan].name")
- .replace("data.terms.memberships[plan].discount_bps/100+'% merchandise savings for 365 days. No automatic renewal.'", "data.terms.conversion.plans[plan].discount_bps/100+'% merchandise savings for '+(period==='annual'?'one year':'one month')+'. No automatic renewal.'")
+ .replace("data.terms.memberships[plan].discount_bps/100+'% merchandise savings for 365 days. No automatic renewal.'", "data.terms.conversion.plans[plan].discount_bps/100+'% merchandise savings for '+(membershipPeriod==='annual'?'one year':'one month')+'. No automatic renewal.'")
  .replace("data.terms.memberships[plan].price_cents", "data.terms.conversion.plans[plan][(new URLSearchParams(location.search).get('period')||'monthly')+'_cents']")
  .replace("}:{plan}),name:", "}:{plan,billing_period:period}),name:")
  .replace('placeholder="BOGO" autocomplete="off"','placeholder="BOGO or partner code" value="\'+esc(window.ConversionUI.stored(\'ap-cart-coupon\'))+\'" autocomplete="off"')

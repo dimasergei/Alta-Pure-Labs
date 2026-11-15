@@ -484,3 +484,5 @@ body.ap-site{font-family:Poppins,Arial,sans-serif;background:#fff;color:#101317}
 
 /* Show the complete product image on bulk cards. */
 .nl-bulk-image{height:auto;aspect-ratio:1/1;min-height:0}.nl-bulk-image img{width:100%;height:100%;object-fit:contain}.nl-bulk-product-body{padding:12px}.nl-bulk-product-body h3{margin:5px 0 8px}
+
+.ap-site .ap-summary.nl-bulk-summary{top:var(--ap-workspace-sticky-top,96px)!important;height:calc(100dvh - var(--ap-workspace-sticky-top,96px) - 12px);max-height:calc(100dvh - var(--ap-workspace-sticky-top,96px) - 12px)}
