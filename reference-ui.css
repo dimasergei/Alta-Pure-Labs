@@ -389,3 +389,11 @@ body.ap-site:has(.nl-bulk-hero) .ap-announcement{display:none!important}
 .nl-bulk-benefits .nl-bulk-coa-proof{display:grid;grid-template-columns:27px max-content;align-items:center;justify-content:start;column-gap:9px;width:max-content;max-width:100%;min-height:52px;height:auto}
 .nl-bulk-benefits .nl-bulk-coa-check{display:grid;place-items:center;width:27px;height:27px;margin:0}
 .nl-bulk-benefits .nl-bulk-coa-proof>span:last-child{display:flex;margin:0;flex-direction:column;gap:2px}
+
+/* Final bulk benefit order, COA green, and clean text-only shipping card. */
+.nl-bulk-benefits>.nl-bulk-benefit-coa{background:#e4f7ea!important;border-color:#c6e7cf!important;color:#17243c}
+.nl-bulk-benefits>.nl-bulk-benefit-shipping{display:flex!important;flex-direction:column;align-items:flex-start;justify-content:center;gap:6px;color:#17243c}
+.nl-bulk-benefit-shipping .nl-bulk-benefit-rate{margin:0;font-size:34px!important;line-height:1;color:#17243c!important}
+.nl-bulk-benefit-shipping .nl-bulk-benefit-copy{margin:0!important;font-size:12px!important;font-weight:800;line-height:1.25;color:#17243c!important}
+.nl-bulk-benefit-shipping>small{margin:0;color:#758096!important;font-size:11px;line-height:1.35}
+@media(max-width:760px){.nl-bulk-benefit-shipping .nl-bulk-benefit-rate{font-size:28px!important}}
