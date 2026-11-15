@@ -243,3 +243,44 @@ body.ap-site{font-family:Poppins,Arial,sans-serif;background:#fff;color:#101317}
 .nl-bulk-line-price{display:flex;flex-direction:column;align-items:flex-end;gap:3px;white-space:nowrap}.nl-bulk-line-price del{font-size:9px;color:#7b8797}
 
 .nl-bulk-benefits>div:nth-child(2) span{color:#fff}.nl-bulk-benefits>div:nth-child(2) small{color:#d2def1}
+
+/* Reference-matched bulk offer cards and product quantity controls. */
+.nl-bulk-benefits{align-items:stretch;margin-top:26px}
+.nl-bulk-benefits>.nl-bulk-benefit{position:relative;display:flex;min-width:0;min-height:166px;flex-direction:column;align-items:flex-start;justify-content:center;gap:6px;padding:19px 21px;border:1px solid #dde2eb;border-radius:17px;background:#fff;color:#20314d;box-shadow:0 8px 24px #14213b0c;text-decoration:none;box-sizing:border-box}
+.nl-bulk-benefit-10{background:linear-gradient(135deg,#f3efff,#f7f5ff)!important;border-color:#d6cdef!important}
+.nl-bulk-benefit-50{background:linear-gradient(115deg,#10152d,#3a1a72)!important;border-color:#311967!important;color:#fff!important}
+.nl-bulk-benefit-rate{display:block;font-size:39px!important;line-height:1;color:#4a2b9b!important;font-weight:800}
+.nl-bulk-benefit-50 .nl-bulk-benefit-rate{color:#b9ebff!important}
+.nl-bulk-benefit-copy{display:block;margin-top:auto;font-size:13px;font-weight:800;line-height:1.25;color:#17243c}
+.nl-bulk-benefit-50 .nl-bulk-benefit-copy{color:#fff}
+.nl-bulk-benefit small{font-size:11px;line-height:1.35;color:#758096}
+.nl-bulk-benefit-50 small{color:#ddd3f3}
+.nl-bulk-best-value{position:absolute;top:14px;right:14px;padding:5px 9px;border-radius:20px;background:#91e9ff;color:#17355b;font-size:9px;line-height:1;font-weight:900;letter-spacing:.4px}
+.nl-bulk-benefit-coa{justify-content:space-between}
+.nl-bulk-coa-proof{display:flex;align-items:center;gap:8px;margin:0 0 12px;padding:7px 11px;border:1px solid #e8ebf0;border-radius:26px;background:#fff}
+.nl-bulk-coa-proof>span:last-child{display:flex;flex-direction:column}
+.nl-bulk-coa-proof strong{font-size:13px;line-height:1.1;color:#17243c}
+.nl-bulk-coa-proof small{font-size:9px;color:#6e7787}
+.nl-bulk-coa-check{display:grid;place-items:center;width:26px;height:26px;border-radius:50%;background:#e4f7ea;color:#338a54;font-size:17px;font-weight:900}
+.nl-bulk-benefit-coa>.nl-bulk-benefit-copy{margin-top:auto}
+.nl-bulk-benefit-coa>small{color:#657087}
+.nl-bulk-benefit-shipping{justify-content:space-between;background:#edf4ff!important;border-color:#dce7f6!important}
+.nl-bulk-shipping-icon{display:grid;place-items:center;width:40px;height:40px;border-radius:50%;background:#27468e;color:#fff}
+.nl-bulk-shipping-icon svg{width:20px;height:20px;fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
+.nl-bulk-benefit-shipping>.nl-bulk-benefit-copy{margin-top:auto}
+.nl-bulk-product{position:relative}
+.nl-bulk-product-badge{position:absolute;z-index:2;top:11px;right:11px;padding:7px 10px;border-radius:18px;background:linear-gradient(100deg,#75dffb,#9e57f0);color:#102542;font-size:10px;font-weight:900;line-height:1;box-shadow:0 5px 14px #2520492e}
+.nl-bulk-product-badge[hidden]{display:none}
+.nl-bulk-product-foot{grid-template-columns:1fr;gap:6px;padding-top:12px}
+.nl-bulk-quantity-label{font-size:10px;font-weight:700;color:#45556d}
+.nl-bulk-quantity-controls{display:flex;align-items:center;gap:6px}
+.nl-bulk-qty-step{display:grid;place-items:center;width:29px;height:29px;flex:0 0 29px;border:1px solid #e0e4ea;border-radius:50%;background:#fff;color:#25344e;font-size:16px;font-weight:700;cursor:pointer}
+.nl-bulk-qty-step:disabled{opacity:.45;cursor:not-allowed}
+.nl-bulk-quantity-controls input{width:54px;height:31px;margin:0;padding:4px;border:1px solid #dfe4eb;border-radius:9px;text-align:center;font-size:12px;font-weight:800;color:#172744}
+.nl-bulk-plus-ten{height:29px;padding:0 11px;border:1px solid #dcd4f2;border-radius:17px;background:#f5f0ff;color:#49318a;font-size:10px;font-weight:800;cursor:pointer}
+.nl-bulk-plus-ten:disabled{opacity:.45;cursor:not-allowed}
+.nl-bulk-product-foot>span[data-bulk-progress]{min-height:14px;font-size:9px;line-height:1.3;color:#58677c}
+.nl-bulk-shipping-row{color:#2c684c!important;font-weight:700}
+.nl-bulk-shipping-row strong{color:#2c684c!important}
+.nl-bulk-summary .nl-bulk-shipping-row{padding:7px 0;border-bottom:1px solid #edf0f4;font-size:11px}
+@media(max-width:760px){.nl-bulk-benefits>.nl-bulk-benefit{min-height:145px;padding:15px}.nl-bulk-benefit-rate{font-size:32px!important}.nl-bulk-quantity-controls{gap:4px}.nl-bulk-qty-step{width:27px;height:27px;flex-basis:27px}.nl-bulk-quantity-controls input{width:48px}}
