@@ -370,3 +370,12 @@ body.ap-site:has(.nl-bulk-hero) .ap-announcement{display:none!important}
  .nl-bulk-benefit-shipping>.nl-bulk-shipping-icon svg{width:18px;height:18px}
  .nl-bulk-benefit-shipping .nl-bulk-benefit-rate{font-size:28px!important}
 }
+
+/* Keep the shipping benefit icon beside the copy despite the shared card flex rule. */
+.nl-bulk-benefits>.nl-bulk-benefit-shipping{display:grid!important;grid-template-columns:40px minmax(0,1fr);grid-template-rows:1fr;align-items:center;justify-content:start;column-gap:14px}
+.nl-bulk-benefits>.nl-bulk-benefit-shipping>.nl-bulk-shipping-icon{grid-column:1;grid-row:1;justify-self:center;align-self:center}
+.nl-bulk-benefits>.nl-bulk-benefit-shipping>.nl-bulk-shipping-copy{grid-column:2;grid-row:1}
+.nl-bulk-benefits>.nl-bulk-benefit-shipping .nl-bulk-benefit-copy{font-size:12px!important}
+@media(max-width:760px){
+ .nl-bulk-benefits>.nl-bulk-benefit-shipping{grid-template-columns:32px minmax(0,1fr);column-gap:9px}
+}
