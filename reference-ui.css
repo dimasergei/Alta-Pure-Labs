@@ -384,3 +384,8 @@ body.ap-site:has(.nl-bulk-hero) .ap-announcement{display:none!important}
 .nl-bulk-coa-proof{width:190px;min-height:52px;height:auto}
 .nl-bulk-coa-proof>span:last-child{margin:0;gap:2px}
 .nl-bulk-coa-proof strong,.nl-bulk-coa-proof small{white-space:nowrap}
+
+/* Override the generic benefit-card span rule so COA proof stays side-by-side. */
+.nl-bulk-benefits .nl-bulk-coa-proof{display:grid;grid-template-columns:27px max-content;align-items:center;justify-content:start;column-gap:9px;width:max-content;max-width:100%;min-height:52px;height:auto}
+.nl-bulk-benefits .nl-bulk-coa-check{display:grid;place-items:center;width:27px;height:27px;margin:0}
+.nl-bulk-benefits .nl-bulk-coa-proof>span:last-child{display:flex;margin:0;flex-direction:column;gap:2px}
