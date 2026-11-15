@@ -24,7 +24,7 @@ for(const file of fs.readdirSync(out,{recursive:true}).filter(f=>f.endsWith('.ht
   html=html.replace(/<meta\b[^>]*\bname=["'](?:theme-color|altapure-promo-end)["'][^>]*>/gi,'');
   const themeLink=html.includes('href="/brand-theme.css"')?'':'<link rel="stylesheet" href="/brand-theme.css">';
   const mobileLink=html.includes('href="/mobile-parity.css')?'':'<link rel="stylesheet" media="(max-width: 767px)" href="/mobile-parity.css?v=20261114">';
-  html=html.replace('</head>',`${themeLink}${mobileLink}<link rel="stylesheet" href="/research-builder-parity.css?v=6">${iconLinks}</head>`);
+  html=html.replace('</head>',`${themeLink}${mobileLink}<link rel="stylesheet" href="/research-builder-parity.css?v=7">${iconLinks}</head>`);
   const body=html.match(/<body\b([^>]*)>/i);
   if(body){
     let attrs=body[1];

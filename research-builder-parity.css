@@ -157,8 +157,9 @@
 .ap-site .nl-builder-benefits>.nl-builder-benefit-discount{background:linear-gradient(135deg,#f3efff,#f7f5ff);border-color:#d4bafd}
 .ap-site .nl-builder-benefits>.nl-builder-benefit-bundle{background:linear-gradient(115deg,#10152d,#3a1a72);border-color:#6f43ae}
 .ap-site .nl-builder-benefits>.nl-builder-benefit-shipping,
+.ap-site .nl-bulk-benefits>.nl-bulk-benefit-shipping{background:#edf4ff!important;border-color:#dce7f6!important}
 .ap-site .nl-builder-benefits>.nl-builder-benefit-coa,
-.ap-site .nl-bulk-benefits>.nl-bulk-benefit-shipping{background:#dff8e8!important;border-color:#bce8ca!important}
+.ap-site .nl-bulk-benefits>.nl-bulk-benefit-coa{background:#dff8e8!important;border-color:#bce8ca!important}
 .ap-site .nl-bulk-benefits>.nl-bulk-benefit-shipping{display:flex!important;flex-direction:column;align-items:flex-start;justify-content:flex-start;gap:4px;padding:20px}
 .ap-site .nl-bulk-benefit-shipping .nl-bulk-benefit-rate{margin:0 0 auto;font-size:44px!important;line-height:1.1!important;color:#123c76!important}
 .ap-site .nl-bulk-benefit-shipping .nl-bulk-benefit-copy{margin:0!important;font-size:14px!important;line-height:1.35;color:#111!important}
