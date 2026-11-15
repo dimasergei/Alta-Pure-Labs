@@ -41,6 +41,15 @@ body.ap-site {
 .ap-site .ap-promo-off{color:#d5baf4}
 .ap-site .ap-pair-offer{color:#5a2d94}
 .ap-site .nl-card-price small{color:#6e627b}
+.ap-site .nl-badge{border-color:#a673e5!important;box-shadow:0 4px 18px #6d32bf55!important}
+.ap-site .nl-shop .ap-add,
+.ap-site .nl-shop .ap-button-secondary,
+.ap-site .nl-shop .ap-load-more{
+  background:#4b218b!important;border-color:#4b218b!important;color:#fff!important;
+}
+.ap-site .nl-shop :is(.ap-add,.ap-button-secondary):hover{background:#652cae!important}
+.ap-site .nl-shop .nl-filter-pills button:not([aria-pressed=true]){background:#fff!important;color:#4b218b!important}
+.ap-site .nl-shop .nl-shop-search input:focus{outline-color:#9f69db!important}
 .ap-site .nl-hero .nl-primary,
 .ap-site .nl-purchase>.ap-button {
   background:linear-gradient(110deg,#a76de7,#d4a8ff)!important;
@@ -93,6 +102,7 @@ body.ap-site {
 .ap-site .ap-coa-sheet{background:linear-gradient(145deg,#fcfaff,#ded0f3)!important}
 .ap-site .ap-coa-sheet i{background:#9370bf}
 .ap-site .ap-supplier-coa-grid>article{border-top-color:#8652c1;background:linear-gradient(165deg,#fff,#f7f1fd)}
+.ap-site .ap-supplier-coa-grid :is(h3,h4,a:not(.ap-button)){color:#34204f}
 .ap-site :is(.ap-page-intro,.nl-shop,.nl-planner){background-image:none}
 .ap-site .ap-page-intro{background:radial-gradient(ellipse at 50% 0%,#eee4fa,transparent 72%)}
 .ap-site .ap-summary:not(.nl-bulk-summary):not(.nl-builder-summary){
