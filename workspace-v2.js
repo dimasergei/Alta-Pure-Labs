@@ -69,6 +69,7 @@
  }
  document.addEventListener('click',event=>{const button=event.target.closest('[data-action]');if(!button)return;const action=button.dataset.action;
   if(action==='builder-add')addBuilder(button.dataset.id,button.dataset.size);
+  if(action==='builder-category'){builderGroup=button.dataset.group||'All';$$('[data-action="builder-category"]').forEach(x=>x.setAttribute('aria-pressed',String(x.dataset.group===builderGroup)));builderResults();}
   if(action==='builder-remove'){builder=builder.filter(x=>x.id!==button.dataset.id);persistBuilder();builderSummary();}
   if(action==='builder-clear'){builder=[];persistBuilder();builderSummary();}
   if(action==='builder-save')savePlan();
@@ -76,7 +77,7 @@
   if(action==='builder-cart'){try{A.addItems(simpleLines(builder));}catch(e){A.toast(e.message);}}
   if(action==='bulk-qty'){const current=bulk.find(x=>x.id===button.dataset.id&&x.size===button.dataset.size)?.qty||0;setBulkQuantity(button.dataset.id,button.dataset.size,current+Number(button.dataset.delta));}
   if(action==='bulk-size'){const p=product(button.dataset.id),v=p?.variants.find(x=>x.size===button.dataset.size);if(p&&v){bulkSizes[p.id]=v.size;A.write(bulkSizeKey,bulkSizes);bulkResults();}}
-  if(action==='bulk-category'){bulkGroup=button.dataset.group||'All';$('[data-action="bulk-category"]').forEach(x=>x.setAttribute('aria-pressed',String(x.dataset.group===bulkGroup)));bulkResults();}
+  if(action==='bulk-category'){bulkGroup=button.dataset.group||'All';$$('[data-action="bulk-category"]').forEach(x=>x.setAttribute('aria-pressed',String(x.dataset.group===bulkGroup)));bulkResults();}
   if(action==='bulk-export')A.exportLines(bulk,'AltaPure-bulk-request.csv');
   if(action==='bulk-cart'){try{A.addItems(simpleLines(bulk));}catch(e){A.toast(e.message);}}
   if(action==='bulk-clear'){bulk=[];A.write(bulkKey,bulk);bulkResults();bulkSummary();}
