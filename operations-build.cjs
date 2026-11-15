@@ -34,7 +34,7 @@ fs.mkdirSync(path.join(out,'data'),{recursive:true});for(const file of ['verifie
 // Do not copy an entire hidden directory or generate a substitute verification file.
 const appleAssociation='.well-known/apple-developer-merchantid-domain-association';
 if(fs.existsSync(appleAssociation)){fs.mkdirSync(path.join(out,'.well-known'),{recursive:true});fs.copyFileSync(appleAssociation,path.join(out,appleAssociation));}
-const shell=fs.readFileSync('storefront-v2.html','utf8').replace('</head>','<link rel="stylesheet" href="/supplier-coas.css"></head>').replace('<script src="/workspace-v2.js','<script src="/supplier-coas.js"></script><script src="/workspace-v2.js');
+const shell=fs.readFileSync('storefront-v2.html','utf8').replace('</head>','<link rel="stylesheet" href="/supplier-coas.css"></head>').replace('<script src="/workspace-v2.js','<script src="/supplier-coas.js?v=2"></script><script src="/workspace-v2.js');
 function page(html,url,title,description,main,structured){html=html.replace(/<title>[\s\S]*?<\/title>/,'<title>'+esc(title)+'</title>');html=html.replace(/<meta name="description"[^>]*>/,'<meta name="description" content="'+esc(description)+'">');html=html.replace('</head>','<link rel="canonical" href="'+esc(base+url)+'"><meta property="og:title" content="'+esc(title)+'"><meta property="og:description" content="'+esc(description)+'"><meta property="og:url" content="'+esc(base+url)+'"><meta property="og:type" content="website">'+(structured?'<script type="application/ld+json">'+JSON.stringify(structured).replace(/</g,'\\u003c')+'</script>':'')+'</head>');if(main)html=html.replace(/<main id="ap-main">[\s\S]*?<\/main>/,'<main id="ap-main">'+main+'</main>');return html;}
 const routes={
  '/shop':['Research Catalog','Browse all AltaPure research products and exact product-size variants.'],
@@ -43,7 +43,7 @@ const routes={
  '/memberships':['Memberships','Review account access and membership enrollment availability.'],
  '/rewards':['Rewards and Credit','Find the account workspaces for issued rewards and store credit.'],
  '/offers':['Current Offers','Review explicitly published AltaPure offers and their terms.'],
- '/coas':['Certificates of Analysis','Browse original supplier certificates by product, strength and lot, with report client and laboratory attribution.'],
+ '/coas':['Certificates of Analysis','Browse COA reports by product, strength and reported lot. The original report sheets remain available.'],
  '/about':['About AltaPure Labs','Learn about the connected AltaPure laboratory research workspace.'],
  '/contact':['Contact AltaPure Labs','Submit a documented inquiry for support, product documentation or an existing order.'],
  '/partner-program':['Partner Program','Submit an organizational partnership inquiry.'],
