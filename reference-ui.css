@@ -462,3 +462,18 @@ body.ap-site{font-family:Poppins,Arial,sans-serif;background:#fff;color:#101317}
 .ap-site .nl-bulk-toolbar input{border-radius:999px;background:#f2f4f8}
 .ap-site .nl-bulk-categories button{border:2px solid #11448d;border-radius:999px;color:#11448d}
 .ap-site .nl-bulk-categories button[aria-pressed=true]{background:#11448d;color:white}
+
+/* Bulk card price and quantity controls */
+.nl-bulk-prices{display:flex;justify-content:center;align-items:baseline;flex-wrap:wrap;gap:3px;margin:8px 0;text-align:center}
+.nl-bulk-prices strong{font-size:19px}.nl-bulk-prices span,.nl-bulk-prices small,.nl-bulk-prices del{font-size:11px;color:#68717e}
+.nl-bulk-product-foot{display:block;padding-top:8px}
+.nl-bulk-product-foot .nl-bulk-quantity-controls{display:flex;gap:7px}
+.nl-bulk-product-foot .nl-bulk-plus-ten{background:#12448c;color:#fff;border:0;font-weight:800}
+.nl-bulk-product[data-selected=false] .nl-bulk-quantity-controls>input,.nl-bulk-product[data-selected=false] .nl-bulk-qty-step{display:none}
+.nl-bulk-product[data-selected=false] .nl-bulk-plus-ten{width:100%;height:40px;border-radius:999px}
+.nl-bulk-product[data-selected=false] .nl-bulk-short-label,.nl-bulk-product[data-selected=true] .nl-bulk-add-label{display:none}
+.nl-bulk-product[data-selected=true] .nl-bulk-plus-ten{width:42px;height:35px;border-radius:999px;padding:0}
+.nl-bulk-product-foot [data-bulk-progress]{display:block;margin-top:8px;padding:7px 9px;border:1px solid #dbc6ff;border-radius:8px;background:#f2ebff;color:#492293;font-weight:700;font-size:10px}
+.nl-bulk-product-foot [data-bulk-progress]:empty{display:none}
+.nl-bulk-menu-line-price{flex-direction:column;align-items:flex-end;gap:0}
+.nl-bulk-totals del{color:#78818f}
