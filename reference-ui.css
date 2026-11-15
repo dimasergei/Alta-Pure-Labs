@@ -284,3 +284,6 @@ body.ap-site{font-family:Poppins,Arial,sans-serif;background:#fff;color:#101317}
 .nl-bulk-shipping-row strong{color:#2c684c!important}
 .nl-bulk-summary .nl-bulk-shipping-row{padding:7px 0;border-bottom:1px solid #edf0f4;font-size:11px}
 @media(max-width:760px){.nl-bulk-benefits>.nl-bulk-benefit{min-height:145px;padding:15px}.nl-bulk-benefit-rate{font-size:32px!important}.nl-bulk-quantity-controls{gap:4px}.nl-bulk-qty-step{width:27px;height:27px;flex-basis:27px}.nl-bulk-quantity-controls input{width:48px}}
+
+/* Keep the site-wide BOGO ribbon off the bulk inquiry experience. */
+body.ap-site:has(.nl-bulk-hero) .ap-announcement{display:none!important}
