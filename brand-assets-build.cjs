@@ -33,9 +33,9 @@ for(const file of fs.readdirSync(out,{recursive:true}).filter(f=>f.endsWith('.ht
     else attrs+=' class="ap-site"';
     html=html.replace(body[0],`<body${attrs}>`);
   }
-  if(file==='memberships.html'){
-    html=html.replace('</head>','<link rel="stylesheet" href="/membership-experience.css?v=20261114"></head>');
-    html=html.replace('</body>','<script src="/membership-experience.js?v=20261114"></script></body>');
+  if(file==='memberships.html'||file==='index.html'){
+    html=html.replace('</head>','<link rel="stylesheet" href="/membership-experience.css?v=20261115"></head>');
+    html=html.replace('</body>','<script src="/membership-experience.js?v=20261115"></script></body>');
   }
   if(file==='index.html'&&!html.includes('"@type":"Organization"'))html=html.replace('</head>',`${organization}</head>`);
   fs.writeFileSync(target,html);

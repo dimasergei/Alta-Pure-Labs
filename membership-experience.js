@@ -1,9 +1,11 @@
 /* AltaPure membership comparison. Prices/benefits read from server-aligned config. */
 (()=>{
 'use strict';
-if(!/^\/memberships\/?$/.test(location.pathname))return;
-const plans=window.AltaConversionConfig?.plans,root=document.getElementById('ap-main');
-if(!plans||!root)return;
+const fullPage=/^\/memberships\/?$/.test(location.pathname),homePage=location.pathname==='/';
+if(!fullPage&&!homePage)return;
+const plans=window.AltaConversionConfig?.plans,main=document.getElementById('ap-main');
+if(!plans||!main)return;
+const target=()=>fullPage?main:main.querySelector('[data-mx-membership-home]');
 const esc=v=>String(v??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const usd=c=>new Intl.NumberFormat('en-US',{style:'currency',currency:'USD'}).format(c/100);
 const displayName=id=>id==='vip'?'ALTA GOLD':id==='elite'?'ALTA PLATINUM':'Member';
@@ -40,21 +42,22 @@ function card(id){
  '<a class="mx-choose" href="'+href+'" aria-label="'+esc((free?'Create account':'Choose '+displayName(id))+' '+(free?'':'billed '+period))+'">'+(free?'Create Account':'Choose '+displayName(id))+'</a></article>';
 }
 function render(){
- root.innerHTML='<section class="mx-membership-page">'+
- '<header class="mx-hero"><span class="mx-eyebrow">✧ ALTA PURE LABS MEMBERSHIPS</span><h1>Save on every order,<br><em>automatically.</em></h1>'+
+ const root=target();if(!root)return;
+ root.innerHTML='<section class="mx-membership-page'+(fullPage?'':' mx-membership-embedded')+'">'+
+ '<header class="mx-hero"><span class="mx-eyebrow">✧ ALTA PURE LABS MEMBERSHIPS</span><'+(fullPage?'h1':'h2')+'>Save on every order,<br><em>automatically.</em></'+(fullPage?'h1':'h2')+'>'+
  '<p>Choose a prepaid membership to unlock eligible savings, free standard US delivery and extra rewards on future orders after confirmed payment.</p></header>'+
  '<div class="mx-period" role="group" aria-label="Membership billing"><button type="button" data-mx-period="monthly" aria-pressed="'+(period==='monthly')+'">Monthly</button><button type="button" data-mx-period="annual" aria-pressed="'+(period==='annual')+'">Annual <span>Save 20%</span></button></div>'+
  '<div class="mx-card-grid">'+['member','vip','elite'].map(card).join('')+'</div>'+
  '<p class="mx-terms">Prepaid terms do not renew automatically. The better of BOGO and eligible member or volume pricing applies per product line; membership fees do not earn points. Standard shipping, discount and points benefits activate on verified payment. Priority fulfillment, monthly credits and gift items require eligibility and fulfillment verification.</p>'+
- '<section class="mx-faq" id="membership-faq"><header><h2>Membership FAQ</h2><p>Everything you need to know before you join.</p></header><div class="mx-faq-items">'+
+ (fullPage?'<section class="mx-faq" id="membership-faq"><header><h2>Membership FAQ</h2><p>Everything you need to know before you join.</p></header><div class="mx-faq-items">'+
  faq.map(([q,a])=>'<details><summary>'+esc(q)+'<span aria-hidden="true"></span></summary><p>'+esc(a)+'</p></details>').join('')+
- '</div></section></section>';
+ '</div></section>':'')+'</section>';
  root.querySelectorAll('[data-mx-period]').forEach(b=>b.addEventListener('click',()=>{if(period===b.dataset.mxPeriod)return;period=b.dataset.mxPeriod;render();}));
 }
 render();
 /* A legacy storefront initializer may replace #ap-main after this script runs.
    Restore this scoped membership view without intercepting unrelated routes. */
 new MutationObserver(()=>{
- if(!root.querySelector('.mx-membership-page'))render();
-}).observe(root,{childList:true});
+ const root=target();if(root&&!root.querySelector('.mx-membership-page'))render();
+}).observe(main,{childList:true,subtree:homePage});
 })();
