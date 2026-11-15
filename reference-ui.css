@@ -286,7 +286,7 @@ body.ap-site{font-family:Poppins,Arial,sans-serif;background:#fff;color:#101317}
 @media(max-width:760px){.nl-bulk-benefits>.nl-bulk-benefit{min-height:145px;padding:15px}.nl-bulk-benefit-rate{font-size:32px!important}.nl-bulk-quantity-controls{gap:4px}.nl-bulk-qty-step{width:27px;height:27px;flex-basis:27px}.nl-bulk-quantity-controls input{width:48px}}
 
 /* Keep the site-wide BOGO ribbon off the bulk inquiry experience. */
-body.ap-site:has(.nl-bulk-hero) .ap-announcement{display:none!important}
+
 
 /* Compact the bulk highlights and carry their electric-blue benefits into the order menu. */
 .nl-bulk-hero{padding-top:34px;padding-bottom:24px}
@@ -433,3 +433,32 @@ body.ap-site:has(.nl-bulk-hero) .ap-announcement{display:none!important}
 /* Account for the compact sticky storefront header when sizing the bulk panel. */
 .ap-summary.nl-bulk-summary{top:96px!important;padding:16px!important}
 @media(max-width:760px){.ap-summary.nl-bulk-summary{top:78px!important;padding:12px!important}}
+
+/* Bulk page proportions and typography */
+@media(min-width:761px){
+ .ap-site .nl-bulk-hero{padding:56px 0 60px;background:radial-gradient(ellipse at 85% 0%,#2c1c63 0,transparent 48%),linear-gradient(115deg,#111a31,#090515 70%)}
+ .ap-site .nl-bulk-hero h1{max-width:none;margin:16px 0 18px;font-size:clamp(48px,4.2vw,62px);line-height:1.08;letter-spacing:-.035em}
+ .ap-site .nl-bulk-hero h1 em{color:inherit;background:none;-webkit-text-fill-color:inherit}
+ .ap-site .nl-bulk-hero h1 em strong{background:linear-gradient(100deg,#a6eaff,#c6a4f8);background-clip:text;-webkit-background-clip:text;-webkit-text-fill-color:transparent}
+ .ap-site .nl-bulk-hero>div>p{max-width:760px;font-size:16px;line-height:1.55;color:#c5c2ce}
+ .ap-site .nl-bulk-benefits{margin-top:28px;gap:14px}
+ .ap-site .nl-bulk-benefits>.nl-bulk-benefit{min-height:164px;padding:20px;justify-content:space-between;border-radius:16px}
+ .ap-site .nl-bulk-benefit-rate{font-size:46px!important}
+ .ap-site .nl-bulk-benefit-copy{font-size:14px!important}
+ .ap-site .nl-bulk-benefit small{font-size:12px}
+ .ap-site .nl-bulk-layout{padding-top:20px}
+}
+.ap-site .nl-bulk-benefits>.nl-bulk-benefit-coa{background:#fff!important;border-color:#dce8fb!important}
+.ap-site .nl-bulk-benefits>.nl-bulk-benefit-shipping{background:#edf4ff!important;border-color:#dce7f6!important}
+.ap-site .nl-bulk-summary{background:#fff;border-color:#d9e5f7;border-radius:20px}
+.nl-bulk-summary-heading .ap-eyebrow{display:none}
+.nl-bulk-summary-heading h2{margin:0 0 10px;font-size:20px;letter-spacing:-.03em}
+.nl-bulk-summary .nl-bulk-shipping-row,.nl-bulk-summary .nl-bulk-shipping-row strong{color:#176b37!important}
+.nl-bulk-summary .nl-bulk-totals>div:nth-child(2),.nl-bulk-summary .nl-bulk-totals>div:nth-child(2) strong{color:#176b37}
+.nl-bulk-tier-box{background:#f1eaff;border:1px solid #d0b7ff;color:#685791}
+.nl-bulk-tier-box>p{color:#71629c}
+.nl-bulk-tier-box .nl-bulk-tier-legend span{background:linear-gradient(100deg,#451799,#7821dc);border-radius:99px;color:#fff}
+.nl-bulk-summary #ap-bulk-summary>.ap-button{border-radius:999px;background:#11448d;color:white}
+.ap-site .nl-bulk-toolbar input{border-radius:999px;background:#f2f4f8}
+.ap-site .nl-bulk-categories button{border:2px solid #11448d;border-radius:999px;color:#11448d}
+.ap-site .nl-bulk-categories button[aria-pressed=true]{background:#11448d;color:white}
