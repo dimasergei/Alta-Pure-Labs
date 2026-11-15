@@ -526,7 +526,7 @@ body.ap-site{font-family:Poppins,Arial,sans-serif;background:#fff;color:#101317}
 .ap-site .ap-inquiry-form input:not([type=checkbox]),.ap-site .ap-inquiry-form textarea{display:block;width:100%;min-width:0;min-height:48px;padding:12px 14px;border:1px solid #cbd4e0;border-radius:10px;background:#fff;color:#17243c;font:400 14px/1.5 Poppins,Arial,sans-serif;box-sizing:border-box}
 .ap-site .ap-inquiry-form textarea{min-height:150px;resize:vertical}
 .ap-site .ap-inquiry-form input:focus-visible,.ap-site .ap-inquiry-form textarea:focus-visible{outline:2px solid #5ca5e9;outline-offset:2px}
-.ap-site .ap-inquiry-form .ap-form-grid>.ap-form-consent{display:flex;flex-direction:row;align-items:flex-start;gap:10px;font-size:12px;font-weight:400;line-height:1.55;color:#4e5a6b}
+.ap-site .ap-inquiry-form .ap-form-grid>label.ap-form-consent{display:flex;flex-direction:row;align-items:flex-start;gap:10px;font-size:12px;font-weight:400;line-height:1.55;color:#4e5a6b}
 .ap-site .ap-inquiry-form .ap-form-consent input{flex:none;width:17px;height:17px;margin:1px 0 0;accent-color:#174785}
 .ap-site .ap-inquiry-form>.ap-button{margin-top:22px;padding:14px 24px}
 .ap-site .ap-inquiry-form .ap-form-status{margin:12px 0 0}
