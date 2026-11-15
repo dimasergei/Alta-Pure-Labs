@@ -486,3 +486,33 @@ body.ap-site{font-family:Poppins,Arial,sans-serif;background:#fff;color:#101317}
 .nl-bulk-image{height:auto;aspect-ratio:1/1;min-height:0}.nl-bulk-image img{width:100%;height:100%;object-fit:contain}.nl-bulk-product-body{padding:12px}.nl-bulk-product-body h3{margin:5px 0 8px}
 
 .ap-site .ap-summary.nl-bulk-summary{top:var(--ap-workspace-sticky-top,96px)!important;height:calc(100dvh - var(--ap-workspace-sticky-top,96px) - 12px);max-height:calc(100dvh - var(--ap-workspace-sticky-top,96px) - 12px)}
+
+/* Research catalog controls follow the compact shop layout. */
+.ap-site .nl-shop.ap-container{width:min(1240px,calc(100% - 48px));max-width:1240px;padding-top:46px}
+.ap-site .nl-shop-header{margin:0 0 29px}
+.ap-site .nl-shop-header h1{margin:0 0 6px;color:#111;font-size:40px;line-height:1.12;font-weight:800;letter-spacing:-1.3px}
+.ap-site .nl-shop-header p{margin:0;color:#6b6b70;font-size:16px;line-height:1.5}
+.ap-site .nl-shop .nl-shop-controls{display:flex;align-items:center;justify-content:space-between;gap:20px;margin:0 0 48px}
+.ap-site .nl-shop-search{position:relative;display:block;flex:0 1 460px;min-width:220px}
+.ap-site .nl-shop-search svg{position:absolute;top:50%;left:20px;width:19px;height:19px;transform:translateY(-50%);fill:none;stroke:#777;stroke-width:1.7;pointer-events:none}
+.ap-site .nl-shop .nl-shop-search input{width:100%;max-width:none;height:54px;padding:13px 18px 13px 47px;border:1.5px solid #ececef;border-radius:999px;background:#fafafa;color:#17243c;font:400 15px/1.5 Poppins,sans-serif;box-shadow:none}
+.ap-site .nl-shop .nl-shop-search input:focus{outline:2px solid #88bdf0;outline-offset:2px}
+.ap-site .nl-shop-sort{display:flex;align-items:center;gap:12px;margin-left:auto;white-space:nowrap}
+.ap-site .nl-shop-sort label{font-size:14px;font-weight:600;color:#62626a}
+.ap-site .nl-shop .nl-shop-sort select{width:183px;height:46px;padding:10px 16px;border:1.5px solid #ececef;border-radius:10px;background:#fff;color:#171717;font:600 14px/1.5 Poppins,sans-serif}
+.ap-site .nl-shop .nl-filter-pills{display:flex;flex-wrap:wrap;gap:12px;margin:0 0 17px;padding:0;overflow:visible}
+.ap-site .nl-shop .nl-filter-pills button{min-width:0;min-height:52px;padding:13px 28px;border:1.5px solid #0f438e;border-radius:999px;background:#fff;color:#0f438e;font:700 15px/1.5 Poppins,sans-serif;box-shadow:0 0 0 1px rgba(15,67,142,.1),0 0 16px rgba(15,67,142,.22),0 6px 18px -8px rgba(15,67,142,.45)}
+.ap-site .nl-shop .nl-filter-pills button[aria-pressed=true]{background:#fff;color:#0f438e;box-shadow:0 0 0 1px rgba(15,67,142,.2),0 0 16px rgba(15,67,142,.28),0 6px 18px -8px rgba(15,67,142,.5)}
+.ap-site .nl-shop .nl-filter-pills button:focus-visible{outline:3px solid #8bd9ff;outline-offset:3px}
+@media(max-width:767px){
+ .ap-site .nl-shop.ap-container{width:calc(100% - 36px);padding-top:28px}
+ .ap-site .nl-shop-header{margin-bottom:22px}
+ .ap-site .nl-shop-header h1{font-size:32px}
+ .ap-site .nl-shop-header p{font-size:14px}
+ .ap-site .nl-shop .nl-shop-controls{display:grid;gap:14px;margin-bottom:24px}
+ .ap-site .nl-shop-search{min-width:0;width:100%}
+ .ap-site .nl-shop .nl-shop-search input{height:52px}
+ .ap-site .nl-shop-sort{justify-content:flex-end;margin-left:0}
+ .ap-site .nl-shop .nl-filter-pills{flex-wrap:nowrap;overflow-x:auto;gap:10px;padding:2px 2px 12px;margin-bottom:12px}
+ .ap-site .nl-shop .nl-filter-pills button{flex:none;min-height:44px;padding:10px 19px;font-size:12px}
+}
