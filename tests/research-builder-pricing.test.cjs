@@ -2,7 +2,7 @@
 const { test } = require('node:test');
 const assert = require('node:assert/strict');
 const { quote, catalog } = require('../lib/research-builder-pricing');
-const handler = require('../api/research-builder');
+const handler = require('../lib/research-builder-handler');
 
 test('four distinct catalog compounds have server-priced monthly estimate and free bundled water', () => {
   const result = quote(['retatrutide', 'tirzepatide', 'semaglutide', 'tb-500'].map(id => ({ id, size: id === 'tb-500' ? '5mg' : '10mg', qty: 1 })), catalog());

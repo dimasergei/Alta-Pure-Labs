@@ -18,7 +18,7 @@ window.ResearchCheckout = (() => {
       return;
     }
     try {
-      const response = await fetch('/api/research-builder', {method:'POST',cache:'no-store',headers:{'Content-Type':'application/json'},body:JSON.stringify({action:'quote',lines})});
+      const response = await fetch('/api/customer-config?research_builder=1', {method:'POST',cache:'no-store',headers:{'Content-Type':'application/json'},body:JSON.stringify({action:'quote',lines})});
       const quote = await response.json();
       if (!response.ok || !Array.isArray(quote.lines) || quote.lines.length !== 4) throw Error(quote.error || 'This selection needs to be reviewed again.');
       root.querySelector('.rc-loading').remove();

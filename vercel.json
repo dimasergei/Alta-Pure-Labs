@@ -9,10 +9,6 @@
     "api/customer-config.js": {
       "includeFiles": "lib/catalog.json",
       "maxDuration": 60
-    },
-    "api/research-builder.js": {
-      "includeFiles": "lib/catalog.json",
-      "maxDuration": 30
     }
   },
   "rewrites": [

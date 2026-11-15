@@ -4,7 +4,7 @@ const assert = require('node:assert/strict');
 const fs = require('node:fs');
 const {JSDOM} = require('jsdom');
 const {quote,catalog} = require('../lib/research-builder-pricing');
-const handler = require('../api/research-builder');
+const handler = require('../lib/research-builder-handler');
 
 const lines = ['retatrutide','tirzepatide','semaglutide','tb-500'].map(id=>({id,size:id==='tb-500'?'5mg':'10mg',qty:1}));
 
@@ -16,7 +16,7 @@ test('dedicated checkout shows authoritative quote and cannot submit payment', a
   dom.window.eval(fs.readFileSync('research-checkout-client.js','utf8'));
   await dom.window.ResearchCheckout.render(dom.window.document.getElementById('checkout'),{email:'researcher@example.test'});
   const page=dom.window.document.getElementById('checkout');
-  assert.equal(request.url,'/api/research-builder');
+  assert.equal(request.url,'/api/customer-config?research_builder=1');
   assert.deepEqual(JSON.parse(JSON.stringify(request.body.lines)),lines);
   assert.match(page.textContent,/Every month\$151\.20/);
   assert.match(page.textContent,/BAC Water 3ML/);
