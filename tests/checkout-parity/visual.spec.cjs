@@ -80,12 +80,12 @@ test('VIS-05 protection Read more is inline and never opens another page',async(
  expect(alerts).toBe(0);expect(popups).toBe(0);
  await capture(page,'protection-inline-expanded');
 });
-test('VIS-06 Priority and Cold Chain disclosures are inline and extras start OFF',async({page})=>{
+test('VIS-06 Priority disclosure is inline and Cold Chain is unavailable',async({page})=>{
  await pageReady(page,'delivery');
  await expect(page.locator('[data-nlx-extra="priority"]')).not.toBeChecked();
- await expect(page.locator('[data-nlx-extra="cold_chain"]')).not.toBeChecked();
+ await expect(page.locator('[data-nlx-extra="cold_chain"]')).toHaveCount(0);
  let dialogs=0;page.on('dialog',d=>{dialogs++;d.dismiss()});
- for(const id of ['priority','cold-chain']){
+ for(const id of ['priority']){
   const toggle=page.getByTestId(id+'-disclosure');
   await expect(toggle).toBeVisible();await toggle.click();
   await expect(toggle).toHaveAttribute('aria-expanded','true');

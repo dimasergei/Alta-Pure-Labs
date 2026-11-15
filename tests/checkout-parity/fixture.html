@@ -38,7 +38,6 @@
   {id:'express',kind:'shipping',label:'Express UPS',price_cents:3495,enabled:true,description:'Expedited delivery where available'},
   {id:'next_day',kind:'shipping',label:'UPS Next Day',price_cents:6995,enabled:true,description:'Eligibility varies by destination'},
   {id:'priority',kind:'extra',label:'Priority Processing',price_cents:999,enabled:true,description:'Priority order preparation, subject to capacity.'},
-  {id:'cold_chain',kind:'extra',label:'Cold Chain Shipping',price_cents:999,enabled:true,description:'Insulated packaging. Temperature is not guaranteed.'},
   {id:'protection',kind:'extra',label:'Shipping Protection',price_cents:500,enabled:true,description:'Optional seller-backed lost/damaged package protection.'}
  ];
  const config={version:'checkout-2026-11-v4',shipping_countries:['US','CA','GB','AU','FR','DE','MX','JP','IE','NZ','PT','BR']};
@@ -48,7 +47,7 @@
  const user={id:'b0000000-0000-4000-8000-000000000002',email:'researcher@example.test',user_metadata:{full_name:'Lab Customer',alta_profile:{shipping:{name:'Lab Customer',line1:'12 Research Avenue',city:'Miami',region:'FL',postal_code:'33101',country:'US',phone:'305-555-0100'}}}};
  const auth={auth:{getSession:async()=>({data:{session:{access_token:'LOCAL-FIXTURE-NOT-REAL'}}})}};
  const snap=()=>items.map(x=>({...x}));
- const extras=()=>new URLSearchParams(location.search).get('extras')==='both'?['protection','priority','cold_chain']:['protection'];
+ const extras=()=>new URLSearchParams(location.search).get('extras')==='both'?['protection','priority']:['protection'];
  try{localStorage.clear();localStorage.setItem('ap-checkout-coupon','BOGO');localStorage.setItem('ap-shipping-extras',JSON.stringify(extras()));localStorage.setItem('ap-shipping-country','US')}catch{}
  window.AltaStore={get cart(){return snap()},catalog,product:id=>catalog.find(p=>p.id===id),image:()=>png,
   adjustQuantity(key,delta){items=items.map(x=>x.key===key?{...x,qty:Math.max(1,x.qty+delta)}:x);return true},

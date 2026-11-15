@@ -32,14 +32,6 @@
     "description": "Priority order handling and preparation ahead of standard orders, subject to daily capacity."
   },
   {
-    "id": "cold_chain",
-    "kind": "extra",
-    "label": "Cold Chain Shipping",
-    "price_cents": 999,
-    "enabled": true,
-    "description": "Insulated packaging with cooling materials for products eligible for cold-chain handling. No guaranteed transit temperature."
-  },
-  {
     "id": "protection",
     "kind": "extra",
     "label": "Shipping Protection",

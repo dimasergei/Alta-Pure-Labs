@@ -35,11 +35,12 @@ test('PAR-02: protection help is a real inline disclosure with no diamond placeh
   'Disclosure button needs its own panel.');
 });
 
-test('PAR-03: Priority and Cold Chain explain inline without window.alert',()=>{
+test('PAR-03: Priority explains inline and Cold Chain is absent',()=>{
  assert.doesNotMatch(checkout, /window\.alert\(/,
   'Blocking browser alerts interrupt checkout; replace with inline accordions.');
  assert.match(checkout, /data-nlx-info/);
  assert.match(checkout, /aria-expanded/);
+ assert.doesNotMatch(checkout, /cold_chain|cold-chain-disclosure/);
 });
 
 test('PAR-04: member activation is not recursively dispatched through the overwritten checkout handler',()=>{

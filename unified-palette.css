@@ -214,6 +214,36 @@ body.ap-site {
 .ap-site .nlc-scrollable-items:focus-visible{outline-color:#8d4fe5}
 .ap-site .nlc-gift:focus-visible{outline-color:#8d4fe5}
 .ap-site .nlx-checkout-root{--nx-blue:#4b218b;--nx-border:#e3d8ee;--nx-sky:#f1eafa}
+.ap-site .nlx-protection-body{border-color:#6d389f;background:#f2ecf9}
+.ap-site .nlx-shield{background:#e6d8f3;color:#4b218b}
+.ap-site .nlx-protection-lock,.ap-site .nlx-protection-body a{color:#4b218b}
+.ap-site .nlx-member-offer{border-color:#d4bde9;background:#f2ebf9}
+.ap-site .nlx-member-label,.ap-site .nlx-member-offer h3 em{color:#4b218b}
+.ap-site .nlx-member-types button{border-color:#d3c0e7}
+.ap-site .nlx-member-types button.selected{background:#3e1c70;color:#fff;border-color:#3e1c70}
+.ap-site .nlx-annual-badge{background:#7135c7}
+.ap-site .nlx-member-actions button[data-nlx-skip]{border-color:#d4bde9!important}
+.ap-site .nlx-member-actions .nlx-member-activate,
+.ap-site .nlx-member-actions .nlx-member-unavailable{background:#4b218b!important;box-shadow:0 5px 13px #3a176928}
+.ap-site .nlx-member-actions .nlx-member-activate:hover{background:#6734a5!important}
+.ap-site .nlx-member-actions .nlx-member-activate:focus-visible{outline-color:#aa79dc}
+.ap-site .nlx-compare{color:#4b218b}
+.ap-site .nlx-points{border-color:#cbb0e7;background:#f1eafa;color:#4b218b}
+.ap-site .nlx-points a,.ap-site .nlx-points svg{color:#4b218b}
+.ap-site .nlx-promo-free{border-color:#cbb0e7;background:#f1eafa;color:#4b218b}
+.ap-site .nlx-payment-choice.nlx-selected{border-color:#4b218b;background:#f7f2fb}
+.ap-site .nlx-payment-choice.nlx-selected .nlx-payment-choice-body{background:#f3ecf9;border-top-color:#e2d4ef}
+.ap-site .nlx-fee-pill{background:#4b218b}
+.ap-site .nlx-phone-icon,.ap-site .nlx-bank-icon{color:#4b218b!important}
+.ap-site .nlx-bank-link input{accent-color:#5a269e!important}
+.ap-site .nlx-bank-link-dot{border-color:#5a269e!important}
+.ap-site .nlx-bank-link-dot::after{background:#5a269e!important}
+.ap-site .nlx-qty button{background:#f3edfa;color:#4b218b}
+.ap-site .nlx-progress button:not(:last-child)::after{background:#6d389f!important}
+.ap-site .nlx-express-label strong,.ap-site .nlx-wallet-consent a,
+.ap-site .nlx-terms a,.ap-site .nlx-sms a,.ap-site .nlx-disclosure-trigger,
+.ap-site .nlx-disclosure a,.ap-site .nlx-confirm button{color:#4b218b}
+.ap-site .nlx-checkout-root :is(input,select,textarea):focus-visible{outline-color:#8d4fe5}
 .ap-site .nlx-progress button.nlx-step-active span{background:#4b218b}
 .ap-site .nlx-progress button.nlx-step-done{color:#4b218b}
 .ap-site .nlx-progress button.nlx-step-done span{background:#f0e8fa;color:#4b218b}

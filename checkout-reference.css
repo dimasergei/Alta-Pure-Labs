@@ -50,10 +50,8 @@ body.ap-checkout-page #account-root{box-shadow:none!important;border:0!important
 .nlx-delivery-price{font-weight:800;font-size:13px;color:#1c2735}
 .nlx-addons{display:grid;gap:10px;margin:18px 0 20px}
 .nlx-extra-box{display:flex;justify-content:space-between;align-items:center;gap:12px;border:2px solid #f3b7bc;border-radius:14px;background:#ffeced;padding:14px 17px;font-size:12px;cursor:pointer}
-.nlx-extra-cold_chain{border-color:#9dd3ff;background:#e8f5ff}
 .nlx-extra-box>div{display:flex;gap:13px;min-width:0;align-items:start;flex:1}
 .nlx-extra-icon{display:flex;width:30px;height:30px;background:#ffe0e1;border-radius:50%;align-items:center;justify-content:center;color:#c73737;flex:none}
-.nlx-extra-cold_chain .nlx-extra-icon{background:#d5eaff;color:#286ca3}
 .nlx-extra-box strong{font-size:13px;color:#173144}
 .nlx-extra-box p{color:#657488;line-height:1.5;margin:3px 0;font-size:11px}
 .nlx-disclosure-trigger{display:inline-block;background:transparent;border:0;padding:2px 0;color:#174f90;text-decoration:underline;font-size:11px;cursor:pointer;text-align:left}
@@ -321,11 +319,9 @@ body.ap-checkout-page #account-root{box-shadow:none!important;border:0!important
 .nlx-arrival-confirm{font-weight:800;color:#162435;white-space:nowrap}
 .nlx-confirm>div:last-child>span{font-weight:650}
 .nlx-extra-priority{background:#ffd0d0!important;border-color:#ff6973!important;color:#b82420!important}
-.nlx-extra-cold_chain{background:#d7edff!important;border-color:#71b9ff!important}
 .nlx-extra-box{min-height:62px;padding:12px 15px!important;border-width:2px!important}
 .nlx-extra-box strong{font-size:14px!important;font-weight:800!important}
 .nlx-extra-priority strong{color:#b52825!important}
-.nlx-extra-cold_chain strong{color:#172d43!important}
 .nlx-extra-box .nlx-disclosure-trigger{display:block;margin-top:4px;font-size:12px!important;font-weight:650!important}
 .nlx-member-offer h3{font-size:26px!important;font-weight:900!important;letter-spacing:-.045em!important;line-height:1.12;margin:12px 0 5px!important}
 .nlx-member-offer h3 em{font-style:normal;color:#164e9c}
