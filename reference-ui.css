@@ -350,3 +350,23 @@ body.ap-site:has(.nl-bulk-hero) .ap-announcement{display:none!important}
  .nl-bulk-menu-line .nl-bulk-quantity-controls{flex-wrap:wrap}
  .nl-bulk-menu-line-price{justify-content:flex-start}
 }
+
+/* Match the NeuroLabs bulk highlight proportions and benefit-card hierarchy. */
+.nl-bulk-benefit-coa{align-items:flex-start;justify-content:center;gap:8px}
+.nl-bulk-coa-proof{box-sizing:border-box;width:fit-content;max-width:100%;min-height:52px;gap:9px;margin:0 0 4px;padding:8px 13px;border-radius:999px}
+.nl-bulk-coa-proof strong{font-size:12px;line-height:1.1}
+.nl-bulk-coa-proof small{font-size:10px;line-height:1.2}
+.nl-bulk-benefit-coa>.nl-bulk-benefit-copy{margin:0;font-size:13px;font-weight:800}
+.nl-bulk-benefit-coa>small{font-size:11px;color:#657087}
+.nl-bulk-benefit-shipping{display:grid;grid-template-columns:40px minmax(0,1fr);grid-template-rows:1fr;align-items:center;justify-content:start;column-gap:14px}
+.nl-bulk-benefit-shipping>.nl-bulk-shipping-icon{grid-column:1;grid-row:1;justify-self:center;align-self:center;margin:0}
+.nl-bulk-shipping-copy{grid-column:2;display:flex;min-width:0;flex-direction:column;align-items:flex-start;gap:3px}
+.nl-bulk-benefit-shipping .nl-bulk-benefit-rate{margin:0;font-size:34px!important;line-height:1;color:#0875a7!important}
+.nl-bulk-benefit-shipping .nl-bulk-benefit-copy{margin:0!important;font-size:13px!important;font-weight:800;line-height:1.25;color:#0875a7}
+.nl-bulk-shipping-copy>small{font-size:11px!important;line-height:1.35;color:#3d6583}
+@media(max-width:760px){
+ .nl-bulk-benefit-shipping{grid-template-columns:32px minmax(0,1fr);column-gap:9px}
+ .nl-bulk-benefit-shipping>.nl-bulk-shipping-icon{width:32px;height:32px}
+ .nl-bulk-benefit-shipping>.nl-bulk-shipping-icon svg{width:18px;height:18px}
+ .nl-bulk-benefit-shipping .nl-bulk-benefit-rate{font-size:28px!important}
+}
