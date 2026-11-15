@@ -516,3 +516,22 @@ body.ap-site{font-family:Poppins,Arial,sans-serif;background:#fff;color:#101317}
  .ap-site .nl-shop .nl-filter-pills{flex-wrap:nowrap;overflow-x:auto;gap:10px;padding:2px 2px 12px;margin-bottom:12px}
  .ap-site .nl-shop .nl-filter-pills button{flex:none;min-height:44px;padding:10px 19px;font-size:12px}
 }
+
+/* Contact and partner forms use ap-inquiry-form, not the older ap-form class. */
+.ap-site .ap-contact-layout{align-items:start}
+.ap-site .ap-contact-layout .ap-panel h2{margin:0 0 24px}
+.ap-site .ap-inquiry-form .ap-form-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:18px 16px}
+.ap-site .ap-inquiry-form .ap-form-grid>label:not(.ap-honeypot){display:flex;flex-direction:column;gap:8px;min-width:0;font-size:13px;font-weight:600;line-height:1.4;color:#26344b}
+.ap-site .ap-inquiry-form .ap-form-grid>.ap-form-wide,.ap-site .ap-inquiry-form .ap-form-grid>.ap-form-consent{grid-column:1/-1}
+.ap-site .ap-inquiry-form input:not([type=checkbox]),.ap-site .ap-inquiry-form textarea{display:block;width:100%;min-width:0;min-height:48px;padding:12px 14px;border:1px solid #cbd4e0;border-radius:10px;background:#fff;color:#17243c;font:400 14px/1.5 Poppins,Arial,sans-serif;box-sizing:border-box}
+.ap-site .ap-inquiry-form textarea{min-height:150px;resize:vertical}
+.ap-site .ap-inquiry-form input:focus-visible,.ap-site .ap-inquiry-form textarea:focus-visible{outline:2px solid #5ca5e9;outline-offset:2px}
+.ap-site .ap-inquiry-form .ap-form-grid>.ap-form-consent{display:flex;flex-direction:row;align-items:flex-start;gap:10px;font-size:12px;font-weight:400;line-height:1.55;color:#4e5a6b}
+.ap-site .ap-inquiry-form .ap-form-consent input{flex:none;width:17px;height:17px;margin:1px 0 0;accent-color:#174785}
+.ap-site .ap-inquiry-form>.ap-button{margin-top:22px;padding:14px 24px}
+.ap-site .ap-inquiry-form .ap-form-status{margin:12px 0 0}
+@media(max-width:767px){
+ .ap-site .ap-inquiry-form .ap-form-grid{grid-template-columns:1fr;gap:16px}
+ .ap-site .ap-contact-layout .ap-panel{padding:22px 18px}
+ .ap-site .ap-inquiry-form>.ap-button{width:100%;justify-content:center}
+}
