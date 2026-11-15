@@ -135,6 +135,19 @@ body.ap-site {
 .ap-site .nl-shop .nl-filter-pills button[aria-pressed=true] {
   background:#4b218b!important;border-color:#4b218b!important;color:#fff!important;
 }
+.ap-site :is(.nl-bulk-categories,.nl-builder-categories){
+  display:flex;flex-wrap:wrap;gap:12px;margin:18px 0 20px;padding:0;
+}
+.ap-site :is(.nl-bulk-categories,.nl-builder-categories) button{
+  min-width:0;min-height:52px;padding:13px 28px;border:1.5px solid #6533a6;border-radius:999px;
+  background:#fff;font:700 15px/1.5 Poppins,sans-serif;
+  box-shadow:0 0 0 1px #763dbb17,0 0 16px #763dbb30,0 6px 18px -8px #35165c55!important;
+}
+.ap-site :is(.nl-bulk-categories,.nl-builder-categories) button:focus-visible{outline:3px solid #a371e8;outline-offset:3px}
+@media(max-width:767px){
+  .ap-site :is(.nl-bulk-categories,.nl-builder-categories){flex-wrap:nowrap;overflow-x:auto;gap:10px;padding:2px 2px 12px;margin-bottom:14px}
+  .ap-site :is(.nl-bulk-categories,.nl-builder-categories) button{flex:none;min-height:44px;padding:10px 19px;font-size:12px}
+}
 .ap-site :is(.nl-bulk-sizes button,.nl-builder-toolbar select,.nl-builder-product .ap-card-size){
   border-color:#bfa8df!important;color:#4b218b!important;
 }
