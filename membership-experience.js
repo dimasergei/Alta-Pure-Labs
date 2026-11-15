@@ -9,6 +9,13 @@ const target=()=>fullPage?main:main.querySelector('[data-mx-membership-home]');
 const esc=v=>String(v??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const usd=c=>new Intl.NumberFormat('en-US',{style:'currency',currency:'USD'}).format(c/100);
 const displayName=id=>id==='vip'?'ALTA GOLD':id==='elite'?'ALTA PLATINUM':'Member';
+const membershipIcon='<svg class="mx-membership-icon" viewBox="0 0 64 64" fill="none" stroke="currentColor" stroke-width="2.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">'+
+ '<path d="M18 42 7 57l11-1 2 7 11-13M46 42l11 15-11-1-2 7-11-13"/>'+
+ '<path d="M21 10c4 2 6-3 11-3s7 5 11 3c4-2 5 4 9 6s-1 7 0 12c1 5 4 7 0 11-3 4-7 3-9 7-3 4-7 0-11 0s-8 4-11 0c-2-4-6-3-9-7-4-4-1-6 0-11 1-5-4-10 0-12s5-8 9-6Z"/>'+
+ '<circle cx="32" cy="28" r="16"/><path d="M19 29a13 13 0 0 1 26 0"/>'+
+ '<ellipse cx="32" cy="26" rx="5" ry="6"/><path d="M20 38c2-6 7-9 12-9s10 3 12 9"/>'+
+ '<path d="m8 3 2 5 5 2-5 2-2 5-2-5-5-2 5-2 2-5Zm47 1 2 5 5 2-5 2-2 5-2-5-5-2 5-2 2-5ZM32 51l2 4 4 2-4 2-2 4-2-4-4-2 4-2 2-4Z"/>'+
+ '</svg>';
 let period='monthly';
 const faq=[
  ['Can I cancel at any time?','Paid memberships are prepaid for one month or one year, with no automatic renewal or future recurring charge. Refund requests during a prepaid term follow the published refund policy.'],
@@ -44,7 +51,7 @@ function card(id){
 function render(){
  const root=target();if(!root)return;
  root.innerHTML='<section class="mx-membership-page'+(fullPage?'':' mx-membership-embedded')+'">'+
- '<header class="mx-hero"><span class="mx-eyebrow">✧ ALTA PURE LABS MEMBERSHIPS</span><'+(fullPage?'h1':'h2')+'>Save on every order,<br><em>automatically.</em></'+(fullPage?'h1':'h2')+'>'+
+ '<header class="mx-hero"><span class="mx-eyebrow">'+membershipIcon+'ALTA PURE LABS MEMBERSHIPS</span><'+(fullPage?'h1':'h2')+'>Save on every order,<br><em>automatically.</em></'+(fullPage?'h1':'h2')+'>'+
  '<p>Choose a prepaid membership to unlock eligible savings, free standard US delivery and extra rewards on future orders after confirmed payment.</p></header>'+
  '<div class="mx-period" role="group" aria-label="Membership billing"><button type="button" data-mx-period="monthly" aria-pressed="'+(period==='monthly')+'">Monthly</button><button type="button" data-mx-period="annual" aria-pressed="'+(period==='annual')+'">Annual <span>Save 20%</span></button></div>'+
  '<div class="mx-card-grid">'+['member','vip','elite'].map(card).join('')+'</div>'+

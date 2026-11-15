@@ -2,6 +2,7 @@
 .mx-membership-page{background:#fff;color:#111a29;padding:39px 24px 92px;font-family:Poppins,Arial,sans-serif}
 .mx-hero{text-align:center;max-width:730px;margin:0 auto}
 .mx-eyebrow{display:inline-flex;align-items:center;padding:8px 17px;border:1px solid #dce3ee;border-radius:99px;background:#f4f7fb;color:#385b85;font-size:10px;font-weight:800;letter-spacing:1.1px}
+.mx-membership-icon{display:block;width:23px;height:23px;flex:none;margin-right:8px}
 .mx-hero h1,.mx-hero h2{margin:21px 0 15px;font-size:clamp(35px,4vw,54px);line-height:1.12;letter-spacing:-.055em;font-weight:900;color:#101827}
 .mx-hero h1 em,.mx-hero h2 em{font-style:normal;color:#164b94}
 .mx-hero>p{max-width:525px;margin:0 auto;color:#7c8490;font-size:13px;line-height:1.72}
@@ -27,10 +28,10 @@
 .mx-card-vip .mx-benefits li{color:#f0f6ff}.mx-card-vip .mx-icon{background:#2a74c7}
 .mx-card-vip .mx-choose{border-color:#3771c0;background:#1d5bb5;color:#fff!important}.mx-card-vip .mx-choose:hover{background:#2c6bc7}
 .mx-popular{position:absolute;top:-15px;left:50%;transform:translateX(-50%);white-space:nowrap;border-radius:50px;background:#a55ee8;color:white;padding:6px 16px;font-size:9px;font-weight:900;letter-spacing:.09em}
-.mx-metal-gold,.mx-metal-platinum{display:inline-block;font-weight:900;color:transparent;-webkit-background-clip:text;background-clip:text;background-size:250% 100%;animation:mx-metal-shimmer 3.4s linear infinite}
-.mx-metal-gold{background-image:linear-gradient(100deg,#a67617,#fff1a8,#d89b28,#fff9ce,#a67617)}
-.mx-metal-platinum{background-image:linear-gradient(100deg,#75869b,#f4f9ff,#a7b9ce,#fff,#778ba4)}
-@keyframes mx-metal-shimmer{from{background-position:100% 0}to{background-position:0 0}}
+.mx-metal-gold,.mx-metal-platinum{display:inline-block;font-weight:900;color:transparent;-webkit-background-clip:text;background-clip:text;background-size:180px 100%;background-repeat:repeat;animation:mx-metal-shimmer 3.4s linear infinite}
+.mx-metal-gold{background-image:linear-gradient(90deg,#d6a840 0%,#f8df83 22%,#fff9d1 35%,#cc8e2a 53%,#fff2a7 75%,#d6a840 100%)}
+.mx-metal-platinum{background-image:linear-gradient(90deg,#a6b4c7 0%,#eff6ff 24%,#fff 36%,#8291a5 54%,#e7f0ff 77%,#a6b4c7 100%)}
+@keyframes mx-metal-shimmer{from{background-position:0 0}to{background-position:-180px 0}}
 .mx-terms{max-width:780px;text-align:center;margin:26px auto 0;font-size:11px;line-height:1.65;color:#748092}
 .mx-faq{max-width:800px;margin:83px auto 0}.mx-faq>header{text-align:center;margin-bottom:26px}
 .mx-faq h2{font-size:33px;line-height:1.25;font-weight:900;letter-spacing:-.05em;color:#111b2a;margin:0 0 9px}
@@ -63,7 +64,7 @@
 .mx-card-elite .mx-icon{background:#dce4ed!important;color:#17202b!important}
 .mx-card-elite .mx-choose{background:linear-gradient(115deg,#e8edf4,#bec9d7 55%,#f8fbff)!important;color:#0b1522!important;border-color:#c3cfdd;font-weight:900}
 .mx-card-elite .mx-choose:hover{background:linear-gradient(115deg,#fff,#d8e4ef 55%,#fff)!important}
-.mx-card-elite .mx-metal-platinum{background-image:linear-gradient(100deg,#a6b4c7 0%,#eff6ff 21%,#8291a5 40%,#fff 53%,#acbbcd 71%,#e7f0ff 86%,#9babbf 100%);background-size:300% 100%;filter:drop-shadow(0 0 2px #dde9fa55)}
+.mx-card-elite .mx-metal-platinum{filter:drop-shadow(0 0 2px #dde9fa55)}
 .mx-card-vip .mx-metal-gold{filter:drop-shadow(0 0 2px #f5d79555)}
 @media(max-width:850px){.mx-benefits li{font-size:11px}}
 @media(max-width:680px){.mx-card{min-height:0}.mx-benefits{gap:11px}}
