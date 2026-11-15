@@ -1,0 +1,20 @@
+.ap-research-checkout-page .account-page{background:#f8f5fc;padding:38px 24px 100px}
+.ap-research-checkout-page .account-shell{width:min(1440px,100%)}
+.ap-research-checkout-page .account-card{background:transparent;border:0;padding:0}
+.ap-research-checkout-page #research-checkout-root{color:#221938;font-family:Poppins,Arial,sans-serif}
+.rc-back{display:inline-block;color:#4d218d;text-decoration:none;font-weight:600;margin-bottom:24px}
+#research-checkout-root h1{font-size:clamp(32px,4vw,50px);margin:0 0 7px;letter-spacing:-.04em}
+.rc-intro{color:#6c6477;margin:0 0 32px;max-width:900px}
+.rc-layout{display:grid;grid-template-columns:minmax(0,1.25fr) minmax(320px,.8fr);gap:32px;align-items:start}
+.rc-form{display:grid;gap:22px}.rc-panel{background:#fff;border:1px solid #ded3ee;border-radius:20px;padding:clamp(22px,3vw,36px);box-shadow:0 12px 28px #2511480c}
+.rc-panel h2{font-size:23px;margin:0 0 20px}.rc-kicker{font-size:12px;color:#552399;font-weight:800;letter-spacing:.12em}
+.rc-plan{background:linear-gradient(145deg,#fff,#f5efff)}.rc-plan p,.rc-small{font-size:13px;line-height:1.6;color:#675f73}
+.rc-line,.rc-row,.rc-due{display:flex;justify-content:space-between;gap:18px;padding:12px 0;border-bottom:1px solid #e6ddf1}
+.rc-line del,.rc-row del{color:#8b8496;margin-right:9px}.rc-line strong{color:#4d218d}
+.rc-due,.rc-total{font-size:22px;font-weight:800;border:0;padding-top:20px}.rc-due strong,.rc-total strong{color:#4d218d}
+.rc-address{display:grid;gap:15px}.rc-address label{display:grid;gap:6px;font-size:13px;font-weight:700}
+.rc-address input,.rc-address select{width:100%;min-height:47px;border:1px solid #d7c8e9;border-radius:9px;padding:11px;background:#fff;color:#221938;font:inherit}
+.rc-field-row{display:grid;grid-template-columns:2fr 1fr 1fr;gap:12px}.rc-summary{position:sticky;top:115px}
+.rc-row{font-size:15px}.rc-saving{color:#168146;font-weight:700}.rc-unavailable{padding:17px;border-radius:10px;background:#f1eaff;color:#4d218d;line-height:1.5}
+.rc-pay{display:block;width:100%;border:0;border-radius:999px;padding:17px 22px;background:#4d218d;color:#fff;font:700 17px Poppins,Arial,sans-serif}.rc-pay:disabled{opacity:.55;cursor:not-allowed}
+@media(max-width:850px){.rc-layout{grid-template-columns:1fr}.rc-summary{position:static}.rc-field-row{grid-template-columns:1fr 1fr}.rc-field-row label:first-child{grid-column:1/-1}}

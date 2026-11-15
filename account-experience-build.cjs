@@ -2,13 +2,15 @@
 const fs=require('node:fs');
 const patch=(file,fn)=>{const path='public-build/'+file;fs.writeFileSync(path,fn(fs.readFileSync(path,'utf8')));};
 const replace=(s,from,to)=>{if(!s.includes(from))throw Error('Account integration anchor missing: '+from.slice(0,100));return s.replace(from,to);};
-patch('account.html',s=>replace(s,'<script src="/account.js">','<script src="/account-experience.js"></script><script src="/account.js">').replace('</head>','<link rel="stylesheet" href="/account-experience.css"></head>'));
+patch('account.html',s=>replace(s,'<script src="/account.js">','<script src="/account-experience.js"></script><script src="/research-checkout-client.js"></script><script src="/account.js">').replace('</head>','<link rel="stylesheet" href="/account-experience.css"><link rel="stylesheet" href="/research-checkout.css"></head>'));
 patch('account.js',s=>{
  const start=s.indexOf('function accountNav(active)'),end=s.indexOf('async function overview()',start);
  if(start<0||end<0)throw Error('Account navigation missing');
- s=s.slice(0,start)+`function accountNav(active){const current=active.startsWith('/account/orders')||active==='/account/tracking'?'/account/purchases':active==='/account/store-credit'?'/account/points':active==='/account/subscriptions'?'/account/membership':active;const items=[['Overview','/account'],['Orders','/account/purchases'],['Membership','/account/membership'],['Rewards','/account/points'],['Profile','/account/profile'],['Partner','/account/partner'],['Support','/account/requests']];return '<nav class="account-nav" aria-label="Account sections">'+items.map(([label,url])=>'<a href="'+url+'"'+(current===url?' aria-current="page"':'')+'>'+label+'</a>').join('')+'<button type="button" id="logout" class="account-nav-logout">Log out</button></nav>';}
+ s=s.slice(0,start)+`function accountNav(active){const current=active.startsWith('/account/orders')||active==='/account/tracking'?'/account/purchases':active==='/account/store-credit'?'/account/points':active;const items=[['Overview','/account'],['Orders','/account/purchases'],['Membership','/account/membership'],['Subscriptions','/account/subscriptions'],['Rewards','/account/points'],['Profile','/account/profile'],['Partner','/account/partner'],['Support','/account/requests']];return '<nav class="account-nav" aria-label="Account sections">'+items.map(([label,url])=>'<a href="'+url+'"'+(current===url?' aria-current="page"':'')+'>'+label+'</a>').join('')+'<button type="button" id="logout" class="account-nav-logout">Log out</button></nav>';}
 `+s.slice(end);
  s=replace(s,"root.innerHTML=accountNav(p)+'<section id=\"direct-checkout-root\"></section>';document.getElementById('logout').onclick=logout;","document.body.classList.add('ap-checkout-page');root.innerHTML='<section id=\"direct-checkout-root\"></section>';");
+ s=replace(s,"if(p==='/checkout'){","if(p==='/research-checkout'){if(!user)return go('/account/login?returnTo=%2Fresearch-checkout');document.body.classList.add('ap-research-checkout-page');root.innerHTML='<section id=\"research-checkout-root\"></section>';window.ResearchCheckout.render(document.getElementById('research-checkout-root'),user);return;}if(p==='/checkout'){");
+ s=s.replace('(?:checkout|pay\\.html|account\\/','(?:checkout|research-checkout|pay\\.html|account\\/');
  s=replace(s,"window.DirectCheckout.orders(document.getElementById('direct-orders-root'),auth,user)","window.AccountExperience.orders(document.getElementById('direct-orders-root'),auth,user,api,card)");
  s=replace(s,"window.DirectCheckout.balance(document.getElementById('direct-balance-root'),auth,p)","window.AccountExperience.rewards(document.getElementById('direct-balance-root'),auth,p)");
  s=replace(s,"window.ManualCommerce.membership(document.getElementById('manual-membership-root'),auth,user)","window.AccountExperience.membership(document.getElementById('manual-membership-root'),auth,user)");
@@ -24,3 +26,5 @@ patch('workspace-v2.js',s=>{
  return s;
 });
 console.log('Account navigation, inline membership/partner pages, profile editing and checkout presentation built.');
+fs.copyFileSync('research-checkout-client.js','public-build/research-checkout-client.js');
+fs.copyFileSync('research-checkout.css','public-build/research-checkout.css');
