@@ -8,6 +8,7 @@ if(!fs.existsSync(out))throw new Error('public-build output is missing.');
 fs.copyFileSync(theme,path.join(out,theme));
 fs.copyFileSync('mobile-parity.css',path.join(out,'mobile-parity.css'));
 fs.copyFileSync('research-builder-parity.css',path.join(out,'research-builder-parity.css'));
+fs.copyFileSync('unified-palette.css',path.join(out,'unified-palette.css'));
 for(const f of ['membership-experience.js','membership-experience.css'])fs.copyFileSync(f,path.join(out,f));
 for(const [source,target] of [['altapure-favicon.svg','favicon.svg'],['altapure-favicon-48.png','favicon-48.png'],['altapure-favicon.ico','favicon.ico'],['altapure-touch-icon.png','apple-touch-icon.png'],['altapure-logo-mark.png','brand-logo.png']])fs.copyFileSync(path.join(process.cwd(),'assets',source),path.join(out,target));
 // Self-host authentic payment marks from the reviewed assets directory.
@@ -38,6 +39,7 @@ for(const file of fs.readdirSync(out,{recursive:true}).filter(f=>f.endsWith('.ht
     html=html.replace('</body>','<script src="/membership-experience.js?v=20261115"></script></body>');
   }
   if(file==='index.html'&&!html.includes('"@type":"Organization"'))html=html.replace('</head>',`${organization}</head>`);
+  html=html.replace('</head>','<link rel="stylesheet" href="/unified-palette.css?v=20261115a"></head>');
   fs.writeFileSync(target,html);
   count++;
 }
