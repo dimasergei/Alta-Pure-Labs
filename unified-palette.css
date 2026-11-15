@@ -35,6 +35,9 @@ body.ap-site {
   background-clip:text!important;-webkit-background-clip:text!important;
   -webkit-text-fill-color:transparent;
 }
+.ap-site .nl-hero .nl-hero-copy h1 em{
+  background-image:linear-gradient(95deg,#c79af7,#8f5bd9)!important;
+}
 .ap-site .nl-hero .nl-primary{
   box-shadow:0 0 0 1px #a777e788,0 0 24px #8f4cce88,0 8px 30px #43207855!important;
 }
