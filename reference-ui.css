@@ -397,3 +397,35 @@ body.ap-site:has(.nl-bulk-hero) .ap-announcement{display:none!important}
 .nl-bulk-benefit-shipping .nl-bulk-benefit-copy{margin:0!important;font-size:12px!important;font-weight:800;line-height:1.25;color:#17243c!important}
 .nl-bulk-benefit-shipping>small{margin:0;color:#758096!important;font-size:11px;line-height:1.35}
 @media(max-width:760px){.nl-bulk-benefit-shipping .nl-bulk-benefit-rate{font-size:28px!important}}
+
+/* Keep the bulk-order summary within the viewport; only its selected product list scrolls. */
+.nl-bulk-summary{position:sticky;top:96px;align-self:start;box-sizing:border-box;height:calc(100vh - 108px);height:calc(100dvh - 108px);max-height:calc(100vh - 108px);max-height:calc(100dvh - 108px);min-height:0;overflow:hidden;padding:16px}
+.nl-bulk-summary>#ap-bulk-summary{display:flex;height:100%;min-height:0;flex-direction:column}
+.nl-bulk-summary-heading{position:relative;display:flex;flex:0 0 auto;flex-direction:column;padding-right:54px}
+.nl-bulk-summary-heading .ap-eyebrow{font-size:9px;letter-spacing:1px}
+.nl-bulk-summary-heading h2{margin:4px 0 9px;font-size:21px;line-height:1.1}
+.nl-bulk-total-units{position:absolute;right:0;top:13px;color:#737f90;font-size:11px;white-space:nowrap}
+.nl-bulk-summary-scroll{flex:1 1 auto;min-height:42px;overflow-x:hidden;overflow-y:auto;overscroll-behavior:contain;scrollbar-gutter:stable;padding-right:3px;margin:0 0 5px}
+.nl-bulk-summary-scroll:has(.nl-bulk-menu-empty){display:flex;align-items:center}
+.nl-bulk-summary-scroll .nl-bulk-menu-product{margin:6px 0;padding:8px 9px;border-radius:12px}
+.nl-bulk-summary-scroll .nl-bulk-menu-product-head{grid-template-columns:34px minmax(0,1fr) auto;gap:7px;margin-bottom:6px}
+.nl-bulk-summary-scroll .nl-bulk-menu-product-head img{width:34px;height:38px}
+.nl-bulk-summary-scroll .nl-bulk-menu-line{padding-top:6px}
+.nl-bulk-summary .nl-bulk-totals{flex:0 0 auto;margin:4px 0 7px}
+.nl-bulk-summary .nl-bulk-totals>div{padding:4px 0;font-size:11px}
+.nl-bulk-summary .nl-bulk-estimate-total{margin-top:4px;padding-top:8px!important;font-size:13px!important}
+.nl-bulk-summary .nl-bulk-estimate-total strong{font-size:18px}
+.nl-bulk-tier-box{flex:0 0 auto;margin:5px 0 8px;padding:9px 10px;border:1px solid #543090;border-radius:13px;background:linear-gradient(115deg,#17102f,#392070);color:#fff}
+.nl-bulk-tier-box .nl-bulk-tier-legend{gap:6px;margin:0 0 7px}
+.nl-bulk-tier-box .nl-bulk-tier-legend span{padding:7px 4px;border:1px solid #7140bd;border-radius:8px;background:#5425a1;color:#fff;font-size:9px}
+.nl-bulk-tier-box>p{margin:0;color:#e6def7;font-size:9px;line-height:1.4}
+.nl-bulk-summary>.ap-button{flex:0 0 auto;margin:0 0 3px;padding:12px 14px;border-radius:12px;background:#123f84;color:#fff;font-size:13px}
+.nl-bulk-summary .nl-bulk-checkout-note{flex:0 0 auto;margin:0;padding:6px 1px 0;border:0;color:#778194;font-size:9px;line-height:1.35;text-align:center}
+@media(max-width:760px){
+ .nl-bulk-summary{top:78px;height:calc(100vh - 88px);height:calc(100dvh - 88px);max-height:calc(100vh - 88px);max-height:calc(100dvh - 88px);padding:12px}
+ .nl-bulk-summary-heading h2{font-size:18px}
+ .nl-bulk-summary-scroll{min-height:35px}
+ .nl-bulk-tier-box{padding:8px}
+ .nl-bulk-summary .nl-bulk-totals>div{font-size:10px}
+ .nl-bulk-summary .nl-bulk-estimate-total strong{font-size:16px}
+}
