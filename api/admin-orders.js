@@ -29,6 +29,15 @@ const ALLOWED_STATUSES = [
   'delivered',
   'canceled'
 ];
+const ALLOWED_TRANSITIONS = {
+  unfulfilled: ['processing', 'awaiting_supplier', 'canceled'],
+  processing: ['awaiting_supplier', 'partially_shipped', 'shipped'],
+  awaiting_supplier: ['processing', 'partially_shipped', 'shipped'],
+  partially_shipped: ['shipped'],
+  shipped: ['delivered'],
+  delivered: [],
+  canceled: []
+};
 
 const UUID_PATTERN =
   /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
@@ -41,6 +50,7 @@ const ORDER_UPDATE_SELECT = `
   payment_status,
   fulfillment_status,
   supplier_status,
+  supplier_report_generated_at,
   priority,
   tracking_carrier,
   tracking_number,
@@ -412,6 +422,15 @@ async function updateOrder(res, body) {
 
   const previousStatus = previousOrder.fulfillment_status;
   const statusChanged = previousStatus !== fulfillmentStatus;
+  if (statusChanged && !(ALLOWED_TRANSITIONS[previousStatus] || []).includes(fulfillmentStatus)) {
+    throw httpError(409, 'Fulfillment cannot move to that status. Refresh and reconcile the order first.');
+  }
+  if (fulfillmentStatus === 'canceled' && (
+    previousOrder.supplier_report_generated_at ||
+    (previousOrder.supplier_status && previousOrder.supplier_status.trim())
+  )) {
+    throw httpError(409, 'Supplier activity is recorded. Reconcile with the supplier before cancellation.');
+  }
   const trackingChanged =
     (previousOrder.tracking_carrier || null) !== trackingCarrier ||
     (previousOrder.tracking_number || null) !== trackingNumber;

@@ -11,16 +11,17 @@
   <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="/admin-dashboard.css">
   <link rel="stylesheet" href="/admin-marketing.css">
-  <link rel="icon" type="image/svg+xml" href="/favicon.svg?v=20261114-neon-admin-v3">
-  <link rel="shortcut icon" type="image/svg+xml" href="/favicon.svg?v=20261114-neon-admin-v3">
+  <link rel="icon" type="image/png" sizes="96x96" href="/favicon-bright-96.png">
+  <link rel="shortcut icon" type="image/x-icon" href="/favicon-bright-20261116.ico">
   <link rel="stylesheet" href="/admin-ui-polish.css">
   <link rel="stylesheet" href="/admin-experience.css?v=1">
+  <link rel="stylesheet" href="/admin-violet.css?v=20261116">
 </head>
 <body class="mk-body">
 <main class="admin-page">
   <div class="shell">
     <section id="mk-login" class="mk-login panel">
-      <div class="admin-login-brand"><img class="ap-brand-symbol" src="/favicon.svg?v=20261114-neon-admin-v3" alt="" width="34" height="34"><span><strong>AltaPure Labs</strong><small>ADMIN</small></span></div>
+      <div class="admin-login-brand"><img class="ap-brand-symbol" src="/favicon-bright-96.png" alt="" width="34" height="34"><span><strong>AltaPure Labs</strong><small>ADMIN</small></span></div>
       <h1>Marketing access</h1>
       <p>Use your existing AltaPure admin password. This workspace does not send Instagram messages automatically.</p>
       <form id="mk-login-form">
@@ -36,7 +37,7 @@
       <div class="admin-brandbar mk-header">
         <div class="admin-header-left">
           <a class="admin-brand" href="/" aria-label="AltaPure Labs storefront">
-            <img class="ap-brand-symbol" src="/favicon.svg?v=20261114-neon-admin-v3" alt="" width="34" height="34">
+            <img class="ap-brand-symbol" src="/favicon-bright-96.png" alt="" width="34" height="34">
             <span class="admin-brand-copy"><span class="admin-brand-name">AltaPure Labs</span><span class="admin-brand-label">ADMIN</span></span>
           </a>
           <div class="admin-utilities">
@@ -84,7 +85,7 @@
       <section id="mk-panel-conversations" class="mk-panel" hidden>
         <div class="mk-two-col">
           <div class="mk-card"><h2>Conversation tracker</h2><p class="mk-muted">Log manual business contact attempts and replies. Instagram inbox messages have their own connected tab.</p><label for="mk-conversation-select">Creator</label><select id="mk-conversation-select"></select><div id="mk-conversation-timeline" class="mk-timeline"></div><form id="mk-message-form"><label for="mk-message-type">Message type</label><select id="mk-message-type"><option value="outbound">Outbound — sent manually</option><option value="inbound">Inbound — received</option><option value="note">Internal note</option></select><label for="mk-message-text">Record message or note</label><textarea id="mk-message-text" rows="4" maxlength="4000" required></textarea><button class="mk-button" type="submit">Save to history</button></form></div>
-          <div class="mk-card"><h2>Instagram connection</h2><span class="mk-status">Not connected</span><p>Meta's official Instagram messaging integration can support inbox synchronization after you authorize a professional Instagram account and obtain the required messaging permissions.</p><p class="mk-muted">This version does not scrape profiles, initiate bulk DMs, or automatically contact anyone. Drafts stay in your control.</p><a href="https://developers.facebook.com/docs/instagram-platform/" target="_blank" rel="noopener noreferrer">Instagram platform setup documentation</a><h3>Draft a response</h3><p>Use the Draft button on any prospect to prepare a first approach, follow-up or reply.</p></div>
+          <div class="mk-card"><h2>Instagram connection</h2><span id="mk-ig-conversation-status" class="mk-status">Checking connection…</span><p>Incoming messages appear in Instagram Inbox. Drafts stay in your control, and replies are sent only when you click Send.</p><h3>Draft a response</h3><p>Use the Draft button on any prospect to prepare a first approach, follow-up or reply.</p></div>
         </div>
       </section>
 

@@ -19,7 +19,7 @@
     left.setAttribute('aria-label','AltaPure Labs secure business workspace');
     const logo=el('div','ap-auth-symbol');
     const img=document.createElement('img');
-    img.src='/favicon.svg?v=20261114-neon-admin-v3';
+    img.src='/favicon-bright-96.png';
     img.alt='';
     img.width=76;
     img.height=76;

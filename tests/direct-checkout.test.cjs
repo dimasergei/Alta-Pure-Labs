@@ -37,6 +37,19 @@ test('quote cannot place an order; stale or modified quote cannot charge or spen
  const denied=response();await checkout.handle(request({...body,action:'place',quote:'invented'}),denied,new URLSearchParams(),{env,db,catalog,rateLimit:async()=>{}});assert.equal(denied.code,409);assert.equal(db.calls.length,0);
  const placed=response();await checkout.handle(request({...body,action:'place',quote:res.body.quote}),placed,new URLSearchParams(),{env,db,catalog,rateLimit:async()=>{}});assert.equal(placed.code,201);assert.equal(db.calls.length,1);assert.equal(db.calls[0].name,'commerce_place_checkout');assert.equal(db.calls[0].args.p_data.customer_id,uid);
 });
+test('Research Builder cart origin is bound to the quoted goods order without altering payment or discounts',async()=>{
+ const db=dbMock(),tagged={...body,research_builder:true},quoted=response();
+ await checkout.handle(request({...tagged,action:'quote'}),quoted,new URLSearchParams(),{env,db,catalog,rateLimit:async()=>{}});
+ const plain=response();await checkout.handle(request({...body,action:'quote'}),plain,new URLSearchParams(),{env,db,catalog,rateLimit:async()=>{}});
+ assert.equal(quoted.code,200);assert.equal(quoted.body.total_cents,plain.body.total_cents);
+ const changed=response();await checkout.handle(request({...body,action:'place',quote:quoted.body.quote}),changed,new URLSearchParams(),{env,db,catalog,rateLimit:async()=>{}});
+ assert.equal(changed.code,409);assert.deepEqual(db.calls,[]);
+ const placed=response();await checkout.handle(request({...tagged,action:'place',quote:quoted.body.quote}),placed,new URLSearchParams(),{env,db,catalog,rateLimit:async()=>{}});
+ assert.equal(placed.code,201);assert.equal(db.calls[0].args.p_data.request.research_builder,true);
+ for(const invalid of [{...body,kind:'membership',plan:'vip',research_builder:true},{...body,bulk_order:true,research_builder:true},{...body,research_builder:'true'}]){
+  await assert.rejects(checkout.normalize({},user,invalid,catalog),{status:400});
+ }
+});
 test('completed request replay returns its order without a second debit or re-pricing',async()=>{
  const r=await checkout.normalize({},user,body,catalog),db=dbMock({existing:{id,status:'paid',request_digest:r.digest,checkout_version:config.version}}),res=response();
  await checkout.handle(request({...body,action:'place',quote:'old-quote'}),res,new URLSearchParams(),{env,db,catalog,rateLimit:async()=>{}});assert.equal(res.code,200);assert.equal(res.body.replayed,true);assert.equal(db.calls.length,0);

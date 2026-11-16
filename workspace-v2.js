@@ -18,6 +18,7 @@
  }
  function persistBuilder(){A.write(draftKey,{lines:builder.map(({id,size,qty})=>({id,size,qty})),cadence,name:planName});}
  const simpleLines=lines=>lines.map(({id,size,qty})=>({id,size,qty}));
+ const cartSignature=lines=>JSON.stringify(simpleLines(lines).sort((a,b)=>a.id.localeCompare(b.id)||a.size.localeCompare(b.size)));
  const total=lines=>lines.reduce((n,x)=>n+x.qty*x.price,0);
  function empty(title,body,href,label){return `<div class="ap-empty"><h3>${esc(title)}</h3><p>${esc(body)}</p>${href?`<a class="ap-button ap-button-secondary" href="${href}">${esc(label)} ↗</a>`:''}</div>`;}
  async function authClient(){if(!authPromise)authPromise=(async()=>{if(!window.supabase?.createClient)throw Error('Account service unavailable.');const response=await fetch('/api/customer-config',{cache:'no-store'});if(!response.ok)throw Error('Account service unavailable.');const config=await response.json();return window.supabase.createClient(config.supabaseUrl,config.anonKey,{auth:{persistSession:true,autoRefreshToken:true,detectSessionInUrl:true,flowType:'pkce'}});})();return authPromise;}
@@ -85,7 +86,7 @@
   if(action==='builder-clear'){builder=[];persistBuilder();builderSummary();}
   if(action==='builder-save')savePlan();
   if(action==='builder-export')A.exportLines(builder,'AltaPure-research-plan.csv');
-  if(action==='builder-cart'){try{A.addItems(simpleLines(builder));}catch(e){A.toast(e.message);}}
+  if(action==='builder-cart'){try{A.addItems(simpleLines(builder));A.write('ap-research-cart-origin-v1',builder.length&&cartSignature(A.cart)===cartSignature(builder)?simpleLines(builder):null);}catch(e){A.toast(e.message);}}
   if(action==='bulk-qty'){const current=bulk.find(x=>x.id===button.dataset.id&&x.size===button.dataset.size)?.qty||0;setBulkQuantity(button.dataset.id,button.dataset.size,current+Number(button.dataset.delta));}
   if(action==='bulk-size'){const p=product(button.dataset.id),v=p?.variants.find(x=>x.size===button.dataset.size);if(p&&v){bulkSizes[p.id]=v.size;A.write(bulkSizeKey,bulkSizes);bulkResults();}}
   if(action==='bulk-category'){bulkGroup=button.dataset.group||'All';$$('[data-action="bulk-category"]').forEach(x=>x.setAttribute('aria-pressed',String(x.dataset.group===bulkGroup)));bulkResults();}

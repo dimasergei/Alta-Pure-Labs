@@ -14,6 +14,7 @@
   let revision=0,remoteReady=false,syncTimer=null,syncRunning=false,syncQueued=false;
   let instagram={connected:false,credentials_configured:false},igMessages=[];
   let igMedia={};
+  let igMediaStatus={};
   const igMediaChecked=new Set();
   let igMediaLoading=false;
   const igProfileKey='altapure_ig_participant_names_v1';
@@ -223,7 +224,9 @@
     draftId=id;
     $('mk-draft-target').textContent=[lead.name,lead.handle,lead.platform].filter(Boolean).join(' · ');
     $('mk-draft-type').value='intro';$('mk-draft-context').value='';$('mk-draft-output').value=lead.draft||'';
-    $('mk-draft-status').textContent=aiAvailable?'AI drafting available. Review all output before sending.':'AI service not configured. Use the manual template.';
+    $('mk-generate').disabled=!aiAvailable;
+    $('mk-generate').textContent=aiAvailable?'Generate AI draft':'AI draft unavailable';
+    $('mk-draft-status').textContent=aiAvailable?'AI drafting available. Review all output before sending.':'AI service not configured. Use the editable template.';
     $('mk-draft-dialog').showModal();
   }
   function manualTemplate(){const lead=find(draftId);if(!lead)return;$('mk-draft-output').value=template(lead,$('mk-draft-type').value,$('mk-draft-context').value);$('mk-draft-status').textContent='Editable template generated locally; no message sent.';}
@@ -299,6 +302,7 @@
     const connected=instagram?.connected===true,configured=instagram?.credentials_configured===true;
     $('mk-ig-connection-badge').textContent=connected?'Connected: @'+(instagram.username||'Instagram'):'Not connected';
     $('mk-ig-settings-status').textContent=connected?'@'+(instagram.username||'Instagram'):'Not connected';
+    $('mk-ig-conversation-status').textContent=connected?'Connected: @'+(instagram.username||'Instagram'):'Not connected';
     $('mk-ig-status').textContent=connected?
       '@'+(instagram.username||'Instagram')+(instagram.webhook_subscribed?' · Webhook subscribed':' · Webhook subscription pending'):
       'Connect an Instagram professional account to see messages';
@@ -325,22 +329,38 @@
       const el=elem('article',undefined,'mk-entry'),
         title=elem('strong',item.direction==='incoming'?participantLabel(item.participant_id):'AltaPure'),
         date=elem('small',new Date(item.message_at).toLocaleString()),
-        body=elem('p',item.body||'[Media message]');
-      if((igMedia[item.provider_message_id]||[]).length&&(!item.body||/^\\[Media (attachment|message)\\]$/i.test(item.body)))body.textContent='';
+        body=elem('p',item.body||'[Media message]'),
+        id=item.provider_message_id,
+        attachments=igMedia[id]||[],
+        placeholder=!item.body||/^\[Media (attachment|message)\]$/i.test(item.body),
+        hasAttachment=Boolean(item.attachments?.length)||placeholder;
+      if(attachments.length&&placeholder)body.textContent='';
+      else if(placeholder)body.textContent=igMediaStatus[id]&&igMediaStatus[id]!=='available'?
+        'Attachment preview unavailable from Meta ('+igMediaStatus[id]+').' : 'Loading attachment…';
       el.append(title,date,body);
-      for(const media of (igMedia[item.provider_message_id]||[])){
+      const retry=()=>{
+        igMediaChecked.delete(id);delete igMedia[id];delete igMediaStatus[id];renderInstagram();
+      };
+      for(const media of attachments){
         try{
           const u=new URL(media.url);
           if(u.protocol!=='https:'||u.username||u.password)continue;
           if(media.type==='image'){
             const link=document.createElement('a');link.href=u.href;link.target='_blank';link.rel='noopener noreferrer';
-            const img=document.createElement('img');img.src=u.href;img.alt='Instagram image attachment';img.loading='lazy';img.referrerPolicy='no-referrer';img.className='mk-ig-media-image';link.append(img);el.append(link);
+            const img=document.createElement('img');img.src=/^data:image\/(?:jpeg|png|webp|gif|avif);base64,[a-z0-9+/=]+$/i.test(media.data_url||'')?media.data_url:u.href;
+            img.alt='Instagram image attachment';img.loading='lazy';img.referrerPolicy='no-referrer';img.className='mk-ig-media-image';
+            img.addEventListener('error',()=>{link.replaceChildren(elem('span','Preview unavailable — open attachment'));const button=elem('button','Retry preview','mk-button mk-outline');button.type='button';button.addEventListener('click',retry);el.append(button);});
+            link.append(img);el.append(link);
           }else if(media.type==='video'||media.type==='audio'){
             const player=document.createElement(media.type);player.src=u.href;player.controls=true;player.preload='metadata';player.className='mk-ig-media-player';el.append(player);
+            const link=elem('a','Open attachment in a new tab');link.href=u.href;link.target='_blank';link.rel='noopener noreferrer';el.append(link);
           }else{
             const link=document.createElement('a');link.href=u.href;link.target='_blank';link.rel='noopener noreferrer';link.textContent='Open Instagram attachment';el.append(link);
           }
         }catch{}
+      }
+      if(hasAttachment&&!attachments.length&&igMediaChecked.has(id)){
+        const button=elem('button','Retry attachment','mk-button mk-outline');button.type='button';button.addEventListener('click',retry);el.append(button);
       }
       root.append(el);
     }
@@ -353,7 +373,7 @@
   }
   async function loadSelectedMedia(events){
     if(igMediaLoading)return;
-    const candidates=events.filter(m=>/\\[Media (attachment|message)\\]/i.test(m.body||'')&&!igMedia[m.provider_message_id]?.length&&!igMediaChecked.has(m.provider_message_id)).slice(-3).reverse();
+    const candidates=events.filter(m=>(Boolean(m.attachments?.length)||!m.body||/^\[Media (attachment|message)\]$/i.test(m.body||''))&&!igMedia[m.provider_message_id]?.length&&!igMediaChecked.has(m.provider_message_id)).slice(-12).reverse();
     if(!candidates.length)return;
     igMediaLoading=true;
     const selected=$('mk-ig-thread').value;
@@ -362,9 +382,9 @@
         igMediaChecked.add(item.provider_message_id);
         try{
           const result=await endpoint({action:'instagram_media',message_id:item.provider_message_id});
+          igMediaStatus[item.provider_message_id]=result.status||'unavailable';
           if(Array.isArray(result.media)&&result.media.length)igMedia[item.provider_message_id]=result.media;
-          else notice('Instagram media '+result.status+': Meta did not provide a playable attachment for this message.',true);
-        }catch(err){notice('Instagram media lookup: '+err.message,true);}
+        }catch(err){igMediaStatus[item.provider_message_id]='lookup_failed';notice('Instagram media lookup: '+err.message,true);}
       }
     }finally{
       igMediaLoading=false;
@@ -377,7 +397,7 @@
       if(sync){
         const result=await endpoint({action:'instagram_sync'});
         rememberIgProfiles(result.participant_profiles);
-        igMedia=result.media&&typeof result.media==='object'&&!Array.isArray(result.media)?result.media:{};
+        igMedia={};igMediaStatus={};
         igMediaChecked.clear();
         const mediaStatus=result.media_diagnostics;
         if(mediaStatus?.unavailable)notice('Instagram media: '+mediaStatus.resolved+' attachments resolved; '+mediaStatus.unavailable+' unavailable from Meta. Older media may have expired.',true);
@@ -387,7 +407,7 @@
       const status=await endpoint();
       instagram=status.instagram||{connected:false};
       igMessages=Array.isArray(status.instagram_messages)?status.instagram_messages:[];
-      renderInstagram();notice('Instagram account and messages refreshed.');
+      renderInstagram();if(!sync)notice('Instagram account and messages refreshed.');
     }catch(err){notice(err.message,true);renderInstagram();}
   }
 

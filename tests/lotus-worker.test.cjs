@@ -6,6 +6,20 @@ test('supplier submission persists the immutable reference/payload before POST a
  const f=fixture(),requests=[];const result=await run(f.db,{env,fetchImpl:async(url,opts)=>{requests.push({url,body:opts.body&&JSON.parse(opts.body)});if(url.endsWith('/quote'))return reply({owed_total:'100.00',lines:[{problem:null}],problems:[]});assert.ok(f.saved[0].payload);return reply({id:'opaque1',reference:'ALTA-'+id,mode:'live',status:'paid',settlement:'owed',owed_total:'100.00',tracking_number:'LABELONLY',carrier:'UPS'});}});
  assert.equal(result.status,'submitted');assert.equal(requests[1].body.reference,'ALTA-'+id);assert.equal(f.saved.at(-1).supplier_id,'opaque1');assert.equal(f.rpc.filter(x=>x.name==='commerce_admin_command').length,0);
 });
+test('a locally recorded supplier ID is polled on retry without creating a second portal order',async()=>{
+ const f=fixture(),methods=[];
+ const fetchImpl=async(url,opts)=>{
+  methods.push(opts.method+' '+new URL(url).pathname);
+  if(url.endsWith('/quote'))return reply({owed_total:'100.00',lines:[{problem:null}],problems:[]});
+  return reply({id:'opaque1',reference:'ALTA-'+id,mode:'live',status:'paid',settlement:'owed',owed_total:'100.00'});
+ };
+ assert.equal((await run(f.db,{env,fetchImpl})).status,'submitted');
+ f.job.supplier_id='opaque1';f.job.payload=f.saved.find(x=>x.payload).payload;
+ assert.equal((await run(f.db,{env,fetchImpl})).status,'submitted');
+ assert.equal(methods.filter(x=>x==='POST /api/v1/orders').length,1);
+ assert.equal(methods.filter(x=>x==='GET /api/v1/orders/opaque1').length,1);
+ assert.equal(f.order.status,'paid');
+});
 test('ambiguous create is reconciled by the same reference and does not create again',async()=>{
  const f=fixture({payload:{reference:'ALTA-'+id,expected_owed:'100.00'}}),requests=[];
  await run(f.db,{env,fetchImpl:async(url,opts)=>{requests.push(opts.method);return reply({id:'opaque1',reference:'ALTA-'+id,mode:'live',status:'paid',settlement:'owed',owed_total:'100.00'});}});assert.deepEqual(requests,['GET']);assert.equal(f.saved.at(-1).supplier_id,'opaque1');

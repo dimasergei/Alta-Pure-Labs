@@ -134,3 +134,76 @@ test('marketing Instagram connection uses Meta Unified Login and a one-time stat
   assert.equal(inserted.state_hash.length,64);
   assert.equal(url.searchParams.has('scope'),false);
 });
+
+test('Instagram media accepts Graph image and webhook attachment URLs without treating story links as images',()=>{
+  const platform=require('../lib/admin-marketing-platform');
+  const media=platform.mediaItems({
+    attachments:{data:[
+      {image_data:{url:'https://scontent.cdninstagram.com/a.jpg'}},
+      {type:'video',payload:{url:'https://video.cdninstagram.com/b.mp4'}}
+    ]},
+    story:{link:'https://www.instagram.com/stories/example/123/'}
+  });
+  assert.deepEqual(media.map(x=>x.type),['image','video','file']);
+  assert.equal(media[0].url,'https://scontent.cdninstagram.com/a.jpg');
+  assert.equal(media[2].url,'https://www.instagram.com/stories/example/123/');
+  assert.deepEqual(platform.mediaItems({attachments:[{type:'image',payload:{url:'javascript:alert(1)'}}]}),[]);
+});
+
+test('Instagram attachment lookup refreshes Meta URL and returns trusted image bytes for browser preview',async()=>{
+  const platform=require('../lib/admin-marketing-platform');
+  const env={INSTAGRAM_TOKEN_ENCRYPTION_KEY:'a'.repeat(64)};
+  const ciphertext=platform.encrypt('test-token',env);
+  let updated;
+  const db={from(table){
+    const q={select(){return this;},eq(){return this;},order(){return this;},limit(){return this;},
+      async maybeSingle(){return {error:null,data:table==='ap_marketing_ig_auth'?
+        {ig_user_id:'17841478098427620',username:'AltaPure'}:
+        {provider_message_id:'mid_12345678',body:'[Media attachment]',attachments:[]}};},
+      async single(){return {error:null,data:{ciphertext}};},
+      update(value){updated=value;return this;}};
+    return q;
+  }};
+  const fetchImpl=async(url)=>{
+    if(new URL(url).hostname==='graph.facebook.com')return {ok:true,json:async()=>({
+      id:'mid_12345678',attachments:{data:[{image_data:{url:'https://scontent.cdninstagram.com/new.jpg'}}]}
+    })};
+    return {ok:true,headers:{get:key=>key==='content-type'?'image/jpeg':key==='content-length'?'3':null},
+      arrayBuffer:async()=>Uint8Array.of(255,216,217).buffer};
+  };
+  const result=await platform.mediaForMessage(db,{message_id:'mid_12345678'},env,fetchImpl);
+  assert.equal(result.status,'available');
+  assert.equal(updated.attachments[0].url,'https://scontent.cdninstagram.com/new.jpg');
+  assert.equal(result.media[0].data_url,'data:image/jpeg;base64,/9jZ');
+});
+
+test('Instagram sync stores attachment metadata and does not erase it when Meta omits later media',async()=>{
+  const platform=require('../lib/admin-marketing-platform');
+  const authEnv={INSTAGRAM_TOKEN_ENCRYPTION_KEY:'b'.repeat(64)};
+  const saved=[];
+  const db={from(table){
+    return {select(){return this;},eq(){return this;},order(){return this;},limit(){return this;},
+      async maybeSingle(){return {error:null,data:{ig_user_id:'17841478098427620'}};},
+      async single(){return {error:null,data:{ciphertext:platform.encrypt('token',authEnv)}};},
+      async upsert(value,options){saved.push({value,options});return {error:null,data:null};},
+      then(resolve){resolve({error:null,data:table==='ap_marketing_ig_messages'?[]:null});}};
+  }};
+  const fetchImpl=async(url)=>{
+    const path=new URL(url).pathname;
+    if(path.endsWith('/conversations'))return {ok:true,json:async()=>({data:[{id:'conv123',participants:{data:[
+      {id:'17841478098427620',username:'AltaPure'},
+      {id:'17841478098427621',username:'creator'}]}}]})};
+    if(path.endsWith('/conv123'))return {ok:true,json:async()=>({messages:{data:[
+      {id:'mid_image_123456',message:'',from:{id:'17841478098427621'},to:{data:[{id:'17841478098427620'}]},
+        created_time:'2026-11-16T00:00:00Z',attachments:{data:[{image_data:{url:'https://scontent.cdninstagram.com/a.jpg'}}]}},
+      {id:'mid_text_123456',message:'Hello',from:{id:'17841478098427621'},to:{data:[{id:'17841478098427620'}]},
+        created_time:'2026-11-16T00:00:01Z'}]}})};
+    throw Error('Unexpected Meta URL');
+  };
+  const result=await platform.syncInbox(db,authEnv,fetchImpl);
+  assert.equal(result.processed,2);
+  assert.equal(saved[0].value.attachments[0].type,'image');
+  assert.equal(saved[0].options.ignoreDuplicates,false);
+  assert.equal(saved[1].value.attachments,undefined);
+  assert.equal(saved[1].options.ignoreDuplicates,true);
+});

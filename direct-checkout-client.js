@@ -3,6 +3,7 @@
  const node=(tag,text)=>{const e=document.createElement(tag);if(text!==undefined)e.textContent=String(text);return e;};
  const money=(v,c='USD')=>new Intl.NumberFormat('en-US',{style:'currency',currency:c}).format(v/100);
  const esc=v=>String(v??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+ const cartSignature=lines=>JSON.stringify(lines.map(({id,size,qty})=>({id,size,qty})).sort((a,b)=>a.id.localeCompare(b.id)||a.size.localeCompare(b.size)));
  async function api(auth,body,mode='customer',id){
   const s=await auth.auth.getSession(),token=s.data?.session?.access_token;if(!token)throw Error('Sign in to continue.');
   const url=mode==='orders'?'/api/customer-config?commerce=customer'+(id?'&id='+encodeURIComponent(id):''):'/api/customer-config?checkout='+mode;
@@ -70,7 +71,8 @@
  async function checkout(root,auth,user,options={}){
   try{
    const params=new URLSearchParams(location.search),plan=params.get('plan'),goods=!['vip','elite'].includes(plan),
-    membershipPeriod=goods?null:(params.get('period')||'annual'),bulk=goods&&params.get('bulk')==='1',data=await api(auth),cart=bulk?window.AltaStore.normalizeLines(window.AltaStore.read('ap-bulk-draft-v2',[])):window.AltaStore?.cart||[];
+    membershipPeriod=goods?null:(params.get('period')||'annual'),bulk=goods&&params.get('bulk')==='1',data=await api(auth),cart=bulk?window.AltaStore.normalizeLines(window.AltaStore.read('ap-bulk-draft-v2',[])):window.AltaStore?.cart||[],researchCart=goods&&!bulk?window.AltaStore?.read?.('ap-research-cart-origin-v1',null):null,
+    researchBuilder=Array.isArray(researchCart)&&researchCart.length>0&&cartSignature(cart)===cartSignature(researchCart);
    root.innerHTML='<div class="dc-topline"><a href="'+(bulk?'/bulk-orders':'/shop')+'">← Continue shopping</a><a href="/account/purchases">My orders</a></div><header class="dc-heading"><h1>Checkout</h1><p class="dc-steps">Your details &nbsp; / &nbsp; Review order &nbsp; / &nbsp; Payment</p></header>'; document.title='Checkout | AltaPure Labs';
    if(goods&&!cart.length){root.append(node('p',bulk?'Your bulk order is empty.':'Your cart is empty.'),link(bulk?'Build a bulk order':'Shop products',bulk?'/bulk-orders':'/shop'));return;}
    if(!goods&&data.membership){root.append(node('p','You already have an active '+data.membership.plan.toUpperCase()+' pass.'),link('View membership','/account/membership'));return;}
@@ -99,7 +101,7 @@
    form.addEventListener('input',()=>{if(!busy){nmiWidget?.destroy();nmiWidget=null;nmiLocked=false;review.replaceChildren();estimate.hidden=false;status.textContent='';}});
    form.onsubmit=async e=>{e.preventDefault();if(busy||!steps.ready())return;busy=true;const button=form.querySelector('button[type="submit"]');button.disabled=true;status.textContent='Calculating your total…';
     try{
-     const d=Object.fromEntries(new FormData(form));for(const control of form.elements)control.disabled=true;const request={kind:goods?'goods':'membership',...(bulk?{bulk_order:true}:{}),...(goods?{items:cart.map(({id,size,qty})=>({id,size,qty})),address:{line1:d.line1,line2:d.line2,city:d.city,region:d.region,postal_code:d.postal_code,country:d.country},research_use:d.research_use==='on'}:{plan,billing_period:membershipPeriod}),name:d.name,organization:d.organization,note:d.note,consent:d.consent==='on',method_id:d.method_id,points:Number(d.points||0),credit_cents:Math.round(Number(d.credit||0)*100),coupon:d.coupon||'',delivery:bulk?{shipping:'express',extras:[]}:window.ReadinessUI.selection(form),checkout_version:data.config.version};
+     const d=Object.fromEntries(new FormData(form));for(const control of form.elements)control.disabled=true;const request={kind:goods?'goods':'membership',...(bulk?{bulk_order:true}:{}),...(researchBuilder?{research_builder:true}:{}),...(goods?{items:cart.map(({id,size,qty})=>({id,size,qty})),address:{line1:d.line1,line2:d.line2,city:d.city,region:d.region,postal_code:d.postal_code,country:d.country},research_use:d.research_use==='on'}:{plan,billing_period:membershipPeriod}),name:d.name,organization:d.organization,note:d.note,consent:d.consent==='on',method_id:d.method_id,points:Number(d.points||0),credit_cents:Math.round(Number(d.credit||0)*100),coupon:d.coupon||'',delivery:bulk?{shipping:'express',extras:[]}:window.ReadinessUI.selection(form),checkout_version:data.config.version};
      const fingerprint=Array.from(new Uint8Array(await crypto.subtle.digest('SHA-256',new TextEncoder().encode(JSON.stringify(request))))).map(x=>x.toString(16).padStart(2,'0')).join('');if(lastFingerprint&&lastFingerprint!==fingerprint){requestId=crypto.randomUUID();sessionStorage.setItem('ap-checkout-id',requestId);}lastFingerprint=fingerprint;sessionStorage.setItem('ap-checkout-fingerprint',fingerprint);
      body={...request,id:requestId,action:'quote'};const q=await api(auth,body);estimate.hidden=true;review.replaceChildren(summary(q));review.scrollIntoView({behavior:'auto',block:'nearest'});status.textContent='Review the final total, then place your order.';
      const selected=methods.find(m=>m.id===body.method_id),rampex=selected?.native_provider==='rampex'&&q.total_cents>0;
@@ -125,7 +127,7 @@
           done.append(link('View your order','/account/purchases?id='+encodeURIComponent(saved)));
           review.append(done);status.textContent='Payment confirmed.';
           sessionStorage.removeItem('ap-checkout-id');sessionStorage.removeItem('ap-checkout-fingerprint');
-          if(bulk){const current=window.AltaStore.normalizeLines(window.AltaStore.read('ap-bulk-draft-v2',[]));if(JSON.stringify(current.map(({id,size,qty})=>({id,size,qty})))===JSON.stringify(body.items))localStorage.removeItem('ap-bulk-draft-v2');}else if(goods){const current=window.AltaStore?.cart||[];if(JSON.stringify(current.map(({id,size,qty})=>({id,size,qty})))===JSON.stringify(body.items))localStorage.removeItem('pp-cart');}
+          if(bulk){const current=window.AltaStore.normalizeLines(window.AltaStore.read('ap-bulk-draft-v2',[]));if(JSON.stringify(current.map(({id,size,qty})=>({id,size,qty})))===JSON.stringify(body.items))localStorage.removeItem('ap-bulk-draft-v2');}else if(goods){const current=window.AltaStore?.cart||[];if(JSON.stringify(current.map(({id,size,qty})=>({id,size,qty})))===JSON.stringify(body.items)){localStorage.removeItem('pp-cart');localStorage.removeItem('ap-research-cart-origin-v1');}}
           return{paid:true};
          }
          if(payment.state==='declined'){nmiLocked=false;status.textContent='Card declined. Please review your details.';return{retry:true,message:'Card declined. Please use another card.'};}
@@ -156,7 +158,7 @@
         next=payment.paid?next:payment.url;
        }else if(q.total_cents>0&&selected?.kind!=='bank_transfer')next='/pay.html?invoice='+encodeURIComponent(result.id);
        sessionStorage.removeItem('ap-checkout-id');sessionStorage.removeItem('ap-checkout-fingerprint');
-       if(bulk){const current=window.AltaStore.normalizeLines(window.AltaStore.read('ap-bulk-draft-v2',[]));if(JSON.stringify(current.map(({id,size,qty})=>({id,size,qty})))===JSON.stringify(body.items))localStorage.removeItem('ap-bulk-draft-v2');}else if(goods){const current=window.AltaStore?.cart||[];if(JSON.stringify(current.map(({id,size,qty})=>({id,size,qty})))===JSON.stringify(body.items))localStorage.removeItem('pp-cart');}
+       if(bulk){const current=window.AltaStore.normalizeLines(window.AltaStore.read('ap-bulk-draft-v2',[]));if(JSON.stringify(current.map(({id,size,qty})=>({id,size,qty})))===JSON.stringify(body.items))localStorage.removeItem('ap-bulk-draft-v2');}else if(goods){const current=window.AltaStore?.cart||[];if(JSON.stringify(current.map(({id,size,qty})=>({id,size,qty})))===JSON.stringify(body.items)){localStorage.removeItem('pp-cart');localStorage.removeItem('ap-research-cart-origin-v1');}}
        location.assign(next);
       }catch(err){
        status.replaceChildren();

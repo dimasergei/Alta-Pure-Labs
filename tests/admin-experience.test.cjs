@@ -7,6 +7,7 @@ const {JSDOM}=require('jsdom');
 const root=path.join(__dirname,'..');
 const script=fs.readFileSync(path.join(root,'admin-experience.js'),'utf8');
 const css=fs.readFileSync(path.join(root,'admin-experience.css'),'utf8');
+const violet=fs.readFileSync(path.join(root,'admin-violet.css'),'utf8');
 function render(filename){
   const source=fs.readFileSync(path.join(root,filename),'utf8');
   const dom=new JSDOM(source,{runScripts:'outside-only',url:'https://altapurelabs.com/'+filename});
@@ -18,8 +19,10 @@ test('admin routes load complete structural experience after all older styles',(
   for(const f of ['admin-orders.html','admin-marketing.html']){
     const html=fs.readFileSync(path.join(root,f),'utf8');
     assert.match(html,/admin-experience\.css\?v=1/);
+    assert.match(html,/admin-violet\.css\?v=20261116/);
     assert.match(html,/admin-experience\.js\?v=1/);
     assert.ok(html.lastIndexOf('/admin-experience.css')>html.lastIndexOf('/admin-ui-polish.css'));
+    assert.ok(html.lastIndexOf('/admin-violet.css')>html.lastIndexOf('/admin-experience.css'));
   }
 });
 test('Orders has two-section navigation, sidebar, main workbench and intact operational controls',()=>{
@@ -64,4 +67,8 @@ test('new stylesheet replaces dark order console, keeps light form controls, sup
   assert.match(css,/@media\(max-width:600px\)/);
   assert.match(css,/prefers-reduced-motion/);
   assert.ok(!/setInterval\s*\(/.test(script));
+  assert.match(violet,/\.ap-workspace-sidebar/);
+  assert.match(violet,/\.uc-order-row/);
+  assert.match(violet,/\.uc-dialog/);
+  assert.match(violet,/#4b218b/i);
 });
