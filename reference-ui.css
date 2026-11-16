@@ -560,3 +560,17 @@ body.ap-site{font-family:Poppins,Arial,sans-serif;background:#fff;color:#101317}
 .ap-site .nl-soft .ap-mini-product img{width:42px;height:47px;object-fit:cover;object-position:center;background:#ded7e7;border-radius:7px}
 .ap-site .nl-soft .ap-mini-matrix span:nth-child(3n){color:#eac8ff;text-shadow:0 0 8px #d98cff,0 0 19px #be60f6}
 .ap-site .nl-doc-art div b{font-weight:800;color:#281943}
+
+/* Homepage product examples use the same vial silhouette as the hero. */
+.ap-site .nl-soft .ap-slot-products{background:#e8e6ed;justify-items:center;align-items:center}
+.ap-site .nl-soft .ap-slot-products img{width:auto;max-width:100%;height:155px;aspect-ratio:1081/1455;object-fit:fill;object-position:center;background:transparent;border-radius:0;clip-path:url(#ap-vial-outline);filter:drop-shadow(0 5px 6px #28143835)}
+.ap-site .nl-soft .ap-mini-product img{width:60px;height:81px;flex:none;aspect-ratio:1081/1455;object-fit:fill;object-position:center;background:transparent;border-radius:0;clip-path:url(#ap-vial-outline)}
+.ap-site .nl-soft .ap-mini-matrix{grid-template-columns:minmax(0,1fr) 44px 75px}
+.ap-site .nl-soft .ap-mini-product{min-height:81px}
+.ap-site .nl-doc-art{position:relative}
+.ap-site .nl-doc-purity{position:absolute;right:24px;top:95px;display:flex;align-items:center;gap:10px;padding:9px 15px 9px 9px;background:#fff;border:1px solid #e1e8e2;border-radius:100px;box-shadow:0 5px 18px #172a2220;color:#132b24;font-size:13px;line-height:1.25}
+.ap-site .nl-doc-purity .nl-doc-purity-check{width:30px;height:30px;flex:none;display:grid;place-items:center;background:#e3f7e9;color:#23794a;border-radius:50%;font-size:18px;font-weight:700}
+.ap-site .nl-doc-purity b{display:block;font-weight:800;color:#1b2942}
+.ap-site .nl-doc-purity small{display:block;font-size:11px;white-space:nowrap;color:#596878}
+@media(max-width:1050px){.ap-site .nl-doc-purity{position:static;width:max-content;max-width:100%;margin:8px 0 14px}}
+@media(max-width:767px){.ap-site .nl-soft .ap-slot-products img{height:105px}.ap-site .nl-soft .ap-mini-product img{width:50px;height:67px}.ap-site .nl-soft .ap-mini-product{min-height:67px}}
