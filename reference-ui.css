@@ -590,3 +590,9 @@ body.ap-site{font-family:Poppins,Arial,sans-serif;background:#fff;color:#101317}
 .ap-site .nl-soft .ap-mini-matrix>span:nth-child(3n + 2),.ap-site .nl-soft .ap-mini-matrix>span:nth-child(3n){justify-content:center}
 .ap-site .nl-soft .ap-mini-matrix>span:nth-child(3n):not(:nth-child(3)){font-size:18px;line-height:1.1;font-weight:800}
 @media(max-width:767px){.ap-site .nl-soft .ap-slot-products .ap-vial-example,.ap-site .nl-soft .ap-slot-products .ap-vial-example img{height:105px}.ap-site .nl-soft .ap-slot-products .ap-vial-example:not(:last-child)::after{right:-16px;font-size:18px}.ap-site .nl-soft .ap-mini-product .ap-vial-example,.ap-site .nl-soft .ap-mini-product .ap-vial-example img{width:50px;height:67px}}
+/* Keep the product silhouettes free of inherited slot and row borders. */
+.ap-site .nl-soft .ap-slot-products .ap-vial-example{border:0;border-radius:0;background:transparent;box-shadow:none;padding:0}
+.ap-site .nl-soft .ap-mini-product .ap-vial-example{width:42px;height:57px;border:0;border-radius:0;background:transparent;box-shadow:none;padding:0!important}
+.ap-site .nl-soft .ap-mini-product .ap-vial-example img{width:42px;height:57px}
+.ap-site .nl-soft .ap-mini-product{min-height:57px}
+@media(max-width:767px){.ap-site .nl-soft .ap-mini-product .ap-vial-example,.ap-site .nl-soft .ap-mini-product .ap-vial-example img{width:42px;height:57px}}
