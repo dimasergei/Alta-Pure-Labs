@@ -49,15 +49,16 @@ test('bulk order shows supplier job and locks address editing after submission',
  const text=w.document.querySelector('dialog').textContent;assert.match(text,/Bulk order/);assert.match(text,/Supplier and fulfillment/);assert.match(text,/ALTA-BULK/);assert.match(text,/Coordinate address changes with the supplier/);assert.doesNotMatch(text,/Save address/);
  w.AltaFulfillment.clear();dom.window.close();
 });
-test('multi-line Lotus assignment uses the audited complete-order action',async()=>{
+test('multi-line assignment routes the complete order to 99Purity despite stale Lotus flags',async()=>{
  const row={id:uuid(6),source:'commerce',kind:'bulk',commerce_status:'paid',payment_status:'paid',fulfillment_status:'unfulfilled',customer_email:'bulk@example.test',total_cents:90000,currency:'USD',created_at:new Date().toISOString()};
  const raw={...row,kind:'goods',status:'paid',version:1,request_data:{bulk_order:true,address:{line1:'123 Main Street',city:'Miami',region:'FL',postal_code:'33101',country:'US'},items:[{id:'a',name:'A',size:'10mg',qty:10},{id:'b',name:'B',size:'5mg',qty:20}]}};
  const allocations=[{variant_key:'a|10mg',route:'manual',supplier_name:'',status:'pending',version:3},{variant_key:'b|5mg',route:'manual',supplier_name:'',status:'pending',version:4}];
  const mappings=allocations.map(x=>({variant_key:x.variant_key,verified_at:'2026-11-15T00:00:00Z'}));
  const {dom,w,calls}=setup([row],{order:raw,allocations,jobs:[],mappings,supplier_enabled:true});await tick();w.document.querySelector('.uc-order-row button').click();await tick();
- const action=[...w.document.querySelectorAll('dialog form')].find(f=>f.textContent.includes('Route complete order to Lotus'));assert.ok(action);
- action.querySelector('input').value='Both mapped products confirmed';action.dispatchEvent(new w.Event('submit',{bubbles:true,cancelable:true}));await tick();
+ const action=[...w.document.querySelectorAll('dialog form')].find(f=>f.textContent.includes('Assign complete order to 99Purity Peptides'));assert.ok(action);
+ assert.equal(action.elements.namedItem('supplier_name'),null);assert.ok(![...w.document.querySelectorAll('dialog button')].some(b=>b.textContent.includes('Lotus')));
+ action.querySelector('input').value='Complete order assigned to sole supplier';action.dispatchEvent(new w.Event('submit',{bubbles:true,cancelable:true}));await tick();
  const writes=calls.filter(x=>x.options?.body).map(x=>JSON.parse(x.options.body));
- assert.equal(writes.length,1);assert.deepEqual({action:writes[0].action,route:writes[0].route,variant_key:writes[0].variant_key,version:writes[0].version},{action:'assign',route:'lotus',variant_key:'a|10mg',version:3});
+ assert.equal(writes.length,1);assert.deepEqual(writes[0],{action:'assign',id:row.id,variant_key:'a|10mg',version:3,route:'manual',supplier_name:'99Purity Peptides',note:'Complete order assigned to sole supplier'});
  w.AltaFulfillment.clear();dom.window.close();
 });

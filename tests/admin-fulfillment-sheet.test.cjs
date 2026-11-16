@@ -29,6 +29,33 @@ test('unpaid current order exports full contact and physical BOGO units under a 
   }
 });
 
+test('unallocated orders name 99Purity as intended manual supplier without inventing a SKU or submission', () => {
+  const s=sheet();
+  assert.equal(s.items[0].supplier,'99Purity Peptides');
+  assert.equal(s.items[0].route,'manual');
+  assert.equal(s.items[0].supplier_sku,'');
+  assert.equal(s.items[0].fulfillment_status,'unallocated');
+  assert.equal(s.supplier_order,'');
+  assert.equal(s.release.ready,false);
+  for(const output of [buildFulfillmentCsv(s).toString('utf8'),buildFulfillmentPdf(s).toString('latin1')]) {
+    assert.match(output,/99Purity Peptides/);
+    assert.doesNotMatch(output,/Lotus/);
+    assert.match(output,/DO NOT SHIP/);
+  }
+});
+
+test('99Purity paid allocations export exact physical units and preserve historical supplier evidence', () => {
+  const manual=sheet({status:'paid'},{allocations:[allocation({supplier_name:'99Purity Peptides'})]});
+  assert.equal(manual.items[0].supplier,'99Purity Peptides');
+  assert.equal(manual.items[0].total,4);
+  assert.equal(manual.release.ready,true);
+  const previous=sheet({status:'paid'},{allocations:[allocation({supplier_name:'Lotus Labs',route:'lotus',product:41,vials:1})],jobs:[{supplier_id:'L-EXISTING'}]});
+  assert.equal(previous.items[0].supplier,'Lotus Labs');
+  assert.match(previous.items[0].supplier_sku,/Lotus product 41/);
+  assert.equal(previous.release.ready,false);
+  assert.match(previous.release.title,/SUPPLIER ACTIVITY/);
+});
+
 test('bulk order preserves total units without promotional quantities and gift allocation is included', () => {
   const raw=order({status:'paid'}); raw.request_data.bulk_order=true; raw.request_data.items[0].qty=50;
   raw.pricing.lines[0].qty=50; delete raw.pricing.lines[0].bogo_free_units;

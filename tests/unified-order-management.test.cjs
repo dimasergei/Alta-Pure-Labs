@@ -55,7 +55,33 @@ test('unified detail exposes guarded payment controls and true supplier readines
  const req={method:'GET',headers:{'x-admin-password':password}},params=new URLSearchParams({view:'detail',id});
  let code,payload;const res={setHeader(){},status(n){code=n;return this},json(x){payload=x;return x}};
  await handle(req,res,params,{db,env});assert.equal(code,200);assert.equal(payload.manual_payment_allowed,true);assert.deepEqual(payload.payment_method,{id:methodId,kind:'bank_transfer',label:'US wire',currency:'USD'});assert.equal(payload.supplier_enabled,true);
+ assert.deepEqual(payload.fulfillment_provider,{name:'99Purity Peptides',route:'manual',automatic_submission:false});
  assert.equal(JSON.stringify(payload).includes(env.LOTUS_PARTNER_API_KEY),false);
  values.commerce_supplier_settings.enabled=false;await handle(req,res,params,{db,env});assert.equal(payload.supplier_enabled,false);
  values.commerce_supplier_settings.enabled=true;await handle(req,res,params,{db,env:{...env,LOTUS_PARTNER_API_KEY:''}});assert.equal(payload.supplier_enabled,false);
+});
+test('disabled Lotus rejects every remote admin action before network, mutation or supplier reads',async()=>{
+ const password='fixture-admin-password-'+'x'.repeat(32),env={ADMIN_ORDERS_PASSWORD:password,SITE_URL:'https://altapurelabs.com',LOTUS_FULFILLMENT_ENABLED:'false'};
+ const req={method:'POST',headers:{'x-admin-password':password,origin:env.SITE_URL,'content-type':'application/json'}};
+ const db={from(){throw Error('Unexpected supplier read')},rpc(){throw Error('Unexpected supplier mutation')}};
+ for(const action of ['preview_lotus_order','label','catalog','run','save_mapping','retry','takeover','assign']){
+  let code,payload;const res={setHeader(){},status(n){code=n;return this},json(x){payload=x;return x}};
+  await handle({...req,body:{action,id,route:'lotus'}},res,new URLSearchParams(),{db,env,fetchImpl:async()=>{throw Error('Unexpected network call')}});
+  assert.equal(code,409,action);assert.match(payload.error,/Lotus fulfillment is disabled/);
+ }
+});
+test('database kill switch blocks Lotus even with a live API key and enabled environment',async()=>{
+ const password='fixture-admin-password-'+'x'.repeat(32),env={ADMIN_ORDERS_PASSWORD:password,SITE_URL:'https://altapurelabs.com',LOTUS_FULFILLMENT_ENABLED:'true',LOTUS_PARTNER_API_KEY:'ptr_live_'+'A'.repeat(43)};
+ const db={from(table){assert.equal(table,'commerce_supplier_settings');return{select(){return this},eq(){return this},single(){return{data:{enabled:false,verified_at:'2026-11-16',max_order_cents:50000}}}}}};
+ let code;const res={setHeader(){},status(n){code=n;return this},json(x){return x}};
+ await handle({method:'POST',headers:{'x-admin-password':password,origin:env.SITE_URL,'content-type':'application/json'},body:{action:'preview_lotus_order',id}},res,new URLSearchParams(),{db,env,fetchImpl:async()=>{throw Error('Unexpected network call')}});
+ assert.equal(code,409);
+});
+test('manual assignment accepts only the selected supplier and remains available when Lotus is disabled',async()=>{
+ const password='fixture-admin-password-'+'x'.repeat(32),env={ADMIN_ORDERS_PASSWORD:password,SITE_URL:'https://altapurelabs.com',LOTUS_FULFILLMENT_ENABLED:'false'};
+ let calls=0;const db={rpc:async(name,args)=>{calls++;assert.equal(name,'commerce_fulfillment_admin');assert.equal(args.p_data.supplier_name,'99Purity Peptides');return{data:true}}};
+ const req={method:'POST',headers:{'x-admin-password':password,origin:env.SITE_URL,'content-type':'application/json'},body:{action:'assign',id,route:'manual',note:'Supplier confirmed allocation',supplier_name:'99Purity Peptides'}};
+ let code;const res={setHeader(){},status(n){code=n;return this},json(x){return x}};
+ await handle(req,res,new URLSearchParams(),{db,env});assert.equal(code,200);assert.equal(calls,1);
+ await handle({...req,body:{...req.body,supplier_name:'Lotus'}},res,new URLSearchParams(),{db,env});assert.equal(code,400);assert.equal(calls,1);
 });
