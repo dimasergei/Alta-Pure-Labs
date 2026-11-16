@@ -33,3 +33,11 @@
 .uc-notification{display:grid;grid-template-columns:1.5fr 1.3fr 0.5fr 1fr auto;gap:14px;align-items:center;background:#12191b;border:1px solid #344340;border-radius:9px;padding:14px;font-size:12px}
 .uc-notification span,.uc-notification small{color:#b4c3be;overflow-wrap:anywhere}
 @media(max-width:800px){.uc-notification{grid-template-columns:1fr 1fr}.uc-notification button{grid-column:1/-1}}
+
+/* Ordered payment-to-fulfillment workflow within the single management dialog. */
+.uc-export,.uc-payment,.uc-shipment{margin:20px 0;padding:17px;border:1px solid #e3d6f1;border-radius:12px;background:#fcfaff}
+.uc-export h4,.uc-payment h3,.uc-shipment h3{margin:0 0 10px}.uc-button-row{display:flex;gap:10px;flex-wrap:wrap}
+.uc-dialog .uc-history{margin:20px 0;border-top:1px solid #e3d6f1;padding-top:17px}.uc-history summary{font-weight:700;cursor:pointer;color:#4c2386}
+.uc-history-item{display:grid;gap:5px;padding:12px 0;border-bottom:1px solid #e9e1f1;font-size:12px}.uc-history-item p{margin:0;overflow-wrap:anywhere}
+.uc-history-item strong{text-transform:capitalize}.uc-portal{display:inline-flex;margin:12px 0;padding:10px 15px;border-radius:9px;background:#efe5f9;color:#4c2386;font-weight:700;text-decoration:none}
+.uc-preview{margin:12px 0;display:grid;gap:8px}.uc-dialog .uc-input-field input{box-sizing:border-box}.uc-dialog [role=status].failed{color:#ad2644!important}

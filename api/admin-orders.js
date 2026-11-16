@@ -117,6 +117,18 @@ module.exports = async (req, res) => {
         'https://admin.internal'
       ).searchParams;
 
+      if (params.get('view') === 'fulfillment-sheet') {
+        const format = params.get('format') || 'pdf';
+        if (!['pdf', 'csv'].includes(format)) throw httpError(400, 'Choose PDF or CSV.');
+        const { loadFulfillmentSheet, buildFulfillmentPdf, buildFulfillmentCsv } = require('../lib/admin-fulfillment-sheet');
+        const sheet = await loadFulfillmentSheet(db, params);
+        const content = format === 'pdf' ? buildFulfillmentPdf(sheet) : buildFulfillmentCsv(sheet);
+        const reference = sheet.order_number.replace(/[^A-Za-z0-9_-]/g, '-').slice(0, 80);
+        res.setHeader('Content-Type', format === 'pdf' ? 'application/pdf' : 'text/csv; charset=utf-8');
+        res.setHeader('Content-Disposition', `attachment; filename="fulfillment-${reference}.${format}"`);
+        return res.status(200).send(content);
+      }
+
       const result = await unifiedAdminOrders(db, params);
 
       return res.status(200).json(result);

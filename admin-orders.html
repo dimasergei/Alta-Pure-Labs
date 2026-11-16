@@ -963,7 +963,7 @@
     }
 
 </style>
-<link rel="stylesheet" href="/admin-fulfillment.css"><style id="simplified-order-ui">
+<link rel="stylesheet" href="/admin-fulfillment.css?v=20261116-orders2"><style id="simplified-order-ui">
 #orders-message{display:none!important}
 #admin-notifications-section>.notification-panel{display:none!important}
 .fh-advanced {margin:0 0 14px; padding:9px 12px;border:1px solid var(--border);border-radius:8px;color:var(--muted)}
@@ -1359,7 +1359,7 @@
     </div>
   </main>
 
-  <script src="/admin-fulfillment.js"></script>
+  <script src="/admin-fulfillment.js?v=20261116-orders2"></script>
   <script src="/admin-unified-notifications.js"></script>
   <script>
     const $ = (selector) => document.querySelector(selector);
@@ -1744,8 +1744,9 @@
     }
 
     async function api(path, options = {}) {
+      const { responseType, ...requestOptions } = options;
       const response = await fetch(path, {
-        ...options,
+        ...requestOptions,
         cache: 'no-store',
         headers: {
           ...options.headers,
@@ -1753,6 +1754,7 @@
         }
       });
 
+      if (response.ok && responseType === 'blob') return response.blob();
       const data = await response.json().catch(() => ({}));
 
       if (response.status === 401) {
