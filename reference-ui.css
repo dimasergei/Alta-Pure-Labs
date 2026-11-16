@@ -574,3 +574,19 @@ body.ap-site{font-family:Poppins,Arial,sans-serif;background:#fff;color:#101317}
 .ap-site .nl-doc-purity small{display:block;font-size:11px;white-space:nowrap;color:#596878}
 @media(max-width:1050px){.ap-site .nl-doc-purity{position:static;width:max-content;max-width:100%;margin:8px 0 14px}}
 @media(max-width:767px){.ap-site .nl-soft .ap-slot-products img{height:105px}.ap-site .nl-soft .ap-mini-product img{width:50px;height:67px}.ap-site .nl-soft .ap-mini-product{min-height:67px}}
+
+/* Lit vial examples and aligned bulk matrix. */
+.ap-site .nl-soft .ap-slot-products{column-gap:18px;padding:9px 15px}
+.ap-site .nl-soft .ap-vial-example{position:relative;display:flex;align-items:center;justify-content:center;isolation:isolate;flex:none;padding:0;min-width:0}
+.ap-site .nl-soft .ap-vial-example::before{content:"";position:absolute;z-index:-1;width:62%;height:64%;left:19%;top:19%;border-radius:50%;background:#a34cff;filter:blur(16px);opacity:.68;pointer-events:none}
+.ap-site .nl-soft .ap-slot-products .ap-vial-example{width:100%;height:155px}
+.ap-site .nl-soft .ap-slot-products .ap-vial-example:not(:last-child)::after{content:"+";position:absolute;right:-20px;top:50%;transform:translateY(-50%);z-index:2;color:#a450f2;font-size:24px;font-weight:800;text-shadow:0 0 8px #b45aff,0 0 19px #a249f7}
+.ap-site .nl-soft .ap-slot-products .ap-vial-example img{width:auto;max-width:100%;height:155px}
+.ap-site .nl-soft .ap-mini-product .ap-vial-example{width:60px;height:81px}
+.ap-site .nl-soft .ap-mini-product .ap-vial-example::before{width:80%;height:76%;left:10%;top:12%;filter:blur(10px);opacity:.82}
+.ap-site .nl-soft .ap-mini-product .ap-vial-example img{width:60px;height:81px}
+.ap-site .nl-soft .ap-mini-matrix{row-gap:0;align-items:stretch}
+.ap-site .nl-soft .ap-mini-matrix>span{display:flex;align-items:center;min-height:32px;height:100%;margin:0;padding:6px 0!important;border-bottom:1px solid #ffffff30;box-sizing:border-box}
+.ap-site .nl-soft .ap-mini-matrix>span:nth-child(3n + 2),.ap-site .nl-soft .ap-mini-matrix>span:nth-child(3n){justify-content:center}
+.ap-site .nl-soft .ap-mini-matrix>span:nth-child(3n):not(:nth-child(3)){font-size:18px;line-height:1.1;font-weight:800}
+@media(max-width:767px){.ap-site .nl-soft .ap-slot-products .ap-vial-example,.ap-site .nl-soft .ap-slot-products .ap-vial-example img{height:105px}.ap-site .nl-soft .ap-slot-products .ap-vial-example:not(:last-child)::after{right:-16px;font-size:18px}.ap-site .nl-soft .ap-mini-product .ap-vial-example,.ap-site .nl-soft .ap-mini-product .ap-vial-example img{width:50px;height:67px}}
