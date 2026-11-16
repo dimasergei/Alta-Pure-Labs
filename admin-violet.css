@@ -207,6 +207,67 @@ body .admin-login-brand img.ap-brand-symbol,body .admin-brand img.ap-brand-symbo
 body .ap-auth-layout .ap-auth-symbol img{filter:none!important}
 body .ap-workspace.ap-navigation-open .ap-nav-backdrop{background:#160d2bb8!important}
 body :focus-visible{outline-color:#8d4fe5!important}
+
+/* The older polish sheet uses ID selectors on the plain login cards. Match those
+   selectors here too; the split layout is only added after admin JS runs. */
+body #login-view,body #mk-login{
+  color:#211832!important;border-color:#e1d7ec!important;
+  box-shadow:0 20px 65px #3017521c!important;
+}
+body .admin-login-brand strong,body .admin-brand-name,
+body #login-view h2,body #mk-login h1{color:#2a1746!important}
+body .admin-login-brand small,body .admin-brand-label,
+body #login-view p,body #mk-login p{color:#665c73!important}
+body #login-view input,body #mk-login input{
+  color:#211832!important;background:#fdfbff!important;border-color:#d8cae5!important;
+}
+body #login-view button[type="submit"],body #mk-login button[type="submit"]{
+  background:#4b218b!important;color:#fff!important;border-color:#4b218b!important;
+}
+body #login-view button[type="submit"]:hover,body #mk-login button[type="submit"]:hover{
+  background:#6330a5!important;border-color:#6330a5!important;
+}
+/* Legacy order controls and status chips still appear inside the unified hub. */
+body .tab.active,body .order.open{
+  background:#f1e8fb!important;border-color:#cdaee9!important;color:#4b218b!important;
+}
+body .status-shipped{background:#efe7fb!important;color:#6330a5!important}
+body .bulkbar{background:#f5effc!important;border-color:#ddc9ef!important;color:#4b218b!important}
+body .ap-workspace .ap-content-kicker,body .mk-title .mk-eyebrow{color:#6935ad!important}
+body .ap-workspace .ap-content-heading .ap-content-kicker{color:#6935ad!important}
+body .ap-workspace .ap-content-heading h2,body .ap-workspace .uc-header h2{color:#211832!important}
+body .ap-workspace .uc-order-row button:hover:not(.uc-danger):not(.primary),
+body .uc-dialog button:hover:not(.uc-danger):not(.primary){background:#e8d8f7!important}
+body .ap-workspace .uc-order-row button.primary:hover,body .uc-dialog button.primary:hover{
+  background:#6330a5!important;border-color:#6330a5!important;
+}
+body .ap-workspace-marketing .mk-panel .mk-toolbar input,
+body .ap-workspace-marketing .mk-panel .mk-toolbar select,
+body .ap-workspace-marketing .mk-panel .mk-card input,
+body .ap-workspace-marketing .mk-panel .mk-card select,
+body .ap-workspace-marketing .mk-panel .mk-card textarea{
+  background:#fdfbff!important;color:#211832!important;border-color:#d8cae5!important;
+}
+body .ap-workspace-marketing .mk-table .mk-stage-label{
+  background:#f0e6fb!important;color:#4b218b!important;border-color:#dfcbf1!important;
+}
+body .ap-workspace-marketing .mk-panel .mk-ig-timeline{
+  background:#fbf8ff!important;border-color:#e6dbef!important;
+}
+body .ap-workspace-marketing .ap-metric::after{color:#d5c5e5!important}
+body .ap-workspace-marketing .mk-panel .mk-timeline,
+body .ap-workspace-marketing .mk-panel .mk-entry{border-color:#ebe3f2!important}
+body .ap-workspace-marketing .mk-info.ap-system-notice{
+  background:#f5effc!important;border-color:#e5d7f4!important;color:#514264!important;
+}
+body .ap-workspace-marketing .mk-panel .mk-card{
+  background:#fff!important;border-color:#e6dbef!important;
+}
+body .ap-workspace-marketing .mk-table tbody tr:hover{background:#fcf9ff!important}
+body .ap-workspace-marketing .mk-bottom-tools{background:#fdfbff!important;border-top-color:#ebe3f2!important}
+body .ap-workspace-sidebar .ap-sidebar-brand,
+body .ap-workspace-sidebar .ap-sidebar-tools{border-color:#b58cd733!important}
+body .ap-workspace-sidebar .ap-sidebar-footer{color:#c0a8d8!important}
 @media(max-width:600px){
   body .ap-workspace .uc-search select{width:100%!important;max-width:none!important;flex:1 1 100%!important}
   body .uc-dialog .uc-supplier{padding:14px}
