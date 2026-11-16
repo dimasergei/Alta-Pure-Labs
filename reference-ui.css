@@ -596,3 +596,11 @@ body.ap-site{font-family:Poppins,Arial,sans-serif;background:#fff;color:#101317}
 .ap-site .nl-soft .ap-mini-product .ap-vial-example img{width:42px;height:57px}
 .ap-site .nl-soft .ap-mini-product{min-height:57px}
 @media(max-width:767px){.ap-site .nl-soft .ap-mini-product .ap-vial-example,.ap-site .nl-soft .ap-mini-product .ap-vial-example img{width:42px;height:57px}}
+/* Plain purple separators; keep mobile vial images at their natural proportions. */
+.ap-site .nl-soft .ap-slot-products .ap-vial-example:not(:last-child)::after{color:#4b2189;text-shadow:none}
+@media(max-width:767px){
+  .ap-site .nl-soft .ap-slot-products{column-gap:14px;padding:10px 12px}
+  .ap-site .nl-soft .ap-slot-products .ap-vial-example{height:auto;aspect-ratio:1081/1455}
+  .ap-site .nl-soft .ap-slot-products .ap-vial-example img{display:block;width:100%;max-width:none;height:auto;aspect-ratio:1081/1455;object-fit:contain}
+  .ap-site .nl-soft .ap-slot-products .ap-vial-example:not(:last-child)::after{right:-15px}
+}
