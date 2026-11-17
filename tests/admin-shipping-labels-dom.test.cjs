@@ -102,6 +102,67 @@ test('unconfigured and cancellation-blocked orders cannot request quotes or purc
   }
 });
 
+test('shipping configuration errors are visible without exposing quote or purchase controls', async t => {
+  const error = 'The live shipping token does not match the selected mode.';
+  const h = harness(t, { state: { configured: false, purchase_enabled: false, configuration_error: error } });
+  await open(h);
+  assert.equal(h.host.querySelector('[role=alert]').textContent, error);
+  assert.equal(h.host.querySelector('.psl-form'), null);
+  assert.equal(h.host.querySelector('.psl-rates'), null);
+  assert.equal(h.calls.filter(call => call.method !== 'GET').length, 0);
+});
+
+test('disabled live purchases still allow rate review but reject forced purchase submission', async t => {
+  const h = harness(t, { state: { purchase_enabled: false } });
+  await open(h);
+  assert.match(h.host.textContent, /LIVE MODE.*Live label purchases are disabled/s);
+  await quote(h);
+  assert.equal(h.calls.filter(call => call.body?.action === 'shipping_label_quote').length, 1);
+  assert.match(h.host.textContent, /You can still review rates/);
+  assert.match(h.host.textContent, /12\.50.*USD/);
+  chooseRate(h); approve(h);
+  const form = h.host.querySelector('.psl-rates'), buy = form.querySelector('button');
+  assert.equal(buy.disabled, true);
+  assert.equal(buy.textContent, 'Label purchases disabled');
+  assert.equal(form.querySelector('input[type=checkbox]').disabled, true);
+  buy.disabled = false;
+  submit(h, form); await tick();
+  assert.equal(h.confirmations.length, 0);
+  assert.equal(h.calls.filter(call => call.body?.action === 'shipping_label_buy').length, 0);
+  button(h, 'Edit parcel or sender').click();
+  assert.equal(h.host.querySelector('.psl-form').hidden, false);
+});
+
+test('disabling live purchases leaves existing label reconciliation available', async t => {
+  const h = harness(t, { state: { purchase_enabled: false, labels: [{ id: labelId, status: 'created', test: false, recipient, sender, rate: rates[0], transaction_id: 'provider-fixture', label_url: 'https://deliver.goshippo.com/fixture-label.pdf' }] } });
+  await open(h);
+  assert.equal(h.host.querySelector('.psl-form'), null);
+  button(h, 'Refresh label link').click(); await tick();
+  assert.equal(h.calls.filter(call => call.body?.action === 'shipping_label_refresh').length, 1);
+  assert.equal(h.calls.filter(call => call.body?.action === 'shipping_label_buy').length, 0);
+});
+
+test('a Canadian sender defaults to metric parcel units while keeping both unit systems available', async t => {
+  const h = harness(t, { state: { sender: { ...sender, state: 'ON', zip: 'M5V 1A1', country: 'CA' }, recipient: { ...recipient, state: 'ON', zip: 'M5V 1A1', country: 'CA' } } });
+  await open(h);
+  assert.equal(field(h, 'Country code (US, CA, etc.)').value, 'CA');
+  assert.equal(field(h, 'Dimension unit').value, 'cm');
+  assert.equal(field(h, 'Weight unit').value, 'g');
+  assert.equal([...field(h, 'Dimension unit').options].some(option => option.value === 'in'), true);
+  assert.equal([...field(h, 'Weight unit').options].some(option => option.value === 'lb'), true);
+  assert.equal(h.host.querySelector('.psl-customs').disabled, true);
+});
+
+test('Canadian domestic customs stay hidden when the recipient country uses lowercase or surrounding whitespace', async t => {
+  const h = harness(t, { state: { sender: { ...sender, state: 'ON', zip: 'M5V 1A1', country: 'CA' }, recipient: { ...recipient, state: 'ON', zip: 'M5V 1A1', country: ' ca ' } } });
+  await open(h);
+  const customs = h.host.querySelector('.psl-customs');
+  assert.equal(customs.hidden, true);
+  assert.equal(customs.disabled, true);
+  await quote(h);
+  assert.equal(h.calls.find(call => call.body?.action === 'shipping_label_quote').body.customs, null);
+});
+
 test('domestic customs fields are hidden and disabled and cannot block a valid JSON quote', async t => {
   const h = harness(t); await open(h); fillParcel(h);
   const form = h.host.querySelector('.psl-form'), customs = h.host.querySelector('.psl-customs');

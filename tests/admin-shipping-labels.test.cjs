@@ -2,7 +2,7 @@
 const test = require('node:test'), assert = require('node:assert/strict');
 const { randomUUID } = require('node:crypto');
 const shipping = require('../lib/admin-shipping-labels');
-const env = { SHIPPO_API_KEY: 'shippo_live_fixture' };
+const env = { SHIPPO_MODE: 'live', SHIPPO_API_TOKEN: 'shippo_live_fixture', SHIPPO_ALLOW_LIVE_PURCHASES: 'true' };
 const rate = { id: 'a'.repeat(32), amount_cents: 825, currency: 'USD', carrier: 'UPS', service: 'Ground' };
 function fixture() {
   const row = { id: randomUUID(), order_id: randomUUID(), source: 'commerce', status: 'quoted', test_mode: false, rate_options: [rate], recipient: {}, sender: {}, parcel: {} };
@@ -92,4 +92,48 @@ test('legacy label quotes can choose a missing service but still require a compl
   state = await shipping.state(db, { id: order.id, source: 'store' }, { env }); assert.equal(state.eligible, false);
   order.shipping_address.line1 = '100 Example Street'; order.payment_status = 'pending';
   state = await shipping.state(db, { id: order.id, source: 'store' }, { env }); assert.equal(state.eligible, false);
+});
+test('saved test/live token names require explicit matching modes and never fall back to live', () => {
+  const both = { SHIPPO_TEST_TOKEN: 'shippo_test_fixture', SHIPPO_API_TOKEN: 'shippo_live_fixture' };
+  let c = shipping.config(both);
+  assert.equal(c.mode, 'test'); assert.equal(c.key, both.SHIPPO_TEST_TOKEN); assert.equal(c.purchaseEnabled, true);
+  c = shipping.config({ ...both, SHIPPO_MODE: 'live' });
+  assert.equal(c.key, both.SHIPPO_API_TOKEN); assert.equal(c.configured, true); assert.equal(c.purchaseEnabled, false);
+  assert.equal(shipping.config({ ...both, SHIPPO_MODE: 'live', SHIPPO_ALLOW_LIVE_PURCHASES: 'true' }).purchaseEnabled, true);
+  for (const invalid of [
+    { SHIPPO_API_TOKEN: 'shippo_live_fixture' },
+    { SHIPPO_TEST_TOKEN: 'shippo_live_fixture', SHIPPO_API_TOKEN: 'shippo_live_fixture' },
+    { ...both, SHIPPO_MODE: 'production' },
+    { SHIPPO_MODE: 'live', SHIPPO_API_KEY: 'shippo_test_fixture' },
+    { SHIPPO_MODE: 'live', SHIPPO_API_TOKEN: 'bad', SHIPPO_API_KEY: 'shippo_live_fixture' }
+  ]) assert.equal(shipping.config(invalid).configured, false);
+  assert.equal(shipping.config({ SHIPPO_API_KEY: 'shippo_test_fixture' }).configured, true);
+  assert.equal(shipping.config({ SHIPPO_MODE: 'live', SHIPPO_API_KEY: 'shippo_live_fixture' }).configured, true);
+});
+test('live purchase gate prevents both the durable claim and the provider transaction', async () => {
+  const { db, input } = fixture(); let claims = 0, calls = 0;
+  db.rpc = async () => { claims++; throw new Error('must not claim'); };
+  const options = { env: { ...env, SHIPPO_ALLOW_LIVE_PURCHASES: 'false' }, fetch: async () => { calls++; throw new Error('must not request'); } };
+  await assert.rejects(shipping.purchase(db, input, options), /Live label purchases are disabled/);
+  await assert.rejects(shipping.shippo('/transactions/', { rate: rate.id }, options), /Live label purchases are disabled/);
+  assert.equal(claims, 0); assert.equal(calls, 0);
+  const read = await shipping.shippo('/carrier_accounts/', null, { ...options, fetch: async (_, request) => {
+    assert.equal(request.method, 'GET'); return { ok: true, json: async () => ({ results: [] }) };
+  } });
+  assert.deepEqual(read, { results: [] });
+});
+test('Canadian domestic customs is case-insensitive', () => {
+  assert.equal(shipping.customs(null, { sheet: { ship_to: { country: 'ca' } } }, { country: 'CA' }, {}), null);
+});
+test('existing test labels can be refreshed read-only after switching production to live', async () => {
+  const { row, db, input, transaction } = fixture();
+  Object.assign(row, { test_mode: true, status: 'created', selected_rate: rate, transaction_id: transaction.object_id });
+  const result = await shipping.handleAction(db, { ...input, action: 'shipping_label_refresh' }, {
+    env: { ...env, SHIPPO_TEST_TOKEN: 'shippo_test_fixture' },
+    fetch: async (_, request) => {
+      assert.equal(request.method, 'GET'); assert.equal(request.headers.Authorization, 'ShippoToken shippo_test_fixture');
+      return { ok: true, json: async () => ({ ...transaction, test: true }) };
+    }
+  });
+  assert.equal(result.label.test, true); assert.equal(result.label.status, 'created');
 });

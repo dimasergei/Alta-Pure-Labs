@@ -61,7 +61,9 @@
     function showRates(label, state, form) {
       form.hidden = true;
       const box = el('div', undefined, 'psl-result'), choose = el('form', undefined, 'psl-rates');
-      box.append(el('h4', 'Review postage'), el('p', state.test_mode ? 'TEST MODE · Labels are not valid for shipping and no live postage is purchased.' : 'The selected postage is charged to your connected Shippo account. Your Shippo plan may bill separate label fees.', 'uc-hint'));
+      const canPurchase = state.purchase_enabled !== false;
+      const disabledMessage = state.test_mode ? 'Test label generation is disabled in the shipping configuration. You can still review rates.' : 'Live label purchases are disabled in the shipping configuration. You can still review rates.';
+      box.append(el('h4', 'Review postage'), el('p', !canPurchase ? disabledMessage : state.test_mode ? 'TEST MODE · Labels are not valid for shipping and no live postage is purchased.' : 'The selected postage is charged to your connected Shippo account. Your Shippo plan may bill separate label fees.', 'uc-hint'));
       box.append(el('strong', 'Ship from'), el('p', addressText(label.sender), 'psl-address'), el('strong', 'Ship to'), el('p', addressText(label.recipient), 'psl-address'));
       box.append(el('p', `Parcel: ${label.parcel.length} × ${label.parcel.width} × ${label.parcel.height} ${label.parcel.distance_unit} · ${label.parcel.weight} ${label.parcel.mass_unit}`));
       if (label.warnings?.length) {
@@ -74,16 +76,16 @@
       for (const rate of label.rates) {
         const line = el('label', undefined, 'psl-rate'), radio = el('input'); radio.type = 'radio'; radio.name = 'postage'; radio.required = true; radio.value = rate.id;
         const detail = el('span'); detail.append(el('strong', rate.carrier + ' · ' + rate.service), el('span', money(rate.amount_cents, rate.currency) + (rate.estimated_days ? ' · Estimated ' + rate.estimated_days + ' days in transit' : '')));
-        radio.addEventListener('change', () => { selected = rate; buy.textContent = state.test_mode ? 'Generate test label' : 'Buy label · ' + money(rate.amount_cents, rate.currency); });
+        radio.addEventListener('change', () => { selected = rate; if (canPurchase) buy.textContent = state.test_mode ? 'Generate test label' : 'Buy label · ' + money(rate.amount_cents, rate.currency); });
         line.append(radio, detail); choose.append(line);
       }
-      const approval = el('label', undefined, 'uc-check'), yes = el('input'); yes.type = 'checkbox'; yes.required = true;
+      const approval = el('label', undefined, 'uc-check'), yes = el('input'); yes.type = 'checkbox'; yes.required = true; yes.disabled = !canPurchase;
       approval.append(yes, el('span', 'I verified the recipient, ship-from address, packed weight and dimensions, and selected postage.'));
-      const buy = el('button', state.test_mode ? 'Generate test label' : 'Buy selected label'); buy.type = 'submit';
+      const buy = el('button', !canPurchase ? 'Label purchases disabled' : state.test_mode ? 'Generate test label' : 'Buy selected label'); buy.type = 'submit'; buy.disabled = !canPurchase;
       choose.append(approval, buy); box.append(choose);
       const edit = el('button', 'Edit parcel or sender', 'ghost'); edit.type = 'button'; edit.addEventListener('click', () => { box.remove(); form.hidden = false; }); box.append(edit);
       choose.addEventListener('submit', event => {
-        event.preventDefault(); if (!selected || !choose.reportValidity()) return;
+        event.preventDefault(); if (!canPurchase || !selected || !choose.reportValidity()) return;
         if (!window.confirm(state.test_mode ? 'Generate this test label? It is not valid postage.' : 'Buy this ' + selected.carrier + ' label for ' + money(selected.amount_cents, selected.currency) + ' through Shippo?')) return;
         perform(buy, async () => {
           try { await send({ action: 'shipping_label_buy', label_id: label.id, rate_id: selected.id, amount_cents: selected.amount_cents, currency: selected.currency, confirm_purchase: true }); }
@@ -96,15 +98,18 @@
     async function render(state) {
       panel.replaceChildren();
       if (!state.configured) {
-        notice('Connect Shippo to request carrier rates and buy shipping labels. You will enter the actual ship-from address and packed parcel details before purchasing.');
+        notice(state.configuration_error || 'Connect Shippo to request carrier rates and buy shipping labels. You will enter the actual ship-from address and packed parcel details before purchasing.', Boolean(state.configuration_error));
         link(panel, 'Set up Shippo', 'https://apps.goshippo.com/settings/api');
         panel.append(el('p', 'The account API token must be added to this site’s secure shipping configuration. Do not paste it into order notes.', 'uc-hint'));
+      } else if (state.test_mode) {
+        notice('TEST MODE · These labels are for integration testing and cannot be used to ship an order.');
+      } else {
+        notice(state.purchase_enabled === false ? 'LIVE MODE · Live label purchases are disabled in the shipping configuration. You can still review rates.' : 'LIVE MODE · Review rates before confirming a purchase. Confirmed labels are charged through Shippo.');
       }
       const labels = (state.labels || []).filter(x => x.status !== 'quoted');
       for (const label of labels) showLabel(label, state);
       if (!state.eligible) { notice(state.reason); return; }
       if (!state.configured || labels.some(x => x.test === state.test_mode && ['created', 'purchasing', 'review'].includes(x.status))) return;
-      if (state.test_mode) notice('TEST MODE · These labels are for integration testing and cannot be used to ship an order.');
       const form = el('form', undefined, 'psl-form'); form.append(el('h4', 'Recipient'), el('p', addressText(state.recipient), 'psl-address'), el('p', 'Need a correction? Save the shipping address in the order first, then reopen this panel.', 'uc-hint'));
       form.append(el('p', 'Customer’s delivery selection: ' + state.shipping_service, 'uc-hint'));
       const senderGroup = el('fieldset'); senderGroup.append(el('legend', 'Ship from / return address')); const sender = {};
@@ -112,8 +117,9 @@
       sender.country.maxLength = 2; form.append(senderGroup);
       const parcelGroup = el('fieldset'); parcelGroup.append(el('legend', 'Packed parcel')); const packed = {};
       for (const [key, title] of [['length', 'Length'], ['width', 'Width'], ['height', 'Height'], ['weight', 'Packed weight']]) packed[key] = field(parcelGroup, title, '', true, 'number');
-      packed.distance_unit = select(parcelGroup, 'Dimension unit', [['in', 'Inches'], ['cm', 'Centimetres']], 'in');
-      packed.mass_unit = select(parcelGroup, 'Weight unit', [['lb', 'Pounds'], ['oz', 'Ounces'], ['g', 'Grams'], ['kg', 'Kilograms']], 'lb'); form.append(parcelGroup);
+      const metric = state.sender?.country?.trim().toUpperCase() === 'CA';
+      packed.distance_unit = select(parcelGroup, 'Dimension unit', [['in', 'Inches'], ['cm', 'Centimetres']], metric ? 'cm' : 'in');
+      packed.mass_unit = select(parcelGroup, 'Weight unit', [['lb', 'Pounds'], ['oz', 'Ounces'], ['g', 'Grams'], ['kg', 'Kilograms']], metric ? 'g' : 'lb'); form.append(parcelGroup);
       const customsGroup = el('fieldset', undefined, 'psl-customs'); customsGroup.append(el('legend', 'International customs declaration'));
       customsGroup.append(el('p', 'Use the actual goods, manufacturing origins, tariff codes, total item values, and total net weights. Weight uses the parcel unit selected above.', 'uc-hint'));
       const customItems = [];
@@ -129,7 +135,8 @@
       const certify = el('label', undefined, 'uc-check'), certified = el('input'); certified.type = 'checkbox'; certified.required = true;
       certify.append(certified, el('span', 'I certify that the customs information is accurate and complete.')); customsGroup.append(certify); form.append(customsGroup);
       function updateCustoms() {
-        const country = sender.country.value.trim().toUpperCase(), international = country.length === 2 && country !== state.recipient.country;
+        const country = sender.country.value.trim().toUpperCase(), recipientCountry = String(state.recipient.country || '').trim().toUpperCase();
+        const international = country.length === 2 && country !== recipientCountry;
         customsGroup.hidden = !international; customsGroup.disabled = !international;
         filing.closest('label').hidden = country !== 'US'; filing.disabled = country !== 'US'; filing.required = country === 'US' && international;
         caFiling.closest('label').hidden = country !== 'CA'; caFiling.disabled = country !== 'CA'; caNumber.closest('label').hidden = country !== 'CA'; caNumber.disabled = country !== 'CA';

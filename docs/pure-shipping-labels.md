@@ -4,11 +4,20 @@ Orders → Manage order → **Generate shipping label** uses Shippo to quote and
 
 ## Activation
 
-Add `SHIPPO_API_KEY` to the production project's secure environment configuration. Use the token from the owner's Shippo account; never paste it into order notes, source code, support messages, or browser storage. The account must have billing and the intended carrier accounts configured. A `shippo_test_…` token only creates test labels, clearly marked as invalid postage. A `shippo_live_…` token permits the explicit purchase step.
+Keep both account tokens in the Vercel production project's sensitive environment configuration. This API runs on Vercel; it does not read Supabase Edge Function secrets.
 
-No provider token or ship-from address was available during this implementation. Until connected, the new menu explains setup and cannot quote or purchase. No live label has been purchased or validated by this release.
+| Variable | Purpose |
+| --- | --- |
+| `SHIPPO_TEST_TOKEN` | Shippo test token, beginning `shippo_test_`. |
+| `SHIPPO_API_TOKEN` | Shippo live token, beginning `shippo_live_`. |
+| `SHIPPO_MODE` | `test` (the safe default) or `live`. Must match the selected token. |
+| `SHIPPO_ALLOW_LIVE_PURCHASES` | Must be exactly `true` to enable live label purchases. Otherwise live rates and read-only reconciliation remain available. |
 
-The operator enters the actual sender/return address, packed dimensions, and packed weight. Recipient information is loaded from the saved order and cannot be substituted in a label request. Address corrections must first be saved through the existing audited order editor. A previous sender for the same order is offered when available; no origin address or package weight is invented.
+Never paste tokens into order notes, source code, support messages, or browser storage. A legacy `SHIPPO_API_KEY` is accepted only when the mode-specific variable is absent and its prefix matches the explicit mode. Missing/invalid keys never fall back to another mode. Redeploy after changing environment settings.
+
+The account must have billing and the intended carrier accounts configured. A test token creates sample labels, clearly marked as invalid postage. The live mode and purchase switch enable the existing owner-confirmed purchase step; simply enabling them does not buy a label. The admin panel states the active mode and whether purchases are enabled. Existing labels refresh with their original test/live credential even after the active mode changes.
+
+The operator enters the actual sender/return address, packed dimensions, and packed weight. Recipient information is loaded from the saved order and cannot be substituted in a label request. Address corrections must first be saved through the existing audited order editor. A previous sender for the same order is offered when available; Canada and metric parcel units are offered by default; no street address or package weight is invented.
 
 ## Workflow
 
@@ -41,7 +50,15 @@ Refund unused postage in Shippo. **Check label status** reflects refund pending,
 
 Apply `20261117221540_pure_admin_shipping_labels.sql` before releasing its API. The migration is transactional and changes no existing order data. It creates private attempt storage, claim/result RPCs, immutable provider identity, and live purchase guards.
 
-Focused tests cover authenticated order access, selected amount confirmation, JSON request handling, domestic/international form validation, unknown transport outcomes, duplicate clicks, stale order snapshots, unpaid/canceled/refunded orders, service-role privileges, optional tracking, monotonic status and refund sequences, and test/live isolation. External provider calls are mocked. Live acceptance still requires the configured account and an owner-authorized purchase.
+Focused tests cover authenticated order access, selected amount confirmation, JSON request handling, domestic/international form validation, unknown transport outcomes, duplicate clicks, stale order snapshots, unpaid/canceled/refunded orders, service-role privileges, optional tracking, monotonic status and refund sequences, and test/live isolation. The automated unit/DOM/SQL tests use fixtures and mocked provider calls.
+
+### Optional provider verification without purchasing postage
+
+`npm run verify:shippo` is an explicitly invoked server-side diagnostic. For a controlled Vercel deployment, set `SHIPPO_VERIFY_ON_BUILD=1` to run it before the normal build; remove the flag or set it to `0` after verification. Normal builds make no Shippo requests. Never export production secrets to run this locally.
+
+The diagnostic authenticates the live token using read-only carrier-list requests, then uses only the test token to obtain Canadian domestic rates, create one sample `PDF_4x6` transaction, refresh its URL, and check the downloaded PDF's page dimensions. It uses named public civic addresses as test fixtures, never PURE's actual ship-from address or customer information. It does not connect to PURE's database, create a PURE order, mark fulfillment, send customer notifications, schedule a pickup, or buy live postage. Test and live credentials stay in the server process; logs contain allowlisted results, not keys, label URLs, account numbers, or provider payloads. No transaction POST is automatically retried.
+
+The script rejects missing test flags or mismatched transaction IDs, rates, and metadata. A failed provider verification fails that deployment before promotion. Its success proves the tested sandbox workflow and live credential authentication, not live billing or every carrier/destination combination. Shippo test rates may differ from real rates. Live purchase acceptance still requires the actual paid order, sender/parcel/customs details, a configured payment method, and the owner's explicit purchase confirmation.
 
 Primary integration references:
 
@@ -50,3 +67,9 @@ Primary integration references:
 - <https://docs.goshippo.com/api-reference/transactions/create-a-shipping-label>
 - <https://docs.goshippo.com/api-reference/customs-declarations/create-a-new-customs-declaration>
 - <https://docs.goshippo.com/api-concepts/apihttp-status-codes>
+
+Additional verification references:
+
+- <https://docs.goshippo.com/guides/testing>
+- <https://docs.goshippo.com/api-reference/carrier-accounts/list-all-carrier-accounts>
+- <https://docs.goshippo.com/shipments/shipping-label-sizes>
