@@ -15,7 +15,7 @@ for(const [source,target] of [['altapure-favicon.svg','favicon.svg'],['altapure-
 fs.mkdirSync(path.join(out,'assets','payment-brands'),{recursive:true});
 fs.cpSync(path.join(process.cwd(),'assets','payment-brands'),path.join(out,'assets','payment-brands'),{recursive:true});
 const iconLinks=`<meta name="altapure-promo-end" content="${promoEnd}">`+'<link rel="icon" type="image/png" sizes="96x96" href="/favicon-bright-96.png"><link rel="shortcut icon" type="image/x-icon" href="/favicon-bright-20261116.ico"><meta name="theme-color" content="#ffffff">';
-const organization='<script type="application/ld+json">{"@context":"https://schema.org","@type":"Organization","name":"AltaPure Labs","url":"https://altapurelabs.com/","logo":"https://altapurelabs.com/brand-logo.png"}</script>';
+const organization='<script type="application/ld+json">{"@context":"https://schema.org","@type":"Organization","name":"PURE Labs","url":"https://altapurelabs.com/","logo":"https://altapurelabs.com/brand-logo.png"}</script>';
 let count=0;
 for(const file of fs.readdirSync(out,{recursive:true}).filter(f=>f.endsWith('.html'))){
   if(path.basename(file).startsWith('admin-'))continue;
@@ -65,4 +65,4 @@ for(const file of fs.readdirSync(out,{recursive:true}).filter(f=>f.endsWith('.ht
   fs.writeFileSync(file,js);
 }
 
-console.log(`Applied AltaPure favicon metadata and shared theme to ${count} public HTML pages.`);
+console.log(`Applied PURE favicon metadata and shared theme to ${count} public HTML pages.`);

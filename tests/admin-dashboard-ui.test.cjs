@@ -100,7 +100,7 @@ test('header utility controls are accessible icon buttons and navigation remains
 });
 
 test('dashboard uses the homepage laboratory background and preserves light-surface contrast tokens', () => {
-  assert.match(css, /url\("\/assets\/hero-lab\.webp"\)/);
+  assert.match(css, /url\("\/assets\/hero-lab-pure\.webp"\)/);
   assert.match(css, /--admin-ink:\s*#101817/);
   assert.match(css, /\.admin-view-section \.order-toggle[\s\S]*?color:#111817/);
 });

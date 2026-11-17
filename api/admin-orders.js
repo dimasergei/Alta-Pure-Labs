@@ -5,6 +5,7 @@ const {
 } = require('node:crypto');
 
 const { clients, checked } = require('../lib/backend');
+const { emailSender } = require('../lib/brand-display');
 
 const {
   unifiedAdminOrders
@@ -555,7 +556,7 @@ async function sendStatusEmail(order, notificationType, eventKey) {
     const email = buildStatusEmail({ order, notificationType });
     const result = await sendEmail({
       to: order.customer_email,
-      from: process.env.ORDER_CONFIRMATION_FROM || 'AltaPure Labs <orders@altapurelabs.com>',
+      from: emailSender(process.env.ORDER_CONFIRMATION_FROM || 'PURE Labs <orders@altapurelabs.com>'),
       replyTo: process.env.ADMIN_ORDER_EMAIL || 'altapurelabs@protonmail.com',
       subject: email.subject, html: email.html, text: email.text
     });

@@ -214,10 +214,10 @@
   function template(lead,type,context){
     const greet=lead.name?('Hi '+lead.name.split(' ')[0]+','):'Hi,';
     const reference=context?'\n\n'+context.trim()+'\n':'';
-    const outro='\n\nBest,\nAltaPure Labs\nadmin@altapurelabs.com';
-    if(type==='followup')return greet+'\n\nFollowing up on my note about a potential AltaPure Labs creator partnership. Would you be open to sharing your media kit or the best contact for collaboration inquiries?'+reference+outro;
+    const outro='\n\nBest,\nPURE Labs\nadmin@altapurelabs.com';
+    if(type==='followup')return greet+'\n\nFollowing up on my note about a potential PURE Labs creator partnership. Would you be open to sharing your media kit or the best contact for collaboration inquiries?'+reference+outro;
     if(type==='reply')return greet+'\n\nThanks for getting back to us. I would be glad to discuss a possible collaboration and learn what placements work best for your audience. Could you share your media kit, audience geography and standard deliverables?'+reference+outro;
-    return greet+'\n\nI’m reaching out from AltaPure Labs. We’re exploring a small number of ongoing creator collaborations, and I’d like to see whether there could be a fit with your content.'+reference+'\n\nAre you currently considering brand partnerships? If so, could you share your media kit or business contact?'+outro;
+    return greet+'\n\nI’m reaching out from PURE Labs. We’re exploring a small number of ongoing creator collaborations, and I’d like to see whether there could be a fit with your content.'+reference+'\n\nAre you currently considering brand partnerships? If so, could you share your media kit or business contact?'+outro;
   }
   function draft(id){
     const lead=find(id);if(!lead)return;
@@ -262,7 +262,7 @@
   function exportCSV(){
     const columns=['name','handle','platform','followers','views','stage','email','followup','url','niche','notes'];
     const csv=[columns.join(','),...data.leads.map(x=>columns.map(f=>cell(x[f])).join(','))].join('\r\n');
-    download('AltaPure-Marketing-Prospects.csv','\ufeff'+csv,'text/csv;charset=utf-8');
+    download('PURE-Marketing-Prospects.csv','\ufeff'+csv,'text/csv;charset=utf-8');
   }
   function parseCSV(raw){
     const rows=[];let row=[],current='',inQuotes=false;
@@ -327,7 +327,7 @@
     if(!events.length)root.append(elem('p','No conversation selected. Sync the Instagram inbox or wait for a new incoming DM.','mk-muted'));
     for(const item of events){
       const el=elem('article',undefined,'mk-entry'),
-        title=elem('strong',item.direction==='incoming'?participantLabel(item.participant_id):'AltaPure'),
+        title=elem('strong',item.direction==='incoming'?participantLabel(item.participant_id):'PURE'),
         date=elem('small',new Date(item.message_at).toLocaleString()),
         body=elem('p',item.body||'[Media message]'),
         id=item.provider_message_id,
@@ -449,7 +449,7 @@
   $('mk-mark-drafted').addEventListener('click',saveDraft);
   $('mk-save-settings').addEventListener('click',()=>{data.style=clean($('mk-style').value,2000);if(save())notice('Brand voice saved for future drafting.');});
   $('mk-export-csv').addEventListener('click',exportCSV);
-  $('mk-export-json').addEventListener('click',()=>download('AltaPure-Marketing-Backup.json',JSON.stringify(data,null,2),'application/json'));
+  $('mk-export-json').addEventListener('click',()=>download('PURE-Marketing-Backup.json',JSON.stringify(data,null,2),'application/json'));
   $('mk-import-button').addEventListener('click',()=>$('mk-import-csv').click());
   $('mk-import-csv').addEventListener('change',async e=>{
     try{importCSV(await fileText(e.target.files?.[0]));}catch(err){notice(err.message,true);}finally{e.target.value='';}

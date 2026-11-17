@@ -15,6 +15,6 @@ test('inactive card and wallets cannot take card data or place orders',()=>{
  assert.match(js,/selected==='bank'&&bank/);
 });
 test('membership and bank option labels and responsive cards',()=>{
- for(const t of ['ALTA GOLD MEMBERSHIP','Monthly','Annual','No thanks','Compare plans','Same-Day Bank Payment','No Fees!','5% off'])assert.ok(js.includes(t),t);
+ for(const t of ['PURE GOLD MEMBERSHIP','Monthly','Annual','No thanks','Compare plans','Same-Day Bank Payment','No Fees!','5% off'])assert.ok(js.includes(t),t);
  assert.match(css,/\.nlx-payment-choice/);assert.match(css,/\.nlx-trust svg/);
 });

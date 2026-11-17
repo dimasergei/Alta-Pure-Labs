@@ -56,8 +56,8 @@ test("every category has a unique card background and every vial uses the origin
     const svg = sandbox.productSvg(product);
     const logos = svg.match(/class="vial-brand"/g) || [];
     assert.equal(logos.length, product.variants.length > 1 ? 2 : 1, product.id);
-    assert.ok(svg.includes('href="assets/brand-label.webp"'));
+    assert.ok(svg.includes('href="assets/pure-brand-label.svg"'));
     assert.ok(sandbox.cardMarkup(product).includes(`data-group="${product.group.replaceAll("&", "&amp;")}"`));
   }
-  assert.ok(readFileSync(resolve(__dirname, "../assets/brand-label.webp")).length > 0);
+  assert.ok(readFileSync(resolve(__dirname, "../assets/pure-brand-label.svg")).length > 0);
 });

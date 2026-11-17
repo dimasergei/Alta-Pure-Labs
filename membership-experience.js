@@ -1,4 +1,4 @@
-/* AltaPure membership comparison. Prices/benefits read from server-aligned config. */
+/* PURE membership comparison. Prices/benefits read from server-aligned config. */
 (()=>{
 'use strict';
 const fullPage=/^\/memberships\/?$/.test(location.pathname),homePage=location.pathname==='/';
@@ -8,7 +8,7 @@ if(!plans||!main)return;
 const target=()=>fullPage?main:main.querySelector('[data-mx-membership-home]');
 const esc=v=>String(v??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const usd=c=>new Intl.NumberFormat('en-US',{style:'currency',currency:'USD'}).format(c/100);
-const displayName=id=>id==='vip'?'ALTA GOLD':id==='elite'?'ALTA PLATINUM':'Member';
+const displayName=id=>id==='vip'?'PURE GOLD':id==='elite'?'PURE PLATINUM':'Member';
 const membershipIcon='<svg class="mx-membership-icon" viewBox="0 0 64 64" fill="none" stroke="currentColor" stroke-width="2.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">'+
  '<path d="M18 42 7 57l11-1 2 7 11-13M46 42l11 15-11-1-2 7-11-13"/>'+
  '<path d="M21 10c4 2 6-3 11-3s7 5 11 3c4-2 5 4 9 6s-1 7 0 12c1 5 4 7 0 11-3 4-7 3-9 7-3 4-7 0-11 0s-8 4-11 0c-2-4-6-3-9-7-4-4-1-6 0-11 1-5-4-10 0-12s5-8 9-6Z"/>'+
@@ -40,7 +40,7 @@ const features=id=>{
 function card(id){
  const free=id==='member',middle=id==='vip',p=plans[id];
  const href=free?'/account/signup':'/checkout?plan='+encodeURIComponent(id)+'&period='+period;
- const tier=middle?'ALTA <span class="mx-metal-gold">GOLD</span>':id==='elite'?'ALTA <span class="mx-metal-platinum">PLATINUM</span>':'Member';
+ const tier=middle?'PURE <span class="mx-metal-gold">GOLD</span>':id==='elite'?'PURE <span class="mx-metal-platinum">PLATINUM</span>':'Member';
  const price=free?'Free':usd(p[period+'_cents'])+'<small>/'+(period==='annual'?'yr':'mo')+'</small>';
  const subtitle=free?'Start earning points on every eligible order.':middle?'More rewards and savings with each order.':'Everything in GOLD, plus premium fulfillment perks.';
  return '<article class="mx-card mx-card-'+id+'">'+(middle?'<span class="mx-popular">MOST POPULAR</span>':'')+
@@ -51,7 +51,7 @@ function card(id){
 function render(){
  const root=target();if(!root)return;
  root.innerHTML='<section class="mx-membership-page'+(fullPage?'':' mx-membership-embedded')+'">'+
- '<header class="mx-hero"><span class="mx-eyebrow">'+membershipIcon+'ALTA PURE LABS MEMBERSHIPS</span><'+(fullPage?'h1':'h2')+'>Save on every order,<br><em>automatically.</em></'+(fullPage?'h1':'h2')+'>'+
+ '<header class="mx-hero"><span class="mx-eyebrow">'+membershipIcon+'PURE Labs MEMBERSHIPS</span><'+(fullPage?'h1':'h2')+'>Save on every order,<br><em>automatically.</em></'+(fullPage?'h1':'h2')+'>'+
  '<p>Choose a prepaid membership to unlock eligible savings, free standard US delivery and extra rewards on future orders after confirmed payment.</p></header>'+
  '<div class="mx-period" role="group" aria-label="Membership billing"><button type="button" data-mx-period="monthly" aria-pressed="'+(period==='monthly')+'">Monthly</button><button type="button" data-mx-period="annual" aria-pressed="'+(period==='annual')+'">Annual <span>Save 20%</span></button></div>'+
  '<div class="mx-card-grid">'+['member','vip','elite'].map(card).join('')+'</div>'+

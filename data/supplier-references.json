@@ -1,6 +1,6 @@
 {
   "reviewed_at": "2026-11-10",
-  "scope": "Supplier reference material only. These reports are not assigned to AltaPure inventory or fulfilled orders. Delivery times are planning estimates, not confirmed shipping quotes.",
+  "scope": "Supplier reference material only. These reports are not assigned to PURE inventory or fulfilled orders. Delivery times are planning estimates, not confirmed shipping quotes.",
   "suppliers": [
     {
       "id": "yourpeptidebrand",

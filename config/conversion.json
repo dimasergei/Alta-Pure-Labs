@@ -17,7 +17,7 @@
       "free_bac_water_3ml": false
     },
     "vip": {
-      "name": "Alta GOLD",
+      "name": "PURE GOLD",
       "monthly_cents": 1999,
       "annual_cents": 19190,
       "points_per_dollar": 5,
@@ -30,7 +30,7 @@
       "free_bac_water_3ml": false
     },
     "elite": {
-      "name": "ALTA PLATINUM",
+      "name": "PURE PLATINUM",
       "monthly_cents": 9999,
       "annual_cents": 95990,
       "points_per_dollar": 10,

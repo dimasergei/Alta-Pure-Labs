@@ -57,7 +57,7 @@
       "title": "Lot-specific COAs and recalls",
       "state": "data_and_integration_required",
       "owner": "Supplier / Quality reviewer",
-      "next": "Supplier reference reports are published separately in /coas. Obtain the authentic report for the purchased/fulfilled lot and complete verified order-lot mapping; examples do not certify AltaPure inventory.",
+      "next": "Supplier reference reports are published separately in /coas. Obtain the authentic report for the purchased/fulfilled lot and complete verified order-lot mapping; examples do not certify PURE inventory.",
       "done_when": "An order identifies its exact lot and authentic report; withdrawal removes public eligibility and identifies affected orders."
     },
     {

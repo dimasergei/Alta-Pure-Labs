@@ -10,7 +10,7 @@ window.ResearchCheckout = (() => {
     } catch { return []; }
   }
   async function render(root, user) {
-    document.title = 'Research Builder Checkout | AltaPure Labs';
+    document.title = 'Research Builder Checkout | PURE Labs';
     const lines = selections();
     root.innerHTML = '<a class="rc-back" href="/research-builder">‹ Back to Research Builder</a><h1>Start your Research Builder</h1><p class="rc-intro">Four compounds, billed monthly at 40% off. BAC Water 3ML and 2-Day Express Shipping are included in every delivery.</p><p class="rc-loading" role="status">Checking current prices…</p>';
     if (lines.length !== 4) {

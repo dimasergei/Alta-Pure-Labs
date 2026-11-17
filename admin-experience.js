@@ -1,4 +1,4 @@
-/* AltaPure admin experience: structural layout, not a theme-only override.
+/* PURE admin experience: structural layout, not a theme-only override.
  * Preserves original element IDs, controls, handlers, and hidden-view semantics.
  */
 (() => {
@@ -16,7 +16,7 @@
     const contents=el('div','ap-auth-content');
     while(login.firstChild)contents.append(login.firstChild);
     const left=el('aside','ap-auth-visual');
-    left.setAttribute('aria-label','AltaPure Labs secure business workspace');
+    left.setAttribute('aria-label','PURE Labs secure business workspace');
     const logo=el('div','ap-auth-symbol');
     const img=document.createElement('img');
     img.src='/favicon-bright-96.png';
@@ -29,11 +29,11 @@
     title.append(el('h2','ap-auth-hero-title','One focused place<br>to run what matters.'));
     title.append(el('p','ap-auth-hero-copy','Orders and creator relationships, organized around the work you do every day.'));
     const bottom=el('div','ap-auth-bottom');
-    bottom.append(el('span','ap-auth-bottom-brand','ALTAPURE <span>LABS</span>'));
+    bottom.append(el('span','ap-auth-bottom-brand','PURE <span>Labs</span>'));
     bottom.append(el('span','ap-auth-bottom-status','ADMIN CONSOLE'));
     left.append(logo,title,bottom);
     const main=el('div','ap-auth-form-panel');
-    main.append(el('div','ap-auth-form-eyebrow','ALTAPURE / ADMINISTRATION'));
+    main.append(el('div','ap-auth-form-eyebrow','PURE / ADMINISTRATION'));
     main.append(contents);
     login.append(left,main);
   }
@@ -57,7 +57,7 @@
     const children=[...root.children].filter(n=>n!==sidebar);
     for(const node of children)body.append(node);
     sidebar.classList.add('ap-workspace-sidebar');
-    sidebar.setAttribute('aria-label','AltaPure administration navigation');
+    sidebar.setAttribute('aria-label','PURE administration navigation');
     root.append(sidebar,body);
     const originalNav=sidebar.querySelector('.admin-nav');
     if(originalNav){
@@ -90,7 +90,7 @@
     const site=document.createElement('a');
     site.href='/';site.className='ap-workspace-store-link';
     site.textContent='View storefront';
-    site.setAttribute('aria-label','Open AltaPure storefront');
+    site.setAttribute('aria-label','Open PURE storefront');
     const toggle=el('button','ap-sidebar-toggle');
     toggle.type='button';
     toggle.setAttribute('aria-label','Open admin navigation');

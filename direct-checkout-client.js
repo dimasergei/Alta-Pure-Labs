@@ -73,7 +73,7 @@
    const params=new URLSearchParams(location.search),plan=params.get('plan'),goods=!['vip','elite'].includes(plan),
     membershipPeriod=goods?null:(params.get('period')||'annual'),bulk=goods&&params.get('bulk')==='1',data=await api(auth),cart=bulk?window.AltaStore.normalizeLines(window.AltaStore.read('ap-bulk-draft-v2',[])):window.AltaStore?.cart||[],researchCart=goods&&!bulk?window.AltaStore?.read?.('ap-research-cart-origin-v1',null):null,
     researchBuilder=Array.isArray(researchCart)&&researchCart.length>0&&cartSignature(cart)===cartSignature(researchCart);
-   root.innerHTML='<div class="dc-topline"><a href="'+(bulk?'/bulk-orders':'/shop')+'">← Continue shopping</a><a href="/account/purchases">My orders</a></div><header class="dc-heading"><h1>Checkout</h1><p class="dc-steps">Your details &nbsp; / &nbsp; Review order &nbsp; / &nbsp; Payment</p></header>'; document.title='Checkout | AltaPure Labs';
+   root.innerHTML='<div class="dc-topline"><a href="'+(bulk?'/bulk-orders':'/shop')+'">← Continue shopping</a><a href="/account/purchases">My orders</a></div><header class="dc-heading"><h1>Checkout</h1><p class="dc-steps">Your details &nbsp; / &nbsp; Review order &nbsp; / &nbsp; Payment</p></header>'; document.title='Checkout | PURE Labs';
    if(goods&&!cart.length){root.append(node('p',bulk?'Your bulk order is empty.':'Your cart is empty.'),link(bulk?'Build a bulk order':'Shop products',bulk?'/bulk-orders':'/shop'));return;}
    if(!goods&&data.membership){root.append(node('p','You already have an active '+data.membership.plan.toUpperCase()+' pass.'),link('View membership','/account/membership'));return;}
    if(!goods&&membershipPeriod!=='annual'){
@@ -223,7 +223,7 @@
   }catch(e){root.replaceChildren(node('p',e.message));}
  }
  async function overview(root,auth,user){return window.ReadinessUI.overview(root,auth,user);
-  try{const [d,o]=await Promise.all([api(auth),api(auth,null,'orders')]);root.replaceChildren(node('h2','Welcome'+(user.user_metadata?.full_name?', '+user.user_metadata.full_name:'')),node('p',user.email),node('p',(d.membership?'Alta '+d.membership.plan.toUpperCase()+' · active until '+new Date(d.membership.expires_at).toLocaleDateString():'Free member account')),node('p',d.balances.points+' points · '+money(d.balances.credit_cents)+' store credit'),link('Points','/account/points'),link('Store credit','/account/store-credit'),link('Membership','/account/membership'),node('h3','Recent checkout orders'));
+  try{const [d,o]=await Promise.all([api(auth),api(auth,null,'orders')]);root.replaceChildren(node('h2','Welcome'+(user.user_metadata?.full_name?', '+user.user_metadata.full_name:'')),node('p',user.email),node('p',(d.membership?'PURE '+d.membership.plan.toUpperCase()+' · active until '+new Date(d.membership.expires_at).toLocaleDateString():'Free member account')),node('p',d.balances.points+' points · '+money(d.balances.credit_cents)+' store credit'),link('Points','/account/points'),link('Store credit','/account/store-credit'),link('Membership','/account/membership'),node('h3','Recent checkout orders'));
    if(!o.invoices.length)root.append(node('p','No checkout orders yet.'));for(const r of o.invoices.slice(0,5))root.append(link((r.checkout_version?'ORD-':'INV-')+r.id.slice(0,8).toUpperCase()+' · '+(r.status==='accepted'?'Awaiting payment':r.status),'/account/purchases?id='+r.id));
    root.append(link('All checkout orders','/account/purchases'),link('Earlier orders','/account/purchases?view=history'));
   }catch(e){root.replaceChildren(node('p',e.message));}

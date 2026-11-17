@@ -3,7 +3,7 @@
  "base_currency":"USD",
  "manual_fulfillment":true,
  "membership_days":365,
- "memberships":{"member":{"name":"Member","price_cents":0,"discount_bps":0},"vip":{"name":"Alta VIP","price_cents":4900,"discount_bps":500},"elite":{"name":"Alta Elite","price_cents":9900,"discount_bps":1000}},
+ "memberships":{"member":{"name":"Member","price_cents":0,"discount_bps":0},"vip":{"name":"PURE VIP","price_cents":4900,"discount_bps":500},"elite":{"name":"PURE Elite","price_cents":9900,"discount_bps":1000}},
  "volume_tiers":[{"quantity":25,"discount_bps":1000},{"quantity":10,"discount_bps":500}],
  "stacking":"highest_single_discount_per_line",
  "renewal":"prepaid_nonrenewing",

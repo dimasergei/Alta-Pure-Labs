@@ -78,7 +78,7 @@ function vial(cx, id, tone, label, size) {
       <rect x="${x + 12}" y="80" width="5" height="132" rx="2" fill="white" opacity=".85"/>
       <rect x="${x + 3}" y="115" width="70" height="86" fill="#fff"/>
       <rect x="${x + 3}" y="172" width="70" height="29" fill="${tone}"/>
-      <image class="vial-brand" href="assets/brand-label.webp" x="${cx - 30}" y="122" width="60" height="16" aria-label="AltaPure Labs" />
+      <image class="vial-brand" href="assets/pure-brand-label.svg" x="${cx - 30}" y="122" width="60" height="16" aria-label="PURE Labs" />
       <text x="${cx}" y="155" text-anchor="middle" font-family="Plus Jakarta Sans, Arial" font-size="8" font-weight="700" fill="#143832">${escapeXml(label)}</text>
       <text x="${cx}" y="190" text-anchor="middle" font-family="Plus Jakarta Sans, Arial" font-size="9" fill="#143832">${escapeXml(size)}</text>
     </g>`;
