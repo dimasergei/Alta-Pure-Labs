@@ -44,6 +44,13 @@ test('live provider status is public and validates limits without leaking the ke
  for(const patch of [{status:'redirected'},{status:'inactive'},{minimum_currency:'EUR'},{minimum_amount:50},{minimum_amount:'unknown'}])await assert.rejects(()=>r.providerStatus('rampnetwork',4900,async()=>response({providers:[{...active,...patch}]})));
  await assert.rejects(()=>r.providerStatus('rampnetwork',4900,async()=>response({providers:[active,active]})));
 });
+test('provider reads allow 15 seconds while payment-link creation keeps its one-shot 18-second bound',async t=>{
+ const timeouts=[];t.mock.method(AbortSignal,'timeout',ms=>{timeouts.push(ms);return new AbortController().signal;});let calls=0;
+ await r.providerStatus('rampnetwork',4900,async()=>{calls++;return response({providers:[active]});});
+ await r.retrieve(attempt,env,async()=>{calls++;return response(data);});
+ await assert.rejects(()=>r.create(attempt,user.email,env,async()=>{calls++;throw Error('uncertain creation response');}));
+ assert.deepEqual(timeouts,[15000,15000,18000]);assert.equal(calls,3,'The uncertain financial POST must not be retried');
+});
 test('creation sends the stored amount/reference once and never follows redirects',async()=>{
  let calls=0;
  const result=await r.create(attempt,user.email,env,async(url,opts)=>{calls++;assert.equal(url,'https://api.rampex.io/api-create-payment-link');assert.equal(opts.headers['X-API-Key'],env.RAMPEX_API_KEY);assert.equal(opts.redirect,'error');

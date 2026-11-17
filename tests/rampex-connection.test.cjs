@@ -17,6 +17,11 @@ test('authenticates only through the fixed read-only key endpoint', async()=>{
  assert.equal(status,'valid');assert.equal(call.url,'https://api.rampex.io/api-validate-key');
  assert.equal(call.options.method,'POST');assert.equal(call.options.redirect,'error');assert.equal(call.options.headers['X-API-Key'],env.RAMPEX_API_KEY);assert.equal(call.options.body,undefined);
 });
+test('read-only authentication has a bounded 20-second timeout and remains one request',async t=>{
+ const timeouts=[];t.mock.method(AbortSignal,'timeout',ms=>{timeouts.push(ms);return new AbortController().signal;});let calls=0;
+ assert.equal(await r.authenticate(env,async(_url,options)=>{calls++;assert.ok(options.signal instanceof AbortSignal);return response(200,{valid:true,merchant_id:'fixture'});}), 'valid');
+ assert.deepEqual(timeouts,[20000]);assert.equal(calls,1);
+});
 test('key failures are sanitized and not represented as valid',async()=>{
  assert.equal(await r.authenticate({},()=>{throw Error('must not fetch')}),'not_configured');
  assert.equal(await r.authenticate(env,async()=>response(401,{valid:false,error:'private'})),'rejected');
@@ -34,6 +39,26 @@ test('readiness is cached and never leaks merchant data or secret values',async(
 test('readiness cannot be turned into collection with an environment flag',async()=>{
  const out=res();await r.handle({method:'GET'},out,params('rampex-readiness'),{env:{...env,RAMPEX_ENABLED:'true'},fetchImpl:async()=>response(200,{valid:true,merchant_id:'fixture'}),now:999999});
  assert.equal(out.code,200);assert.equal(out.data.collection_enabled,false);
+});
+test('readiness diagnoses failures without leaking response bodies or enabling collection',async()=>{
+ const cases=[
+  ['timeout',null,async()=>{throw Object.assign(Error('private timeout detail'),{name:'TimeoutError'});} ],
+  ['network_error',null,async()=>{throw Object.assign(Error('private network detail'),{cause:{code:'private error'}});} ],
+  ['upstream_status',503,async()=>new Response('private upstream response',{status:503})],
+  ['upstream_status',429,async()=>response(429,{private:'rate detail'})],
+  ['invalid_envelope',200,async()=>response(200,{valid:true,business_name:'private merchant detail'})],
+  ['invalid_envelope',200,async()=>new Response('private invalid JSON')],
+  ['response_too_large',200,async()=>new Response('private '.repeat(3000))],
+  ['rejected',401,async()=>response(401,{valid:false,error:'private key detail'})]
+ ];
+ for(const [index,[diagnostic,http,fetchImpl]]of cases.entries()){
+  const config={...env,RAMPEX_ENABLED:'true',RAMPEX_API_KEY:env.RAMPEX_API_KEY+'-'+diagnostic+'-'+index},out=res();
+  const db={rpc:async()=>({data:'rampex-hosted-v1'}),from(table){const q={select(){return q;},eq(){return q;},then(resolve){return Promise.resolve({data:table==='commerce_payment_methods'?[{id:'fixture'}]:[{method_id:'fixture'}]}).then(resolve);}};return q;}};
+  await r.handle({method:'GET'},out,params('rampex-readiness'),{env:config,db,fetchImpl,now:Date.now()+100000});
+  assert.equal(out.code,200);assert.equal(out.data.authentication_diagnostic,diagnostic);assert.equal(out.data.authentication_http_status,http);assert.equal(out.data.authentication,diagnostic==='rejected'?'rejected':'unavailable');assert.equal(out.data.collection_enabled,false);assert.equal(out.data.order_reconciliation_ready,true);
+  for(const privateValue of ['private',config.RAMPEX_API_KEY,secret])assert.equal(JSON.stringify(out.data).includes(privateValue),false);
+ }
+ const empty=await r.readiness({},()=>{throw Error('No request without key');},Date.now()+200000);assert.equal(empty.authentication,'not_configured');assert.equal(empty.authentication_diagnostic,'not_configured');assert.equal(empty.authentication_http_status,null);
 });
 test('raw webhook stream is used without accessing parsed body getter',async()=>{
  const req=Readable.from([Buffer.from('{"event":"ping"}')]);Object.defineProperty(req,'body',{get(){throw Error('parsed getter accessed')}});
