@@ -1,13 +1,12 @@
 const test=require('node:test'),assert=require('node:assert/strict');
 const pricing=require('../lib/conversion-pricing'),partners=require('../lib/partner-program');
-test('membership prices, calendar periods, free shipping and earning rates are explicit',()=>{
- assert.equal(pricing.membershipItem('vip','monthly').unit_price_usd_cents,1999);
- assert.equal(pricing.membershipItem('elite','annual').unit_price_usd_cents,95990);
- assert.throws(()=>pricing.membershipItem('elite','weekly'));
- assert.equal(pricing.shipping(24999,null),1495);assert.equal(pricing.shipping(25000,null),0);
- assert.equal(pricing.shipping(1,{plan:'vip'}),0);
- assert.equal(pricing.earnings(999,null),24);assert.equal(pricing.earnings(999,{plan:'vip'}),49);assert.equal(pricing.earnings(999,{plan:'elite'}),99);
- assert.equal(pricing.earnings(-10,null),0);
+test('memberships are unavailable; shipping and earning have no membership benefit',()=>{
+ for(const plan of ['vip','elite'])for(const period of ['monthly','annual'])assert.throws(()=>pricing.membershipItem(plan,period),e=>e.status===409);
+ for(const membership of [null,{plan:'vip'},{plan:'elite'}]){
+  assert.equal(pricing.shipping(14999,membership),1495);assert.equal(pricing.shipping(15000,membership),0);
+  assert.equal(pricing.earnings(99999,membership),0);
+ }
+ assert.equal(pricing.bankLabel({kind:'bank_transfer'}),'Same-day bank transfer');
 });
 test('referral attribution cookies cannot be forged, expired, future dated or signed with another key',()=>{
  const secret='fixture-secret-with-at-least-32-characters',now=1794400000000,code='AP-ABCDEFGH2345';

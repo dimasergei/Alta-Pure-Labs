@@ -21,10 +21,6 @@
       "destination": "/account.html"
     },
     {
-      "source": "/research-checkout",
-      "destination": "/account.html"
-    },
-    {
       "source": "/account",
       "destination": "/account.html"
     },
@@ -49,20 +45,8 @@
       "destination": "/product/:slug.html"
     },
     {
-      "source": "/research-builder",
-      "destination": "/research-builder.html"
-    },
-    {
       "source": "/bulk-orders",
       "destination": "/bulk-orders.html"
-    },
-    {
-      "source": "/memberships",
-      "destination": "/memberships.html"
-    },
-    {
-      "source": "/offers",
-      "destination": "/offers.html"
     },
     {
       "source": "/coas",
@@ -94,6 +78,71 @@
       "source": "/rewards",
       "destination": "/account/points",
       "permanent": false
+    },
+    {
+      "source": "/research-builder",
+      "destination": "/shop",
+      "permanent": true
+    },
+    {
+      "source": "/research-builder.html",
+      "destination": "/shop",
+      "permanent": true
+    },
+    {
+      "source": "/memberships",
+      "destination": "/shop",
+      "permanent": true
+    },
+    {
+      "source": "/memberships.html",
+      "destination": "/shop",
+      "permanent": true
+    },
+    {
+      "source": "/research-checkout",
+      "destination": "/shop",
+      "permanent": true
+    },
+    {
+      "source": "/research-checkout.html",
+      "destination": "/shop",
+      "permanent": true
+    },
+    {
+      "source": "/offers",
+      "destination": "/shop",
+      "permanent": true
+    },
+    {
+      "source": "/offers.html",
+      "destination": "/shop",
+      "permanent": true
+    },
+    {
+      "source": "/account/membership",
+      "destination": "/account",
+      "permanent": true
+    },
+    {
+      "source": "/account/memberships",
+      "destination": "/account",
+      "permanent": true
+    },
+    {
+      "source": "/account/subscriptions",
+      "destination": "/account",
+      "permanent": true
+    },
+    {
+      "source": "/my-account/membership",
+      "destination": "/account",
+      "permanent": true
+    },
+    {
+      "source": "/my-account/subscriptions",
+      "destination": "/account",
+      "permanent": true
     }
   ]
 }

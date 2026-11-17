@@ -13,16 +13,18 @@
  ];
  const logo=(type,text)=>'<img class="nlx-payment-mark" src="/assets/payment-brands/'+type+'.svg" alt="'+esc(text)+'" width="45" height="30" loading="lazy">';
  const shieldIcon='<svg class="nlx-shield-svg" viewBox="0 0 24 24" width="26" height="26" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><path d="M12 3 20 6v6c0 5-3.4 8.1-8 10-4.6-1.9-8-5-8-10V6l8-3Z"/><path d="m8 12 3 3 5-6"/></svg>';
- const sparkleIcon='<svg data-icon="sparkles" viewBox="0 0 24 24" width="19" height="19" fill="none" stroke="currentColor" stroke-width="1.7" aria-hidden="true"><path d="m12 2 1.8 6.2L20 10l-6.2 1.8L12 18l-1.8-6.2L4 10l6.2-1.8L12 2ZM19 16l.8 2.2L22 19l-2.2.8L19 22l-.8-2.2L16 19l2.2-.8L19 16Z"/></svg>';
  const cartKey=items=>'ap-v2-cart-extras:'+JSON.stringify(items.map(({id,size,qty})=>({id,size,qty})));
  const terms1='I confirm that I am at least 21 years of age and am purchasing these products for research purposes only. These products are not intended for human consumption.';
  const terms2='Purchaser Responsibility & Research Use Only. By purchasing, I accept full responsibility for safe, lawful, research-only use and acknowledge that PURE bears no liability for misuse. I agree to indemnify and hold harmless PURE from any claim. I also attest that I am a qualified researcher and will only use these products for their intended use. I also acknowledge and accept the Research Use Only Agreement and Terms & Conditions.';
- // Keep the original membership-only checkout before overriding goods checkout.
- const membershipCheckout=window.DirectCheckout?.checkout;
+ const standardCheckout=window.DirectCheckout?.checkout;
+ const saveCoupon=value=>['ap-checkout-coupon','ap-cart-coupon'].forEach(key=>value?localStorage.setItem(key,value):localStorage.removeItem(key));
+ const initialCoupon=()=>{const value=(localStorage.getItem('ap-checkout-coupon')||localStorage.getItem('ap-cart-coupon')||'').trim().toUpperCase();const code=value==='BLACKFRIDAY15'?value:'';saveCoupon(code);return code;};
  async function checkout(root,auth,user,options={}){
-  if(new URLSearchParams(location.search).get('bulk')==='1'||['vip','elite'].includes(new URLSearchParams(location.search).get('plan'))){
-   if(!membershipCheckout){root.replaceChildren(el('p','nlx-error','Checkout is unavailable.'));return;}
-   return membershipCheckout(root,auth,user,options);
+  const params=new URLSearchParams(location.search);
+  if(params.has('plan')||params.has('period')){location.replace('/checkout');return;}
+  if(params.get('bulk')==='1'||params.get('balance')==='1'){
+   if(!standardCheckout){root.replaceChildren(el('p','nlx-error','Checkout is unavailable.'));return;}
+   return standardCheckout(root,auth,user,options);
   }
   const cart=window.AltaStore?.cart||[];
   if(!cart.length){root.replaceChildren(el('p','nlx-empty','Your cart is empty.'));return;}
@@ -43,25 +45,23 @@
   const displayAddress=()=>{const a=state.shippingData||formatAddress();return '<b>'+esc(((state.firstName||nameFirst)+' '+(state.lastName||nameLast)).trim())+'</b><span>'+esc(a.line1||'')+'</span>'+(a.line2?'<span>'+esc(a.line2)+'</span>':'')+'<span>'+esc((a.city||'')+(a.region?', '+a.region:'')+(a.postal_code?' '+a.postal_code:''))+'</span>';};
   const state={country:supported.includes(saved.country)?saved.country:'US',
     shipping:'standard',extras:new Set([...(Array.isArray(priorExtras)?priorExtras.filter(x=>isActive(x)):[]),...(isActive('protection')&&(supported.includes(saved.country)?saved.country:'US')==='US'?['protection']:[])]),
-    coupon:localStorage.getItem('ap-checkout-coupon')||'',priorityPeriod:'monthly',shippingProtection:isActive('protection'),shippingData:null,billingData:null,billingSame:true,note:'',smsOptIn:false};
+    coupon:initialCoupon(),shippingProtection:isActive('protection'),shippingData:null,billingData:null,billingSame:true,note:'',smsOptIn:false};
   root.classList.add('nlx-checkout-root');document.title='Checkout | PURE';
   const div=document.createElement('div');div.className='nlx-page';root.replaceChildren(div);
   div.innerHTML='<div class="nlx-heading"><h1>Checkout</h1><p>Complete your order securely</p></div><div class="nlx-columns">'
     +'<section class="nlx-left"><nav class="nlx-progress" aria-label="Checkout steps">'+stepTitles.map((s,i)=>'<button type="button" data-nlx-step="'+i+'"><span>'+(i+1)+'</span>'+s+'</button>').join('')+'</nav><form id="nlx-form" novalidate></form></section>'
     +'<aside class="nlx-right" aria-label="Order summary"><div class="nlx-summary"><div class="nlx-summary-head"><h2>Order Summary</h2><span data-nlx-item-count></span></div>'
     +'<div class="nlx-protect" data-nlx-protection></div><div class="nlx-products" data-nlx-products></div>'
-    +'<div class="nlx-coupon"><input aria-label="Coupon code" name="sidebar_coupon" placeholder="Coupon code" maxlength="40"><button type="button" data-nlx-coupon>APPLY</button></div>'
+    +'<p class="nlx-coupon-help">Use <strong>BLACKFRIDAY15</strong> for 15% off merchandise.</p><div class="nlx-coupon"><input aria-label="Coupon code" name="sidebar_coupon" placeholder="BLACKFRIDAY15" maxlength="40"><button type="button" data-nlx-coupon>APPLY</button><button type="button" data-nlx-remove-coupon hidden>REMOVE</button></div><p data-nlx-coupon-status role="status" aria-live="polite"></p>'
     +'<div class="nlx-total-rows" data-nlx-totals></div><div class="nlx-points" data-nlx-points></div><p class="nlx-quote-note" data-nlx-quote-note></p></div></aside></div>';
   const form=view('#nlx-form',div),detail=view('.nlx-summary',div);
   if(state.country!=='US')state.extras.delete('protection');
   const status=()=>view('[data-nlx-status]',form);
   const note=(message,error=false)=>{const target=status();if(target){target.textContent=message;target.classList.toggle('nlx-error',error);}};
   const snapshotCart=()=>window.AltaStore?.cart||[];
-  const promoActive=()=>Boolean(data.config.promotions?.bogo)&&Date.now()<Date.parse(data.config.promotions.ends_at);
-  // Cart quantity is the number purchased. Quote/order quantity includes the matching BOGO gifts.
   const checkoutItems=()=>snapshotCart().map(({id,size,qty})=>{
-   if(promoActive()&&(!Number.isSafeInteger(qty)||qty<1||qty>50))throw Error('During BOGO, choose 1 to 50 purchased units per item.');
-   return {id,size,qty:promoActive()?qty*2:qty};
+   if(!Number.isSafeInteger(qty)||qty<1||qty>100)throw Error('Choose 1 to 100 units per item.');
+   return {id,size,qty};
   });
   const shippingCountry=()=>form.elements.country?.value||state.shippingData?.country||state.country;
   const selection=()=>({shipping:state.shipping,extras:[...state.extras].sort()});
@@ -93,30 +93,30 @@
     points:0,credit_cents:0,coupon:state.coupon,
     delivery:selection(),checkout_version:data.config.version
   });
-  async function fetchPreview(){
+  async function fetchPreview(coupon=state.coupon){
    const current=++quoteVersion,addr=shippingCountry();
    loadingPreview=true;
    const s=await auth.auth.getSession(),token=s.data?.session?.access_token;
    const res=await fetch('/api/customer-config?checkout=cart',{method:'POST',cache:'no-store',
      headers:{'Content-Type':'application/json',...(token?{Authorization:'Bearer '+token}:{})},
      body:JSON.stringify({items:checkoutItems(),
-       method_id:(stage===2&&form.querySelector('[name=payment_choice]:checked')?.value==='bank'?(data.methods||[]).find(m=>m.kind==='bank_transfer'&&m.active!==false)?.id:null)||method?.id||previewMethod?.id||null,coupon:state.coupon,delivery:selection(),country:addr})});
+       method_id:(stage===2&&form.querySelector('[name=payment_choice]:checked')?.value==='bank'?(data.methods||[]).find(m=>m.kind==='bank_transfer'&&m.active!==false)?.id:null)||method?.id||previewMethod?.id||null,coupon,delivery:selection(),country:addr})});
    const result=await res.json().catch(()=>null);
    if(current!==quoteVersion)return null;
    loadingPreview=false;
-   if(!res.ok)throw Error(result?.error||'Could not calculate final total.');
+   if(!res.ok||!Number.isSafeInteger(result?.total_cents))throw Error(result?.error||'Could not calculate final total.');
+   state.coupon=result.pricing?.coupon_code==='BLACKFRIDAY15'?'BLACKFRIDAY15':'';saveCoupon(state.coupon);
    currentPreview=result;return result;
   }
   function moneyLines(){
    const p=currentPreview;
    const subtotal=p?.subtotal_cents??snapshotCart().reduce((n,x)=>n+Math.round(x.price*100)*x.qty,0);
-   const includedGifts=p?.pricing?.lines?.reduce((n,line)=>n+(line.bogo_free_units||0)*(line.unit_price_cents||0),0)||0;
-   const savings=Math.max(0,(p?.discount_cents??0)-includedGifts);
+   const savings=p?.pricing?.coupon_code==='BLACKFRIDAY15'?Math.max(0,p.discount_cents||0):0;
    const delivery=p?.pricing?.delivery||{};
    const ships=p?.shipping_cents??0,shipBase=delivery.shipping_cents??0;
    const fees=delivery.extras||[];
-   const counts=[['Subtotal',subtotal-includedGifts]];
-   if(savings)counts.push(['Discounts',-savings]);
+   const counts=[['Subtotal',subtotal]];
+   if(savings)counts.push(['BLACKFRIDAY15 (15%)',-savings]);
    counts.push(['Shipping',shipBase]);
    for(const x of fees)counts.push([x.label,x.amount_cents]);
    if(!p&&ships&&!fees.length)counts.push(['Shipping and add-ons',ships]);
@@ -140,26 +140,18 @@
     return '<article><img src="'+esc(photo)+'" alt=""><span><strong>'+esc(item.name)+'</strong><small>'+esc(variant.size)+' · '+usd(Math.round(Number(variant.price)*100))+'</small></span><button type="button" data-nlx-cross-sell-add="'+esc(item.id)+'" data-size="'+esc(variant.size)+'">Add</button></article>';
    }).join('')+'</div></section>';
   }
-  // Only the authoritative quote can certify free promotional units.
-  function quotedFreeUnits(line,preview=currentPreview){
-   const matching=Array.isArray(preview?.pricing?.lines)?preview.pricing.lines.find(row=>
-    row.id===line.id&&row.size===line.size&&row.qty===(promoActive()?line.qty*2:line.qty)):null;
-   const n=matching?.bogo_free_units;
-   return Number.isSafeInteger(n)&&n>0&&n<=line.qty&&['bogo','bogo+coupon_bogo'].includes(matching?.discount_reason)?n:0;
-  }
   function renderSummary(){
    const items=snapshotCart();
    view('[data-nlx-item-count]',detail).textContent=items.reduce((n,x)=>n+x.qty,0)+' items';
    view('[data-nlx-protection]',detail).innerHTML=isActive('protection')&&state.country==='US'?'<div class="nlx-protection-body"><span class="nlx-shield">'+shieldIcon+'</span><div class="nlx-protection-copy"><strong><span class="nlx-protection-lock" aria-hidden="true"><svg viewBox="0 0 24 24"><rect x="5" y="10" width="14" height="11" rx="2"/><path d="M8 10V7a4 4 0 0 1 8 0v3"/></svg></span>Shipping Protection</strong><button type="button" class="nlx-disclosure-trigger" data-testid="protection-disclosure" data-nlx-info="protection" aria-controls="nlx-protection-detail" aria-expanded="false">Read more</button><div class="nlx-disclosure" id="nlx-protection-detail" data-testid="protection-disclosure-panel" data-nlx-panel hidden><p>'+esc(optionsById.protection.description||'Optional protection for eligible shipments.')+'</p><a href="/shipping-protection.html">Full shipping protection policy</a></div></div><span class="nlx-protection-price">'+usd(optionsById.protection.price_cents)+'</span><label class="nlx-mini-check"><input type="checkbox" data-nlx-extra="protection" '+(state.extras.has('protection')?'checked':'')+' aria-label="Shipping protection"></label></div>':'';
    view('[data-nlx-products]',detail).innerHTML='<div class="nlx-product-head"><span>PRODUCT</span><span>SUBTOTAL</span></div>'+items.map(x=>{
     const image=window.AltaStore?.image?.(window.AltaStore.product(x.id),x.size)||'';
-    const free=promoActive()?quotedFreeUnits(x):0;
-    return '<div class="nlx-product"><button type="button" class="nlx-remove" data-nlx-remove="'+esc(x.key)+'" aria-label="Remove '+esc(x.name)+'">×</button><img src="'+esc(image)+'" alt=""><div class="nlx-product-name"><strong>'+esc(x.name)+'</strong><div class="nlx-size-line"><small>'+esc(x.size)+'</small>'+(free?'<span class="nlx-promo-free" data-testid="checkout-bogo-free">+'+free+' FREE</span>':'')+'</div><div class="nlx-qty"><button data-nlx-qty="-1" data-key="'+esc(x.key)+'" aria-label="Decrease quantity">−</button><span>'+x.qty+'</span><button data-nlx-qty="1" data-key="'+esc(x.key)+'" aria-label="Increase quantity">+</button></div></div><strong class="nlx-product-price">'+usd(Math.round(x.price*100)*x.qty)+'</strong></div>';
+    return '<div class="nlx-product"><button type="button" class="nlx-remove" data-nlx-remove="'+esc(x.key)+'" aria-label="Remove '+esc(x.name)+'">×</button><img src="'+esc(image)+'" alt=""><div class="nlx-product-name"><strong>'+esc(x.name)+'</strong><div class="nlx-size-line"><small>'+esc(x.size)+'</small>'+'</div><div class="nlx-qty"><button data-nlx-qty="-1" data-key="'+esc(x.key)+'" aria-label="Decrease quantity">−</button><span>'+x.qty+'</span><button data-nlx-qty="1" data-key="'+esc(x.key)+'" aria-label="Increase quantity">+</button></div></div><strong class="nlx-product-price">'+usd(Math.round(x.price*100)*x.qty)+'</strong></div>';
    }).join('');
-   view('[data-nlx-totals]',detail).innerHTML=moneyLines().map(([n,v])=>'<div class="'+(n==='Total'?'nlx-grand':'')+'"><span>'+esc(n)+'</span><strong>'+usd(v)+'</strong></div>').join('');
-   const points=currentPreview?.earned_points||0;
-   view('[data-nlx-points]',detail).innerHTML='<span class="nlx-points-text">'+sparkleIcon+' Earn <strong>'+Math.max(0,points)+' points</strong> on this order</span><a href="/memberships">Earn more →</a>';
-   view('[data-nlx-quote-note]',detail).textContent='';
+   view('[data-nlx-totals]',detail).innerHTML=currentPreview?moneyLines().map(([n,v])=>'<div class="'+(n==='Total'?'nlx-grand':'')+'"><span>'+esc(n)+'</span><strong>'+usd(v)+'</strong></div>').join(''):'<p role="status">Calculating your order total…</p>';
+   const balances=view('[data-nlx-points]',detail),hasBalance=(data.balances?.points||0)>0||(data.balances?.credit_cents||0)>0;balances.hidden=!hasBalance;balances.innerHTML=hasBalance?'<span>Available: '+Math.max(0,data.balances.points||0)+' points · '+usd(data.balances.credit_cents||0)+' store credit.</span><a href="/checkout?balance=1">Use existing balance →</a>':'';
+   view('[data-nlx-quote-note]',detail).textContent=currentPreview?.shipping_note||'';
+   view('[data-nlx-remove-coupon]',detail).hidden=!state.coupon;
    const coupon=view('[name=sidebar_coupon]',detail);if(document.activeElement!==coupon)coupon.value=state.coupon;
    wireDisclosures(detail);
    all('[data-nlx-extra="protection"]',detail).forEach(x=>x.addEventListener('change',()=>{
@@ -174,18 +166,30 @@
    all('[data-nlx-qty]',detail).forEach(b=>b.addEventListener('click',()=>{
     const before=snapshotCart().find(x=>x.key===b.dataset.key);
     if(!before)return;
-    if(promoActive()&&Number(b.dataset.nlxQty)>0&&before.qty>=50)return;
+    if(Number(b.dataset.nlxQty)>0&&before.qty>=100)return;
     window.AltaStore?.adjustQuantity?.(before.key,Number(b.dataset.nlxQty));
     invalidate();
     renderSummary();refresh();
    }));
   }
-  function invalidate(){if(lastPlaced)return;sessionStorage.setItem(cartKey(snapshotCart()),JSON.stringify([...state.extras]));localStorage.setItem('ap-checkout-coupon',state.coupon);quote=null;currentPreview=null;nmiComponent?.destroy();nmiComponent=null;onePayment=false;orderId=crypto.randomUUID();}
-  const refresh=async()=>{
+  function invalidate(){if(lastPlaced)return;sessionStorage.setItem(cartKey(snapshotCart()),JSON.stringify([...state.extras]));quoteVersion++;loadingPreview=false;view('[data-nlx-place]',form)?.setAttribute('disabled','');quote=null;currentPreview=null;nmiComponent?.destroy();nmiComponent=null;onePayment=false;orderId=crypto.randomUUID();}
+  const refresh=async(candidate=state.coupon,action='refresh')=>{
    if(lastPlaced)return;
+   const apply=view('[data-nlx-coupon]',detail),remove=view('[data-nlx-remove-coupon]',detail),message=view('[data-nlx-coupon-status]',detail);
+   apply.disabled=true;remove.disabled=true;
+   if(action!=='refresh')message.textContent=action==='remove'?'Removing coupon…':'Checking coupon…';
    try{
-    const q=await fetchPreview();if(q){renderSummary();if(stage===2){const btn=view('[data-nlx-place]',form);if(btn){const bank=(data.methods||[]).find(m=>m.kind==='bank_transfer'&&m.active!==false);const selected=form.querySelector('[name=payment_choice]:checked')?.value;btn.disabled=!(selected==='bank'&&bank&&form.elements.ruo?.checked&&form.elements.responsibility?.checked);btn.textContent=selected==='bank'&&bank?'Place bank transfer order · '+usd(q.total_cents):'Payment method awaiting activation · '+usd(q.total_cents);}}}
-   }catch(error){view('[data-nlx-quote-note]',detail).textContent=error.message;note(error.message,true);}
+    const q=await fetchPreview(candidate);
+    if(q){
+     renderSummary();
+     message.textContent=state.coupon?'BLACKFRIDAY15 applied — 15% off merchandise.':action==='remove'?'Coupon removed. Regular prices restored.':'';
+     if(stage===1)all('[name=delivery_speed]',form).forEach(input=>{const price=input.closest('.nlx-delivery-card')?.querySelector('.nlx-delivery-price');if(input.value==='standard'&&price){const standardFree=state.country==='US'&&q.free_shipping_remaining_cents===0;const rate=(data.shipping_zones?.[state.country]||data.shipping_zones?.OTHER||{}).standard;price.textContent=standardFree?'FREE':Number.isSafeInteger(rate)?usd(rate):'Unavailable';}});
+     if(stage===2){const btn=view('[data-nlx-place]',form);if(btn){const bank=(data.methods||[]).find(m=>m.kind==='bank_transfer'&&m.active!==false);const selected=form.querySelector('[name=payment_choice]:checked')?.value;btn.disabled=!(currentPreview&&!loadingPreview&&selected==='bank'&&bank&&form.elements.ruo?.checked&&form.elements.responsibility?.checked);btn.textContent=selected==='bank'&&bank?'Place bank transfer order · '+usd(q.total_cents):'Payment method awaiting activation · '+usd(q.total_cents);}}
+    }
+   }catch(error){
+    loadingPreview=false;
+    if(action!=='refresh'){await refresh();message.textContent=error.message;}else{view('[data-nlx-quote-note]',detail).textContent=error.message;note(error.message,true);}
+   }finally{apply.disabled=false;remove.disabled=false;}
   };
   function schedule(){if(lastPlaced)return;invalidate();clearTimeout(quoteTimer);quoteTimer=setTimeout(refresh,180);}
   function showStep(i){if(lastPlaced){note('This order is already saved. Check its payment status before making a new order.',true);return;}stage=i;all('[data-nlx-step]',div).forEach((b,n)=>{
@@ -224,7 +228,7 @@
    const rates=data.shipping_zones||{};
    const country=shippingCountry();const map=rates[country]||rates.OTHER||{};
    const options=['standard','express','next_day'].map((id,i)=>{const x=optionsById[id];if(!x)return'';
-    const amount=map[id],eligible=x.enabled&&Number.isSafeInteger(amount);
+    const regularAmount=map[id],eligible=x.enabled&&Number.isSafeInteger(regularAmount);const amount=id==='standard'&&country==='US'&&currentPreview?.free_shipping_remaining_cents===0?0:regularAmount;
     return '<label class="nlx-delivery-card '+(state.shipping===id?'nlx-chosen':'')+(eligible?'':' nlx-disabled')+'"><input type="radio" name="delivery_speed" value="'+id+'" '+(state.shipping===id?'checked ':'')+(eligible?'':'disabled')+'><span class="nlx-delivery-desc"><strong>'+esc(x.label)+'</strong><small>'+esc(arrivalLabel(id))+'</small></span><span class="nlx-delivery-price">'+(eligible?usd(amount):'Unavailable')+'</span></label>';
    }).join('');
    const extra=['priority'].map(id=>{const x=optionsById[id];if(!x)return'';
@@ -232,39 +236,6 @@
     return '<div class="nlx-extra-box nlx-extra-'+id+'"><div><span class="nlx-extra-icon">◷</span><div><strong>'+esc(x.label)+'</strong><button type="button" class="nlx-disclosure-trigger" data-nlx-info="'+id+'" data-testid="priority-disclosure" aria-expanded="false" aria-controls="'+target+'">Read more</button><div id="'+target+'" data-testid="priority-disclosure-panel" data-nlx-panel class="nlx-disclosure" hidden><p>'+esc(x.description)+'</p><p>Optional service; pricing is included only when selected in the final quote.</p></div></div></div><span>'+usd(x.price_cents)+'</span><label class="nlx-extra-check"><input type="checkbox" aria-label="'+esc(x.label)+'" data-nlx-extra="'+id+'" '+(state.extras.has(id)?'checked':'')+(x.enabled?'':' disabled')+'></label></div>';
    }).join('');
    return '<h2>Delivery speed</h2><div class="nlx-delivery-list">'+options+'</div><div class="nlx-addons">'+extra+'</div>';
-  }
-  const plan=data.terms?.conversion?.plans?.vip;
-  function offerBox(){
-   if(!plan||data.membership)return '';
-   const monthly=usd(plan.monthly_cents),annual=usd(plan.annual_cents),period=state.priorityPeriod;
-   return '<section class="nlx-member-offer"><div><span class="nlx-optional">OPTIONAL</span><strong class="nlx-member-label">PURE GOLD MEMBERSHIP</strong></div>'
-    +'<h3 data-nlx-member-savings>Unlock free standard US shipping + 5× points</h3>'
-    +'<p>5% member pricing on eligible products · free standard US shipping · 5 points per eligible $1. BOGO or member pricing, whichever is better.</p>'
-    +'<div class="nlx-member-types"><button type="button" data-nlx-plan="monthly" class="'+(period==='monthly'?'selected':'')+'"><strong>Monthly</strong><small>'+monthly+'/mo</small></button><button type="button" data-nlx-plan="annual" class="'+(period==='annual'?'selected':'')+'"><strong>Annual <span class="nlx-annual-badge">−20%</span></strong><small>'+annual+'/yr</small></button></div>'
-    +'<div class="nlx-member-actions"><button type="button" data-nlx-skip>No thanks</button><a data-testid="membership-activate" class="nlx-member-activate" href="/checkout?plan=vip&amp;period='+period+'">Activate · '+(period==='annual'?annual+'/yr':monthly+'/mo')+' →</a></div>'
-    +'<small>Purchased separately; your existing cart stays saved. Benefits apply after payment is confirmed. Savings estimates exclude the membership fee.</small><a class="nlx-compare" href="/memberships">Compare plans</a></section>';
-  }
-  let memberEstimateGeneration=0;
-  async function refreshMemberSavings(){
-   const offer=view('.nlx-member-offer',form);
-   if(!offer||data.membership)return;
-   const current=++memberEstimateGeneration;
-   const label=view('[data-nlx-member-savings]',offer);
-   try{
-    const session=await auth.auth.getSession(),token=session?.data?.session?.access_token;
-    if(!token)return;
-    const active=Date.now()<Date.parse(data.config?.promotions?.ends_at)&&data.config?.promotions?.bogo===true;
-    const selected=(data.methods||[]).find(m=>m.kind==='bank_transfer'&&m.active!==false)||data.methods?.[0];
-    const body={items:cart.map(x=>({id:x.id,size:x.size,qty:x.qty*(active?2:1)})),country:state.country,method_id:selected?.id||null,coupon:state.coupon||'',delivery:{shipping:state.shipping,extras:[...state.extras]}};
-    const r=await fetch('/api/customer-config?checkout=cart',{method:'POST',credentials:'same-origin',headers:{'Content-Type':'application/json',Authorization:'Bearer '+token},body:JSON.stringify(body)});
-    if(!r.ok)return;
-    const q=await r.json();
-    if(current!==memberEstimateGeneration||!label.isConnected)return;
-    if(Number.isSafeInteger(q.membership_savings_cents)&&q.membership_savings_cents>0)
-      label.innerHTML='Estimated savings after activation: <em>'+usd(q.membership_savings_cents)+'</em>';
-    else if(Number.isSafeInteger(q.membership_savings_cents))
-      label.textContent='5× points + free standard US shipping on eligible orders';
-   }catch{ /* Membership activation remains available if preview service is unavailable. */ }
   }
   function paymentLayout(){
    const amount=usd(currentPreview?.total_cents||0);
@@ -278,7 +249,7 @@
      +'<div class="nlx-divider"><span>OR PAY ANOTHER WAY</span></div>'
      +'<div class="nlx-payment-rows"><div class="nlx-payment-choice"><label class="nlx-payment-option"><input type="radio" name="payment_choice" value="card" checked><span>Credit/Debit Card</span><span class="nlx-card-logos"><img class="nlx-card-brand" src="/assets/payment-brands/visa-blue.svg" alt="Visa" width="62" height="38"><img class="nlx-card-brand" src="/assets/payment-brands/amex-blue.svg" alt="American Express" width="62" height="38"></span></label><div class="nlx-payment-choice-body"><p>Pay with your credit card</p><label>Card number *<input disabled autocomplete="off" placeholder="•••• •••• •••• ••••" aria-label="Card number unavailable until processor activation"></label><div class="nlx-two"><label>Expiry (MM/YY) *<input disabled placeholder="MM / YY"></label><label>Card code *<input disabled placeholder="CVC"></label></div><small>Card payments are not available until processor activation.</small></div></div>'
      +'<div class="nlx-payment-choice"><label class="nlx-payment-option"><input type="radio" name="payment_choice" value="other_card"><span>Credit/Debit Cards (All Types)</span><span class="nlx-phone-icon"><svg class="nlx-phone-symbol" viewBox="0 0 24 24" width="23" height="23" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="6" y="2" width="12" height="20" rx="2"/><path d="M10 18h4"/></svg></span><b class="nlx-fee-pill">No Fees!</b></label><div class="nlx-payment-choice-body" hidden><p>Bank/Card Statement Information: This transaction will appear as from *ByteNFT.</p><small>This payment method is not active.</small></div></div>'
-     +'<div class="nlx-payment-choice"><label class="nlx-payment-option"><input type="radio" name="payment_choice" value="bank"><span>Same-Day Bank Payment</span><span class="nlx-bank-icon"><svg class="nlx-bank-symbol" viewBox="0 0 24 24" width="25" height="25" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m2 10 10-7 10 7M4 10h16M5 10v10M10 10v10M14 10v10M19 10v10M2 21h20"/></svg></span><b class="nlx-fee-pill">5% off</b></label><div class="nlx-payment-choice-body" hidden><p>Place your order by bank transfer. Receiving instructions follow submission; the bank logos and link-account preview below are illustrative and do not open a live bank login.</p><div class="nlx-bank-logos"><label class="nlx-bank-link"><span class="nlx-bank-link-dot" role="radio" aria-checked="true" aria-disabled="true"></span><span>Link a new bank account</span></label><img class="nlx-bank-logo nlx-chase-mark" alt="Chase" src="/assets/payment-brands/chase-reference.png" width="45" height="45"><img class="nlx-bank-logo nlx-bofa-mark" alt="Bank of America" src="/assets/payment-brands/bofa-reference.png" width="45" height="45"><img class="nlx-bank-logo nlx-wf-mark" alt="Wells Fargo" src="/assets/payment-brands/wf-reference.png" width="45" height="45"><span class="nlx-bank-logo nlx-more-mark">&amp; more</span></div></div></div></div>'
+     +'<div class="nlx-payment-choice"><label class="nlx-payment-option"><input type="radio" name="payment_choice" value="bank"><span>Same-Day Bank Payment</span><span class="nlx-bank-icon"><svg class="nlx-bank-symbol" viewBox="0 0 24 24" width="25" height="25" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m2 10 10-7 10 7M4 10h16M5 10v10M10 10v10M14 10v10M19 10v10M2 21h20"/></svg></span></label><div class="nlx-payment-choice-body" hidden><p>Place your order by bank transfer. Receiving instructions follow submission; the bank logos and link-account preview below are illustrative and do not open a live bank login.</p><div class="nlx-bank-logos"><label class="nlx-bank-link"><span class="nlx-bank-link-dot" role="radio" aria-checked="true" aria-disabled="true"></span><span>Link a new bank account</span></label><img class="nlx-bank-logo nlx-chase-mark" alt="Chase" src="/assets/payment-brands/chase-reference.png" width="45" height="45"><img class="nlx-bank-logo nlx-bofa-mark" alt="Bank of America" src="/assets/payment-brands/bofa-reference.png" width="45" height="45"><img class="nlx-bank-logo nlx-wf-mark" alt="Wells Fargo" src="/assets/payment-brands/wf-reference.png" width="45" height="45"><span class="nlx-bank-logo nlx-more-mark">&amp; more</span></div></div></div></div>'
      +'<div class="nlx-inline-nmi" data-nlx-nmi hidden></div>'
      +'<div class="nlx-we-accept"><span>WE ACCEPT</span><div>'+payCards.map(([type,label])=>logo(type,label)).join('')+'</div><small>Card and wallet methods shown for reference; not yet activated.</small></div>'
      +'<div class="nlx-terms"><label><input type="checkbox" name="ruo" required><span>'+esc(terms1)+'</span></label><label><input type="checkbox" name="responsibility" required><span>'+esc(terms2)+'</span></label></div>'
@@ -323,14 +294,12 @@
     }));
     view('[data-nlx-next]',form).addEventListener('click',goNext);
    }else if(stage===1){
-    form.innerHTML='<div class="nlx-step-delivery"><div class="nlx-address-confirm"><div class="nlx-address-lines">'+displayAddress()+'<span>'+esc(state.phone||'')+'</span><span>'+esc(user.email)+'</span></div><button type="button" data-nlx-back-edit>Edit</button></div>'+deliveryCards()+offerBox()
+    form.innerHTML='<div class="nlx-step-delivery"><div class="nlx-address-confirm"><div class="nlx-address-lines">'+displayAddress()+'<span>'+esc(state.phone||'')+'</span><span>'+esc(user.email)+'</span></div><button type="button" data-nlx-back-edit>Edit</button></div>'+deliveryCards()
       +'<details class="nlx-order-note"><summary>Add order notes (optional)</summary><textarea name="note" rows="3" maxlength="1000" placeholder="Special handling instructions">'+esc(state.note)+'</textarea></details>'
       +'<p class="nlx-shipping-terms">Carrier eligibility and customs/import requirements depend on destination. International duties, taxes and restrictions are not included in the displayed shipping fee.</p>'
       +'<div class="nlx-next"><button type="button" class="nlx-primary" data-nlx-next>Continue to payment</button></div>'+trustMarkup+'</div>';
     all('[name=delivery_speed]',form).forEach(x=>x.addEventListener('change',()=>{state.shipping=x.value;schedule();renderStep()}));
     all('[data-nlx-extra]',form).forEach(x=>x.addEventListener('change',()=>{x.checked?state.extras.add(x.dataset.nlxExtra):state.extras.delete(x.dataset.nlxExtra);schedule();renderSummary()}));
-    all('[data-nlx-plan]',form).forEach(x=>x.addEventListener('click',()=>{state.priorityPeriod=x.dataset.nlxPlan;renderStep()}));
-    view('[data-nlx-skip]',form)?.addEventListener('click',()=>view('.nlx-member-offer',form)?.remove());
     view('[data-nlx-back-edit]',form).addEventListener('click',()=>{state.note=form.elements.note?.value||'';showStep(0);});
     view('[data-nlx-next]',form).addEventListener('click',goNext);
     wireDisclosures(form);
@@ -351,12 +320,12 @@
       const selected=form.querySelector('[name=payment_choice]:checked')?.value;
       all('.nlx-payment-choice',form).forEach(row=>{row.querySelector('.nlx-payment-choice-body').hidden=row.querySelector('[name=payment_choice]').value!==selected;row.classList.toggle('nlx-selected',row.querySelector('[name=payment_choice]').value===selected);});
       const btn=view('[data-nlx-place]',form);
-      btn.disabled=!(selected==='bank'&&bank&&form.elements.ruo?.checked&&form.elements.responsibility?.checked);
+      btn.disabled=!(currentPreview&&!loadingPreview&&selected==='bank'&&bank&&form.elements.ruo?.checked&&form.elements.responsibility?.checked);
       btn.textContent=selected==='bank'&&bank?'Place bank transfer order · '+usd(currentPreview?.total_cents||0):'Payment method awaiting activation · '+usd(currentPreview?.total_cents||0);
     };
     all('[name=payment_choice], [name=ruo], [name=responsibility]',form).forEach(x=>x.addEventListener('change',()=>{choosePayment();if(x.name==='payment_choice')refresh();}));
     view('[data-nlx-place]',form).addEventListener('click',async()=>{
-      if(!bank||form.querySelector('[name=payment_choice]:checked')?.value!=='bank'||!form.elements.ruo?.checked||!form.elements.responsibility?.checked)return;
+      if(!currentPreview||loadingPreview||!bank||form.querySelector('[name=payment_choice]:checked')?.value!=='bank'||!form.elements.ruo?.checked||!form.elements.responsibility?.checked)return;
       const button=view('[data-nlx-place]',form);button.disabled=true;
       try{
         const body={...draft(true),method_id:bank.id,research_use:true,consent:true};
@@ -371,7 +340,6 @@
     choosePayment();
    }
    renderSummary();
-   if(stage===1)void refreshMemberSavings();
   }
   async function preparePayment(){
    const target=view('[data-nlx-nmi]',form);
@@ -420,9 +388,10 @@
     note('Pay securely using the card form or an available digital wallet.');
    }catch(err){note(err.message,true);}
   }
-  view('[data-nlx-coupon]',detail).addEventListener('click',()=>{
-   state.coupon=view('[name=sidebar_coupon]',detail).value.trim().toUpperCase();schedule();
-  });
+  const changeCoupon=(candidate,action)=>{if(lastPlaced)return;clearTimeout(quoteTimer);invalidate();renderSummary();void refresh(candidate,action);};
+  view('[data-nlx-coupon]',detail).addEventListener('click',()=>changeCoupon(view('[name=sidebar_coupon]',detail).value.trim().toUpperCase(),'apply'));
+  view('[data-nlx-remove-coupon]',detail).addEventListener('click',()=>changeCoupon('','remove'));
+  view('[name=sidebar_coupon]',detail).addEventListener('keydown',event=>{if(event.key==='Enter'){event.preventDefault();view('[data-nlx-coupon]',detail).click();}});
   all('[data-nlx-step]',div).forEach(b=>b.addEventListener('click',()=>{const s=Number(b.dataset.nlxStep);if(s<=stage)showStep(s);}));
   renderStep();refresh();
  }

@@ -2,6 +2,9 @@
  'use strict';
  const money=n=>new Intl.NumberFormat('en-US',{style:'currency',currency:'USD'}).format((Number(n)||0)/100);
  const html=v=>String(v??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+ const couponKeys=['ap-checkout-coupon','ap-cart-coupon'];
+ const saveCoupon=value=>couponKeys.forEach(key=>value?localStorage.setItem(key,value):localStorage.removeItem(key));
+ const storedCoupon=()=>{const code=(localStorage.getItem(couponKeys[0])||localStorage.getItem(couponKeys[1])||'').trim().toUpperCase();const valid=code==='BLACKFRIDAY15'?code:'';saveCoupon(valid);return valid;};
  let seq=0,config=null;
  const methods=async()=>{
   if(config)return config;
@@ -9,33 +12,29 @@
   if(!r.ok)throw Error('Checkout details are not available.');
   return config=await r.json();
  };
- // One cart's elective services cannot silently be copied into an unrelated order.
  const cartKey=items=>'ap-v2-cart-extras:'+JSON.stringify(items.map(({id,size,qty})=>({id,size,qty})));
- function extras(items){const home=localStorage.getItem('ap-shipping-country')||'US';try{const v=JSON.parse(sessionStorage.getItem(cartKey(items))||'null');return Array.isArray(v)?v:home==='US'?['protection']:[];}catch{return home==='US'?['protection']:[];}}
-
- const before=window.AltaCartNmi?.offer;
+ function extras(items){const country=localStorage.getItem('ap-shipping-country')||'US';try{const v=JSON.parse(sessionStorage.getItem(cartKey(items))||'null');return Array.isArray(v)?v:country==='US'?['protection']:[];}catch{return country==='US'?['protection']:[];}}
  async function offer(root){
   if(!root?.isConnected)return;
   const items=window.AltaStore?.cart||[];
   if(!items.length)return;
   const selected=new Set(extras(items)),catalog=window.AltaStore?.catalog||[];
-  const picks=catalog.filter(p=>!items.some(x=>x.id===p.id)).slice(0,5);
-  let subtotal=items.reduce((n,x)=>n+Math.round(x.price*100)*x.qty,0);
-  const unlock=target=>money(Math.max(0,target-subtotal));
+  const picks=catalog.filter(p=>!items.some(x=>x.id===p.id)&&p.variants?.length).slice(0,5);
+  let appliedCoupon=storedCoupon(),hasQuote=false;
   root.innerHTML='<div class="nlc-scrollable-items cart__body" data-testid="cart-product-scroll">'
-   +'<div class="nlc-unlock"><p data-nlc-unlock-copy>Add <strong>'+unlock(25000)+'</strong> more to unlock <strong>Free Priority Shipping</strong></p><div class="nlc-progress" role="progressbar" aria-label="Shipping rewards progress" aria-valuemin="0" aria-valuemax="299" aria-valuenow="'+Math.min(299,Math.floor(subtotal/100))+'"><span class="nlc-progress-fill" style="width:'+Math.min(100,subtotal/29900*100)+'%"></span><span class="nlc-gift nlc-gift-one" tabindex="0" aria-label="Free Priority Shipping at $250"><svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="8" width="18" height="4" rx="1"/><path d="M5 12v9h14v-9M12 8v13M12 8C6 8 6 2 9 2c2 0 3 3 3 6zm0 0c6 0 6-6 3-6-2 0-3 3-3 6z"/></svg><span class="nlc-gift-tip">Free Priority Shipping — $250.00</span></span><span class="nlc-gift nlc-gift-two" tabindex="0" aria-label="Free BAC Water and Free Shipping at $299"><svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="8" width="18" height="4" rx="1"/><path d="M5 12v9h14v-9M12 8v13M12 8C6 8 6 2 9 2c2 0 3 3 3 6zm0 0c6 0 6-6 3-6-2 0-3 3-3 6z"/></svg><span class="nlc-gift-tip">Free BAC Water + Free Shipping — $299.00</span></span></div></div>'
+   +'<div class="nlc-unlock"><p data-nlc-unlock-copy>Free standard US shipping on orders of <strong>$150</strong> after discounts.</p><div class="nlc-progress" role="progressbar" aria-label="Free standard US shipping progress" aria-valuemin="0" aria-valuemax="150" aria-valuenow="0"><span class="nlc-progress-fill" style="width:0%"></span></div></div>'
    +'<section class="nlc-cart-lines">'+items.map(x=>
     '<div class="nlc-line"><img src="'+html(window.AltaStore.image(window.AltaStore.product(x.id),x.size))+'" alt="">'
     +'<div class="nlc-name"><div class="nlc-product-title"><strong>'+html(x.name)+'</strong><span class="nlc-size">– '+html(x.size)+'</span></div>'
-    +'<div class="nlc-product-actions"><span hidden data-testid="cart-bogo-free" data-nlc-bogo-line></span><div class="nlc-quantity-row"><div class="ap-quantity"><button type="button" data-action="cart-quantity" data-key="'+html(x.key)+'" data-step="-1" aria-label="Decrease '+html(x.name)+' quantity">−</button>'
+    +'<div class="nlc-product-actions"><div class="nlc-quantity-row"><div class="ap-quantity"><button type="button" data-action="cart-quantity" data-key="'+html(x.key)+'" data-step="-1" aria-label="Decrease '+html(x.name)+' quantity">−</button>'
     +'<input value="'+x.qty+'" readonly aria-label="Quantity"><button type="button" data-action="cart-quantity" data-key="'+html(x.key)+'" data-step="1" aria-label="Increase '+html(x.name)+' quantity">+</button></div></div>'
     +'</div></div><div class="nlc-price"><strong>'+money(Math.round(x.price*100)*x.qty)+'</strong><button type="button" data-action="cart-remove" data-key="'+html(x.key)+'" aria-label="Remove item">×</button></div></div>'
    ).join('')+'</section>'
    +(picks.length?'<div class="nlc-recs"><h3>RECOMMENDED ADD-ONS</h3><div class="nlc-rec-track">'+picks.map(p=>{
     const v=p.variants[0];
-    return '<div class="nlc-rec"><img src="'+html(window.AltaStore.image(p,v.size))+'" alt=""><div><strong>'+html(p.name)+'</strong><div class="nlc-rec-prices"><s>'+money(Math.round(v.price*100))+'</s> <b>'+money(Math.round(v.price*100)-Math.floor(v.price*10))+'</b></div><small>Save 10% · code BOGO</small><button data-action="add" data-id="'+html(p.id)+'" data-size="'+html(v.size)+'" type="button" aria-label="Add '+html(p.name)+' '+html(v.size)+' to cart">ADD MORE</button></div></div>';
+    return '<div class="nlc-rec"><img src="'+html(window.AltaStore.image(p,v.size))+'" alt=""><div><strong>'+html(p.name)+'</strong><div class="nlc-rec-prices"><b>'+money(Math.round(v.price*100))+'</b></div><button data-action="add" data-id="'+html(p.id)+'" data-size="'+html(v.size)+'" type="button" aria-label="Add '+html(p.name)+' '+html(v.size)+' to cart">ADD MORE</button></div></div>';
    }).join('')+'</div></div>':'')
-   +'</div><div class="nlc-cart-checkout cart__checkout" data-testid="cart-fixed-footer"><details class="nlc-coupon"><summary>Coupon code</summary><div><input type="text" name="nlc_coupon" placeholder="Coupon code" maxlength="40" value="'+html(localStorage.getItem('ap-checkout-coupon')||'')+'"><button type="button" data-nlc-apply>APPLY</button></div></details>'
+   +'</div><div class="nlc-cart-checkout cart__checkout" data-testid="cart-fixed-footer"><details class="nlc-coupon"'+(appliedCoupon?' open':'')+'><summary>Coupon code</summary><p>Use <strong>BLACKFRIDAY15</strong> for 15% off merchandise.</p><div><input type="text" name="nlc_coupon" aria-label="Coupon code" placeholder="BLACKFRIDAY15" maxlength="40" value="'+html(appliedCoupon)+'"><button type="button" data-nlc-apply>APPLY</button><button type="button" data-nlc-remove-coupon hidden>REMOVE</button></div><p data-nlc-coupon-status role="status" aria-live="polite"></p></details>'
    +'<p class="nlc-delivery-est"><svg viewBox="0 0 24 24" width="17" height="17" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><path d="M3 6h11v11H3zM14 10h4l3 4v3h-7z"/><circle cx="7" cy="18" r="2"/><circle cx="18" cy="18" r="2"/></svg> <strong>Estimated delivery:</strong> <span data-nlc-estimate></span></p>'
    +'<div class="nlc-cart-totals" data-nlc-cart-totals><p role="status">Calculating your order total…</p></div>'
    +'<a class="nlc-proceed" href="/checkout">Proceed to Checkout</a>'
@@ -44,69 +43,63 @@
    +'<span class="nlc-wallet-or">or</span>'
    +'<button type="button" disabled aria-label="Google Pay pending activation"><span class="nlc-wallet-lockup"><img class="nlc-wallet-logo nlc-google-mark" src="/assets/payment-brands/google-g-clean.svg" width="20" height="20" alt="" aria-hidden="true"><span class="nlc-google-pay-word">Pay</span></span></button></div>'
    +'<p>By paying, you confirm you are 21+, buying for research use only, and accept the <a href="/research-use-policy.html">RUO Agreement</a> and <a href="/commercial-terms.html">Terms</a>.</p></div></div>';
-  const track=root.querySelector('[data-nlc-cart-totals]');
-  const redraw=async()=>{
+  const track=root.querySelector('[data-nlc-cart-totals]'),input=root.querySelector('[name=nlc_coupon]'),apply=root.querySelector('[data-nlc-apply]'),remove=root.querySelector('[data-nlc-remove-coupon]'),couponStatus=root.querySelector('[data-nlc-coupon-status]');
+  const redraw=async(candidate=appliedCoupon,action='refresh')=>{
    const id=++seq;
+   apply.disabled=true;remove.disabled=true;
+   couponStatus.textContent=action==='remove'?'Removing coupon…':candidate?'Checking coupon…':'';
+   root.querySelectorAll('[data-nlc-wallets] button').forEach(button=>button.disabled=true);
    try{
     const settings=await methods();
     if(!root.isConnected||id!==seq)return;
     const method=settings.methods?.find(m=>m.kind!=='bank_transfer')||settings.methods?.[0];
-    const wallet=settings.nmi?.ready===true&&settings.methods?.some(m=>m.id===settings.nmi.method_id&&m.native_provider==='nmi')?settings.nmi:null;
-    if(wallet){
-     root.querySelectorAll('[data-nlc-wallets] button').forEach((b,i)=>{
-      const authorized=i===0?wallet.wallets?.apple===true:wallet.wallets?.google===true;
-      b.disabled=!authorized;if(authorized)b.onclick=()=>window.AltaCartNmi?.open?.();
-     });
-    }
     const country=localStorage.getItem('ap-shipping-country')||'US';
     const protection=(settings.delivery_options||[]).find(x=>x.id==='protection'&&x.enabled===true);
-    if(protection&&country==='US')selected.add('protection');else selected.delete('protection');
+    if(!protection||country!=='US')selected.delete('protection');
     sessionStorage.setItem(cartKey(items),JSON.stringify([...selected]));
-    const request=await fetch('/api/customer-config?checkout=cart',{method:'POST',
+    const request=await fetch('/api/customer-config?checkout=cart',{method:'POST',cache:'no-store',
       headers:{'Content-Type':'application/json'},
-      body:JSON.stringify({items:(window.AltaStore.cart||[]).map(({id,size,qty})=>({id,size,qty:Date.now()<Date.parse(settings.config.promotions.ends_at)&&settings.config.promotions.bogo?qty*2:qty})),
-       method_id:method?.id||null,coupon:localStorage.getItem('ap-checkout-coupon')||'',
-       country,delivery:{shipping:'standard',extras:[...selected].sort()}})});
-    const data=await request.json();
-    if(!request.ok||id!==seq||!root.isConnected)return;
-    // An explicit server line entitlement is required before showing a BOGO badge.
-    const quotedLines=Array.isArray(data.pricing?.lines)?data.pricing.lines:[];
-    root.querySelectorAll('[data-nlc-bogo-line]').forEach((node,index)=>{
-     const item=items[index],confirmed=quotedLines.find(line=>line.id===item.id&&line.size===item.size&&line.qty===(Date.now()<Date.parse(settings.config.promotions.ends_at)&&settings.config.promotions.bogo?item.qty*2:item.qty));
-     const n=confirmed?.bogo_free_units;
-     const free=Number.isSafeInteger(n)&&n>0&&n<=item.qty&&['bogo','bogo+coupon_bogo'].includes(confirmed?.discount_reason)?n:0;
-     // The badge advertises the active buy-one-get-one offer even when the
-     // shopper has only one unit. Only the quote can confirm earned free units.
-     const offerActive=Date.now()<Date.parse('2026-11-26T23:59:59-06:00');
-     const displayFree=offerActive?free:0;
-     node.hidden=!displayFree;node.textContent=displayFree?'+'+displayFree+' FREE':'';
-    });
+      body:JSON.stringify({items:(window.AltaStore.cart||[]).map(({id,size,qty})=>({id,size,qty})),
+       method_id:method?.id||null,coupon:candidate,country,delivery:{shipping:'standard',extras:[...selected].sort()}})});
+    const data=await request.json().catch(()=>null);
+    if(id!==seq||!root.isConnected)return;
+    if(!request.ok||!Number.isSafeInteger(data?.total_cents))throw Error(data?.error||'Could not calculate your order total.');
+    appliedCoupon=data.pricing?.coupon_code==='BLACKFRIDAY15'?'BLACKFRIDAY15':'';
+    saveCoupon(appliedCoupon);input.value=appliedCoupon;remove.hidden=!appliedCoupon;
+    couponStatus.textContent=appliedCoupon?'BLACKFRIDAY15 applied — 15% off merchandise.':action==='remove'?'Coupon removed. Regular prices restored.':'';
     const shipping=data.pricing?.delivery?.shipping_cents||0;
     const features=data.pricing?.delivery?.extras||[];
-    const freeValue=(data.pricing?.lines||[]).reduce((n,line)=>n+(line.bogo_free_units||0)*(line.unit_price_cents||0),0);
-    const nodes=[['Subtotal',data.subtotal_cents-freeValue]];
-    if(data.discount_cents-freeValue>0)nodes.push(['Discounts',-(data.discount_cents-freeValue)]);
+    const nodes=[['Subtotal',data.subtotal_cents]];
+    const discount=appliedCoupon?data.pricing?.coupon_discount_cents||data.discount_cents||0:0;
+    if(discount>0)nodes.push(['BLACKFRIDAY15 (15%)',-discount]);
     nodes.push(['Shipping',shipping]);
-    for(const f of features.filter(x=>x.id!=='protection'))nodes.push([f.label,f.amount_cents]);
-    const includedProtection=features.find(x=>x.id==='protection');
-    const bankSavings=Math.floor(Math.max(0,data.subtotal_cents-data.discount_cents)*0.05);
-    track.innerHTML=nodes.map(([label,price],i)=>'<div class="'+(i===0?'nlc-first-subtotal':'')+'"><span>'+html(label)+'</span><strong>'+(i===0?money(price):price<0?'−'+money(-price):'+'+money(price))+'</strong></div>').join('')
-     +(includedProtection?'<div class="nlc-protection-static"><span>Shipping Protection</span><strong>+'+money(includedProtection.amount_cents)+'</strong></div>':'')
-     +'<div class="nlc-bank-discount"><span>Same-Day Bank Payment discount (5%)</span><strong>−'+money(bankSavings)+'</strong></div>';
+    for(const feature of features)nodes.push([feature.label,feature.amount_cents]);
+    if(data.tax_cents>0)nodes.push(['Tax',data.tax_cents]);
+    track.innerHTML=nodes.map(([label,price],index)=>'<div class="'+(index===0?'nlc-first-subtotal':label==='Shipping Protection'?'nlc-protection-static':'')+'"><span>'+html(label)+'</span><strong>'+(price<0?'−'+money(-price):label==='Shipping'&&price===0?'FREE':money(price))+'</strong></div>').join('');
+    const threshold=data.free_shipping_threshold_cents||15000;
+    const merchandise=Math.max(0,data.subtotal_cents-data.discount_cents);
+    const remaining=Number.isSafeInteger(data.free_shipping_remaining_cents)?data.free_shipping_remaining_cents:Math.max(0,threshold-merchandise);
     const unlockText=root.querySelector('[data-nlc-unlock-copy]');
-    if(unlockText){const remaining=Math.max(0,25000-(data.subtotal_cents-data.discount_cents));unlockText.innerHTML=remaining?'Add <strong>'+money(remaining)+'</strong> more to unlock <strong>Free Priority Shipping</strong>':'<strong>Free Priority Shipping unlocked!</strong>';}
-    const bar=root.querySelector('.nlc-progress-fill');if(bar)bar.style.width=Math.min(100,100*(data.subtotal_cents-data.discount_cents)/29900)+'%';
-    const proceed=root.querySelector('.nlc-proceed');if(proceed)proceed.textContent='Proceed to Checkout ('+money(data.total_cents)+')';
-    const instant=root.querySelector('[data-nlc-instant-amount]');if(instant)instant.textContent=money(data.total_cents);
-   }catch(error){if(root.isConnected&&id===seq)track.textContent='Final prices will be shown at checkout. '+(error?.message||'');}
+    unlockText.innerHTML=country!=='US'?'Free standard shipping is available for US orders of <strong>'+money(threshold)+'</strong> after discounts.':remaining?'Add <strong>'+money(remaining)+'</strong> more for <strong>free standard US shipping</strong>.':'<strong>Free standard US shipping included.</strong>';
+    const progress=root.querySelector('.nlc-progress');progress.hidden=country!=='US';progress.setAttribute('aria-valuemax',String(threshold/100));progress.setAttribute('aria-valuenow',String(Math.min(threshold,merchandise)/100));
+    root.querySelector('.nlc-progress-fill').style.width=Math.min(100,merchandise/threshold*100)+'%';
+    root.querySelector('.nlc-proceed').textContent='Proceed to Checkout ('+money(data.total_cents)+')';
+    root.querySelector('[data-nlc-instant-amount]').textContent=money(data.total_cents);
+    hasQuote=true;
+    const wallet=settings.nmi?.ready===true&&settings.methods?.some(m=>m.id===settings.nmi.method_id&&m.native_provider==='nmi')?settings.nmi:null;
+    if(wallet)root.querySelectorAll('[data-nlc-wallets] button').forEach((button,index)=>{
+     const authorized=index===0?wallet.wallets?.apple===true:wallet.wallets?.google===true;
+     button.disabled=!authorized;if(authorized)button.onclick=()=>window.AltaCartNmi?.open?.();
+    });
+   }catch(error){
+    if(root.isConnected&&id===seq){couponStatus.textContent=error?.message||'Could not check this coupon.';if(!hasQuote)track.textContent='Your total could not be calculated. Please try again.';}
+   }finally{if(root.isConnected&&id===seq){apply.disabled=false;remove.disabled=false;}}
   };
-
   const dateLabel=offset=>{const date=new Date();date.setDate(date.getDate()+offset);return new Intl.DateTimeFormat('en-US',{weekday:'short',month:'short',day:'numeric'}).format(date);};
-  const estimate=root.querySelector('[data-nlc-estimate]');
-  if(estimate)estimate.textContent=dateLabel(7)+' – '+dateLabel(13);
-  root.querySelector('[data-nlc-apply]').addEventListener('click',()=>{
-   localStorage.setItem('ap-checkout-coupon',root.querySelector('[name=nlc_coupon]').value.trim().toUpperCase());redraw();
-  });
+  root.querySelector('[data-nlc-estimate]').textContent=dateLabel(7)+' – '+dateLabel(13);
+  apply.addEventListener('click',()=>redraw(input.value.trim().toUpperCase(),'apply'));
+  input.addEventListener('keydown',event=>{if(event.key==='Enter'){event.preventDefault();apply.click();}});
+  remove.addEventListener('click',()=>redraw('','remove'));
   await redraw();
  }
  window.AltaCartNmi=Object.assign(window.AltaCartNmi||{},{offer});

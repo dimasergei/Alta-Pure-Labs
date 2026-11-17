@@ -1,11 +1,12 @@
 'use strict';
 const fs=require('node:fs');
 for(const [file,note] of [
- ['shipping-policy.html','<strong>US checkout:</strong> Standard domestic shipping is US$25 per order. Fulfillment is arranged manually after confirmed payment. International delivery is not enabled at checkout.'],
- ['refund-policy.html','<strong>Prepaid annual passes and orders:</strong> The checkout terms describe the 14-day unused-pass refund request policy and payment reconciliation. Product-return provisions below continue to apply to goods. Applicable statutory rights are not limited.']
+ ['shipping-policy.html','<strong>US standard shipping:</strong> Standard UPS delivery is US$14.95, or free when the merchandise total after any coupon is at least US$150. Redeeming existing points or store credit does not change that eligibility. Express and international rates are displayed at checkout. Fulfillment is arranged after confirmed payment.'],
+ ['refund-policy.html','<strong>Product orders:</strong> Refund requests and payment reconciliation follow the published checkout and product-return terms. Applicable statutory rights are not limited.']
 ]){
  let html=fs.readFileSync(file,'utf8');
- if(!html.includes('id="manual-invoice-policy-note"'))html=html.replace('</h1>','</h1><section id="manual-invoice-policy-note" style="margin:24px 0;padding:18px;border:1px solid #bbc8b1;border-radius:10px"><p>'+note+'</p><p><a href="/commercial-terms.html">Read the checkout terms →</a></p></section>');
+ html=html.replace(/<section id="manual-invoice-policy-note"[\s\S]*?<\/section>/,'');
+ html=html.replace('</h1>','</h1><section id="manual-invoice-policy-note" style="margin:24px 0;padding:18px;border:1px solid #bbc8b1;border-radius:10px"><p>'+note+'</p><p><a href="/commercial-terms.html">Read the checkout terms →</a></p></section>');
  fs.writeFileSync(file,html);
 }
 

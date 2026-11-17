@@ -1,5 +1,5 @@
 {
-  "version": "checkout-2026-11-v4",
+  "version": "checkout-2026-11-v5",
   "currency": "USD",
   "shipping_cents": 1495,
   "shipping_countries": [
@@ -249,16 +249,15 @@
   ],
   "shipping_label": "Standard UPS (US)",
   "shipping_note": "Shipping rates are displayed by destination and service before purchase. Express and next-day availability is subject to carrier coverage. International duties and customs fees may apply.",
-  "points_per_dollar": 2.5,
+  "points_per_dollar": 0,
   "point_value_cents": 1,
   "minimum_points_redemption": 100,
   "tax_cents": 0,
   "promotions": {
-    "version": "bogo-2026-11-v1",
-    "bogo": true,
-    "ends_at": "2026-11-26T23:59:59-06:00",
-    "coupon": "BOGO",
-    "coupon_discount_bps": 1000
+    "version": "blackfriday15-2026-11-v1",
+    "bogo": false,
+    "coupon": "BLACKFRIDAY15",
+    "coupon_discount_bps": 1500
   },
-  "free_shipping_threshold_cents": 25000
+  "free_shipping_threshold_cents": 15000
 }

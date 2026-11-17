@@ -1,20 +1,7 @@
 'use strict';
 const {test}=require('node:test'),assert=require('node:assert/strict'),fs=require('node:fs');
 const js=fs.readFileSync('checkout-reference.js','utf8'),css=fs.readFileSync('checkout-reference.css','utf8');
-test('shipping trust, email help, SMS opt-in and linked legal notices',()=>{
- for(const t of ['3RD PARTY TESTED','Order confirmation and tracking go here. Leave blank to use your account email.','Consent is not a condition of purchase.','Reply HELP for help or STOP to cancel.','/privacy-policy.html'])assert.ok(js.includes(t),t);
-});
-test('summary supports removal, active BOGO offer and no extra quote note',()=>{
- assert.match(js,/data-nlx-remove/);assert.match(js,/checkout-bogo-free/);
- assert.match(js,/\[data-nlx-quote-note\].*textContent=''/);
-});
-test('inactive card and wallets cannot take card data or place orders',()=>{
- assert.match(js,/name="payment_choice" value="card" checked/);
- assert.match(js,/Card number \*<input disabled/);
- assert.match(js,/nlx-wallet-unavailable" disabled/);
- assert.match(js,/selected==='bank'&&bank/);
-});
-test('membership and bank option labels and responsive cards',()=>{
- for(const t of ['PURE GOLD MEMBERSHIP','Monthly','Annual','No thanks','Compare plans','Same-Day Bank Payment','No Fees!','5% off'])assert.ok(js.includes(t),t);
- assert.match(css,/\.nlx-payment-choice/);assert.match(css,/\.nlx-trust svg/);
-});
+test('shipping trust, email help, SMS opt-in and linked legal notices remain',()=>{for(const value of ['3RD PARTY TESTED','Order confirmation and tracking go here. Leave blank to use your account email.','Consent is not a condition of purchase.','Reply HELP for help or STOP to cancel.','/privacy-policy.html'])assert.ok(js.includes(value),value);});
+test('summary supports purchased quantity changes and only an explicit coupon',()=>{for(const value of ['data-nlx-remove','data-nlx-qty','BLACKFRIDAY15 (15%)','data-nlx-remove-coupon'])assert.ok(js.includes(value));assert.doesNotMatch(js,/bogo-free|quotedFreeUnits|member-offer|\b5% off/);});
+test('inactive card and wallets cannot take card data or place orders',()=>{assert.match(js,/Card number \*<input disabled/);assert.match(js,/nlx-wallet-unavailable[^>]+ disabled/);assert.match(js,/currentPreview&&!loadingPreview&&selected==='bank'&&bank/);});
+test('payment and delivery retain responsive cards without retired plan activation',()=>{assert.ok(js.includes('Same-Day Bank Payment'));assert.doesNotMatch(js,/PURE GOLD|data-nlx-plan|offerBox|checkout\?plan=/);assert.match(css,/\.nlx-payment-choice/);assert.match(css,/\.nlx-trust svg/);});

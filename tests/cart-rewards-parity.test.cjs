@@ -1,20 +1,6 @@
 'use strict';
 const {test}=require('node:test'),assert=require('node:assert/strict'),fs=require('node:fs');
-const js=fs.readFileSync('cart-reference.js','utf8'),css=fs.readFileSync('cart-reference.css','utf8');
-test('two shipping milestone tooltips and shimmer are present',()=>{
- assert.match(js,/Free Priority Shipping — \$250\.00/);
- assert.match(js,/Free BAC Water \+ Free Shipping — \$299\.00/);
- assert.match(css,/nlc-shimmer/);
-});
-test('cart price formatting, conditional bank preview, and no estimated total row',()=>{
- assert.match(js,/Same-Day Bank Payment discount \(5%\)/);
- assert.match(js,/bankSavings/);
- assert.doesNotMatch(js,/<span>Estimated total<\/span>/);
- assert.match(js,/nlc-first-subtotal/);
-});
-test('no shipping protection toggle, colored google SVG, and quantity spacing',()=>{
- assert.doesNotMatch(js,/name="nlc_protection"/);
- assert.match(js,/nlc-protection-static/);
- assert.match(js,/fill="#4285F4"/);
- assert.match(js,/nlc-quantity-row/);
-});
+const js=fs.readFileSync('cart-reference.js','utf8');
+test('cart shows the server-confirmed free standard shipping threshold without gift milestones',()=>{assert.match(js,/free_shipping_threshold_cents/);assert.match(js,/free_shipping_remaining_cents/);assert.match(js,/Free standard US shipping/);assert.doesNotMatch(js,/25000|29900|Free BAC|Free Priority/);});
+test('cart shows coupon savings only after a verified BLACKFRIDAY15 quote',()=>{assert.match(js,/data\.pricing\?\.coupon_code==='BLACKFRIDAY15'/);assert.match(js,/BLACKFRIDAY15 \(15%\)/);assert.doesNotMatch(js,/bankSavings|Bank Payment discount|<s>/);});
+test('cart retains protection line, exact payment marks and quantity controls',()=>{assert.match(js,/nlc-protection-static/);assert.match(js,/google-g-clean\.svg/);assert.match(js,/nlc-quantity-row/);assert.doesNotMatch(js,/name="nlc_protection"/);});

@@ -17,6 +17,6 @@ html = html.replace('<h2>Order request</h2>', '<h2>Checkout</h2>');
 html = html.replace('This is a local order summary. No payment is processed.', 'Secure Stripe checkout. Your payment is processed securely by Stripe after you confirm.');
 html = html.replace('Place request <span', 'Continue to secure checkout <span');
 html = html.replace('Continue to test payment <span', 'Continue to secure checkout <span');
-html = html.replaceAll('Shipping billed separately.', 'US shipping: $25 per order. Prices in USD.');
+html = html.replaceAll('Shipping billed separately.', 'Free standard US shipping from $150 after coupon. Prices in USD.');
 fs.writeFileSync('index.html',html);
 console.log('Generated server catalog and installed Stripe checkout script.');

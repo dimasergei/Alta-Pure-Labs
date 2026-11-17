@@ -1,13 +1,13 @@
 {
-  "version": "conversion-2026-11-v1",
-  "free_shipping_threshold_cents": 25000,
+  "version": "conversion-2026-11-v2",
+  "free_shipping_threshold_cents": 15000,
   "shipping_service": "Standard US delivery",
   "plans": {
     "member": {
       "name": "Member",
       "monthly_cents": 0,
       "annual_cents": 0,
-      "points_per_dollar": 2.5,
+      "points_per_dollar": 0,
       "discount_bps": 0,
       "free_shipping": false,
       "early_access": false,
@@ -20,10 +20,10 @@
       "name": "PURE GOLD",
       "monthly_cents": 1999,
       "annual_cents": 19190,
-      "points_per_dollar": 5,
-      "discount_bps": 500,
-      "free_shipping": true,
-      "early_access": true,
+      "points_per_dollar": 0,
+      "discount_bps": 0,
+      "free_shipping": false,
+      "early_access": false,
       "priority_fulfillment": false,
       "monthly_credit_cents": 0,
       "monthly_credit_min_order_cents": 0,
@@ -33,24 +33,25 @@
       "name": "PURE PLATINUM",
       "monthly_cents": 9999,
       "annual_cents": 95990,
-      "points_per_dollar": 10,
-      "discount_bps": 1000,
-      "free_shipping": true,
-      "early_access": true,
-      "priority_fulfillment": true,
-      "monthly_credit_cents": 5000,
-      "monthly_credit_min_order_cents": 15000,
-      "free_bac_water_3ml": true
+      "points_per_dollar": 0,
+      "discount_bps": 0,
+      "free_shipping": false,
+      "early_access": false,
+      "priority_fulfillment": false,
+      "monthly_credit_cents": 0,
+      "monthly_credit_min_order_cents": 0,
+      "free_bac_water_3ml": false
     }
   },
-  "annual_saving_percent": 20,
+  "annual_saving_percent": 0,
   "automatic_renewal": false,
   "partner": {
     "version": "partner-2026-11-v1",
     "first_order_bps": 2000,
     "repeat_order_bps": 1000,
-    "customer_discount_bps": 2000,
+    "customer_discount_bps": 0,
     "cookie_days": 30,
     "minimum_payout_cents": 10000
-  }
+  },
+  "memberships_enabled": false
 }

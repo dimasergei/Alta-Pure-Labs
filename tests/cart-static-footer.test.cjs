@@ -4,8 +4,8 @@ const assert=require('node:assert/strict');
 const fs=require('node:fs');
 const cart=fs.readFileSync('cart-reference.js','utf8');
 const css=fs.readFileSync('cart-reference.css','utf8');
-test('cart shipping protection is always included without a checkbox or toggle',()=>{
- assert.match(cart,/selected\.add\('protection'\)/);
+test('cart retains selected shipping protection without a duplicate checkbox or toggle',()=>{
+ assert.match(cart,/selected=new Set\(extras\(items\)\)/);
  assert.match(cart,/nlc-protection-static/);
  assert.doesNotMatch(cart,/name="nlc_protection"/);
  assert.doesNotMatch(cart,/selected\.delete\('protection'\).*saveExtras/);
@@ -22,6 +22,6 @@ test('wallet branding, payment amount and delivery estimate appear in cart',()=>
  assert.match(cart,/data-nlc-estimate/);
  assert.match(cart,/dateLabel\(7\).*dateLabel\(13\)/);
  assert.match(cart,/RUO Agreement/);
- assert.match(cart,/\+'\+displayFree\+' FREE'/);
+ assert.doesNotMatch(cart,/displayFree|bogo-free/);
  assert.doesNotMatch(cart,/FREE · BOGO/);
 });

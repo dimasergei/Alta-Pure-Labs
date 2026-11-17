@@ -1,3 +1,15 @@
+/* A shared, self-hosted grotesk pairs with the reference-derived wordmark. */
+@font-face {
+  font-family: 'Archivo';
+  src: url('/assets/fonts/archivo-latin-variable.woff') format('woff');
+  font-style: normal;
+  font-weight: 100 900;
+  font-display: swap;
+}
+html:root body,
+html:root body :is(h1, h2, h3, h4, h5, h6, p, a, span, strong, b, em, small, label, input, button, select, textarea, summary, li, th, td, dt, dd, blockquote, legend, figcaption) {
+  font-family: 'Archivo', Arial, sans-serif !important;
+}
 /* The reference wordmark is vector artwork, never a browser font substitute. */
 .pure-wordmark {
   display: inline-block;

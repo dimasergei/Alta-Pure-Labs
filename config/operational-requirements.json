@@ -65,8 +65,8 @@
       "title": "Rates and eligible destinations",
       "state": "implemented",
       "owner": "Owner / Carrier / Engineering",
-      "next": "US direct checkout uses the existing US$25 domestic charge. Supplier fulfillment remains manual, with tracking entered after dispatch; international checkout is unavailable.",
-      "done_when": "Every accepted cart receives a valid route and shipping charge before payment; no worldwide default."
+      "next": "Destination and service determine the shipping rate. US standard shipping is free on merchandise of at least US$150 after coupons and before account balances. Express service and optional extras retain their charges.",
+      "done_when": "Quotes and stored orders agree at the US$150 boundary and for supported destinations, services and extras."
     },
     {
       "id": "tax",
@@ -77,43 +77,27 @@
       "done_when": "Representative orders/refunds reconcile to processor payouts and tax reports using confirmed obligations."
     },
     {
-      "id": "memberships",
-      "title": "Prepaid annual memberships",
-      "state": "implemented_payment_activation_required",
-      "owner": "Owner / Engineering",
-      "next": "VIP US$49 / Elite US$99 nonrenewing 365-day passes and verified receipt/refund entitlements are implemented. Obtain provider approval for passes separately from goods and verify one real paid/refunded pass.",
-      "done_when": "Approved pass payment grants access once; full refund revokes it; expiry is enforced. No automatic renewal is offered."
-    },
-    {
-      "id": "subscriptions",
-      "title": "Recurring product subscriptions",
-      "state": "not_offered",
-      "owner": "Owner / Engineering",
-      "next": "Recurring product billing is not offered. A research planning list is not a subscription. Introduce it only after explicit terms, provider support and verified stock/cancellation handling.",
-      "done_when": "Each paid cycle creates one order and reservation; pause/skip/cancel and failed-payment recovery are tested."
-    },
-    {
       "id": "rewards",
-      "title": "Points and store-credit ledgers",
+      "title": "Existing points and store-credit balances",
       "state": "implemented",
       "owner": "Owner / Engineering",
-      "next": "Direct checkout reserves balances atomically. Confirmed product payments earn 1 point per paid merchandise dollar; 100 points = US$1. Cancellation and full refunds restore redemptions and reverse earnings. Gift cards are not offered.",
-      "done_when": "Duplicate events cannot double-award; simultaneous redemption cannot overspend; refunds reverse correctly."
+      "next": "Existing earned points and issued credit remain redeemable. New orders earn no points. Balance reservations, cancellation restores and verified refund reversals remain atomic.",
+      "done_when": "Concurrent redemption cannot overspend and duplicate cancellation or refund events cannot restore balances twice."
     },
     {
       "id": "promotions",
-      "title": "Membership and volume discounts",
+      "title": "Regular catalog pricing and explicit coupon",
       "state": "implemented",
       "owner": "Owner / Engineering",
-      "next": "Server-side pricing applies the highest single eligible member/volume discount per line. Preserve the published launch terms; additional coupons, BOGO and free gifts are not offered.",
-      "done_when": "Authoritative invoice totals and refund behavior match published discount terms; discounts never stack or alter shipping/taxes/pass fees."
+      "next": "Regular catalog prices apply at every quantity and payment method. BLACKFRIDAY15 applies 15% when entered; no automatic member, volume, bank or referral discount and no free units.",
+      "done_when": "Cart quotes and persisted checkout totals agree, coupon removal restores regular prices, and stale quotes fail closed."
     },
     {
       "id": "partners",
       "title": "Affiliates and partner payouts",
-      "state": "inquiry_only",
+      "state": "implemented",
       "owner": "Owner / Engineering",
-      "next": "Partner inquiries are durable requests. No commission or payout program is promised. Financial attribution and payout ledgers require separately approved terms before activation.",
+      "next": "Existing partner links retain attribution and commissions on paid merchandise: 20% on the first eligible order and 10% on repeat orders. Customer referral discounts are disabled. Payout records, holding periods and refund reversals remain intact.",
       "done_when": "An eligible order accrues once, refunds reverse once, and an approved payout reconciles to its ledger."
     },
     {

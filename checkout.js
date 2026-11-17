@@ -49,7 +49,7 @@
   const message=document.createElement('p'); message.setAttribute('role','status'); form.append(message);
   const showShipping=()=>{
     const summary=document.querySelector('#checkout-summary');
-    if(summary) {const p=summary.querySelector('p.fine'); if(p)p.textContent='USD. US shipping: $25 per order, added at checkout.';}
+    if(summary) {const p=summary.querySelector('p.fine'); if(p)p.textContent='USD. Free standard US shipping from $150 after coupon; delivery is calculated at checkout.';}
   };
   document.querySelector('#checkout').addEventListener('click',showShipping);
   let busy=false;

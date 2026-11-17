@@ -13,7 +13,7 @@ function fixture(authorized=false){
   if(String(url).includes('checkout=public'))return{ok:true,json:async()=>({methods:authorized?[{id:'method-1',native_provider:'nmi',kind:'card'}]:[],delivery_options:[{id:'protection',enabled:true,price_cents:500}],nmi:authorized?{ready:true,method_id:'method-1',wallets:{apple:true,google:true}}:null})};
   const b=JSON.parse(options.body);
   const protectedFee=b.delivery.extras.includes('protection')?500:0;
-  return{ok:true,json:async()=>({subtotal_cents:10000,discount_cents:0,total_cents:11495+protectedFee,pricing:{delivery:{shipping_cents:1495,extras:protectedFee?[{id:'protection',label:'Shipping Protection',amount_cents:500}]:[]}}})};
+  return{ok:true,json:async()=>({subtotal_cents:10000,discount_cents:b.coupon==='BLACKFRIDAY15'?1500:0,total_cents:11495+protectedFee-(b.coupon==='BLACKFRIDAY15'?1500:0),free_shipping_threshold_cents:15000,free_shipping_remaining_cents:5000+(b.coupon==='BLACKFRIDAY15'?1500:0),pricing:{coupon_code:b.coupon==='BLACKFRIDAY15'?'BLACKFRIDAY15':null,delivery:{shipping_cents:1495,extras:protectedFee?[{id:'protection',label:'Shipping Protection',amount_cents:500}]:[]}}})};
  };
  w.eval(source);
  return{dom,w,cart:dom.window.document.getElementById('cart'),requests};
@@ -37,9 +37,9 @@ test('cart has editable rows, product recommendations, coupon, protection, check
   assert.ok([...f.cart.querySelectorAll('[data-nlc-wallets] button')].every(x=>x.disabled));
   assert.ok(f.cart.textContent.includes('$119.95'));
   assert.equal(f.requests.find(x=>String(x.url).includes('checkout=cart')).body.method_id,null);
-  f.cart.querySelector('[name=nlc_coupon]').value='BOGO';
+  f.cart.querySelector('[name=nlc_coupon]').value='BLACKFRIDAY15';
   f.cart.querySelector('[data-nlc-apply]').click();await wait();
-  assert.equal(f.w.localStorage.getItem('ap-checkout-coupon'),'BOGO');
+  assert.equal(f.w.localStorage.getItem('ap-checkout-coupon'),'BLACKFRIDAY15');
  }finally{f.dom.window.close();}
 });
 test('cart widget only enables actual wallet controls when a verified NMI account exists',async()=>{
@@ -52,7 +52,7 @@ test('cart widget only enables actual wallet controls when a verified NMI accoun
 test('final storefront build selects the new cart and never invokes the retired duplicate coupon panel',()=>{
  const src=fs.readFileSync('conversion-build.cjs','utf8');
  const storefront=fs.readFileSync('storefront-v2.js','utf8');
- assert.match(src,/window\.AltaCartNmi\?\.offer\(root\)/);
+ assert.doesNotMatch(src,/renderCart=/);
  assert.doesNotMatch(src,/window\.ConversionUI\.cart\(root,cart\)/);
  assert.match(storefront,/window\.AltaCartNmi\?\.offer\(root\)/);
 });

@@ -5,7 +5,7 @@ const root=path.join(__dirname,'..');
 const user={id:'test-user',email:'researcher@example.test',user_metadata:{full_name:'Researcher',alta_profile:{shipping:{name:'Researcher',line1:'123 Test Street',city:'Miami',region:'FL',postal_code:'33101',country:'US'}}}};
 const auth={auth:{getSession:async()=>({data:{session:{access_token:'fixture-token-not-real'}}})}};
 const orderId='80000000-0000-4000-8000-000000000001';
-const quote={quote:'quote-fixture',subtotal_cents:5100,discount_cents:255,shipping_cents:2500,tax_cents:0,points_redeemed:0,credit_redeemed_cents:0,earned_points:48,total_cents:7345,currency:'USD',pricing:{lines:[],shipping_note:'US delivery'}};
+const quote={quote:'quote-fixture',subtotal_cents:5100,discount_cents:0,shipping_cents:1495,tax_cents:0,points_redeemed:0,credit_redeemed_cents:0,earned_points:0,total_cents:6595,currency:'USD',pricing:{lines:[],shipping_note:'US delivery'}};
 const checkoutMethod={id:'80000000-0000-4000-8000-000000000002',kind:'hosted_link',native_provider:'rampex',label:'Credit / debit card — Stripe via Rampex',sale_scope:'goods'};
 function fixture(payResult){
  const logs=[],wConsole=new VirtualConsole(),dom=new JSDOM('<main id="root"></main>',{url:'https://altapurelabs.test/checkout',runScripts:'outside-only',virtualConsole:wConsole}),w=dom.window;
@@ -15,6 +15,7 @@ function fixture(payResult){
  w.fetch=async(url,options={})=>{
    const body=options.body?JSON.parse(options.body):null;logs.push({url:String(url),body});
    if(String(url).startsWith('/api/checkout?native=customer&invoice='))return{ok:true,json:async()=>payResult};
+   if(String(url).includes('checkout=cart'))return{ok:true,json:async()=>quote};
    if(body?.action==='quote')return{ok:true,json:async()=>quote};
    if(body?.action==='place')return{ok:true,json:async()=>({id:orderId,status:'accepted'})};
    return{ok:true,json:async()=>data};
@@ -24,6 +25,7 @@ function fixture(payResult){
 }
 async function submitReview(f){
  await f.w.DirectCheckout.checkout(f.root,auth,user);
+ await new Promise(resolve=>setTimeout(resolve,20));
  const form=f.root.querySelector('form');
  form.querySelector('[data-step-next="0"]').click();
  form.querySelector('[data-step-next="1"]').click();
@@ -44,7 +46,7 @@ test('Place order submits exactly one Rampex pay request directly from the final
   const post=f.logs.find(x=>x.body?.action==='pay');
   assert.ok(post.url.includes('/api/checkout?native=customer&invoice='+orderId));
   assert.equal(post.body.invoice_id,orderId);
-  assert.equal(post.body.confirm_amount_cents,7345);
+  assert.equal(post.body.confirm_amount_cents,6595);
   assert.equal(post.body.confirm_currency,'USD');
   assert.equal(post.body.consent,true);
   assert.equal(post.body.crypto_conversion_consent,true);

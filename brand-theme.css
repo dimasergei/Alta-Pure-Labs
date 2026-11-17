@@ -20,29 +20,6 @@ body.ap-site {
   color-scheme: light;
 }
 
-.ap-site :is(.ap-announcement, .announce) {
-  background: #152844;
-}
-
-.ap-site .nl-hero {
-  background: radial-gradient(ellipse at 77% 20%, #234878, transparent 61%), #101d31;
-}
-
-.ap-site .nl-hero h1 em {
-  background-image: linear-gradient(90deg, #a8e9fb, #6ccbe9);
-}
-
-.ap-site .nl-hero .nl-primary {
-  background: #8ce1f6;
-  color: #10283c;
-  box-shadow: none;
-}
-
-.ap-site .nl-hero .nl-primary:hover {
-  background: #bef0fc;
-  color: #10283c;
-}
-
 .ap-site :is(.ap-header, .topbar) {
   border-bottom-color: var(--ap-line);
 }
@@ -58,19 +35,10 @@ body.ap-site {
 }
 
 @media (max-width: 480px) {
-  .ap-site .nl-hero h1 {
-    font-size: clamp(2rem, 10.5vw, 3.15rem);
-    overflow-wrap: anywhere;
-  }
 
   .ap-site .ap-page-intro h1 {
     font-size: clamp(1.9rem, 8vw, 2.6rem);
     overflow-wrap: anywhere;
-  }
-
-  .ap-site .nl-hero .ap-actions > a {
-    max-width: 100%;
-    text-align: center;
   }
 }
 
@@ -78,60 +46,11 @@ body.ap-site {
 body.ap-site {
   background: radial-gradient(ellipse at 85% 0%, #eaf2ff, transparent 36rem), #fff;
 }
-.ap-site .ap-announcement {
-  border-bottom: 1px solid transparent;
-  background: linear-gradient(105deg, #111d39, #193f72 55%, #111d39) padding-box,
-              linear-gradient(105deg, #234876, #8aedff, #7e83ff, #234876) border-box;
-  background-size: 100% 100%, 220% 100%;
-  animation: ap-promo-glint 4s ease-in-out 2;
-}
-.ap-site .nl-hero {
-  background: radial-gradient(ellipse at 74% 34%, #285793, transparent 53%),
-              radial-gradient(ellipse at 86% 73%, #253863, transparent 45%),
-              linear-gradient(125deg, #0a1428, #132b4c 65%, #111a34);
-}
-.ap-site .nl-offer-grid > .ap-offer-box {
-  border: 1px solid transparent;
-  background: linear-gradient(135deg,#183354,#10213e) padding-box,
-              linear-gradient(110deg,#40639c,#91ecff,#9395ff,#40639c) border-box;
-  background-size: 100% 100%, 230% 100%;
-  animation: ap-promo-glint 4s ease-in-out 2;
-  box-shadow: 0 0 18px #61bfff26;
-}
-.ap-site .nl-offer-grid > .ap-offer-box:hover { box-shadow: 0 0 24px #75dfff60; }
 @keyframes ap-promo-glint {
   0%, 100% { background-position: 0 0, 0 0; }
   50% { background-position: 0 0, 100% 0; }
 }
-.ap-site .ap-promo-clock {
-  width: fit-content;
-  margin: 0 0 18px;
-  padding: 7px 12px;
-  border: 1px solid #79dbf46e;
-  border-radius: 8px;
-  background: #0d2241;
-  color: #dceaff;
-}
-.ap-promo-clock strong { margin-inline-start: 10px; color: #a4efff; font-variant-numeric: tabular-nums; }
-.ap-hero-standard { display: none; }
-.ap-promo-ended .ap-hero-standard { display: block; }
-.ap-promo-ended :is([data-promo-active], .nl-announcement, .nl-badge, .nl-shop-sale, .nl-sale-box) { display: none; }
 .ap-site .ap-vial-clip { position: absolute; width: 0; height: 0; }
-.ap-site .nl-vial {
-  width: 48%;
-  border-radius: 0;
-  filter: drop-shadow(0 18px 18px #040b20a0);
-}
-.ap-site .nl-vial-1 { width: 55%; left: 22%; }
-.ap-site .nl-vial-2 { right: -2%; }
-.ap-site .nl-vial img {
-  height: auto;
-  aspect-ratio: 1081 / 1455;
-  object-fit: contain;
-  border-radius: 0;
-  mask-image: none;
-  clip-path: url(#ap-vial-outline);
-}
 .ap-site :is(.ap-page-intro, .nl-section-title) em { color: #285b9d; }
 .ap-site :is(.nl-soft, .ap-workspace-layout, .account-page) {
   background-image: linear-gradient(145deg, #f9fbff, #edf4ff 65%, #f8fbff);
@@ -185,10 +104,6 @@ body.ap-site {
 .ap-site .ap-coa-library .ap-coa-controls label { min-width: 0; }
 .ap-site .ap-coa-library .ap-coa-controls .ap-input { width: 100%; min-width: 0; }
 @media (max-width: 800px) {
-  .ap-site .nl-vial-stage { height: clamp(245px, 78vw, 330px); }
-  .ap-site .nl-vial { width: 43%; }
-  .ap-site .nl-vial-1 { width: 50%; left: 25%; }
-  .ap-site .nl-vial-2 { right: 0; }
   .ap-site .ap-coa-library .ap-coa-controls { grid-template-columns: repeat(2,minmax(0,1fr)); }
 }
 @media (max-width: 560px) {
@@ -196,46 +111,13 @@ body.ap-site {
   .ap-coa-illustration { display: none; }
   .ap-site .ap-coa-library .ap-coa-controls { grid-template-columns: minmax(0,1fr); }
 }
-@media (prefers-reduced-motion: reduce) {
-  .ap-site :is(.ap-announcement, .nl-offer-grid > .ap-offer-box, .nl-vial) { animation: none; }
-}
-.ap-announcement-standard { display: none; }
-.ap-promo-ended .ap-announcement-standard { display: inline; margin-inline: auto; }
-
-/* Conversion surfaces share the same cobalt, violet and cyan accents. */
-.ap-site .nl-badge {
-  background: linear-gradient(120deg,#d0f8ff,#bcd1ff 65%,#eadbff);
-  color: #102d60;
-  border: 1px solid #71cdeb;
-  border-radius: 7px;
-  padding: 5px 10px;
-  font-weight: 800;
-  letter-spacing: .08em;
-  box-shadow: 0 3px 13px #4280d52b;
-  overflow: hidden;
-}
-.ap-site .nl-badge::after {
-  content: "";
-  position: absolute;
-  inset: -25% -90%;
-  background: linear-gradient(110deg,transparent 43%,#ffffffb0 50%,transparent 57%);
-  transform: translateX(-65%);
-  animation: ap-badge-sweep 3.5s ease-out 2;
-  pointer-events: none;
-}
 @keyframes ap-badge-sweep { to { transform: translateX(65%); } }
-.ap-site .nl-hero {
-  background: radial-gradient(ellipse at 82% 25%,#294b9d,transparent 48%),
-              radial-gradient(ellipse at 67% 74%,#58358a80,transparent 48%),
-              linear-gradient(125deg,#0c1730,#183963);
-}
 .ap-site .nl-primary, .ap-site .nl-purchase>.ap-button {
   border: 1px solid #a2eaff;
   background: linear-gradient(115deg,#b4f0ff,#8cd2fc 55%,#b8bfff);
   color: #102b4e;
   box-shadow: 0 5px 20px #76cfff26;
 }
-.ap-site .ap-pair-offer { color: #285b91; font-size: 11px; font-weight: 650; margin: 0 0 7px; }
 .ap-bundle-options {
   display: grid;
   grid-template-columns: repeat(3,minmax(0,1fr));
@@ -324,9 +206,6 @@ body.ap-site {
  .ap-mobile-purchase strong { display: block; font-size: 12px; }
  .ap-mobile-purchase .ap-button { white-space: nowrap; padding: 12px 16px; }
 }
-@media(prefers-reduced-motion:reduce) {
- .ap-site .nl-badge::after { animation: none; display: none; }
-}
 
 /* Keep pale action surfaces legible over the shared white button text rule. */
 .ap-site .ap-button.nl-primary,
@@ -349,366 +228,16 @@ body.ap-site {
   background: #102b4e;
   border-color: #102b4e;
 }
-.ap-site .nl-offer-grid > .ap-offer-box {
-  display: grid;
-  gap: 5px;
-  border-radius: 13px;
-  padding: 17px 20px;
-  color: #fff;
-}
-.ap-site .nl-offer-grid > .ap-offer-box strong { color: #e5f3ff; }
 .ap-site .cv-billing span { background: #d8f5e3; color: #146333; }
 .ap-site .cv-popular {
   background: linear-gradient(115deg, #f9e7a2, #eac35b);
   color: #4b350b;
   border: 1px solid #d6ad40;
 }
-@media (max-width: 560px) {
-  .ap-site .nl-offer-grid > .ap-offer-box { padding: 13px; }
-}
-
-/* Checkout-reference top-banner palette wins over the generic brand surface. */
-.ap-site .ap-announcement{background:linear-gradient(110deg,#07172b 0%,#163c76 56%,#222d6a 100%);color:#fff;gap:12px}
-.ap-site .ap-announcement .ap-promo-main{color:#fff}
-.ap-site .ap-announcement .ap-promo-bogo{color:#fff}
-.ap-site .ap-announcement .ap-promo-shop{color:#162741}
-.ap-checkout-page .ap-announcement .ap-locale-controls{display:none!important}
-@media(max-width:600px){.ap-site .ap-announcement{gap:5px;padding-inline:8px}.ap-site .ap-announcement .ap-promo-main{font-size:9px}.ap-site .ap-announcement .ap-promo-shop{font-size:8px;padding:5px 7px}.ap-site .ap-announcement .ap-promo-bogo{padding:4px 7px;font-size:8px}}
-
-/* Purple/blue neon hero benefits with a gently travelling border shimmer. */
-.ap-site .nl-hero .nl-offer-grid>.ap-offer-box{
- position:relative;isolation:isolate;overflow:hidden;
- border:1px solid transparent!important;
- background:linear-gradient(115deg,rgba(83,46,149,.88),rgba(68,64,178,.93),rgba(80,153,247,.86)) padding-box,
- linear-gradient(105deg,#b68bff,#72cbff,#a97af8,#ebc5ff,#58baff) border-box!important;
- background-size:100% 100%,250% 100%!important;
- box-shadow:0 0 14px #b273ff66,0 3px 14px #3b51f255!important;
- animation:ap-hero-border-sweep 4.2s linear infinite!important;
-}
-.ap-site .nl-hero .nl-offer-grid>.ap-offer-box:nth-child(2){
- background:linear-gradient(115deg,rgba(64,37,130,.88),rgba(63,56,149,.94),rgba(28,95,187,.9)) padding-box,
- linear-gradient(105deg,#84adff,#cf8bff,#7deaff,#b57cff,#84adff) border-box!important;
- background-size:100% 100%,250% 100%!important;
-}
-.ap-site .nl-hero .nl-offer-grid>.ap-offer-box:before{content:"";position:absolute;inset:0;pointer-events:none;z-index:-1;background:linear-gradient(100deg,transparent 25%,#ffffff22 50%,transparent 74%);background-size:220% 100%;animation:ap-hero-card-glint 5.6s linear infinite}
 @keyframes ap-hero-border-sweep{from{background-position:0 0,0 0}to{background-position:0 0,250% 0}}
-@keyframes ap-hero-card-glint{from{background-position:210% 0}to{background-position:-110% 0}}
-@media(prefers-reduced-motion:reduce){.ap-site .nl-hero .nl-offer-grid>.ap-offer-box,.ap-site .nl-hero .nl-offer-grid>.ap-offer-box:before{animation:none!important}}
 .ap-site .ap-locale-controls{display:none!important}
-
-
-/* 2026-11-14: focused homepage hero neon contrast pass. No payment or layout changes. */
-.ap-site .nl-hero{
-  background:
-    radial-gradient(ellipse 50% 59% at 78% 39%,rgba(65,54,153,.36) 0%,transparent 76%),
-    radial-gradient(ellipse 44% 61% at 91% 82%,rgba(73,23,112,.18) 0%,transparent 76%),
-    radial-gradient(ellipse 41% 55% at 26% 77%,rgba(30,24,94,.2) 0%,transparent 78%),
-    linear-gradient(120deg,#050411 0%,#0b071c 37%,#0e0a23 68%,#080512 100%)!important;
-}
-.ap-site .nl-hero .nl-primary{
-  position:relative;
-  isolation:isolate;
-  overflow:hidden;
-  background:linear-gradient(110deg,#124ddd 0%,#1d76ee 36%,#279ff5 70%,#6e7cff 100%) padding-box,
-             linear-gradient(105deg,#47c4ff,#8cf0ff,#b0c9ff,#6989ff,#48d9ff) border-box!important;
-  background-size:100% 100%,230% 100%!important;
-  border:2px solid transparent!important;
-  color:#fff!important;
-  font-weight:850!important;
-  text-shadow:0 1px 2px #27105644;
-  box-shadow:0 0 0 1px #4c9bff55,0 0 24px #319dff96,0 8px 31px #3f62ee5c!important;
-  animation:ap-neon-cta-border 5s linear infinite;
-  transition:filter .22s ease,transform .22s ease,box-shadow .22s ease!important;
-}
-.ap-site .nl-hero .nl-primary span{color:#fff!important}
-.ap-site .nl-hero .nl-primary::before{
-  content:"";position:absolute;inset:0;z-index:-1;pointer-events:none;
-  background:linear-gradient(103deg,transparent 24%,#ffffff27 49%,transparent 76%);
-  background-size:220% 100%;
-  animation:ap-neon-cta-glint 5.2s linear infinite;
-}
-.ap-site .nl-hero .nl-primary:hover,.ap-site .nl-hero .nl-primary:focus-visible{
-  background:linear-gradient(110deg,#1b5cf2,#188dea 45%,#5daaff) padding-box,
-             linear-gradient(105deg,#8af2ff,#d0eaff,#6bcfff,#93a9ff) border-box!important;
-  background-size:100% 100%,230% 100%!important;
-  color:#fff!important;
-  filter:brightness(1.08);
-  transform:translateY(-2px);
-  box-shadow:0 0 0 1px #9dd8ff88,0 0 32px #48b9ffba,0 10px 34px #426feb80!important;
-}
 @keyframes ap-neon-cta-border{from{background-position:0 0,0 0}to{background-position:0 0,230% 0}}
 @keyframes ap-neon-cta-glint{from{background-position:210% 0}to{background-position:-110% 0}}
-/* First card remains luminous violet-blue; the $299 card reads distinctly darker. */
-.ap-site .nl-hero .nl-offer-grid>.ap-offer-box:first-child{
-  background:linear-gradient(115deg,rgba(109,80,222,.96),rgba(141,113,243,.95) 52%,rgba(117,178,251,.91)) padding-box,
-             linear-gradient(105deg,#9d8bff,#9ce2ff,#e2a7ff,#9c7aff,#85cbff) border-box!important;
-  background-size:100% 100%,250% 100%!important;
-  box-shadow:0 0 17px #b68aff70,0 4px 19px #8c5aff50!important;
-}
-.ap-site .nl-hero .nl-offer-grid>.ap-offer-box:nth-child(2){
-  background:linear-gradient(118deg,rgba(24,13,55,.98),rgba(44,24,94,.98) 52%,rgba(25,36,93,.98)) padding-box,
-             linear-gradient(105deg,#9d8aff,#ad70ff,#63d6ff,#c590ff,#82aeff) border-box!important;
-  background-size:100% 100%,250% 100%!important;
-  box-shadow:0 0 15px #8d58fb74,0 3px 20px #4a32b46b!important;
-}
-.ap-site .nl-hero .nl-offer-grid>.ap-offer-box:nth-child(2) .ap-offer-icon{
-  background:#ab83ff32;border-color:#b994ff81;
-}
-.ap-site .nl-hero .nl-offer-grid>.ap-offer-box:nth-child(2) :is(strong,span){color:#f6eeff!important}
-@media(prefers-reduced-motion:reduce){
-  .ap-site .nl-hero .nl-primary,.ap-site .nl-hero .nl-primary::before{animation:none!important}
-}
-
-/* Homepage only: wider BOGO CTA, unchanged COAS companion button. */
-.ap-site .nl-hero .ap-actions > a.nl-primary{
-  min-width: 310px;
-  justify-content: center;
-  text-align: center;
-}
-@media(max-width:600px){
-  .ap-site .nl-hero .ap-actions > a.nl-primary{
-    min-width: min(310px,100%);
-    max-width: 100%;
-  }
-}
-
-
-/* Hero typography and countdown parity: electric red, no flashing indicator. */
-.ap-site .nl-hero .nl-hero-copy h1 em{
-  display:inline-block;
-  font-size:1.2em!important;
-  line-height:.99!important;
-  letter-spacing:-.045em!important;
-  font-weight:900!important;
-  background-image:linear-gradient(90deg,#9c70ff 0%,#659bff 44%,#40c7ff 100%)!important;
-}
-.ap-site .nl-hero .nl-hero-copy .nl-hero-sale-description{
-  max-width:565px;
-  margin:25px 0 31px!important;
-  color:#c6c2da!important;
-  font-family:Poppins,Arial,sans-serif;
-  font-size:17px!important;
-  line-height:1.56!important;
-  letter-spacing:0!important;
-  font-weight:400!important;
-}
-.ap-site .nl-hero .ap-actions{margin-bottom:0!important}
-.ap-site .nl-hero .ap-promo-clock{
-  width:fit-content!important;
-  max-width:100%;
-  min-height:78px;
-  margin:43px 0 0!important;
-  padding:11px 14px!important;
-  display:flex;
-  align-items:center;
-  justify-content:space-between;
-  gap:18px;
-  border:1px solid #ff3657!important;
-  border-radius:16px!important;
-  background:linear-gradient(110deg,#370817 0%,#65091f 58%,#830b2b 100%)!important;
-  color:#fff0f4!important;
-  box-shadow:inset 0 0 0 1px #ff5b7c4a,0 0 20px #ff164e8c,0 10px 30px #df003f59!important;
-}
-.ap-site .nl-hero .ap-promo-clock[hidden]{display:none!important}
-.ap-site .nl-hero .ap-promo-clock-copy{
-  display:flex;
-  flex-direction:column;
-  align-items:flex-start;
-  justify-content:center;
-  gap:7px;
-  min-width:0;
-}
-.ap-site .nl-hero .ap-promo-clock-copy>strong{
-  display:block;
-  margin:0!important;
-  color:#ff9bb2!important;
-  font-size:11px!important;
-  line-height:1.25;
-  font-weight:900!important;
-  letter-spacing:.12em;
-  white-space:nowrap;
-}
-.ap-site .nl-hero .ap-promo-black-friday{
-  display:inline-flex;
-  align-items:center;
-  width:max-content;
-  max-width:100%;
-  padding:4px 10px;
-  color:#fff!important;
-  background:linear-gradient(110deg,#ff2252,#ed0044);
-  border-radius:999px;
-  font-size:10px!important;
-  line-height:1.2;
-  font-weight:900;
-  letter-spacing:.02em;
-}
-.ap-site .nl-hero .ap-promo-time-cells{
-  display:grid;
-  grid-template-columns:repeat(4, minmax(47px,1fr));
-  gap:6px;
-  align-items:center;
-  flex:none;
-  margin:0!important;
-  color:#fff!important;
-}
-.ap-site .nl-hero .ap-promo-time-cell{
-  min-width:47px;
-  height:51px;
-  padding:6px 5px;
-  display:flex;
-  align-items:center;
-  justify-content:center;
-  gap:4px;
-  background:#250411dd;
-  border:1px solid #ff608c9c;
-  border-radius:9px;
-  box-shadow:inset 0 1px 9px #ff29563d;
-  font-variant-numeric:tabular-nums;
-}
-.ap-site .nl-hero .ap-promo-time-cell>strong{
-  display:block;
-  margin:0!important;
-  color:#fff!important;
-  font-size:24px!important;
-  line-height:1!important;
-  font-weight:900;
-  letter-spacing:-.04em;
-}
-.ap-site .nl-hero .ap-promo-time-cell>small{
-  display:block;
-  color:#ffb3c6;
-  font-size:10px;
-  line-height:1;
-  font-weight:700;
-}
-.ap-site .nl-hero .nl-offer-grid{margin-top:49px!important}
-@media(max-width:1100px){
- .ap-site .nl-hero .ap-promo-clock{gap:9px;padding:10px!important}
- .ap-site .nl-hero .ap-promo-clock-copy>strong{font-size:10px!important;letter-spacing:.04em}
- .ap-site .nl-hero .ap-promo-time-cells{grid-template-columns:repeat(4,minmax(38px,1fr));gap:4px}
- .ap-site .nl-hero .ap-promo-time-cell{min-width:38px;padding:5px 3px}
- .ap-site .nl-hero .ap-promo-time-cell>strong{font-size:20px!important}
-}
-@media(max-width:700px){
- .ap-site .nl-hero .nl-hero-copy h1 em{font-size:1.14em!important}
- .ap-site .nl-hero .nl-hero-copy .nl-hero-sale-description{font-size:14px!important;line-height:1.55!important;margin:19px 0 24px!important}
- .ap-site .nl-hero .ap-promo-clock{margin-top:31px!important;flex-wrap:wrap;justify-content:center;gap:12px;min-height:unset}
- .ap-site .nl-hero .ap-promo-clock-copy{align-items:center;text-align:center}
- .ap-site .nl-hero .ap-promo-time-cells{grid-template-columns:repeat(4,minmax(44px,1fr));gap:6px}
- .ap-site .nl-hero .ap-promo-time-cell{min-width:44px}
- .ap-site .nl-hero .nl-offer-grid{margin-top:38px!important}
-}
-@media(prefers-reduced-motion:reduce){
- .ap-site .nl-hero .ap-promo-clock,.ap-site .nl-hero .ap-promo-time-cell{animation:none!important}
-}
-
-
-/* Move floating product imagery up so the bottoms remain visible at initial viewport height. */
-@media(min-width:1101px){
- .ap-site .nl-hero .nl-vial-stage .nl-vial-0{top:68px!important}
- .ap-site .nl-hero .nl-vial-stage .nl-vial-1{top:-27px!important}
- .ap-site .nl-hero .nl-vial-stage .nl-vial-2{top:82px!important}
-}
-@media(min-width:801px) and (max-width:1100px){
- .ap-site .nl-hero .nl-vial-stage .nl-vial-0{top:83px!important}
- .ap-site .nl-hero .nl-vial-stage .nl-vial-1{top:-9px!important}
- .ap-site .nl-hero .nl-vial-stage .nl-vial-2{top:103px!important}
-}
-@media(max-width:800px){
- .ap-site .nl-hero .nl-vial-stage .nl-vial-0{top:35px!important}
- .ap-site .nl-hero .nl-vial-stage .nl-vial-1{top:-13px!important}
- .ap-site .nl-hero .nl-vial-stage .nl-vial-2{top:56px!important}
-}
-
-/* Limited-time label: accessible inline clock mark, preserving the hero capsule. */
-.ap-site .nl-hero .nl-capsule.nl-limited-time{display:inline-flex;align-items:center;gap:7px}
-.ap-site .nl-hero .nl-limited-time svg{width:15px;height:15px;flex:none;display:block;fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
-
-/* 2026-11-14: stable countdown geometry + seamless sale/checkout motion.
-   No desktop hero rearrangement, cart logic, prices, or mobile layout changes. */
-@media screen and (min-width: 768px) {
-  .ap-site .nl-hero .ap-promo-clock {
-    box-sizing: border-box;
-    width: min(100%, 500px) !important;
-    min-width: 0 !important;
-    max-width: 100% !important;
-  }
-  .ap-site .nl-hero .ap-promo-time-cells {
-    box-sizing: border-box;
-    grid-template-columns: repeat(4, minmax(0, 58px)) !important;
-    width: 250px !important;
-    min-width: 250px !important;
-    flex: 0 0 250px !important;
-    gap: 6px !important;
-  }
-  .ap-site .nl-hero .ap-promo-time-cell {
-    box-sizing: border-box;
-    min-width: 0 !important;
-    width: 58px !important;
-    max-width: 58px !important;
-    padding: 6px 3px !important;
-    gap: 2px !important;
-    justify-content: center;
-  }
-  .ap-site .nl-hero .ap-promo-time-cell > strong {
-    display: block;
-    flex: 0 0 38px;
-    min-width: 38px;
-    font-variant-numeric: tabular-nums !important;
-    font-feature-settings: "tnum" 1;
-    letter-spacing: 0 !important;
-    text-align: center;
-  }
-  .ap-site .nl-hero .ap-promo-time-cell > small {
-    display: block;
-    flex: 0 0 8px;
-    text-align: left;
-  }
-  .ap-site .ap-announcement {
-    animation: ap-promo-glint 3.6s ease-in-out infinite !important;
-  }
-  .ap-site .ap-announcement::before {
-    /* Travel fully beyond both edges before returning off-screen. */
-    animation: ap-checkout-shimmer 3.2s ease-in-out infinite !important;
-  }
-}
-@media screen and (min-width: 768px) and (max-width: 1100px) {
-  .ap-site .nl-hero .ap-promo-clock {
-    width: min(100%, 422px) !important;
-  }
-  .ap-site .nl-hero .ap-promo-time-cells {
-    grid-template-columns: repeat(4, minmax(0, 52px)) !important;
-    width: 220px !important;
-    min-width: 220px !important;
-    flex: 0 0 220px !important;
-    gap: 4px !important;
-  }
-  .ap-site .nl-hero .ap-promo-time-cell {
-    width: 52px !important;
-    max-width: 52px !important;
-    padding: 5px 1px !important;
-  }
-  .ap-site .nl-hero .ap-promo-time-cell > strong {
-    flex: 0 0 36px;
-    min-width: 36px;
-  }
-}
-@media screen and (min-width: 768px) and (max-width: 940px) {
-  .ap-site .nl-hero .ap-promo-time-cells {
-    flex: 0 0 auto !important;
-    height: auto !important;
-  }
-  .ap-site .nl-hero .ap-promo-clock {
-    flex-direction: column;
-    justify-content: center;
-    gap: 9px !important;
-    min-height: 122px;
-  }
-  .ap-site .nl-hero .ap-promo-clock-copy {
-    align-items: center;
-    text-align: center;
-  }
-}
 
 /* Gradient borders glide out and return with matching endpoints;
    inner light bands reset only while completely outside the clipping box. */
@@ -720,20 +249,6 @@ body.ap-site {
   0% { transform: translate3d(-160%, 0, 0); }
   100% { transform: translate3d(160%, 0, 0); }
 }
-.ap-site .nl-hero .nl-primary {
-  animation: ap-seamless-border-loop 5.0s ease-in-out infinite !important;
-}
-.ap-site .nl-hero .nl-primary::before {
-  background-size: 100% 100% !important;
-  animation: ap-seamless-glint-slide 4.3s linear infinite !important;
-}
-.ap-site .nl-hero .nl-offer-grid > .ap-offer-box {
-  animation: ap-seamless-border-loop 5.0s ease-in-out infinite !important;
-}
-.ap-site .nl-hero .nl-offer-grid > .ap-offer-box::before {
-  background-size: 100% 100% !important;
-  animation: ap-seamless-glint-slide 4.3s linear infinite !important;
-}
 
 /* The shipping threshold bar now goes out and back rather than snapping
    instantly from its last gradient frame to its first frame. */
@@ -744,14 +259,159 @@ body.ap-site {
 .ap-site .nlc-progress-fill {
   animation: ap-seamless-shipping-progress 2.8s ease-in-out infinite !important;
 }
-@media (prefers-reduced-motion: reduce) {
-  .ap-site .ap-announcement::before,
-  .ap-site .nl-hero .nl-primary,
-  .ap-site .nl-hero .nl-primary::before,
-  .ap-site .nl-hero .nl-offer-grid > .ap-offer-box,
-  .ap-site .nl-hero .nl-offer-grid > .ap-offer-box::before,
-  .ap-site .nlc-progress-fill {
-    animation: none !important;
-  }
-}
 
+
+/* Regular catalog storefront: one announcement, an upright product stage, and three trust items. */
+.ap-site .ap-announcement {
+  position: sticky;
+  top: 0;
+  z-index: 110;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-sizing: border-box;
+  height: 36px;
+  min-height: 36px;
+  padding: 7px 16px;
+  margin: 0;
+  gap: 0;
+  overflow: visible;
+  color: #fff;
+  font-size: 12px;
+  font-weight: 600;
+  line-height: 1.35;
+  letter-spacing: .015em;
+  text-align: center;
+  animation: none !important;
+}
+.ap-site .ap-announcement::before,
+.ap-site .ap-announcement::after { content: none !important; display: none !important; }
+.ap-site .ap-announcement #ap-announcement-text { display: block; max-width: 100%; }
+.ap-site .ap-header.ap-header-compact { top: 36px; }
+.ap-site .nl-hero { --pure-site-chrome-height: 113px; position: relative; isolation: isolate; overflow: hidden; color: #fff; }
+.ap-site .nl-hero::before,
+.ap-site .nl-hero::after { content: none !important; display: none !important; background-image: none !important; }
+.ap-site .nl-hero .nl-hero-inner {
+  box-sizing: border-box;
+  display: grid;
+  grid-template-columns: minmax(0,1fr) minmax(0,1fr);
+  grid-template-rows: minmax(0,1fr) auto;
+  align-items: center;
+  column-gap: 40px;
+  row-gap: 18px;
+  height: calc(100svh - var(--pure-site-chrome-height));
+  min-height: 470px;
+  padding: 26px 0 24px;
+}
+.ap-site .nl-hero .nl-hero-copy { position: relative; z-index: 3; min-width: 0; }
+.ap-site .nl-hero .nl-hero-copy h1 {
+  margin: 0;
+  color: #fff;
+  font-size: clamp(43px,5.6vw,82px);
+  font-weight: 800;
+  line-height: 1.01;
+  letter-spacing: -.045em;
+  white-space: nowrap;
+}
+.ap-site .nl-hero .nl-hero-copy h1 em { display: inline-block; font-size: 1em; line-height: 1.06; font-style: normal; }
+.ap-site .nl-hero .nl-hero-description {
+  max-width: 495px;
+  margin: 22px 0 24px;
+  color: #ded7ea;
+  font-size: 16px;
+  line-height: 1.65;
+}
+.ap-site .nl-hero .ap-actions { display: flex; margin: 0; gap: 0; }
+.ap-site .nl-hero .ap-actions > a.nl-primary {
+  box-sizing: border-box;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 170px;
+  min-height: 50px;
+  width: auto;
+  margin: 0;
+  padding: 14px 30px;
+  font-size: 14px;
+  font-weight: 800;
+  letter-spacing: .045em;
+  white-space: nowrap;
+  animation: none !important;
+}
+.ap-site .nl-hero .nl-primary::before { content: none !important; }
+.ap-site .nl-hero .nl-vial-stage { position: relative; width: 100%; height: 420px; min-width: 0; margin: 0; }
+.ap-site .nl-hero .nl-vial {
+  position: absolute;
+  z-index: 2;
+  width: 48%;
+  border-radius: 0;
+  filter: drop-shadow(0 16px 18px #03010ca0);
+  transform: translate3d(0,0,0);
+  animation: pure-vial-float 7s ease-in-out infinite;
+  will-change: transform;
+}
+.ap-site .nl-hero .nl-vial img {
+  display: block;
+  width: 100%;
+  height: auto;
+  aspect-ratio: 1081 / 1455;
+  object-fit: contain;
+  border-radius: 0;
+  mask-image: none;
+  clip-path: url(#ap-vial-outline);
+}
+.ap-site .nl-hero .nl-vial-0 { left: -3%; top: 45px; animation-delay: -2s; }
+.ap-site .nl-hero .nl-vial-1 { left: 22%; top: 0; width: 55%; z-index: 3; }
+.ap-site .nl-hero .nl-vial-2 { right: -3%; top: 65px; animation-delay: -4s; }
+.ap-site .nl-hero .nl-stage-word {
+  position: absolute;
+  z-index: 0;
+  inset: auto 0 24px;
+  width: 100%;
+  height: 115px;
+  margin: 0;
+  color: #000 !important;
+  opacity: 1;
+  pointer-events: none;
+}
+.ap-site .nl-hero .nl-trust {
+  grid-column: 1 / -1;
+  display: grid;
+  grid-template-columns: repeat(3,minmax(0,1fr));
+  align-items: center;
+  width: 100%;
+  max-width: none;
+  padding: 19px 0 0;
+  margin: 0;
+  gap: 14px;
+  border-top: 1px solid #ffffff24;
+}
+.ap-site .nl-hero .nl-trust > div { display: flex; align-items: center; justify-content: center; gap: 10px; min-width: 0; padding: 0; border: 0; }
+.ap-site .nl-hero .nl-trust > div > span { margin: 0; color: #fff; font-size: 14px; font-weight: 600; line-height: 1.4; letter-spacing: 0; }
+.ap-site .nl-hero .nl-trust .nl-trust-check { display: block; flex: 0 0 23px; width: 23px; height: 23px; fill: none; stroke: #fff; stroke-width: 2.5; stroke-linecap: round; stroke-linejoin: round; }
+@keyframes pure-vial-float { 0%,100% { transform: translate3d(0,0,0); } 50% { transform: translate3d(0,-11px,0); } }
+/* Account for the 36px announcement, header content, and its 1px border. */
+@media (min-width:768px) and (max-width:1050px) {
+  .ap-site .nl-hero { --pure-site-chrome-height: 103px; }
+}
+@media (min-width:901px) and (max-height:700px) {
+  .ap-site .nl-hero .nl-hero-inner { min-height: 430px; padding-top: 16px; padding-bottom: 18px; row-gap: 10px; }
+  .ap-site .nl-hero .nl-vial-stage { height: 360px; max-width: 510px; justify-self: center; }
+  .ap-site .nl-hero .nl-hero-description { margin-block: 17px 19px; }
+}
+@media (max-width:900px) {
+  .ap-site .nl-hero .nl-hero-inner { grid-template-columns: minmax(0,1fr); grid-template-rows: auto minmax(0,1fr) auto; min-height: 640px; gap: 12px; padding: 32px 0 24px; }
+  .ap-site .nl-hero .nl-hero-copy { text-align: center; }
+  .ap-site .nl-hero .nl-hero-copy h1 { font-size: clamp(42px,7.8vw,67px); }
+  .ap-site .nl-hero .nl-hero-description { max-width: 480px; margin: 18px auto 22px; }
+  .ap-site .nl-hero .ap-actions { justify-content: center; }
+  .ap-site .nl-hero .nl-vial-stage { max-width: 470px; height: 100%; max-height: 350px; min-height: 200px; margin: 0 auto; }
+  .ap-site .nl-hero .nl-vial { width: auto; max-width: 48%; height: calc(100% - 40px); aspect-ratio: 1081 / 1455; }
+  .ap-site .nl-hero .nl-vial-0 { top: 25px; }
+  .ap-site .nl-hero .nl-vial-1 { left: 50%; width: auto; max-width: 55%; height: 100%; translate: -50% 0; }
+  .ap-site .nl-hero .nl-vial-2 { top: 40px; }
+  .ap-site .nl-hero .nl-stage-word { bottom: 20px; height: 98px; }
+  .ap-site .nl-hero .nl-trust { margin-top: 0; align-self: end; }
+  .ap-site .nl-hero .nl-trust > div > span { font-size: 12px; }
+}
+@media (prefers-reduced-motion:reduce) { .ap-site .nl-hero .nl-vial { animation: none !important; transform: none !important; } }

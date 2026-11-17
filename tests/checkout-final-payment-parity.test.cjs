@@ -23,7 +23,7 @@ test('bank artwork comes from user screenshot assets rather than icon approximat
  assert.match(css,/\.nlx-bank-link-dot::after/);
 });
 test('only an active bank transfer choice enables order submission; cards and wallets remain disabled',()=>{
- assert.match(checkout,/nlx-wallet-unavailable" disabled/);
+ assert.match(checkout,/nlx-wallet-unavailable[^>]+ disabled/);
  assert.match(checkout,/Card number \*<input disabled/);
  assert.match(checkout,/selected==='bank'&&bank/);
  assert.match(checkout,/method_id:bank\.id/);

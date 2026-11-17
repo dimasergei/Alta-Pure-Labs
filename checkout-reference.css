@@ -3,7 +3,7 @@ body.ap-checkout-page{background:#fff!important;color:#111c2a}
 body.ap-checkout-page .account-page{padding:22px 28px 72px!important;background:#fff!important}
 body.ap-checkout-page .account-shell{width:min(1380px,100%)!important;max-width:none!important}
 body.ap-checkout-page #account-root{box-shadow:none!important;border:0!important;padding:0!important;max-width:none!important;background:transparent!important}
-.nlx-checkout-root{--nx-border:#dce5ef;--nx-text:#101720;--nx-blue:#0e3f87;--nx-muted:#687b94;--nx-sky:#eef4ff;font-family:Poppins,Inter,Arial,sans-serif;color:var(--nx-text);font-size:14px}
+.nlx-checkout-root{--nx-border:#dce5ef;--nx-text:#101720;--nx-blue:#0e3f87;--nx-muted:#687b94;--nx-sky:#eef4ff;font-family:inherit;color:var(--nx-text);font-size:14px}
 .nlx-checkout-root *{box-sizing:border-box}
 .nlx-checkout-root [hidden]{display:none!important}
 .nlx-page{width:min(1350px,100%);margin:0 auto}
@@ -368,3 +368,5 @@ body.ap-checkout-page #account-root{box-shadow:none!important;border:0!important
 .nlx-member-actions .nlx-member-activate:focus-visible{outline:3px solid #65b7ff;outline-offset:3px}
 .nlx-member-offer h3 em{font-style:normal;color:#125fb6}
 @media(max-width:600px){.nlx-member-actions .nlx-member-activate{white-space:normal;text-align:center}}
+
+.nlx-coupon-help{font-size:12px;line-height:1.5;margin:18px 0 0}.nlx-coupon{padding-top:10px}.nlx-coupon button:disabled{opacity:.55;cursor:wait}.nlx-coupon button[hidden]{display:none!important}[data-nlx-coupon-status]{font-size:12px;line-height:1.5;margin:8px 0}[data-nlx-coupon-status]:empty{display:none}

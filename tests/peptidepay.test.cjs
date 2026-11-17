@@ -54,7 +54,7 @@ test('disabled verification, wrong account and callbacks preceding durable bindi
 test('duplicate invoice submission never creates a second PeptidePay session',async()=>{
  let claimed=true,calls=0;const writes=[];
  const db={rpc:async(name,args)=>{writes.push({name,args});return{data:name==='commerce_begin_gateway_attempt'?{...attempt,claimed,state:'redirected',redirect_url:'https://peptide-pay.com/session/'+paid.id}:{state:'redirected'}};}};
- const invoice={id:attempt.invoice_id,status:'accepted',expires_at:new Date(Date.now()+60000).toISOString(),currency:'USD',total_cents:4900};
+ const invoice={id:attempt.invoice_id,kind:'goods',status:'accepted',expires_at:new Date(Date.now()+60000).toISOString(),currency:'USD',total_cents:4900};
  const c=pp.configuration(env),account={provider:'peptidepay',mode:'live',account_tag:c.account_tag,countries:['US'],method:{active:true}};
  const body={attempt_id:attempt.id,confirm_amount_cents:4900,confirm_currency:'USD',consent:true,crypto_conversion_consent:true,billing:{country:'US'}};
  const fetchImpl=async()=>{calls++;return{ok:true,json:async()=>({...paid,status:'pending',url:'https://peptide-pay.com/session/'+paid.id,tracking_number:attempt.settlement_address})};};
@@ -65,6 +65,6 @@ test('duplicate invoice submission never creates a second PeptidePay session',as
 });
 test('transport uncertainty blocks a second session and reconciliation never creates one',async()=>{
  let outcome;const db={rpc:async(name,args)=>{if(name==='commerce_begin_gateway_attempt')return{data:{...attempt,claimed:true}};outcome=args.p_outcome;return{data:{state:'unknown'}};}};
- const c=pp.configuration(env);await g.startPayment(db,{id:attempt.invoice_id,status:'accepted',expires_at:new Date(Date.now()+60000).toISOString(),currency:'USD',total_cents:4900},{provider:'peptidepay',mode:'live',account_tag:c.account_tag,countries:['US'],method:{active:true}},c,{attempt_id:attempt.id,confirm_amount_cents:4900,confirm_currency:'USD',consent:true,crypto_conversion_consent:true,billing:{country:'US'}},{id:'customer'},env,async()=>{throw Error('timeout');},async()=>{});assert.equal(outcome,'unknown');
+ const c=pp.configuration(env);await g.startPayment(db,{id:attempt.invoice_id,kind:'goods',status:'accepted',expires_at:new Date(Date.now()+60000).toISOString(),currency:'USD',total_cents:4900},{provider:'peptidepay',mode:'live',account_tag:c.account_tag,countries:['US'],method:{active:true}},c,{attempt_id:attempt.id,confirm_amount_cents:4900,confirm_currency:'USD',consent:true,crypto_conversion_consent:true,billing:{country:'US'}},{id:'customer'},env,async()=>{throw Error('timeout');},async()=>{});assert.equal(outcome,'unknown');
  await assert.rejects(pp.retrieve({...attempt,provider_session_id:null},env,async()=>{throw Error('must not request');}),e=>e.status===409);
 });

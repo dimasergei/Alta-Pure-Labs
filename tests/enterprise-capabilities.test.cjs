@@ -4,10 +4,11 @@ const assert = require('node:assert/strict');
 const { CAPABILITIES, validateCapabilities, listCapabilities } = require('../lib/enterprise-capabilities');
 
 test('enterprise capability registry is valid, complete and dependency-acyclic', () => {
-  assert.deepEqual(validateCapabilities(), { valid: true, count: 19 });
-  assert.equal(new Set(CAPABILITIES.map(c => c.id)).size, 19);
-  for (const id of ['catalog', 'batch-coa-library', 'bulk-ordering', 'memberships',
-    'rewards', 'subscriptions', 'affiliates', 'supplier-routing', 'international-lanes',
+  assert.deepEqual(validateCapabilities(), { valid: true, count: 17 });
+  assert.equal(new Set(CAPABILITIES.map(c => c.id)).size, 17);
+  for(const id of ['memberships','subscriptions'])assert.ok(!CAPABILITIES.some(c=>c.id===id));
+  for (const id of ['catalog', 'batch-coa-library', 'bulk-ordering',
+    'rewards', 'affiliates', 'supplier-routing', 'international-lanes',
     'provider-adapters', 'checkout-cutover']) {
     assert.ok(CAPABILITIES.some(c => c.id === id), id);
   }

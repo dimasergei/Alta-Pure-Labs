@@ -36,9 +36,10 @@ function fixture(ready=false,seedUnselected=false){
   const shipping=zones[body.country]||zones.OTHER;
   const chosen=body.delivery;
   const charges=(chosen.extras||[]).map(x=>({id:x,label:delivery.find(d=>d.id===x)?.label,amount_cents:delivery.find(d=>d.id===x)?.price_cents}));
-  const total=subtotal+shipping[chosen.shipping]+charges.reduce((n,x)=>n+x.amount_cents,0);
-  const q={subtotal_cents:subtotal,discount_cents:0,shipping_cents:shipping[chosen.shipping]+charges.reduce((n,x)=>n+x.amount_cents,0),
-   total_cents:total,currency:'USD',earned_points:Math.floor(subtotal/100),pricing:{delivery:{shipping_cents:shipping[chosen.shipping],extras:charges}}};
+  const shippingCents=body.country==='US'&&chosen.shipping==='standard'&&subtotal>=15000?0:shipping[chosen.shipping];
+  const total=subtotal+shippingCents+charges.reduce((n,x)=>n+x.amount_cents,0);
+  const q={subtotal_cents:subtotal,discount_cents:0,shipping_cents:shippingCents+charges.reduce((n,x)=>n+x.amount_cents,0),
+   total_cents:total,currency:'USD',earned_points:0,free_shipping_threshold_cents:15000,free_shipping_remaining_cents:Math.max(0,15000-subtotal),pricing:{delivery:{shipping_cents:shippingCents,extras:charges}}};
   quotes.push(q);
   return{ok:true,json:async()=>q};
  };
@@ -47,14 +48,14 @@ function fixture(ready=false,seedUnselected=false){
  w.eval(source);
  return{dom,w,root:w.document.getElementById('checkout'),data,orders,quotes,auth};
 }
-test('three-step checkout shows preselected US protection, editable order summary, points and global country dropdown',async()=>{
+test('three-step checkout shows preselected US protection, editable order summary and global country dropdown without new rewards',async()=>{
  const f=fixture();
  try{
   await f.w.DirectCheckout.checkout(f.root,f.auth,user);
   await wait();
   assert.equal(f.root.querySelectorAll('[data-nlx-step]').length,3);
   assert.match(f.root.textContent,/Order Summary/);
-  assert.match(f.root.textContent,/Earn .* points/);
+  assert.doesNotMatch(f.root.textContent,/Earn .* points|membership/i);
   assert.match(f.root.textContent,/Shipping Protection/);
   assert.equal(f.root.querySelector('[data-nlx-extra="protection"]').checked,true);
   const countries=f.root.querySelector('select[name=country]');
@@ -62,7 +63,7 @@ test('three-step checkout shows preselected US protection, editable order summar
   assert.equal(countries.value,'US');
   assert.ok([...countries.options].some(x=>x.value==='CA'));
   assert.ok([...countries.options].some(x=>x.value==='GB'));
-  assert.equal(f.quotes.at(-1).total_cents,21995);
+  assert.equal(f.quotes.at(-1).total_cents,20500);
   assert.match(f.root.textContent,/Country \/ Region/);
  }finally{f.dom.window.close();}
 });
@@ -99,10 +100,10 @@ test('protected line is added/removed from server quote and cart quantities upda
   const protection=f.root.querySelector('[data-nlx-extra=protection]');
   protection.checked=false;protection.dispatchEvent(new f.w.Event('change',{bubbles:true}));
   await new Promise(r=>setTimeout(r,280));
-  assert.equal(f.quotes.at(-1).total_cents,21495);
+  assert.equal(f.quotes.at(-1).total_cents,20000);
   f.root.querySelector('[data-nlx-qty="1"]').click();await new Promise(r=>setTimeout(r,280));
   assert.equal(f.w.AltaStore.cart[0].qty,3);
-  assert.equal(f.quotes.at(-1).total_cents,31495);
+  assert.equal(f.quotes.at(-1).total_cents,30000);
  }finally{f.dom.window.close();}
 });
 test('NMI absent never submits an order or creates a fake wallet payment',async()=>{
@@ -141,10 +142,10 @@ test('a cart with previously unchecked protection defaults checked on entry to c
   const box=f.root.querySelector('[data-nlx-extra="protection"]');
   assert.ok(box,'Shipping Protection must be available for eligible US checkout');
   assert.equal(box.checked,true,'Previously unchecked cart must default to checked at checkout');
-  assert.equal(f.quotes.at(-1).total_cents,21995);
+  assert.equal(f.quotes.at(-1).total_cents,20500);
   box.checked=false;box.dispatchEvent(new f.w.Event('change',{bubbles:true}));
   await new Promise(resolve=>setTimeout(resolve,250));
   assert.equal(f.root.querySelector('[data-nlx-extra="protection"]').checked,false);
-  assert.equal(f.quotes.at(-1).total_cents,21495);
+  assert.equal(f.quotes.at(-1).total_cents,20000);
  }finally{f.dom.window.close();}
 });

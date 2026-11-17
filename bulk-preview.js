@@ -19,7 +19,7 @@
    lines.append(make('li',p.name+' · '+item.size+' · '+item.qty+' × '+dollars(v.price)+' = '+dollars(line)));
   }
   empty.hidden=worksheet.size>0;
-  total.textContent=worksheet.size?'Illustrative subtotal (no discount): '+dollars(sum):'';
+  total.textContent=worksheet.size?'Merchandise subtotal: '+dollars(sum):'';
  }
  function render(){
   const q=search.value.trim().toLowerCase(),group=category.value;
@@ -31,7 +31,7 @@
    const label=make('label','Strength');const select=make('select');
    for(const v of p.variants){const option=make('option',v.size+' — '+dollars(v.price));option.value=v.size;select.append(option);}
    label.append(select);card.append(label);
-   const qtyLabel=make('label','Quantity (units)');const qty=make('input');qty.type='number';qty.min='1';qty.max='100';qty.step='1';qty.value='10';qtyLabel.append(qty);card.append(qtyLabel);
+   const qtyLabel=make('label','Quantity (units)');const qty=make('input');qty.type='number';qty.min='1';qty.max='100';qty.step='1';qty.value='1';qtyLabel.append(qty);card.append(qtyLabel);
    const button=make('button','Add to worksheet');button.type='button';
    button.addEventListener('click',()=>{
     const n=Number(qty.value);if(!Number.isSafeInteger(n)||n<1||n>100){qty.setCustomValidity('Enter a quantity from 1 to 100.');qty.reportValidity();return;}
