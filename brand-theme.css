@@ -1,20 +1,20 @@
 /* Shared storefront palette and interaction styles. */
 body.ap-site {
-  --ap-ink: #172538;
-  --ap-muted: #526278;
-  --ap-deep: #152844;
-  --ap-green: #244c87;
-  --ap-cream: #f4f7fb;
-  --ap-line: #dce4ef;
-  --ap-lime: #dceafb;
-  --nl-ink: #152844;
-  --nl-green: #285b9d;
-  --nl-soft: #f4f7fb;
-  --nl-line: #dce4ef;
+  --ap-ink: #111111;
+  --ap-muted: #666;
+  --ap-deep: #0b0b0b;
+  --ap-green: #111111;
+  --ap-cream: #f5f5f5;
+  --ap-line: #e5e5e5;
+  --ap-lime: #f5f5f5;
+  --nl-ink: #111111;
+  --nl-green: #111111;
+  --nl-soft: #f5f5f5;
+  --nl-line: #e5e5e5;
   --paper: #fff;
-  --surface: #f4f7fb;
-  --ink: #172538;
-  --muted: #526278;
+  --surface: #f5f5f5;
+  --ink: #111111;
+  --muted: #666;
   color: var(--ap-ink);
   background: var(--paper);
   color-scheme: light;
@@ -25,7 +25,7 @@ body.ap-site {
 }
 
 .ap-site :is(a, button, input, select, textarea, summary):focus-visible {
-  outline: 2px solid #3876c5;
+  outline: 2px solid #111;
   outline-offset: 3px;
 }
 
@@ -42,24 +42,24 @@ body.ap-site {
   }
 }
 
-/* Layered light surfaces and focused motion around the current promotion. */
+/* Flat public surfaces keep the monochrome product photography in focus. */
 body.ap-site {
-  background: radial-gradient(ellipse at 85% 0%, #eaf2ff, transparent 36rem), #fff;
+  background: #fff;
 }
 @keyframes ap-promo-glint {
   0%, 100% { background-position: 0 0, 0 0; }
   50% { background-position: 0 0, 100% 0; }
 }
 .ap-site .ap-vial-clip { position: absolute; width: 0; height: 0; }
-.ap-site :is(.ap-page-intro, .nl-section-title) em { color: #285b9d; }
+.ap-site :is(.ap-page-intro, .nl-section-title) em { color: #111111; }
 .ap-site :is(.nl-soft, .ap-workspace-layout, .account-page) {
-  background-image: linear-gradient(145deg, #f9fbff, #edf4ff 65%, #f8fbff);
+  background: #fff;
 }
 .ap-site .ap-product-card { transition: box-shadow .2s, border-color .2s; }
-.ap-site .ap-product-card:hover { box-shadow: 0 16px 36px #23467d18; border-color: #a2bde6; }
+.ap-site .ap-product-card:hover { box-shadow: 0 16px 36px #00000018; border-color: #d0d0d0; }
 .ap-coa-hero {
   color: #fff;
-  background: radial-gradient(ellipse at 77% 40%, #285893, transparent 58%), linear-gradient(130deg,#0c1831,#162f54);
+  background: #0b0b0b;
 }
 .ap-coa-hero-inner {
   display: grid;
@@ -69,37 +69,37 @@ body.ap-site {
   padding-block: clamp(44px, 7vw, 92px);
 }
 .ap-coa-hero h1 { margin: 18px 0 12px; font-size: clamp(2.5rem, 6vw, 5.1rem); line-height: 1.04; overflow-wrap: anywhere; }
-.ap-coa-hero h1 em { display: block; color: #9ce7ff; font-style: normal; }
-.ap-coa-hero p { color: #d6e7ff; font-size: 1rem; }
-.ap-site .ap-coa-hero .ap-button { background: #9ce7ff; color: #102b47; }
+.ap-coa-hero h1 em { display: block; color: #fff; font-style: normal; }
+.ap-coa-hero p { color: #ccc; font-size: 1rem; }
+.ap-site .ap-coa-hero .ap-button { background: #fff; color: #111; }
 .ap-coa-illustration { display: grid; place-items: center; }
 .ap-coa-sheet {
   width: min(100%, 250px);
   padding: 24px;
-  border: 1px solid #8dd7ff;
+  border: 1px solid #d0d0d0;
   border-radius: 16px;
-  background: linear-gradient(145deg,#f6fbff,#cbdffc);
-  color: #142b51;
-  box-shadow: 0 24px 52px #040b2673, 0 0 36px #7edfff36;
+  background: #fff;
+  color: #111111;
+  box-shadow: 0 24px 52px #00000045;
   transform: rotate(8deg);
 }
 .ap-coa-sheet span { font-size: .7rem; font-weight: 700; letter-spacing: .12em; }
 .ap-coa-sheet strong { display: block; margin: 9px 0 15px; font-size: 1.45rem; line-height: 1.15; }
-.ap-coa-sheet i { display: block; width: 100%; height: 5px; margin-bottom: 8px; border-radius: 4px; background: #829dca; }
+.ap-coa-sheet i { display: block; width: 100%; height: 5px; margin-bottom: 8px; border-radius: 4px; background: #666666; }
 .ap-coa-sheet i:nth-of-type(2) { width: 80%; }
 .ap-coa-sheet i:nth-of-type(3) { width: 60%; }
-.ap-coa-sheet b { display: inline-block; margin-top: 10px; padding: 4px 10px; border: 1px solid #7898c9; border-radius: 5px; }
+.ap-coa-sheet b { display: inline-block; margin-top: 10px; padding: 4px 10px; border: 1px solid #666666; border-radius: 5px; }
 .ap-coa-library { padding-block: clamp(30px, 6vw, 70px); scroll-margin-top: 100px; }
 .ap-coa-library-heading p { color: var(--ap-muted); }
-.ap-coa-library-heading a { text-decoration: underline; color: #285b9d; }
+.ap-coa-library-heading a { text-decoration: underline; color: #111111; }
 .ap-site .ap-coa-library .ap-coa-controls {
   display: grid;
   grid-template-columns: minmax(0, 2fr) repeat(3,minmax(0,1fr));
   gap: 10px;
   padding: 14px;
-  border: 1px solid #d2e0f4;
+  border: 1px solid #e5e5e5;
   border-radius: 16px;
-  background: linear-gradient(135deg,#f2f7ff,#eaf2fe);
+  background: #f5f5f5;
 }
 .ap-site .ap-coa-library .ap-coa-controls label { min-width: 0; }
 .ap-site .ap-coa-library .ap-coa-controls .ap-input { width: 100%; min-width: 0; }
@@ -113,10 +113,10 @@ body.ap-site {
 }
 @keyframes ap-badge-sweep { to { transform: translateX(65%); } }
 .ap-site .nl-primary, .ap-site .nl-purchase>.ap-button {
-  border: 1px solid #a2eaff;
-  background: linear-gradient(115deg,#b4f0ff,#8cd2fc 55%,#b8bfff);
-  color: #102b4e;
-  box-shadow: 0 5px 20px #76cfff26;
+  border: 1px solid #111;
+  background: #111;
+  color: #fff;
+  box-shadow: none;
 }
 .ap-bundle-options {
   display: grid;
@@ -131,62 +131,63 @@ body.ap-site {
   display: grid;
   gap: 5px;
   padding: 14px 7px;
-  border: 1px solid #cbd9ef;
+  border: 1px solid #e5e5e5;
   border-radius: 12px;
-  color: #18355a;
-  background: linear-gradient(150deg,#fff,#f2f6fc);
+  color: #111111;
+  background: #fff;
   text-align: center;
 }
 .ap-bundle-options button span { font-size: 11px; }
 .ap-bundle-options button[aria-pressed=true] {
-  border-color: #4e7ee5;
-  background: linear-gradient(135deg,#e2f7ff,#e8e8ff);
-  box-shadow: 0 0 0 2px #7597f02b;
+  border-color: #666666;
+  background: #111;
+  color: #fff;
+  box-shadow: 0 0 0 2px #0000002b;
 }
-.ap-site .ap-bundle-estimate { font-size: 12px; color: #425774; }
+.ap-site .ap-bundle-estimate { font-size: 12px; color: #111111; }
 .ap-mobile-purchase { display: none; }
 .ap-site .ap-pair-cart {
   display: block;
   margin-block: 8px;
-  border: 1px solid #7ebde6;
+  border: 1px solid #d0d0d0;
   border-radius: 8px;
   padding: 7px 10px;
-  background: linear-gradient(120deg,#e3f8ff,#e9edff);
-  color: #173961;
+  background: #f5f5f5;
+  color: #111111;
   font-size: 12px;
 }
 .ap-site .ap-pair-cart[hidden] { display: none; }
 .ap-site .ap-cart-totals:has([data-promo-active]), .ap-site .cv-shipping-progress {
-  background: linear-gradient(120deg,#e7f6ff,#eeedff);
+  background: #f5f5f5;
 }
 .ap-site :is(.ap-membership-card,.ap-contact-card,.ap-coa-card,.ap-panel,.ae-panel,.dc-section) {
-  border-color: #d9e3f2;
-  box-shadow: 0 8px 30px #244b8110;
+  border-color: #e5e5e5;
+  box-shadow: 0 8px 30px #00000010;
 }
 .ap-site :is(.ap-membership-card.ap-highlight,.ap-membership-card.is-featured) {
-  background: linear-gradient(135deg,#173663,#3d4385);
-  border-color: #85c9f6;
+  background: #111;
+  border-color: #d0d0d0;
 }
 .ap-site .ap-page-intro {
-  background: radial-gradient(ellipse at 50% 15%,#e7edff85,transparent 75%);
+  background: #fff;
 }
 .ap-site .ap-coa-hero {
-  background: radial-gradient(ellipse at 78% 35%,#3b529d,transparent 55%),linear-gradient(120deg,#122846,#252d56);
+  background: #0b0b0b;
 }
 .ap-site .ap-supplier-coa-grid>article {
-  border-top: 3px solid #78b5eb;
-  background: linear-gradient(165deg,#fff,#f2f6ff);
+  border-top: 3px solid #d0d0d0;
+  background: #fff;
 }
 .ap-site .ap-supplier-coa-grid .ap-actions a {
   border-radius: 8px;
-  color: #234a83;
+  color: #111111;
 }
 .ap-site .ap-summary, .ap-site .nl-planner .ap-panel {
-  background: linear-gradient(145deg,#f8fcff,#e9effd);
-  border-color: #b6caeb;
+  background: #fff;
+  border-color: #d0d0d0;
 }
 .ap-site :is(.account-nav a[aria-current=page],.rd-partner-tabs button[aria-selected=true]) {
-  background: linear-gradient(115deg,#244f88,#4655a0);
+  background: #111;
   color: #fff;
 }
 @media(min-width:1000px) {
@@ -199,40 +200,40 @@ body.ap-site {
   position: fixed; bottom: 0; inset-inline: 0; z-index: 55;
   display: flex; justify-content: space-between; align-items: center; gap: 12px;
   padding: 12px 16px calc(12px + env(safe-area-inset-bottom));
-  border-top: 1px solid #b4d0f2; background: #f9fbfff5; backdrop-filter: blur(12px);
-  box-shadow: 0 -5px 24px #1a3c6818;
+  border-top: 1px solid #d0d0d0; background: #fffffff5; backdrop-filter: blur(12px);
+  box-shadow: 0 -5px 24px #00000018;
  }
  .ap-mobile-purchase>span { min-width: 0; font-size: 11px; }
  .ap-mobile-purchase strong { display: block; font-size: 12px; }
  .ap-mobile-purchase .ap-button { white-space: nowrap; padding: 12px 16px; }
 }
 
-/* Keep pale action surfaces legible over the shared white button text rule. */
-.ap-site .ap-button.nl-primary,
-.ap-site .nl-purchase > .ap-button,
+/* Inverted actions stay clear on dark sections. */
+.ap-site .nl-hero .ap-button.nl-primary,
 .ap-site .ap-coa-hero .ap-button {
-  color: #102b4e !important;
+  color: #111 !important;
 }
+.ap-site .nl-purchase > .ap-button { color: #fff !important; }
 .ap-site .ap-supplier-coa-grid .ap-button,
 .ap-site .ap-coa-dialog .ap-button,
 .ap-site .nl-shop .ap-button,
 .ap-site .nl-shop .ap-add {
-  background: #173b69;
-  border-color: #173b69;
+  background: #111111;
+  border-color: #111111;
   color: #fff !important;
 }
 .ap-site .ap-supplier-coa-grid .ap-button:hover,
 .ap-site .ap-coa-dialog .ap-button:hover,
 .ap-site .nl-shop .ap-button:hover,
 .ap-site .nl-shop .ap-add:hover {
-  background: #102b4e;
-  border-color: #102b4e;
+  background: #111111;
+  border-color: #111111;
 }
-.ap-site .cv-billing span { background: #d8f5e3; color: #146333; }
+.ap-site .cv-billing span { background: #e5e5e5; color: #111111; }
 .ap-site .cv-popular {
-  background: linear-gradient(115deg, #f9e7a2, #eac35b);
-  color: #4b350b;
-  border: 1px solid #d6ad40;
+  background: #f5f5f5;
+  color: #111111;
+  border: 1px solid #d0d0d0;
 }
 @keyframes ap-hero-border-sweep{from{background-position:0 0,0 0}to{background-position:0 0,250% 0}}
 .ap-site .ap-locale-controls{display:none!important}
@@ -317,7 +318,7 @@ body.ap-site {
 .ap-site .nl-hero .nl-hero-description {
   max-width: 495px;
   margin: 22px 0 24px;
-  color: #ded7ea;
+  color: #ccc;
   font-size: 16px;
   line-height: 1.65;
 }
@@ -350,7 +351,7 @@ body.ap-site {
   max-width: none;
   aspect-ratio: 1081 / 1455;
   border-radius: 0;
-  filter: drop-shadow(0 16px 18px #03010ca0);
+  filter: drop-shadow(0 16px 18px #000000a0);
   translate: -50% -50%;
   transform: translate3d(0,0,0);
   animation: pure-vial-float 7s ease-in-out infinite;
@@ -380,8 +381,8 @@ body.ap-site {
   height: auto;
   aspect-ratio: 320 / 74;
   margin: 0;
-  color: #080510 !important;
-  opacity: .94;
+  color: #fff !important;
+  opacity: .16;
   pointer-events: none;
 }
 .ap-site .nl-hero .nl-trust {

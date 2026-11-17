@@ -1,0 +1,9 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="96" height="96" viewBox="0 0 96 96" role="img" aria-labelledby="title">
+  <title id="title">PURE</title>
+  <rect width="96" height="96" rx="16" fill="#111"/>
+  <g fill="#fff">
+    <path d="M28 35H41L30 69H17Z"/>
+    <path d="M47 22H60L43 76H30Z"/>
+    <path d="M66 29H79L65 70H52Z"/>
+  </g>
+</svg>

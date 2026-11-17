@@ -60,6 +60,8 @@ html:root body.ap-site :is(
   .nlc-proceed, .nlx-primary, .nlx-pay-button,
   .nl-bulk-plus-ten, .nlc-rec button, .nlx-cross-sell article button,
   .nlc-coupon button, .nlx-coupon button,
+  .rd-code-list button, .cv-billing button,
+  .nlx-confirm button, .nlx-address-confirm button, [data-nlx-next],
   .nl-filter-pills button, .nl-bulk-categories button, .nl-bulk-sizes button,
   .ap-size-options button, .ap-save,
   .account-nav a, .account-nav-logout, .ae-subnav a, .rd-partner-tabs button,
@@ -90,6 +92,16 @@ html:root body.ap-site :is(
   .ap-feature .ap-text-link, .ap-contact-card .ap-text-link, .nl-partner-details .ap-text-link
 ) {
   color: #fff !important;
+}
+
+/* White actions are the inverse treatment on the dark brand sections. */
+html:root body.ap-site :is(
+  .nl-hero .nl-primary,
+  .ap-coa-hero .ap-button:not(.ap-button-secondary):not(.ap-button-light),
+  .nl-partner-hero .nl-primary,
+  .ap-feature.ap-dark .ap-text-link
+) {
+  color: #111 !important;
 }
 
 /* Keep the announcement readable while a soft band of light passes behind it.

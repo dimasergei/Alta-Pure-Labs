@@ -11,7 +11,7 @@
     background: #fffffff7 !important;
     backdrop-filter: blur(14px);
     -webkit-backdrop-filter: blur(14px);
-    box-shadow: 0 2px 6px #10152b12;
+    box-shadow: 0 2px 6px #00000012;
   }
   .ap-site .ap-header-compact .ap-header-main {
     box-sizing: border-box;
@@ -56,9 +56,9 @@
     display: block;
     width: 23px;
     height: 19px;
-    background: linear-gradient(#152844,#152844) 0 1px/100% 1.5px no-repeat,
-                linear-gradient(#152844,#152844) 0 9px/100% 1.5px no-repeat,
-                linear-gradient(#152844,#152844) 0 17px/100% 1.5px no-repeat;
+    background: linear-gradient(#111111,#111111) 0 1px/100% 1.5px no-repeat,
+                linear-gradient(#111111,#111111) 0 9px/100% 1.5px no-repeat,
+                linear-gradient(#111111,#111111) 0 17px/100% 1.5px no-repeat;
   }
   .ap-site .ap-header-compact .ap-nav.ap-open {
     max-height: calc(100dvh - 120px);
