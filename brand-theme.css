@@ -414,4 +414,10 @@ body.ap-site {
   .ap-site .nl-hero .nl-trust { margin-top: 0; align-self: end; }
   .ap-site .nl-hero .nl-trust > div > span { font-size: 12px; }
 }
+/* Keep the stacked tablet hero inside a short viewport without reducing type. */
+@media (min-width:768px) and (max-width:900px) and (max-height:760px) {
+  .ap-site .nl-hero .nl-hero-inner { min-height: 500px; padding: 20px 0 18px; row-gap: 10px; }
+  .ap-site .nl-hero .nl-hero-description { margin-block: 14px 18px; }
+  .ap-site .nl-hero .nl-vial-stage { min-height: 160px; }
+}
 @media (prefers-reduced-motion:reduce) { .ap-site .nl-hero .nl-vial { animation: none !important; transform: none !important; } }
