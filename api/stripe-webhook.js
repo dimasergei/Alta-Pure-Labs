@@ -1,5 +1,7 @@
 const { clients, checked } = require('../lib/backend');
 const { emailSender } = require('../lib/brand-display');
+const { emailLayout, orderSummary, researchNotice } = require('../lib/order-email-layout');
+const { orderTotalRows } = require('../lib/customer-order-email');
 const {
   queueStatusNotification,
   markNotificationSent,
@@ -178,11 +180,11 @@ function buildEmailData(order, items, session) {
     .map(
       (item) => `
         <tr>
-          <td style="padding:12px 0;border-bottom:1px solid #e5e7eb;">
+          <td style="padding:12px 12px 12px 0;border-bottom:1px solid #e5e5e5;">
             <strong>${escapeHtml(item.product_name)}</strong><br>
-            <span style="color:#6b7280;font-size:13px;">${escapeHtml(item.variant_size)} × ${item.quantity}</span>
+            <span style="color:#666666;font-size:13px;">${escapeHtml(item.variant_size)} × ${item.quantity}</span>
           </td>
-          <td style="padding:12px 0;border-bottom:1px solid #e5e7eb;text-align:right;white-space:nowrap;">
+          <td style="padding:12px 0;border-bottom:1px solid #e5e5e5;text-align:right;white-space:nowrap;">
             ${formatMoney(item.quantity * item.unit_price_cents)}
           </td>
         </tr>`
@@ -216,6 +218,7 @@ function buildEmailData(order, items, session) {
     subtotal: formatMoney(order.subtotal_cents),
     shipping: formatMoney(order.shipping_cents),
     total: formatMoney(order.total_cents),
+    totalRows: orderTotalRows(order).map(row => ({ ...row, amount: formatMoney(row.cents) })),
     shippingName: order.shipping_name || '',
     shippingAddress: addressLines,
     paymentStatus: formatPaymentStatus(order.payment_status),
@@ -225,79 +228,45 @@ function buildEmailData(order, items, session) {
 }
 
 function customerEmailHtml(data) {
-  return `
-    <div style="font-family:Arial,Helvetica,sans-serif;max-width:620px;margin:0 auto;color:#111314;">
-      <div style="background:#143832;color:#ffffff;padding:28px 32px;border-radius:12px 12px 0 0;">
-        <h1 style="margin:0;font-size:22px;letter-spacing:.08em;"><img src="https://getpurelabs.com/assets/pure-wordmark-white.png" alt="PURE" width="112" height="26" style="display:block;width:112px;height:26px;border:0;"></h1>
-        <p style="margin:10px 0 0;color:#cfe3de;font-size:14px;">Order confirmation</p>
-      </div>
-
-      <div style="background:#ffffff;padding:32px;border:1px solid #e5e7eb;border-top:0;">
+  return emailLayout({ label: 'Order confirmation', body: `
         <h2 style="margin:0 0 12px;font-size:24px;">Thank you, ${escapeHtml(data.customerName)}.</h2>
-        <p style="margin:0 0 24px;color:#4e5556;">
+        <p style="margin:0;color:#444444;">
           Your payment was successful. This email confirms your order
           <strong>${escapeHtml(data.orderNumber)}</strong>.
         </p>
 
-        <div style="background:#f3f5f5;padding:18px;border-radius:10px;margin-bottom:24px;">
-          <p style="margin:0 0 8px;"><strong>Order number:</strong> ${escapeHtml(data.orderNumber)}</p>
-          <p style="margin:0 0 8px;"><strong>Payment status:</strong> ${escapeHtml(data.paymentStatus)}</p>
-          <p style="margin:0 0 8px;"><strong>Order status:</strong> ${escapeHtml(data.fulfillmentStatus)}</p>
-          <p style="margin:0;"><strong>Customer email:</strong> ${escapeHtml(data.customerEmail)}</p>
-        </div>
+        ${orderSummary({ orderNumber: data.orderNumber, paymentStatus: data.paymentStatus, orderStatus: data.fulfillmentStatus, customerEmail: data.customerEmail, orderUrl: 'https://getpurelabs.com/account/purchases' })}
 
         <h3 style="margin:0 0 12px;font-size:18px;">Order details</h3>
         <table style="width:100%;border-collapse:collapse;">
           ${data.itemRows}
         </table>
 
-        <div style="margin-top:20px;padding-top:16px;border-top:1px solid #e5e7eb;">
-          <div style="display:flex;justify-content:space-between;margin-bottom:8px;">
-            <span>Subtotal</span>
-            <strong>${data.subtotal}</strong>
-          </div>
-          <div style="display:flex;justify-content:space-between;margin-bottom:8px;">
-            <span>Shipping</span>
-            <strong>${data.shipping}</strong>
-          </div>
-          <div style="display:flex;justify-content:space-between;font-size:18px;">
-            <span>Total</span>
-            <strong>${data.total}</strong>
-          </div>
+        <div data-pure-order-totals="true" style="margin-top:20px;padding-top:16px;border-top:1px solid #e5e5e5;">
+          ${data.totalRows.map(row => `<p style="margin:0 0 8px;${row.total ? 'font-size:18px;' : ''}">${escapeHtml(row.label)}: <strong>${row.deduction ? '−' : ''}${row.amount}</strong></p>`).join('')}
         </div>
 
         ${
           data.shippingAddress
             ? `
         <h3 style="margin:28px 0 12px;font-size:18px;">Shipping address</h3>
-        <p style="margin:0;color:#4e5556;">
+        <p style="margin:0;color:#444444;">
           ${escapeHtml(data.shippingName)}<br>
           ${data.shippingAddress}
         </p>`
             : ''
         }
 
-        <div style="margin-top:32px;padding:18px;background:#f8f4e8;border-radius:10px;">
-          <p style="margin:0;font-size:13px;color:#5f5638;">
-            <strong>Research use only.</strong> Products are supplied for controlled laboratory
-            research and are not for human or veterinary use, ingestion, injection, diagnosis,
-            treatment, or consumption.
-          </p>
-        </div>
+        ${researchNotice()}
 
         ${
           data.receiptUrl
             ? `<p style="margin:24px 0 0;">
-                <a href="${escapeHtml(data.receiptUrl)}" style="color:#1c7a73;">View your Stripe receipt</a>
+                <a href="${escapeHtml(data.receiptUrl)}" style="color:#111111;text-decoration:underline;">View your Stripe receipt</a>
               </p>`
             : ''
         }
-      </div>
-
-      <div style="padding:20px 32px;color:#6b7280;font-size:12px;">
-        PURE · Research use only · Not for human consumption
-      </div>
-    </div>`;
+      ` });
 }
 
 function adminEmailHtml(data) {

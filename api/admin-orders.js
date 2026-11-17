@@ -111,6 +111,11 @@ module.exports = async (req, res) => {
         'https://admin.internal'
       ).searchParams;
 
+      if (params.get('view') === 'shipping-label') {
+        const { state } = require('../lib/admin-shipping-labels');
+        return res.status(200).json(await state(db, { id: params.get('id'), source: params.get('source') }));
+      }
+
       if (params.get('view') === 'fulfillment-sheet') {
         const format = params.get('format') || 'pdf';
         if (!['pdf', 'csv'].includes(format)) throw httpError(400, 'Choose PDF or CSV.');
@@ -138,6 +143,12 @@ module.exports = async (req, res) => {
 
     const body = await parseJson(req);
 
+    if (typeof body.action === 'string' && body.action.startsWith('shipping_label_')) {
+      const { handleAction } = require('../lib/admin-shipping-labels');
+      const { db } = clients();
+      return res.status(200).json(await handleAction(db, body));
+    }
+
     if (body.action === 'supplier_report_generated') {
       return await updateSupplierReportTimestamp(res, body);
     }
@@ -163,7 +174,9 @@ module.exports = async (req, res) => {
       404,
       409,
       413,
-      415
+      415,
+      502,
+      503
     ];
 
     const status = allowedErrorStatuses.includes(error.status)
@@ -181,7 +194,7 @@ module.exports = async (req, res) => {
 
     return res.status(status).json({
       error:
-        status < 500
+        status < 500 || ([502, 503].includes(status) && error.status === status)
           ? error.message
           : req.method === 'GET'
             ? 'Orders unavailable.'

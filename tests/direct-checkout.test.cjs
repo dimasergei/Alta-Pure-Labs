@@ -56,7 +56,7 @@ test('BLACKFRIDAY15 is normalized and cart, quote and persisted order have ident
  const saved=db.calls[0].args.p_data;assert.equal(db.calls[0].name,'commerce_place_checkout');
  assert.deepEqual(saved.pricing,quoted.body.pricing);assert.equal(saved.total_cents,quoted.body.total_cents);
  assert.equal(saved.request.checkout.coupon,'BLACKFRIDAY15');assert.deepEqual(saved.request.items.map(x=>x.qty),[2,1]);
- assert.equal(saved.checkout_version,'checkout-2026-11-v6');assert.equal(saved.earned_points,0);
+ assert.equal(saved.checkout_version,'checkout-2026-11-v7');assert.equal(saved.earned_points,0);
 });
 test('removing the explicit coupon restores regular price and invalidates the prior quote',async()=>{
  const b={...body,coupon:'BLACKFRIDAY15',items:[{...body.items[0],qty:2}]};
@@ -102,7 +102,7 @@ test('modified totals, quantities, delivery, prices and old version quotes fail 
  const {res:q,db}=await call({...body,action:'quote'});
  const changes=[{body:{items:[{...body.items[0],qty:2}]}},{body:{coupon:'BLACKFRIDAY15'}},{body:{delivery:{shipping:'express',extras:[]}}},{body:{quote:'0'.repeat(64)}},{cat:[{...catalog[0],variants:[{size:'5mg',price:101}]}]}];
  for(const change of changes){const {res}=await call({...body,action:'place',quote:q.body.quote,...change.body},{db,cat:change.cat||catalog});assert.equal(res.code,409);}
- for(const version of ['checkout-2026-11-v1','checkout-2026-11-v2','checkout-2026-11-v3','checkout-2026-11-v4','checkout-2026-11-v5']){
+ for(const version of ['checkout-2026-11-v1','checkout-2026-11-v2','checkout-2026-11-v3','checkout-2026-11-v4','checkout-2026-11-v5','checkout-2026-11-v6']){
   const {res}=await call({...body,action:'place',quote:q.body.quote,checkout_version:version},{db});assert.equal(res.code,400);
  }
  assert.equal(db.calls.length,0);

@@ -64,12 +64,12 @@
     form.dataset.appliedCoupon=q.pricing?.coupon_code==='BLACKFRIDAY15'?'BLACKFRIDAY15':'';
     keys.forEach(key=>form.dataset.appliedCoupon?localStorage.setItem(key,form.dataset.appliedCoupon):localStorage.removeItem(key));
     if(input)input.value=form.dataset.appliedCoupon;if(remove)remove.hidden=!form.dataset.appliedCoupon;
-    if(status)status.textContent=form.dataset.appliedCoupon?'BLACKFRIDAY15 applied — 15% off merchandise.':action==='remove'?'Coupon removed. Regular prices restored.':'';
+    if(status)status.textContent=form.dataset.appliedCoupon?'BLACKFRIDAY15 applied — 15% off merchandise.':action==='remove'?(q.pricing?.crypto_discount_cents>0?'Coupon removed. Your 5% Crypto discount still applies.':'Coupon removed. Regular prices restored.'):'';
     const rows=[['Subtotal',q.subtotal_cents]];
     if(q.pricing?.coupon_discount_cents>0)rows.push(['BLACKFRIDAY15 (15%)',-q.pricing.coupon_discount_cents]);
     if(q.pricing?.crypto_discount_cents>0)rows.push(['Crypto discount (5%)',-q.pricing.crypto_discount_cents]);
     rows.push(['Delivery & options',q.shipping_cents],['Estimated total',q.total_cents]);
-    estimate.innerHTML=rows.map(([label,v])=>`<div class="dc-total-row"><span>${label}</span><strong>${money(v)}</strong></div>`).join('')+'<p class="dc-note">Existing points and store credit are applied when you review the final total.</p>';
+    estimate.innerHTML=rows.map(([label,v])=>`<div class="dc-total-row"><span>${label}</span><strong>${money(v)}</strong></div>`).join('')+(q.pricing?.discount_source==='coupon_crypto'?'<p class="dc-note">Your coupon is applied first, then an extra 5% Crypto discount on the remaining merchandise.</p>':'')+'<p class="dc-note">Existing points and store credit are applied when you review the final total.</p>';
     syncDelivery(q);
    }catch(error){if(n===sequence&&status)status.textContent=error.message;}
    finally{if(n===sequence){form.dataset.couponPending='false';if(apply)apply.disabled=false;if(remove)remove.disabled=false;}}

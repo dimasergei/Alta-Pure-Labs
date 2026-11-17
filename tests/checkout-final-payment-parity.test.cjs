@@ -7,7 +7,8 @@ test('new payment layout exposes only Card and Crypto without unconfigured walle
  assert.match(checkout,/\['card','crypto'\]/);
  assert.doesNotMatch(checkout,/ByteNFT|Link a new bank account|Same-Day Bank Payment|No Fees!|nlx-wallet-unavailable|Card number \*/);
  assert.match(checkout,/provider displays its fees, conversion rate and final charge/);
- assert.match(checkout,/discounts do not combine/);
+ assert.match(checkout,/extra 5% on merchandise after any applied coupon/);
+ assert.doesNotMatch(checkout,/discounts do not combine|larger discount applies/);
 });
 test('provider handoff follows verified quote and saved order; saved/uncertain orders lock checkout',()=>{
  assert.match(checkout,/openHostedPayment/);

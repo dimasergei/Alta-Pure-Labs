@@ -1,5 +1,5 @@
 {
-  "version": "checkout-2026-11-v6",
+  "version": "checkout-2026-11-v7",
   "currency": "USD",
   "shipping_cents": 1495,
   "shipping_countries": [
@@ -261,11 +261,11 @@
   },
   "free_shipping_threshold_cents": 15000,
   "payments": {
-    "version": "pure-payments-2026-11-v1",
+    "version": "pure-payments-2026-11-v2",
     "card_provider": "rampex",
     "card_route": "hosted",
     "crypto_provider": "polygon_usdc",
     "crypto_discount_bps": 500,
-    "discount_combination": "best_single_discount"
+    "discount_combination": "crypto_after_merchandise_discounts"
   }
 }

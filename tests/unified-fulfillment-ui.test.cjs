@@ -2,10 +2,10 @@
 const test=require('node:test'),assert=require('node:assert/strict'),fs=require('node:fs'),{JSDOM}=require('jsdom');
 const source=fs.readFileSync('admin-fulfillment.js','utf8'),tick=()=>new Promise(r=>setImmediate(r));
 const uuid=n=>'00000000-0000-4000-8000-'+String(n).padStart(12,'0');
-function setup(rows,detail){
+function setup(rows,detail,writeResponse){
  const dom=new JSDOM('<div id="fulfillment-hub"></div>',{url:'https://altapurelabs.com/admin-orders.html',runScripts:'outside-only'});
  const w=dom.window;w.HTMLDialogElement.prototype.showModal=function(){this.open=true};w.HTMLDialogElement.prototype.close=function(){this.open=false};w.confirm=()=>true;w.eval(source);
- const calls=[];w.AltaFulfillment.mount(async(url,options)=>{calls.push({url,options});if(options?.body)return options.method==='PATCH'?{order:rows[0],notification:{status:'not_required'}}:{status:'void',saved:true};
+ const calls=[];w.AltaFulfillment.mount(async(url,options)=>{calls.push({url,options});if(options?.body)return writeResponse?writeResponse(JSON.parse(options.body)):options.method==='PATCH'?{order:rows[0],notification:{status:'not_required'}}:{status:'void',saved:true};
   if(url.includes('view=detail'))return detail;
   return{orders:rows,pagination:{page:1,total:rows.length,has_previous:false,has_next:false}}});
  return{dom,w,calls};
@@ -20,6 +20,15 @@ test('single hub shows source-specific orders and safe unpaid cancellation',asyn
  assert.match(w.document.querySelector('dialog').textContent,/Cancel unpaid order/);
  const cancel=[...w.document.querySelectorAll('dialog button')].find(b=>b.textContent==='Cancel unpaid order');await cancel.onclick();
  assert.equal(calls.filter(x=>x.options?.body&&JSON.parse(x.options.body).action==='cancel_order').length,1);
+ w.AltaFulfillment.clear();dom.window.close();
+});
+test('admin accepts pending crypto cancellation and shows the hold after refresh',async()=>{
+ const row={id:uuid(10),source:'commerce',kind:'goods',commerce_status:'accepted',payment_status:'pending',total_cents:950,currency:'USD',created_at:new Date().toISOString()},raw={...row,status:'accepted',request_data:{items:[]}};
+ const{dom,w}=setup([row],{order:raw,allocations:[],jobs:[]},()=>{row.cancellation_status=raw.cancellation_status='pending';return{status:'accepted',cancellation_status:'pending'};});await tick();
+ w.document.querySelector('.uc-order-row button').click();await tick();await [...w.document.querySelectorAll('dialog button')].find(x=>x.textContent==='Cancel unpaid order').onclick();
+ const dialog=w.document.querySelector('dialog');assert.equal(dialog.open,true);assert.match(dialog.textContent,/Cancellation pending/);assert.match(dialog.textContent,/payment is checked automatically/);assert.doesNotMatch(dialog.textContent,/Cancellation was not confirmed/);
+ assert.ok([...dialog.querySelectorAll('button')].some(x=>x.textContent==='Check cancellation'));
+ assert.ok(![...dialog.querySelectorAll('button')].some(x=>x.textContent==='Save fulfillment status'));
  w.AltaFulfillment.clear();dom.window.close();
 });
 test('legacy order uses one Manage dialog and PATCH; research record is read-only',async()=>{

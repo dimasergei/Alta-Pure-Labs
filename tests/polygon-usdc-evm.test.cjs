@@ -53,11 +53,29 @@ test('Circle native USDC EIP-3009 execution and receipt verifier on disposable P
    assert.equal(first.intent.amount_units,'9500000');assert.equal(first.intent.nonce,second.intent.nonce);assert.equal(first.intent.attempt_id,second.intent.attempt_id);assert.match(first.intent.nonce,/^0x[0-9a-f]{64}$/);assert.equal(first.state,'awaiting_wallet');
   });
   await t.test('invoice ownership is required even for a public valid hash',async()=>{const {db,state}=fakeDb(i);await assert.rejects(polygon.confirm(db,state.invoice,state.account,polygon.configuration(configuration),{attempt_id:i.attempt_id,tx_hash:sent.hash},{id:randomUUID()},configuration,c.rpc),/another account/);assert.equal(state.finishes,0);});
+  await t.test('a canceled order still verifies a subsequently presented receipt for review',async()=>{
+   const {db,state}=fakeDb({...i,status:'expired'}),base=db.rpc;Object.assign(state.invoice,{status:'void',cancellation_status:'canceled',cancellation_requested_at:new Date().toISOString()});
+   db.rpc=async(name,args)=>{if(name==='commerce_finish_polygon_usdc_payment'){state.proof=args.p_proof;return{data:{state:'review',invoice_id:i.invoice_id,cancellation_status:'review'}};}return base(name,args);};
+   const result=await polygon.confirm(db,state.invoice,state.account,polygon.configuration(configuration),{attempt_id:i.attempt_id,tx_hash:sent.hash},{id:state.invoice.customer_id},configuration,c.rpc,{dispatch:false});
+   assert.equal(result.state,'review');assert.equal(state.proof.tx_hash,sent.hash);
+  });
+  await t.test('requested cancellation exposes status without a reusable authorization and blocks new signing',async()=>{
+   const {db,state}=fakeDb(await c.intent());Object.assign(state.invoice,{cancellation_status:'pending',cancellation_requested_at:new Date().toISOString()});
+   const saved=await polygon.customerState(db,state.invoice,{id:state.invoice.customer_id},configuration);assert.equal(saved.state,'cancel_pending');assert.equal(saved.authorization,undefined);
+   await assert.rejects(polygon.start(db,state.invoice,state.account,polygon.configuration(configuration),{attempt_id:state.intent.attempt_id,wallet_address:state.intent.payer,confirm_amount_cents:950,confirm_currency:'USD',consent:true},{id:state.invoice.customer_id},configuration,c.rpc),/Cancellation has been requested/);
+   const pending=await polygon.confirm(db,state.invoice,state.account,polygon.configuration(configuration),{attempt_id:state.intent.attempt_id},{id:state.invoice.customer_id},configuration,c.rpc,{dispatch:false});assert.equal(pending.state,'cancel_pending');assert.equal(state.finishes,0);
+  });
   await t.test('safe cancellation requires finalized expiry on both RPCs and an unused contract nonce',async()=>{
    const fresh=await c.intent(),unused=fakeDb(fresh);await assert.rejects(polygon.verifyUnpaid(unused.db,unused.state.invoice,configuration,c.rpc),/still valid/);
+   const before=await c.raw.request({method:'eth_getBlockByNumber',params:['latest',false]});
    await c.raw.request({method:'evm_increaseTime',params:[2000]});await c.raw.request({method:'evm_mine',params:[]});
+   const lagging=async(url,o)=>{const q=JSON.parse(o.body);return url.includes('secondary')&&q.method==='eth_getBlockByNumber'&&q.params[0]==='finalized'?new Response(JSON.stringify({jsonrpc:'2.0',id:q.id,result:before})):c.rpc(url,o);};
+   await assert.rejects(polygon.verifyUnpaid(unused.db,unused.state.invoice,configuration,lagging),/still valid/);assert.equal(unused.state.intent.status,'open');
    assert.equal((await polygon.verifyUnpaid(unused.db,unused.state.invoice,configuration,c.rpc)).confirmed_unpaid,true);assert.equal(unused.state.intent.status,'expired');
    const used=fakeDb(i);await assert.rejects(polygon.verifyUnpaid(used.db,used.state.invoice,configuration,c.rpc),/used or canceled on-chain/);
+   const queued=fakeDb(fresh),base=queued.db.rpc;Object.assign(queued.state.invoice,{cancellation_status:'pending',cancellation_requested_at:new Date().toISOString()});
+   queued.db.rpc=async(name,p)=>{const result=await base(name,p);if(name==='commerce_release_polygon_usdc_intent'){queued.state.invoice.status='void';queued.state.invoice.cancellation_status='canceled';return{data:{...result.data,status:'void',cancellation_status:'canceled'}};}return result;};
+   const completed=await polygon.reconcilePending(queued.db,{env:configuration,fetchImpl:c.rpc});assert.equal(completed.canceled,1);assert.equal(queued.state.invoice.status,'void');assert.equal(queued.state.finishes,0);
   });
  }finally{await c.close();}
 });

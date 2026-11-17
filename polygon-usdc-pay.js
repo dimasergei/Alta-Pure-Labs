@@ -25,32 +25,37 @@
   const key=()=>current.intent?'pure-usdc:'+invoice+':'+current.intent.attempt_id:null;
   function marker(value){try{const k=key();if(!k)return null;if(value===null)localStorage.removeItem(k);else if(value!==undefined)localStorage.setItem(k,value);return localStorage.getItem(k);}catch{return null;}}
   const uncertain=()=>current.state==='pending'||!!marker();
+  const stopped=()=>['paid','review','expired','canceled','cancel_pending'].includes(current.state);
   function draw(text){
-   if(disposed)return;const intent=current.intent,ended=['paid','review','expired'].includes(current.state),expired=intent&&Date.now()/1000>=Number(intent.valid_before);
+   if(disposed)return;const intent=current.intent,ended=stopped(),expired=intent&&Date.now()/1000>=Number(intent.valid_before);
    connect.hidden=ended||expired||!ready||uncertain()||!!wallet;connect.disabled=busy;
    pay.hidden=ended||!ready||uncertain()||!wallet||!intent||expired;pay.disabled=busy;
-   check.hidden=!intent||current.state==='paid';check.disabled=busy;
+   check.hidden=!intent||['paid','canceled'].includes(current.state);check.disabled=busy;
    summary.textContent=intent?'Network: Polygon · Native USDC · Receiving wallet: '+intent.recipient:'';
    handoff.hidden=!!window.ethereum;copy.hidden=!!window.ethereum;
-   status.textContent=text||(current.state==='paid'?'Payment confirmed. Your order is paid.':current.state==='review'?'Your transfer was received and needs order review. Please contact support with this saved order; do not send another payment.':current.state==='expired'||expired?'This authorization has expired. Check payment status before creating a new order.':uncertain()?'Checking your transfer on Polygon. Keep this order link; confirmation continues even if you close this page. Do not send a second payment.':!ready?'New wallet payments are currently unavailable for this order. You can still check a previously sent payment.':wallet?'Wallet connected. Review the amount, then authorize this order and confirm the transaction in your wallet.':'Connect your wallet to review the exact order authorization.');
+   status.textContent=text||(current.state==='canceled'?'Your unpaid order is canceled. No payment was received and no refund was issued.':current.state==='cancel_pending'?'Cancellation requested. Do not send payment. We are checking the wallet authorization and will finish canceling automatically once it has expired unused.':current.state==='paid'?'Payment confirmed. Your order is paid.':current.state==='review'?'Your transfer was received and needs order review. Please contact support with this saved order; do not send another payment.':current.state==='expired'||expired?'This authorization has expired. Check payment status before creating a new order.':uncertain()?'Checking your transfer on Polygon. Keep this order link; confirmation continues even if you close this page. Do not send a second payment.':!ready?'New wallet payments are currently unavailable for this order. You can still check a previously sent payment.':wallet?'Wallet connected. Review the amount, then authorize this order and confirm the transaction in your wallet.':'Connect your wallet to review the exact order authorization.');
   }
   async function api(body){
    const session=await auth.auth.getSession(),token=session.data?.session?.access_token;if(!token)throw Error('Sign in again to check or pay this saved order.');
    const r=await fetch('/api/checkout?native=customer&invoice='+encodeURIComponent(invoice),{method:body?'POST':'GET',cache:'no-store',headers:{Authorization:'Bearer '+token,...(body?{'Content-Type':'application/json'}:{})},...(body?{body:JSON.stringify(body)}:{})});
    const data=await r.json();if(!r.ok)throw Error(data.error||'Payment confirmation is temporarily unavailable. Keep this saved order link.');return data;
   }
-  function schedule(){clearTimeout(poll);if(disposed||!current.intent||['paid','review','expired'].includes(current.state)||pollCount>=18)return;poll=setTimeout(async()=>{pollCount++;await refresh();schedule();},10000);}
+  function schedule(){clearTimeout(poll);if(disposed||!current.intent||['paid','review','expired','canceled'].includes(current.state)||pollCount>=18)return;poll=setTimeout(async()=>{pollCount++;await refresh();schedule();},10000);}
   async function refresh(){
    if(busy||disposed||!current.intent)return;busy=true;draw();
-   try{const saved=marker(),hash=HASH.test(saved||'')?saved:current.intent.tx_hash;const result=await api({action:'confirm_crypto',invoice_id:invoice,attempt_id:current.intent.attempt_id,...(hash?{tx_hash:hash}:{})});current={...current,...result};if(['paid','review','expired'].includes(current.state))marker(null);draw();}
+   try{const saved=marker(),hash=HASH.test(saved||'')?saved:current.intent.tx_hash;const result=await api({action:'confirm_crypto',invoice_id:invoice,attempt_id:current.intent.attempt_id,...(hash?{tx_hash:hash}:{})});current={...current,...result};if(['paid','review','expired','canceled'].includes(current.state))marker(null);draw();}
    catch(e){draw(e.message);}finally{busy=false;draw(status.textContent);}
   }
   async function selected(){
    const chain=await provider.request({method:'eth_chainId'});if(String(chain).toLowerCase()!==CHAIN)throw Error('Switch your wallet to Polygon before authorizing this order.');
    const accounts=await provider.request({method:'eth_accounts'});if(String(accounts?.[0]||'').toLowerCase()!==wallet){wallet=null;throw Error('The selected wallet changed. Reconnect the wallet selected for this order.');}
   }
+  async function stillPayable(){
+   const latest=await api();if(latest.crypto)current=latest.crypto;
+   if(stopped()||current.state==='pending'||current.intent?.tx_hash||latest.invoice?.cancellation_requested_at||latest.invoice?.status&&latest.invoice.status!=='accepted'||!current.authorization)throw Error('This order is no longer available for payment. Check its current status; do not send payment.');
+  }
   connect.onclick=async()=>{
-   if(busy)return;busy=true;draw();
+   if(busy||stopped()||!ready)return;busy=true;draw();
    try{
     provider=window.ethereum;if(!provider?.request)throw Error('Open this saved order in your wallet browser or use a desktop wallet extension.');
     const accounts=await provider.request({method:'eth_requestAccounts'});wallet=String(accounts?.[0]||'').toLowerCase();if(!ADDRESS.test(wallet))throw Error('Choose a compatible Polygon wallet.');
@@ -62,13 +67,13 @@
    }catch(e){wallet=null;draw(e.code===4001?'Wallet connection was canceled. No payment was sent.':e.message);}finally{busy=false;draw(status.textContent);}
   };
   pay.onclick=async()=>{
-   if(busy||uncertain()||!current.intent||Date.now()/1000>=current.intent.valid_before)return;busy=true;draw('Review the order authorization in your wallet.');let sending=false;
+   if(busy||stopped()||!ready||uncertain()||!current.intent||Date.now()/1000>=current.intent.valid_before)return;busy=true;draw('Review the order authorization in your wallet.');let sending=false;
    try{
-    await selected();
+    await selected();await stillPayable();
     const authorization=current.authorization,typed={...authorization,types:{EIP712Domain:DOMAIN_TYPES,...authorization.types}};
     if(authorization.message.from.toLowerCase()!==wallet||String(authorization.message.value)!==String(BigInt(amount)*10000n)||authorization.message.to.toLowerCase()!==current.intent.recipient.toLowerCase())throw Error('The wallet authorization does not match this order. Refresh payment status.');
     const signature=await provider.request({method:'eth_signTypedData_v4',params:[wallet,JSON.stringify(typed)]});
-    const data=encode(authorization,signature);await selected();
+    const data=encode(authorization,signature);await selected();await stillPayable();
     if(Date.now()/1000>=current.intent.valid_before)throw Error('This authorization expired before submission. Check payment status.');
     // Persist uncertainty before the wallet request: a lost response is not proof of failure.
     marker('broadcasting');sending=true;draw('Confirm the native USDC transfer and POL network fee in your wallet.');

@@ -200,10 +200,11 @@ test('Stripe webhook applies a payment once, reads items without created_at, ded
   process.env.STRIPE_WEBHOOK_SECRET = 'whsec_fixture_only';
   process.env.RESEND_API_KEY = 're_fixture_only';
   delete process.env.ADMIN_ORDER_EMAIL;
-  global.fetch = async () => ({
-    ok: true,
-    async json() { return { id: 'email_fixture_001' }; }
-  });
+  let customerEmail;
+  global.fetch = async (url, options) => {
+    customerEmail = JSON.parse(options.body);
+    return { ok: true, async json() { return { id: 'email_fixture_001' }; } };
+  };
 
   const firstResponse = responseRecorder();
   await handler(request('valid-test-signature'), firstResponse);
@@ -215,6 +216,11 @@ test('Stripe webhook applies a payment once, reads items without created_at, ded
   assert.equal(rpcCount, 1);
   assert.equal(itemQueryCount, 1, 'webhook retrieves order items without an order() sort on created_at');
   assert.equal(notifications.size, 1, 'first successful event queues one notification');
+  assert.match(customerEmail.html, /pure-icon-96\.png/);
+  assert.match(customerEmail.html, /pure-wordmark-dark\.png/);
+  assert.match(customerEmail.html, /data-pure-order-summary="true"[^]*Customer email:[^]*data-pure-order-action="true"[^]*View secure order[^]*<\/div>/);
+  assert.match(customerEmail.html, /href="https:\/\/getpurelabs\.com\/account\/purchases"/);
+  assert.doesNotMatch(customerEmail.html, /#143832|#cfe3de|#f8f4e8|#5f5638/i);
 
   const replayResponse = responseRecorder();
   await handler(request('valid-test-signature'), replayResponse);

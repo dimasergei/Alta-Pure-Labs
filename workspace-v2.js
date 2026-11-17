@@ -67,7 +67,7 @@
    <div class="nl-bulk-summary-scroll" aria-label="Selected products">${selection}</div>
    <div class="nl-bulk-totals"><div class="nl-bulk-estimate-total"><span>Merchandise subtotal</span><strong>${esc(money(subtotal))}</strong></div></div>
    <button class="ap-button" data-action="bulk-checkout" ${units?'':'disabled'}>Checkout · ${esc(money(subtotal))}</button>
-   <p class="ap-fine nl-bulk-checkout-note">Shipping and any entered coupon are calculated at checkout. Your regular cart is kept for later.</p>`;
+   <p class="ap-fine nl-bulk-checkout-note">Shipping, coupons and eligible extra 5% Crypto savings are calculated at checkout. Your regular cart is kept for later.</p>`;
  }
  function render(path,root){
   if(!root)return;

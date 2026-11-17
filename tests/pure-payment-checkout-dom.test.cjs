@@ -67,9 +67,13 @@ test('method and coupon changes requote correctly and preserve explicit shipping
   assert.match(f.root.querySelector('[data-nlx-totals]').textContent,/Crypto discount \(5%\).*\$190\.00/);
   assert.deepEqual(f.requests.at(-1).body.delivery.extras,[]);
   f.root.querySelector('[name=sidebar_coupon]').value='BLACKFRIDAY15';f.root.querySelector('[data-nlx-coupon]').click();await tick();
-  assert.match(f.root.querySelector('[data-nlx-totals]').textContent,/BLACKFRIDAY15 \(15%\).*\$170\.00/);
+  assert.match(f.root.querySelector('[data-nlx-totals]').textContent,/BLACKFRIDAY15 \(15%\).*\$30\.00.*Crypto discount \(5%\).*\$8\.50.*\$161\.50/);
+  assert.match(f.root.querySelector('[data-nlx-quote-note]').textContent,/coupon is applied first, then an extra 5%/);
+  change(f,f.root.querySelector('[name=payment_choice][value=card]'),true);await tick();
+  assert.match(f.root.querySelector('[data-nlx-totals]').textContent,/BLACKFRIDAY15 \(15%\).*\$30\.00.*\$170\.00/);
   assert.doesNotMatch(f.root.querySelector('[data-nlx-totals]').textContent,/Crypto discount/);
-  assert.match(f.root.querySelector('[data-nlx-quote-note]').textContent,/better discount.*does not combine/);
+  change(f,f.root.querySelector('[name=payment_choice][value=crypto]'),true);await tick();
+  assert.match(f.root.querySelector('[data-nlx-totals]').textContent,/Crypto discount \(5%\).*\$8\.50.*\$161\.50/);
   f.root.querySelector('[data-nlx-remove-coupon]').click();await tick();
   assert.match(f.root.querySelector('[data-nlx-totals]').textContent,/Crypto discount \(5%\)/);
   change(f,f.root.querySelector('[name=payment_choice][value=card]'),true);await tick();
@@ -142,10 +146,12 @@ test('wallet preference uses hosted Card, removes crypto discount and never bypa
   assert.match(f.root.querySelector('[data-nlx-place]').textContent,/CONTINUE TO GOOGLE PAY/);
   assert.equal(f.root.querySelector('[data-nlx-place]').disabled,true);
   change(f,f.root.querySelector('[name=payment_choice][value=crypto]'),true);await tick();
+  f.root.querySelector('[name=sidebar_coupon]').value='BLACKFRIDAY15';f.root.querySelector('[data-nlx-coupon]').click();await tick();
   assert.match(f.root.querySelector('[data-nlx-totals]').textContent,/Crypto discount/);
   f.root.querySelector('[data-nlx-wallet=apple]').click();await tick();
   assert.equal(f.root.querySelector('[name=payment_choice][value=card]').checked,true);
   assert.doesNotMatch(f.root.querySelector('[data-nlx-totals]').textContent,/Crypto discount/);
+  assert.match(f.root.querySelector('[data-nlx-totals]').textContent,/BLACKFRIDAY15 \(15%\).*\$30\.00.*\$175\.00/);
   assert.equal(f.requests.at(-1).body.method_id,card.id);
   assert.match(f.root.querySelector('[data-nlx-place]').textContent,/CONTINUE TO APPLE PAY/);
   assert.match(f.root.querySelector('[data-nlx-wallet-note]').textContent,/secure provider checkout if offered/);

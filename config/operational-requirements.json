@@ -65,7 +65,7 @@
       "title": "Rates and eligible destinations",
       "state": "implemented",
       "owner": "Owner / Carrier / Engineering",
-      "next": "Destination and service determine the shipping rate. US standard shipping is free on merchandise of at least US$150 after coupons and before account balances. Express service and optional extras retain their charges.",
+      "next": "Destination and service determine the shipping rate. US standard shipping is free on merchandise of at least US$150 after merchandise discounts and before account balances. Express service and optional extras retain their charges.",
       "done_when": "Quotes and stored orders agree at the US$150 boundary and for supported destinations, services and extras."
     },
     {
@@ -89,8 +89,8 @@
       "title": "Regular catalog pricing and explicit coupon",
       "state": "implemented",
       "owner": "Owner / Engineering",
-      "next": "Regular catalog prices apply at every quantity and payment method. BLACKFRIDAY15 applies 15% when entered; no automatic member, volume, bank or referral discount and no free units.",
-      "done_when": "Cart quotes and persisted checkout totals agree, coupon removal restores regular prices, and stale quotes fail closed."
+      "next": "Regular catalog prices apply at every quantity. BLACKFRIDAY15 applies 15% when entered, then eligible direct Crypto payments receive an extra 5% on remaining merchandise. Shipping, tax and fees are excluded. No automatic member, volume, bank or referral discount and no free units.",
+      "done_when": "Cart quotes and persisted checkout totals agree, coupon and Crypto savings are shown separately, coupon removal preserves eligible Crypto savings, and stale quotes fail closed."
     },
     {
       "id": "partners",

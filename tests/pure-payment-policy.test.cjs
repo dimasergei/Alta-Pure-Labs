@@ -48,15 +48,30 @@ test('direct crypto gives 5% of merchandise; card conversion receives no crypto 
   assert.equal(quote.pricing.lines.reduce((total,line)=>total+line.crypto_discount_cents,0),quote.pricing.crypto_discount_cents);
  }
 });
-test('BLACKFRIDAY15 wins over crypto without stacking and removing it restores the 5% discount',async()=>{
+test('BLACKFRIDAY15 applies first, then Crypto saves 5% of the remaining merchandise; removing the coupon preserves Crypto',async()=>{
  const input={...body(cryptoMethod),coupon:'blackfriday15'},record=await checkout.normalize({},user,input,catalog);
  const quote=checkout.price(record,cryptoMethod,null,{points:0,credit_cents:0});
- assert.equal(quote.discount_cents,1050);assert.equal(quote.pricing.coupon_discount_cents,1050);assert.equal(quote.pricing.crypto_discount_cents,0);
- assert.equal(quote.pricing.crypto_discount_eligible,true);assert.equal(quote.pricing.discount_source,'coupon');
- assert.deepEqual(quote.pricing.lines.map(line=>line.discount_cents),[600,450]);
+ assert.equal(quote.discount_cents,1347);assert.equal(quote.pricing.coupon_discount_cents,1050);assert.equal(quote.pricing.crypto_discount_cents,297);
+ assert.equal(quote.pricing.crypto_discount_eligible,true);assert.equal(quote.pricing.discount_source,'coupon_crypto');
+ assert.deepEqual(quote.pricing.lines.map(line=>line.coupon_discount_cents),[600,450]);
+ assert.deepEqual(quote.pricing.lines.map(line=>line.crypto_discount_cents),[170,127]);
+ assert.deepEqual(quote.pricing.lines.map(line=>line.discount_cents),[770,577]);
+ assert.ok(quote.pricing.lines.every(line=>line.discount_bps===1925&&line.line_total_cents===line.gross_cents-line.coupon_discount_cents-line.crypto_discount_cents));
  record.request.checkout.coupon='';
  const restored=checkout.price(record,cryptoMethod,null,{points:0,credit_cents:0});
  assert.equal(restored.discount_cents,350);assert.equal(restored.pricing.discount_source,'crypto');
+});
+test('the extra Crypto discount stacks to 19.25% with a 15% coupon at regular and bulk quantities; Card keeps the coupon alone',async()=>{
+ const cat=[{id:'a',name:'Compound A',variants:[{size:'5mg',price:100}]}];
+ for(const method of [cryptoMethod,card])for(const qty of [1,10,25,50]){
+  const input={...body(method),bulk_order:true,coupon:'BLACKFRIDAY15',items:[{id:'a',size:'5mg',qty}]};
+  const record=await checkout.normalize({},user,input,cat),q=checkout.price(record,method,null,{points:0,credit_cents:0});
+  assert.equal(q.pricing.coupon_discount_cents,1500*qty);
+  assert.equal(q.pricing.crypto_discount_cents,method===cryptoMethod?425*qty:0);
+  assert.equal(q.discount_cents,(method===cryptoMethod?1925:1500)*qty);
+  assert.equal(q.shipping_cents,7495);assert.equal(q.tax_cents,0);
+  assert.equal(q.total_cents,10000*qty-q.discount_cents+7495);
+ }
 });
 test('unauthenticated or unselected cart never receives payment discount; authenticated method preview matches final quote',async()=>{
  const input=body(cryptoMethod),preview={...input,country:input.address.country};
@@ -74,10 +89,10 @@ test('unauthenticated or unselected cart never receives payment discount; authen
  const {response:stale}=await request({...input,method_id:card.id,action:'place',quote:quoted.body.quote});
  assert.equal(stale.statusCode,409);
 });
-test('crypto discount cannot reduce delivery fees and uses discounted merchandise for free shipping',async()=>{
- for(const [cents,shipping] of [[15788,1495],[15789,0]]){
+test('stacked Crypto discounts exclude delivery fees and use net merchandise for free shipping',async()=>{
+ for(const [cents,coupon,shipping] of [[15788,'',1495],[15789,'',0],[18574,'BLACKFRIDAY15',1495],[18575,'BLACKFRIDAY15',0]]){
   const localCatalog=[{id:'a',name:'Compound A',variants:[{size:'5mg',price:cents/100}]}];
-  const input={...body(cryptoMethod),items:[{id:'a',size:'5mg',qty:1}],address:{...body().address,country:'US'},delivery:{shipping:'standard',extras:['protection']}};
+  const input={...body(cryptoMethod),coupon,items:[{id:'a',size:'5mg',qty:1}],address:{...body().address,country:'US'},delivery:{shipping:'standard',extras:['protection']}};
   const record=await checkout.normalize({},user,input,localCatalog),quote=checkout.price(record,cryptoMethod,null,{points:0,credit_cents:0});
   assert.equal(quote.shipping_cents,shipping+500);assert.equal(quote.pricing.delivery.extras_cents,500);
  }
@@ -86,10 +101,16 @@ test('crypto discount cannot reduce delivery fees and uses discounted merchandis
 test('balance-only or discount-covering redemption suppresses the automatic crypto saving; valid coupon remains usable',async()=>{
  const cat=[{id:'a',name:'Compound A',variants:[{size:'5mg',price:100}]}];
  const input={...body(cryptoMethod),items:[{id:'a',size:'5mg',qty:1}],address:{...body().address,country:'US'},delivery:{shipping:'standard',extras:[]}};
- for(const [credit,coupon,discount,total,suppressed] of [[500,'',500,10495,false],[10995,'',0,500,true],[11495,'',0,0,true],[9995,'BLACKFRIDAY15',1500,0,false]]){
+ for(const [credit,coupon,discount,total,suppressed] of [[500,'',500,10495,false],[10995,'',0,500,true],[11495,'',0,0,true],[500,'BLACKFRIDAY15',1925,9070,false],[9570,'BLACKFRIDAY15',1500,425,true],[9995,'BLACKFRIDAY15',1500,0,true]]){
   const record=await checkout.normalize({},user,{...input,credit_cents:credit,coupon},cat);
   const q=checkout.price(record,cryptoMethod,null,{points:0,credit_cents:20000});
   assert.equal(q.discount_cents,discount);assert.equal(q.total_cents,total);assert.equal(q.pricing.crypto_discount_suppressed_for_balance,suppressed);
+ }
+ for(const [points,discount,total,suppressed] of [[500,3850,15650,false],[16150,3000,850,true],[17000,3000,0,true]]){
+  const record=await checkout.normalize({},user,{...input,coupon:'BLACKFRIDAY15',items:[{id:'a',size:'5mg',qty:2}],points},cat);
+  const q=checkout.price(record,cryptoMethod,null,{points:20000,credit_cents:0});
+  assert.equal(q.discount_cents,discount);assert.equal(q.total_cents,total);assert.equal(q.pricing.crypto_discount_suppressed_for_balance,suppressed);
+  assert.equal(q.pricing.coupon_discount_cents,3000);
  }
 });
 module.exports={env,card,cryptoMethod,stripe,bank,user,catalog,body,dbMock};

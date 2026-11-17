@@ -1,6 +1,6 @@
 # PURE admin and payments operations
 
-This release uses one shared admin session, hosted Rampex Card checkout, and direct native USDC on Polygon. New checkout is `checkout-2026-11-v6`; the payment policy is `pure-payments-2026-11-v1`. Historical payment routes and receipts remain available for reconciliation.
+This release uses one shared admin session, hosted Rampex Card checkout, and direct native USDC on Polygon. New checkout is `checkout-2026-11-v7`; the payment policy is `pure-payments-2026-11-v2`. Historical payment routes and receipts remain available for reconciliation.
 
 ## Admin sign-in
 
@@ -25,7 +25,9 @@ Implementation: [server authentication](../lib/admin-auth.js), [password hashing
 
 Apple Pay and Google Pay are conditional choices inside the hosted provider flow. Country, device, provider availability, minimum amount, and verification requirements may affect them. Do not advertise guaranteed wallet availability, no fees, or an exact final card charge equal to the merchandise invoice. A return URL or a customer-supplied transaction hash is never payment confirmation.
 
-Crypto receives 5% off merchandise. An entered valid `BLACKFRIDAY15` coupon receives the better 15% discount instead; they do not stack. Shipping, tax, and protection are excluded. The automatic Crypto discount is suppressed if the selected account redemption would fully cover the Crypto-discounted total; a valid coupon still applies to balance-funded orders. Partial account redemption can retain the 5% discount when Crypto remains due. Public cart previews show regular/coupon pricing until an authenticated customer explicitly selects an eligible Crypto method.
+Crypto receives an additional 5% off merchandise after any applied coupon. `BLACKFRIDAY15` takes 15% off first, then Crypto takes 5% of the remaining merchandise: $100 becomes $85, then $80.75, for $19.25 total savings. Each discount is rounded to cents at the order level and allocated across lines by largest fractional remainder, using original line order to resolve ties. The coupon and Crypto amounts remain separate in pricing and customer summaries; the combined effective rate is 19.25%, subject to cent rounding.
+
+Shipping, tax, and fees, including protection, are excluded from both discounts. Free standard US shipping uses merchandise after both discounts, before account balances. The automatic Crypto discount is suppressed if the selected account redemption would fully cover the candidate Crypto-discounted total; the entered coupon still applies to balance-funded orders. Partial account redemption can retain the 5% discount when Crypto remains due. Card and its hosted wallet options receive any valid coupon without the direct Crypto incentive. Public cart previews show regular/coupon pricing until an authenticated customer explicitly selects an eligible Crypto method.
 
 Source and SQL independently enforce the same totals, including cent allocation, discounts, delivery, balances, method version, and destination. Do not manually alter an order total after creating a payment authorization.
 
@@ -69,7 +71,11 @@ The existing `altapure-invoice-email-retry` pg_cron job runs once per minute and
 
 To stop new Crypto collection, disable its environment switch and/or deactivate the route, while retaining recipient, both RPC endpoints, the stored account identity, and the authenticated worker. Existing payment confirmation continues independently of the collection switch. Do not erase old intents or proofs.
 
-An authorization is not released merely because the browser closed, a wallet dialog was rejected, or a local clock says it expired. Safe release requires **both independent RPC views** of the finalized chain to be past its validity window and report the nonce unused. Release marks the attempt declined/intent expired, allowing the existing unpaid-order cancellation process to proceed. A used or uncertain nonce requires reconciliation first. A valid receipt discovered after the invoice expired, was canceled, or entered a conflicting state is stored for **review**, without automatic fulfillment.
+Customers and admins can request cancellation immediately while a native USDC authorization is active. The service-only `commerce_request_polygon_usdc_cancellation` RPC locks the invoice and records `cancellation_requested_at` plus `cancellation_status=pending`; the invoice remains `accepted` while payment is unresolved. Checkout and wallet authorization are disabled, customer/admin screens show **Cancellation pending**, and the existing worker keeps checking the same immutable nonce. The wallet page checks the saved order again before signing and before submitting, so an already-open tab respects a cancellation request.
+
+An authorization is not released merely because the browser closed, a wallet dialog was rejected, or a local clock says it expired. Safe release requires **both independent RPC views** of the finalized chain to be past its validity window and report the nonce unused. Release marks the attempt declined/intent expired and, if cancellation was requested, atomically voids the order and restores any held account credit exactly once. The invoice then has `cancellation_status=canceled`. A used or uncertain nonce requires reconciliation first. A valid receipt discovered after cancellation was requested is retained for **review**, sets `cancellation_status=review`, and never creates a paid receipt or fulfillment. A transfer after an otherwise canceled/expired invoice is likewise retained for review. On-chain nonce cancellation is not treated as proof of no transfer; its history still requires reconciliation.
+
+Apply `20261117221400_pure_crypto_cancellation_requests.sql` before deploying the code that reads these fields. It changes no historical order or payment data. The request, finality release, proof recording, and final void share invoice → attempt → intent lock order. No server wallet key, on-chain transaction, or automatic refund is added.
 
 Direct Crypto refunds are manual owner-authorized wallet transactions after verifying the customer destination and network, followed by recording the verified external refund. The native endpoint does not initiate them. Rampex also has no implemented automatic refund API. Never assume an on-ramp's sending address is the customer's refund address.
 
@@ -82,8 +88,9 @@ Check recorded migration history first; never reapply a recorded version. The in
 1. `20261117192240_pure_canada_next_day_delivery.sql` — shared Canadian next-day quote.
 2. `20261117193534_pure_direct_polygon_usdc.sql` — private intents/proofs, route registration, provider constraints, safe release, and existing worker schedule.
 3. `20261117194109_pure_card_crypto_checkout.sql` — checkout v6 pricing/validation and activation of the uniquely identified existing hosted Rampex route for US/Canada.
+4. `20261117221328_pure_stack_crypto_discount.sql` — checkout v7 sequential coupon/Crypto pricing and cent validation. It changes no existing order, receipt, balance, or financial route; saved v6 payment and commission transitions remain supported.
 
-The USDC migration does not seed a receiving wallet or activate a financial route. Configure its route only after the reviewed environment and live read-only readiness checks pass. Keep the application and v6 SQL rollout coordinated: older checkout versions intentionally fail validation and require a refreshed checkout.
+The USDC migration does not seed a receiving wallet or activate a financial route. Configure its route only after the reviewed environment and live read-only readiness checks pass. Keep the application and v7 SQL rollout coordinated: older unsaved checkout quotes intentionally fail validation and require a refreshed checkout. Saved orders keep their quoted amounts and continue through their original payment route.
 
 Run builds in an isolated release checkout: `npm run build` rewrites generated source/output. In that checkout, install the locked project dependencies and isolated test-only dependencies, then run the financial and auth tests:
 
@@ -98,4 +105,4 @@ git diff --check
 
 Require **zero failed and zero skipped** financial tests. PGlite executes disposable local PostgreSQL schemas; the EVM tests use a disposable local chain and the pinned Circle token fixture. They do not use production database credentials or move real funds.
 
-After release, inspect public readiness and `/api/customer-config?checkout=public`: Card should be hosted Rampex for US/Canada, Crypto should have the canonical configured destination coverage, and new checkout should expose exactly two choices. Verify protected admin reads, account-owned order access, shipping protection opt-out persistence, Canadian next-day pricing, and the 5% versus 15% summaries without placing a live order. Check the existing cron job and redacted worker counts for progressing pending work; do not create unauthenticated worker requests or send a test payment as a health check.
+After release, inspect public readiness and `/api/customer-config?checkout=public`: Card should be hosted Rampex for US/Canada, Crypto should have the canonical configured destination coverage, and new checkout should expose exactly two choices. Verify protected admin reads, account-owned order access, shipping protection opt-out persistence, Canadian next-day pricing, and the separate 15% coupon plus additional 5% Crypto summary rows without placing a live order. Check the existing cron job and redacted worker counts for progressing pending work; do not create unauthenticated worker requests or send a test payment as a health check.
