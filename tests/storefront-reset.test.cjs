@@ -13,10 +13,11 @@ function referenceSource(file,scope,anchor){
  assert.ok(source.includes(anchor),file+' exposes the reference view insertion point');
  return source.replace(anchor,Object.entries(views).map(([name,fn])=>'\n '+name+' = '+fn.toString()+';\n').join('')+anchor);
 }
-async function fixture(route,{workspace=false}={}){
+async function fixture(route,{workspace=false,cart=[]}={}){
  const errors=[],vc=new VirtualConsole();vc.on('jsdomError',e=>errors.push(e.message));
  const dom=new JSDOM(read('storefront-v2.html'),{url:'https://getpurelabs.com'+route,runScripts:'outside-only',virtualConsole:vc}),w=dom.window;
  w.localStorage.setItem('ap-age-verified','true');w.matchMedia=()=>({matches:false});
+ if(cart.length)w.localStorage.setItem('pp-cart',JSON.stringify(cart));
  w.HTMLElement.prototype.scrollIntoView=()=>{};
  w.HTMLDialogElement.prototype.showModal=function(){this.open=true;};
  w.HTMLDialogElement.prototype.close=function(){this.open=false;};
@@ -59,24 +60,67 @@ test('homepage keeps the announcement, five-vial hero and product links without 
   assert.doesNotMatch(d.body.textContent,retired);
  }finally{await f.close();}
 });
-test('catalog strength selection adds one purchased unit and preserves product category filtering',async()=>{
+test('catalog photo cards preserve product navigation, integer prices, search, filters, sorting and pagination',async()=>{
  const f=await fixture('/shop');
  try{
   const {d,w}=f;
+  const catalog=Array.from(w.AltaStore.catalog),cards=()=>[...d.querySelectorAll('#ap-catalog-grid .ap-product-card')];
+  const ids=()=>cards().map(card=>card.dataset.product);
+  const search=value=>{const input=d.querySelector('#ap-catalog-query');input.value=value;input.dispatchEvent(new w.Event('input',{bubbles:true}));};
+  const sort=value=>{const select=d.querySelector('#ap-catalog-sort');select.value=value;select.dispatchEvent(new w.Event('change',{bubbles:true}));};
+  const assertPhotoCards=()=>{
+   for(const card of cards()){
+    const p=w.AltaStore.product(card.dataset.product),photo=card.querySelector('a.ap-product-image'),name=card.querySelector('h3 a');
+    assert.ok(p&&photo?.querySelector('img')&&name,'each product has a linked photo and name');
+    const target=new URL(photo.getAttribute('href'),w.location.href),variant=p.variants.find(v=>v.size===target.searchParams.get('size'));
+    assert.equal(target.pathname,'/product/'+p.id);assert.ok(variant,'photo links select a valid catalog strength');
+    assert.equal(photo.querySelector('img').getAttribute('src'),w.AltaStore.image(p,variant.size),'photo matches the linked strength');
+    assert.equal(name.getAttribute('href'),photo.getAttribute('href'));assert.equal(name.textContent,p.name);
+    const price=card.querySelector('.nl-featured-price');assert.ok(price);
+    assert.equal(price.textContent,'$'+Math.round(variant.price).toLocaleString('en-US'));
+    assert.match(price.textContent,/^\$[\d,]+$/,'catalog prices have no decimal suffix');
+    assert.equal(photo.contains(name),false,'name remains separate from the product photo');
+    assert.equal(photo.contains(price),false,'price remains separate from the product photo');
+    assert.equal(card.querySelectorAll('select,button,input,[data-action]').length,0,'purchasing and strength selection happen on the product page');
+    assert.doesNotMatch(card.textContent,/per unit|View More|Add to Cart/i);
+   }
+  };
   assert.equal(d.querySelectorAll('.nl-badge,del,.ap-pair-offer').length,0);
-  const select=[...d.querySelectorAll('[data-card-size]')].find(el=>el.options.length>1);assert.ok(select);
-  const id=select.dataset.cardSize,size=select.options[1].value;
-  select.value=size;select.dispatchEvent(new w.Event('change',{bubbles:true}));
-  const add=d.querySelector('[data-product="'+id+'"] [data-action="add"]');
-  assert.equal(add.dataset.size,size);add.click();
-  assert.equal(w.AltaStore.cart.length,1);assert.equal(w.AltaStore.cart[0].qty,1);
-  assert.equal(w.AltaStore.cart[0].size,size);
-  assert.equal(w.AltaStore.cart[0].price,w.AltaStore.product(id).variants.find(v=>v.size===size).price);
-  d.querySelector('[data-action="cart"]').click();
-  assert.doesNotMatch(d.querySelector('#ap-cart-content').textContent,retired);
+  const firstPage=ids();assert.ok(firstPage.length>0&&firstPage.length<catalog.length);
+  assertPhotoCards();
+  assert.equal(d.querySelector('#ap-load-more').hidden,false);
+  d.querySelector('#ap-load-more').click();
+  assert.ok(cards().length>firstPage.length,'loading more reveals additional products');
+  assert.deepEqual(ids().slice(0,firstPage.length),firstPage,'pagination keeps the existing order');
+  for(let pages=0;pages<catalog.length&&!d.querySelector('#ap-load-more').hidden;pages++)d.querySelector('#ap-load-more').click();
+  assert.equal(d.querySelector('#ap-load-more').hidden,true);
+  assert.deepEqual(ids(),catalog.map(p=>p.id),'every product is reachable once through pagination');
+  assert.equal(new Set(ids()).size,catalog.length);assertPhotoCards();
+  for(const direction of ['low','high']){
+   sort(direction);
+   const prices=cards().map(card=>Math.min(...w.AltaStore.product(card.dataset.product).variants.map(v=>v.price)));
+   assert.deepEqual(prices,[...prices].sort((a,b)=>direction==='low'?a-b:b-a),direction+' price sorting updates the rendered cards');
+  }
+  sort('name');
+  const names=cards().map(card=>card.querySelector('h3 a').textContent);
+  assert.deepEqual(names,[...names].sort((a,b)=>a.localeCompare(b)));
+  sort('popular');assert.deepEqual(ids(),catalog.map(p=>p.id));
+  search('bPc-157');assert.deepEqual(ids(),['bpc-157'],'search is case insensitive');
+  assert.equal(d.querySelector('#ap-load-more').hidden,true);assertPhotoCards();
+  search('');
   d.querySelector('[data-filter-group=Supplies]').click();
-  const cards=[...d.querySelectorAll('.ap-product-card')];assert.ok(cards.length>0);
-  assert.ok(cards.every(c=>w.AltaStore.categoryOf(w.AltaStore.product(c.dataset.product))==='Supplies'));
+  assert.deepEqual(ids(),catalog.filter(p=>w.AltaStore.categoryOf(p)==='Supplies').map(p=>p.id));
+  assert.equal(d.querySelector('[data-filter-group=Supplies]').getAttribute('aria-pressed'),'true');
+  search('BAC');assert.equal(cards().length,2,'search combines with the selected category');assertPhotoCards();
+  search('retatrutide');assert.equal(cards().length,0,'search does not escape the selected category');
+  assert.match(d.querySelector('#ap-catalog-grid').textContent,/No matching compounds/);
+  d.querySelector('[data-action="clear-filters"]').click();
+  assert.equal(d.querySelector('#ap-catalog-query').value,'');
+  assert.equal(d.querySelector('[data-filter-group=All]').getAttribute('aria-pressed'),'true');
+  assert.deepEqual(ids(),firstPage,'clearing filters restores the first catalog page');
+  d.querySelector('[data-filter-group=Equipment]').click();assert.deepEqual(ids(),['needles']);assertPhotoCards();
+  assert.equal(w.AltaStore.cart.length,0,'browsing the catalog never changes the cart');
+  assert.doesNotMatch(d.querySelector('.nl-shop').textContent,retired);
  }finally{await f.close();}
 });
 test('product quantities use the regular unit price and add exactly the selected units',async()=>{
@@ -96,17 +140,35 @@ test('product quantities use the regular unit price and add exactly the selected
  }finally{await f.close();}
 });
 
-test('bulk ordering supports regular prices, single units, exact strengths, limits and search without changing the regular cart',async()=>{
- const f=await fixture('/bulk-orders',{workspace:true});
+test('bulk ordering grows and clears its summary while preserving exact prices, strengths and the regular cart',async()=>{
+ const f=await fixture('/bulk-orders',{workspace:true,cart:[{id:'retatrutide',size:'10mg',qty:2}]});
  try{
   const {d,w}=f;
-  let card=d.querySelector('[data-bulk-product]');assert.ok(card);
-  const id=card.dataset.bulkProduct,p=w.AltaStore.product(id),first=p.variants[0],second=p.variants[1];assert.ok(second);
   const draft=()=>w.AltaStore.read('ap-bulk-draft-v2',[]);
+  const regularCart=JSON.stringify(w.AltaStore.cart),storedCart=w.localStorage.getItem('pp-cart');
+  const summaryNode=()=>d.querySelector('#ap-bulk-summary');
   const format=value=>new Intl.NumberFormat('en-US',{style:'currency',currency:'USD'}).format(value);
   const summary=()=>d.querySelector('.nl-bulk-estimate-total strong').textContent;
+  const search=d.querySelector('#ap-bulk-query');let scrollRequests=0;
+  search.scrollIntoView=()=>{scrollRequests++;};
+  assert.equal(summaryNode().dataset.empty,'true');assert.equal(draft().length,0);
+  const addProducts=summaryNode().querySelector('[data-action="bulk-add-products"]');
+  assert.equal(addProducts?.textContent,'ADD PRODUCTS');
+  assert.equal(d.querySelector('[data-action="bulk-checkout"]').disabled,true);
+  search.value='BPC';search.dispatchEvent(new w.Event('input',{bubbles:true}));
+  d.querySelector('[data-action="bulk-category"][data-group="Peptides"]').click();
+  summaryNode().querySelector('[data-action="bulk-add-products"]').click();
+  assert.equal(d.activeElement,search);assert.equal(scrollRequests,1,'Add Products scrolls to the product search');
+  assert.equal(search.value,'BPC','Add Products preserves the current search');
+  assert.equal(d.querySelector('[data-action="bulk-category"][data-group="Peptides"]').getAttribute('aria-pressed'),'true');
+  assert.equal(draft().length,0,'Add Products does not add an item');
+  search.value='';search.dispatchEvent(new w.Event('input',{bubbles:true}));
+  d.querySelector('[data-action="bulk-category"][data-group="All"]').click();
+  let card=d.querySelector('[data-bulk-product]');assert.ok(card);
+  const id=card.dataset.bulkProduct,p=w.AltaStore.product(id),first=p.variants[0],second=p.variants[1];assert.ok(second);
   card.querySelector('[data-action="bulk-qty"][data-delta="1"]').click();
   assert.equal(draft()[0].qty,1);assert.equal(summary(),format(first.price));
+  assert.equal(summaryNode().dataset.empty,'false');assert.equal(summaryNode().querySelectorAll('.nl-bulk-menu-line').length,1);
   assert.equal(d.querySelector('[data-action="bulk-checkout"]').disabled,false,'one unit can check out');
   card.querySelector('[data-action="bulk-qty"][data-delta="10"]').click();
   assert.equal(draft()[0].qty,11);assert.equal(summary(),format(first.price*11));
@@ -122,13 +184,33 @@ test('bulk ordering supports regular prices, single units, exact strengths, limi
   input=card.querySelector('[data-bulk-id]');input.value='101';input.dispatchEvent(new w.Event('input',{bubbles:true}));
   assert.equal(input.checkValidity(),false);assert.equal(draft().find(x=>x.size===second.size).qty,1);
   input.value='1';input.dispatchEvent(new w.Event('input',{bubbles:true}));
-  const search=d.querySelector('#ap-bulk-query');search.value='definitely-no-matching-product';search.dispatchEvent(new w.Event('input',{bubbles:true}));
-  assert.match(d.querySelector('#ap-bulk-rows').textContent,/No matching products/);assert.equal(draft().length,2);
+  const otherCard=[...d.querySelectorAll('[data-bulk-product]')].find(node=>node.dataset.bulkProduct!==id),other=w.AltaStore.product(otherCard.dataset.bulkProduct),otherVariant=other.variants[0];
+  otherCard.querySelector('[data-action="bulk-qty"][data-delta="1"]').click();
+  assert.equal(draft().length,3);assert.equal(summaryNode().querySelectorAll('.nl-bulk-menu-product').length,2);
+  assert.equal(summaryNode().querySelectorAll('.nl-bulk-menu-line').length,3);
+  assert.equal(summary(),format(first.price*100+second.price+otherVariant.price));
+  search.value='definitely-no-matching-product';search.dispatchEvent(new w.Event('input',{bubbles:true}));
+  assert.match(d.querySelector('#ap-bulk-rows').textContent,/No matching products/);assert.equal(draft().length,3);
   search.value='';search.dispatchEvent(new w.Event('input',{bubbles:true}));
   d.querySelector('[data-action="bulk-category"][data-group="Supplies"]').click();
   const cards=[...d.querySelectorAll('[data-bulk-product]')];assert.ok(cards.length>0);
   assert.ok(cards.every(c=>w.AltaStore.categoryOf(w.AltaStore.product(c.dataset.bulkProduct))==='Supplies'));
-  assert.equal(w.AltaStore.cart.length,0);
+  const remove=(productId,size)=>{
+   const button=[...summaryNode().querySelectorAll('.nl-bulk-menu-remove')].find(node=>node.dataset.id===productId&&node.dataset.size===size);
+   assert.ok(button,'selected strength has a remove control');button.click();
+  };
+  remove(other.id,otherVariant.size);
+  assert.equal(summaryNode().querySelectorAll('.nl-bulk-menu-product').length,1);
+  assert.equal(draft().length,2);assert.equal(summary(),format(first.price*100+second.price));
+  remove(id,second.size);
+  assert.equal(summaryNode().dataset.empty,'false');assert.equal(draft().length,1);assert.equal(summary(),format(first.price*100));
+  remove(id,first.size);
+  assert.equal(summaryNode().dataset.empty,'true');assert.equal(draft().length,0);assert.equal(summary(),format(0));
+  assert.equal(summaryNode().querySelectorAll('.nl-bulk-menu-product,.nl-bulk-menu-line').length,0);
+  assert.equal(summaryNode().querySelector('[data-action="bulk-add-products"]').textContent,'ADD PRODUCTS');
+  assert.equal(d.querySelector('[data-action="bulk-checkout"]').disabled,true);
+  assert.equal(JSON.stringify(w.AltaStore.cart),regularCart,'bulk selections never replace the existing regular cart');
+  assert.equal(w.localStorage.getItem('pp-cart'),storedCart,'the saved regular cart remains intact');
   assert.doesNotMatch(d.querySelector('#ap-main').textContent,/BOGO|membership|research builder|10 units minimum|50%|60%|free 2-day|express delivery/i);
  }finally{await f.close();}
 });

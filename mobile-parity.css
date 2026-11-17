@@ -200,3 +200,45 @@
   .ap-site .nl-hero .nl-trust > div > span { font-size: 11px; line-height: 1.4; }
   .ap-site .nl-hero .nl-trust .nl-trust-check { width: 21px; height: 21px; flex-basis: 21px; }
 }
+
+/* Bulk selections follow their content on mobile; desktop keeps its sticky,
+   viewport-height summary and independently scrolling list. */
+@media screen and (max-width: 760px) {
+  .ap-site .ap-summary.nl-bulk-summary {
+    position: static !important;
+    top: auto !important;
+    height: auto !important;
+    min-height: 0 !important;
+    max-height: none !important;
+    overflow: visible !important;
+  }
+  .ap-site .nl-bulk-summary > #ap-bulk-summary {
+    height: auto !important;
+    min-height: 0 !important;
+    max-height: none !important;
+  }
+  .ap-site .nl-bulk-summary .nl-bulk-summary-scroll {
+    flex: 0 0 auto;
+    height: auto;
+    min-height: 0;
+    max-height: none;
+    overflow: visible;
+    scrollbar-gutter: auto;
+    padding-right: 0;
+  }
+  .ap-site .nl-bulk-summary #ap-bulk-summary[data-empty="true"] { gap: 12px; }
+  .ap-site .nl-bulk-summary #ap-bulk-summary[data-empty="true"] .nl-bulk-summary-heading { padding-right: 0; }
+  .ap-site .nl-bulk-summary #ap-bulk-summary[data-empty="true"] .nl-bulk-summary-heading h2 { margin: 0; }
+  .ap-site .nl-bulk-summary #ap-bulk-summary[data-empty="true"] :is(
+    .nl-bulk-total-units, .nl-bulk-summary-scroll, .nl-bulk-totals,
+    [data-action="bulk-checkout"], .nl-bulk-checkout-note
+  ) { display: none; }
+  .ap-site .nl-bulk-summary #ap-bulk-summary[data-empty="true"] > .nl-bulk-add-products {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 44px;
+    margin: 0;
+  }
+  .ap-site .nl-bulk-toolbar #ap-bulk-query { scroll-margin-top: 16px; }
+}

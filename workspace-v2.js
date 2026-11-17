@@ -52,12 +52,14 @@
  function bulkSummary(){
   const root=$('#ap-bulk-summary');if(!root)return;
   const units=bulk.reduce((n,x)=>n+x.qty,0),subtotal=total(bulk),ids=[...new Set(bulk.map(x=>x.id))];
+  root.dataset.empty=String(units===0);
   const selection=ids.length?ids.map(id=>{
    const p=product(id),lines=bulk.filter(x=>x.id===id),count=lines.reduce((n,x)=>n+x.qty,0);
    return `<section class="nl-bulk-menu-product"><header class="nl-bulk-menu-product-head"><img src="${esc(image(p,lines[0].size))}" alt=""><span><strong>${esc(p.name)}</strong><small>${count} units</small></span></header>
     ${lines.map(x=>`<div class="nl-bulk-menu-line"><div class="nl-bulk-menu-controls"><span class="nl-bulk-menu-variant">${esc(x.size)} · ${esc(money(x.price))}/unit</span><div class="nl-bulk-quantity-controls">${quantityControls(x.id,x.size,x.qty,x.name)}</div></div><div class="nl-bulk-menu-line-price"><strong>${esc(money(x.price*x.qty))}</strong></div></div>`).join('')}</section>`;
   }).join(''):'<div class="nl-bulk-menu-empty">Select product quantities for your order.</div>';
   root.innerHTML=`<div class="nl-bulk-summary-heading"><span class="ap-eyebrow">YOUR ORDER</span><h2>Your selections</h2><span class="nl-bulk-total-units">${units} units</span></div>
+   ${units?'':'<button type="button" class="ap-button nl-bulk-add-products" data-action="bulk-add-products">ADD PRODUCTS</button>'}
    <div class="nl-bulk-summary-scroll" aria-label="Selected products">${selection}</div>
    <div class="nl-bulk-totals"><div class="nl-bulk-estimate-total"><span>Merchandise subtotal</span><strong>${esc(money(subtotal))}</strong></div></div>
    <button class="ap-button" data-action="bulk-checkout" ${units?'':'disabled'}>Checkout · ${esc(money(subtotal))}</button>
@@ -85,6 +87,7 @@
   root.innerHTML=empty('Workspace information unavailable','Try reloading your account.');
  }
  document.addEventListener('click',event=>{const button=event.target.closest('[data-action]');if(!button)return;const action=button.dataset.action;
+  if(action==='bulk-add-products'){const query=$('#ap-bulk-query');if(query){query.scrollIntoView({behavior:matchMedia('(prefers-reduced-motion: reduce)').matches?'auto':'smooth',block:'start'});query.focus({preventScroll:true});}return;}
   if(action==='bulk-qty'){const current=bulk.find(x=>x.id===button.dataset.id&&x.size===button.dataset.size)?.qty||0;setBulkQuantity(button.dataset.id,button.dataset.size,current+Number(button.dataset.delta));}
   if(action==='bulk-size'){const p=product(button.dataset.id),v=p?.variants.find(x=>x.size===button.dataset.size);if(p&&v){bulkSizes[p.id]=v.size;A.write(bulkSizeKey,bulkSizes);bulkResults();}}
   if(action==='bulk-category'){bulkGroup=button.dataset.group||'All';$$('[data-action="bulk-category"]').forEach(x=>x.setAttribute('aria-pressed',String(x.dataset.group===bulkGroup)));bulkResults();}
