@@ -582,3 +582,121 @@ body.ap-site{font-family:Archivo,Arial,sans-serif;background:#fff;color:#101317}
   .ap-site .nl-soft .ap-slot-products .ap-vial-example img{display:block;width:100%;max-width:none;height:auto;aspect-ratio:1081/1455;object-fit:contain}
   .ap-site .nl-soft .ap-slot-products .ap-vial-example:not(:last-child)::after{right:-15px}
 }
+
+/* The homepage collection keeps all purchase controls on the product page. */
+.ap-site .nl-featured .nl-carousel > .ap-product-card.nl-featured-product {
+  border: 0;
+  border-radius: 0;
+  background: transparent;
+  box-shadow: none;
+  overflow: visible;
+  transform: none;
+}
+.ap-site .nl-featured .nl-featured-product .ap-product-image {
+  display: block !important;
+  width: 100%;
+  height: auto;
+  aspect-ratio: 4 / 5;
+  overflow: hidden;
+  border: 1px solid #e9e2ef;
+  border-radius: 18px;
+  background: #f6f3f8;
+}
+.ap-site .nl-featured .nl-featured-product .ap-product-image:focus-visible {
+  outline: 2px solid #6b32ac;
+  outline-offset: 4px;
+}
+.ap-site .nl-featured .nl-featured-meta {
+  display: grid;
+  grid-template-columns: minmax(0,1fr) auto;
+  align-items: start;
+  gap: 12px;
+  padding: 15px 1px 0;
+  text-align: left;
+}
+.ap-site .nl-featured .nl-featured-meta h3 {
+  min-width: 0;
+  min-height: 0;
+  margin: 0;
+  color: #21172d;
+  font-size: 15px;
+  font-weight: 700;
+  line-height: 1.35;
+  letter-spacing: -.02em;
+  text-transform: none;
+  overflow-wrap: anywhere;
+}
+.ap-site .nl-featured .nl-featured-meta h3 a { color: inherit; text-decoration: none; }
+.ap-site .nl-featured .nl-featured-meta h3 a:hover { color: #642db0; }
+.ap-site .nl-featured .nl-featured-price {
+  color: #21172d;
+  font-size: 15px;
+  font-weight: 600;
+  line-height: 1.35;
+  letter-spacing: -.02em;
+  text-align: right;
+  white-space: nowrap;
+}
+
+/* The retained bulk-order feature uses actual catalog prices in its example. */
+.ap-site .nl-home-bulk { padding: 18px 0 48px; background: #fff; }
+.ap-site .nl-home-bulk .nl-home-bulk-card {
+  display: grid;
+  grid-template-columns: minmax(0,1fr) minmax(0,1fr);
+  align-items: center;
+  gap: clamp(30px,6vw,88px);
+  min-height: 0;
+  padding: clamp(32px,4vw,56px);
+  border-radius: 24px;
+}
+.ap-site .nl-home-bulk-copy { min-width: 0; }
+.ap-site .nl-home-bulk-copy .ap-eyebrow { margin-bottom: 18px; color: #dcc8f1; }
+.ap-site .nl-home-bulk-copy h2 {
+  max-width: none;
+  margin: 0 0 20px;
+  color: #fff;
+  font-size: clamp(32px,3.5vw,48px);
+  line-height: 1.08;
+  letter-spacing: -.04em;
+}
+.ap-site .nl-home-bulk-copy p { max-width: 460px; margin: 0; color: #e4d9ed; font-size: 15px; line-height: 1.7; }
+.ap-site .nl-home-bulk .nl-home-bulk-copy .ap-text-link { gap: 22px; margin-top: 26px; padding: 13px 20px; }
+.ap-site .nl-home-bulk-preview {
+  min-width: 0;
+  padding: 24px;
+  border: 1px solid #ffffff2b;
+  border-radius: 18px;
+  background: #160a2a3d;
+}
+.ap-site .nl-home-bulk-table { width: 100%; border-collapse: collapse; color: #fff; text-align: left; }
+.ap-site .nl-home-bulk-table caption { padding: 0 0 20px; color: #fff; font-size: 14px; font-weight: 700; text-align: left; }
+.ap-site .nl-home-bulk-table th { padding: 0 0 12px; border-bottom: 1px solid #ffffff30; color: #cdb8e1; font-size: 10px; font-weight: 600; line-height: 1.5; letter-spacing: .06em; text-transform: uppercase; }
+.ap-site .nl-home-bulk-table td { padding: 12px 0; border-bottom: 1px solid #ffffff20; font-size: 14px; font-weight: 600; }
+.ap-site .nl-home-bulk-table th:nth-child(2),.ap-site .nl-home-bulk-table td:nth-child(2) { width: 48px; padding-inline: 8px; text-align: center; }
+.ap-site .nl-home-bulk-table th:last-child,.ap-site .nl-home-bulk-table td:last-child { width: 82px; text-align: right; white-space: nowrap; }
+.ap-site .nl-home-bulk-table tr:last-child td { border-bottom: 0; }
+.ap-site .nl-home-bulk .ap-mini-product { min-height: 67px; gap: 9px; white-space: normal; }
+.ap-site .nl-home-bulk .ap-mini-product .ap-vial-example,.ap-site .nl-home-bulk .ap-mini-product .ap-vial-example img { width: 50px; height: 67px; }
+.ap-site .nl-home-bulk-product-name { min-width: 0; line-height: 1.4; }
+.ap-site .nl-home-bulk-product-name small { display: block; margin-top: 3px; color: #cdb8e1; font-size: 11px; font-weight: 400; }
+.ap-site .nl-home-bulk-preview .nl-home-bulk-note { max-width: none; margin: 12px 0 0; padding-top: 14px; border-top: 1px solid #ffffff20; color: #cdb8e1; font-size: 11px; line-height: 1.6; }
+@media(max-width:900px) {
+  .ap-site .nl-home-bulk .nl-home-bulk-card { grid-template-columns: minmax(0,1fr); gap: 30px; }
+  .ap-site .nl-home-bulk-copy p { max-width: 540px; }
+}
+@media(max-width:767px) {
+  .ap-site .nl-featured .nl-featured-meta { gap: 10px; padding-top: 14px; }
+  .ap-site .nl-featured .nl-featured-meta h3,.ap-site .nl-featured .nl-featured-price { font-size: 16px; }
+  .ap-site .nl-home-bulk { padding: 8px 0 28px; }
+  .ap-site .nl-home-bulk .nl-home-bulk-card { padding: 27px 22px; border-radius: 20px; }
+  .ap-site .nl-home-bulk-copy h2 { font-size: 34px; }
+  .ap-site .nl-home-bulk-copy p { font-size: 14px; }
+  .ap-site .nl-home-bulk-preview { padding: 18px 14px; }
+  .ap-site .nl-home-bulk-table caption { padding-bottom: 17px; }
+  .ap-site .nl-home-bulk-table th { font-size: 9px; }
+  .ap-site .nl-home-bulk-table td { font-size: 12px; }
+  .ap-site .nl-home-bulk-table th:nth-child(2),.ap-site .nl-home-bulk-table td:nth-child(2) { width: 34px; padding-inline: 6px; }
+  .ap-site .nl-home-bulk-table th:last-child,.ap-site .nl-home-bulk-table td:last-child { width: 63px; }
+  .ap-site .nl-home-bulk .ap-mini-product { min-height: 57px; gap: 5px; }
+  .ap-site .nl-home-bulk .ap-mini-product .ap-vial-example,.ap-site .nl-home-bulk .ap-mini-product .ap-vial-example img { width: 42px; height: 57px; }
+}

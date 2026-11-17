@@ -8,6 +8,11 @@ const root=path.resolve(__dirname,'..');
 const read=file=>fs.readFileSync(path.join(root,file),'utf8');
 const settle=()=>new Promise(resolve=>setTimeout(resolve,0));
 const retired=/BOGO|buy\s*1\s*,?\s*get\s*1|additional free|research builder|memberships?|subscribe and save|free BAC|5%.*bank|50%|60%/i;
+function referenceSource(file,scope,anchor){
+ const source=read(file),views=require('../reference-ui-functions.cjs')[scope];
+ assert.ok(source.includes(anchor),file+' exposes the reference view insertion point');
+ return source.replace(anchor,Object.entries(views).map(([name,fn])=>'\n '+name+' = '+fn.toString()+';\n').join('')+anchor);
+}
 async function fixture(route,{workspace=false}={}){
  const errors=[],vc=new VirtualConsole();vc.on('jsdomError',e=>errors.push(e.message));
  const dom=new JSDOM(read('storefront-v2.html'),{url:'https://getpurelabs.com'+route,runScripts:'outside-only',virtualConsole:vc}),w=dom.window;
@@ -16,22 +21,19 @@ async function fixture(route,{workspace=false}={}){
  w.HTMLDialogElement.prototype.showModal=function(){this.open=true;};
  w.HTMLDialogElement.prototype.close=function(){this.open=false;};
  w.fetch=async()=>({ok:true,json:async()=>[]});
- const scripts=['products.js','product-images.js','storefront-v2.js'].map(read);
- if(workspace){
-  const views=require('../reference-ui-functions.cjs').workspace;
-  const source=read('workspace-v2.js'),anchor=' window.AltaWorkspace=';
-  assert.ok(source.includes(anchor));
-  scripts.push(source.replace(anchor,Object.entries(views).map(([name,fn])=>'\n '+name+' = '+fn.toString()+';\n').join('')+anchor));
- }
+ const scripts=['products.js','product-images.js'].map(read);
+ // The production build replaces these views inside the storefront closure.
+ scripts.push(referenceSource('storefront-v2.js','store',' window.AltaStore='));
+ if(workspace)scripts.push(referenceSource('workspace-v2.js','workspace',' window.AltaWorkspace='));
  scripts.push(read('reference-ui.js'));
  w.eval(scripts.join('\n'));
  await settle();
  return{w,d:w.document,errors,async close(){await settle();assert.deepEqual(errors,[],route);dom.window.close();}};
 }
-test('homepage has the exact announcement, two-line hero, single CTA and three trust items',async()=>{
+test('homepage keeps the announcement, five-vial hero and product links without purchase controls',async()=>{
  const f=await fixture('/');
  try{
-  const {d}=f,hero=d.querySelector('.nl-hero');
+  const {d,w}=f,hero=d.querySelector('.nl-hero');
   assert.equal(d.querySelector('.ap-announcement').textContent.trim(),'Enjoy 15% off with code BLACKFRIDAY15 at checkout.');
   assert.equal(d.querySelectorAll('.ap-announcement a,.ap-announcement svg').length,0);
   assert.equal([...hero.querySelector('h1').childNodes].map(n=>n.nodeName==='BR'?'\n':n.textContent).join(''),'CUTTING EDGE\nPURITY');
@@ -39,19 +41,37 @@ test('homepage has the exact announcement, two-line hero, single CTA and three t
   assert.deepEqual([...hero.querySelectorAll('.ap-actions a')].map(a=>[a.textContent,a.getAttribute('href')]),[['SHOP NOW','/shop']]);
   assert.deepEqual([...hero.querySelectorAll('.nl-trust>div>span')].map(n=>n.textContent),['99%+ Purity','Free shipping over $150','Lab Tested']);
   assert.equal(hero.querySelectorAll('.nl-trust-check').length,3);
-  assert.equal(hero.querySelectorAll('.nl-vial').length,3);
-  assert.equal(d.querySelectorAll('#nl-featured .ap-product-card').length,10);
+  assert.equal(hero.querySelectorAll('.nl-vial').length,5);
+  const featured=[...d.querySelectorAll('#nl-featured .ap-product-card')];
+  assert.equal(featured.length,10);
+  for(const card of featured){
+   const p=w.AltaStore.product(card.dataset.product);assert.ok(p);
+   assert.equal(card.querySelectorAll('select,button,input,[data-action]').length,0,'featured cards navigate to a product before choosing a strength or purchasing');
+   const photo=card.querySelector('a.ap-product-image');assert.ok(photo?.querySelector('img'));
+   const target=new URL(photo.getAttribute('href'),w.location.href);
+   assert.equal(target.pathname,'/product/'+p.id);
+   assert.ok(p.variants.some(v=>v.size===target.searchParams.get('size')),'photo links retain a valid catalog strength');
+   assert.equal(card.querySelector('h3 a').getAttribute('href'),photo.getAttribute('href'));
+   assert.equal(card.querySelector('h3 a').textContent,p.name);
+  }
+  assert.equal(w.AltaStore.cart.length,0);
   assert.equal(d.querySelectorAll('a[href*="research-builder"],a[href*="memberships"],a[href="/account/membership"],del,[data-promo-clock],.nl-offer-grid').length,0);
   assert.doesNotMatch(d.body.textContent,retired);
  }finally{await f.close();}
 });
-test('catalog adds one purchased unit and preserves product category filtering',async()=>{
+test('catalog strength selection adds one purchased unit and preserves product category filtering',async()=>{
  const f=await fixture('/shop');
  try{
   const {d,w}=f;
   assert.equal(d.querySelectorAll('.nl-badge,del,.ap-pair-offer').length,0);
-  d.querySelector('[data-action="add"]').click();
+  const select=[...d.querySelectorAll('[data-card-size]')].find(el=>el.options.length>1);assert.ok(select);
+  const id=select.dataset.cardSize,size=select.options[1].value;
+  select.value=size;select.dispatchEvent(new w.Event('change',{bubbles:true}));
+  const add=d.querySelector('[data-product="'+id+'"] [data-action="add"]');
+  assert.equal(add.dataset.size,size);add.click();
   assert.equal(w.AltaStore.cart.length,1);assert.equal(w.AltaStore.cart[0].qty,1);
+  assert.equal(w.AltaStore.cart[0].size,size);
+  assert.equal(w.AltaStore.cart[0].price,w.AltaStore.product(id).variants.find(v=>v.size===size).price);
   d.querySelector('[data-action="cart"]').click();
   assert.doesNotMatch(d.querySelector('#ap-cart-content').textContent,retired);
   d.querySelector('[data-filter-group=Supplies]').click();

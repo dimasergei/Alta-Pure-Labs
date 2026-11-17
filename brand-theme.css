@@ -339,13 +339,19 @@ body.ap-site {
   animation: none !important;
 }
 .ap-site .nl-hero .nl-primary::before { content: none !important; }
-.ap-site .nl-hero .nl-vial-stage { position: relative; width: 100%; height: 420px; min-width: 0; margin: 0; }
+.ap-site .nl-hero .nl-vial-stage { position: relative; container-type: size; width: 100%; height: 420px; min-width: 0; margin: 0; }
 .ap-site .nl-hero .nl-vial {
   position: absolute;
   z-index: 2;
-  width: 48%;
+  top: 56%;
+  right: auto;
+  width: min(36%, 58cqh);
+  height: auto;
+  max-width: none;
+  aspect-ratio: 1081 / 1455;
   border-radius: 0;
   filter: drop-shadow(0 16px 18px #03010ca0);
+  translate: -50% -50%;
   transform: translate3d(0,0,0);
   animation: pure-vial-float 7s ease-in-out infinite;
   will-change: transform;
@@ -360,18 +366,21 @@ body.ap-site {
   mask-image: none;
   clip-path: url(#ap-vial-outline);
 }
-.ap-site .nl-hero .nl-vial-0 { left: -3%; top: 45px; animation-delay: -2s; }
-.ap-site .nl-hero .nl-vial-1 { left: 22%; top: 0; width: 55%; z-index: 3; }
-.ap-site .nl-hero .nl-vial-2 { right: -3%; top: 65px; animation-delay: -4s; }
+.ap-site .nl-hero .nl-vial-0 { left: 9%; animation-delay: -3.2s; z-index: 1; }
+.ap-site .nl-hero .nl-vial-1 { left: 28%; top: 52%; width: min(42%, 68cqh); animation-delay: -1.8s; }
+.ap-site .nl-hero .nl-vial-2 { left: 50%; top: 50%; width: min(46%, 74cqh); z-index: 3; }
+.ap-site .nl-hero .nl-vial-3 { left: 72%; top: 53%; width: min(42%, 68cqh); animation-delay: -4.6s; }
+.ap-site .nl-hero .nl-vial-4 { left: 91%; animation-delay: -2.7s; z-index: 1; }
 .ap-site .nl-hero .nl-stage-word {
   position: absolute;
   z-index: 0;
-  inset: auto 0 24px;
-  width: 100%;
-  height: 115px;
+  inset: auto 1% 34px;
+  width: 98%;
+  height: auto;
+  aspect-ratio: 320 / 74;
   margin: 0;
-  color: #000 !important;
-  opacity: 1;
+  color: #080510 !important;
+  opacity: .94;
   pointer-events: none;
 }
 .ap-site .nl-hero .nl-trust {
@@ -406,11 +415,7 @@ body.ap-site {
   .ap-site .nl-hero .nl-hero-description { max-width: 480px; margin: 18px auto 22px; }
   .ap-site .nl-hero .ap-actions { justify-content: center; }
   .ap-site .nl-hero .nl-vial-stage { max-width: 470px; height: 100%; max-height: 350px; min-height: 200px; margin: 0 auto; }
-  .ap-site .nl-hero .nl-vial { width: auto; max-width: 48%; height: calc(100% - 40px); aspect-ratio: 1081 / 1455; }
-  .ap-site .nl-hero .nl-vial-0 { top: 25px; }
-  .ap-site .nl-hero .nl-vial-1 { left: 50%; width: auto; max-width: 55%; height: 100%; translate: -50% 0; }
-  .ap-site .nl-hero .nl-vial-2 { top: 40px; }
-  .ap-site .nl-hero .nl-stage-word { bottom: 20px; height: 98px; }
+  .ap-site .nl-hero .nl-stage-word { bottom: 26px; }
   .ap-site .nl-hero .nl-trust { margin-top: 0; align-self: end; }
   .ap-site .nl-hero .nl-trust > div > span { font-size: 12px; }
 }

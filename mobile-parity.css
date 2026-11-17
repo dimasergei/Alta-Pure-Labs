@@ -194,10 +194,7 @@
   .ap-site .nl-hero .nl-hero-description { max-width: 410px; margin: 12px auto 16px; font-size: 14px; line-height: 1.5; }
   .ap-site .nl-hero .ap-actions > a.nl-primary { min-width: 162px; min-height: 46px; padding: 12px 26px; font-size: 13px; }
   .ap-site .nl-hero .nl-vial-stage { width: 100%; max-width: 420px; height: 100%; max-height: 315px; min-height: 0; margin: 0 auto; }
-  .ap-site .nl-hero .nl-vial-0 { top: 24px; left: -3%; }
-  .ap-site .nl-hero .nl-vial-1 { top: 0; }
-  .ap-site .nl-hero .nl-vial-2 { top: 40px; right: -3%; }
-  .ap-site .nl-hero .nl-stage-word { display: block; height: 82px; bottom: 12px; }
+  .ap-site .nl-hero .nl-stage-word { display: block; height: auto; bottom: 24px; }
   .ap-site .nl-hero .nl-trust { grid-template-columns: repeat(3,minmax(0,1fr)); gap: 8px; padding-top: 12px; margin-top: 0; }
   .ap-site .nl-hero .nl-trust > div { flex-direction: column; gap: 7px; text-align: center; }
   .ap-site .nl-hero .nl-trust > div > span { font-size: 11px; line-height: 1.4; }

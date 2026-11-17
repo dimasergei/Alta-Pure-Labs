@@ -10,7 +10,37 @@ function assertCurrentView(d,route){
 }
 async function setup(route){const errors=[];const console=new VirtualConsole();console.on('jsdomError',e=>errors.push(e.message));const dom=new JSDOM(read('public-build/index.html'),{url:'https://getpurelabs.com'+route,runScripts:'outside-only',virtualConsole:console}),w=dom.window;w.localStorage.setItem('ap-age-verified','true');w.matchMedia=()=>({matches:false});w.HTMLElement.prototype.scrollIntoView=()=>{};w.HTMLDialogElement.prototype.showModal=function(){this.open=true;};w.HTMLDialogElement.prototype.close=function(){this.open=false;};w.fetch=async()=>({ok:true,json:async()=>[]});w.AltaConversionConfig=require('../config/conversion.json');w.eval(read('public-build/conversion-ui.js')+'\n'+read('public-build/products.js')+'\n'+read('public-build/product-images.js')+'\n'+read('public-build/storefront-v2.js')+'\n'+read('public-build/workspace-v2.js'));await new Promise(r=>setTimeout(r,0));assert.deepEqual(errors,[],route);assertCurrentView(w.document,route);return{dom,w,d:w.document};}
 (async()=>{
- {const{dom,d}=await setup('/');assert.match(d.querySelector('h1').textContent,/CUTTING EDGEPURITY/);assert.equal(d.querySelectorAll('#nl-featured .ap-product-card').length,10);assert.ok(d.querySelector('#faq'));dom.window.close();}
+ {const{dom,d,w}=await setup('/');
+  assert.match(d.querySelector('h1').textContent,/CUTTING EDGEPURITY/);
+  const vials=[...d.querySelectorAll('.nl-hero .nl-vial')];
+  assert.deepEqual(vials.map(a=>a.getAttribute('href')),['/product/nad','/product/retatrutide','/product/bpc-157','/product/ghk-cu','/product/tirzepatide']);
+  assert.equal(vials[2].querySelector('img').getAttribute('fetchpriority'),'high');
+  const featured=[...d.querySelectorAll('#nl-featured .ap-product-card')];
+  assert.equal(featured.length,10);
+  for(const card of featured){
+   const p=w.AltaStore.product(card.dataset.product),photo=card.querySelector('.ap-product-image');
+   assert.equal(card.querySelector('.nl-featured-meta h3').textContent,p.name);
+   assert.match(card.querySelector('.nl-featured-price').textContent,/^\$[\d,]+$/);
+   assert.equal(new URL(photo.href).pathname,'/product/'+p.id);
+   assert.equal(card.querySelector('button,select,.nl-card-actions,.nl-size-label'),null);
+   assert.equal(photo.contains(card.querySelector('.nl-featured-meta')),false,'name and price are outside the image');
+   assert.doesNotMatch(card.textContent,/per unit|View More|Add to Cart|\(\d+\s*mg\)/i);
+  }
+  const bulk=d.querySelector('.nl-home-bulk');
+  assert.ok(d.querySelector('.nl-editorial').nextElementSibling===bulk,'bulk ordering follows documentation');
+  assert.equal(bulk.nextElementSibling.id,'faq');
+  assert.equal(bulk.querySelector('a').getAttribute('href'),'/bulk-orders');
+  assert.match(bulk.textContent,/regular unit prices/);
+  assert.doesNotMatch(bulk.textContent,/discount|\d+%|builder/i);
+  const examples=[...bulk.querySelectorAll('tbody tr')];
+  assert.equal(examples.length,2);
+  for(const [index,id,size,qty] of [[0,'bpc-157','10mg',10],[1,'ghk-cu','50mg',50]]){
+   const variant=w.AltaStore.product(id).variants.find(v=>v.size===size),cells=examples[index].cells;
+   assert.equal(cells[1].textContent,String(qty));
+   assert.equal(cells[2].textContent,w.AltaStore.money(variant.price));
+  }
+  dom.window.close();
+ }
  {const{dom,d,w}=await setup('/shop');assert.equal(d.querySelector('h1').textContent,'All Products');assert.match(d.querySelector('.nl-shop-header p').textContent,/99%\+ purity/);assert.equal(d.querySelector('.nl-shop-sale'),null);assert.equal(d.querySelector('#ap-result-count'),null);assert.deepEqual([...d.querySelectorAll('.nl-filter-pills button')].map(x=>x.textContent),['All Products','Peptides','Mist Applicators','Supplies','Equipment']);assert.equal(d.querySelectorAll('#ap-catalog-grid .ap-product-card').length,20);const add=d.querySelector('[data-action="add"]');add.click();assert.equal(w.AltaStore.cart[0].qty,1);const select=d.querySelector('[data-card-size]');if(select.options.length>1){select.value=select.options[1].value;select.dispatchEvent(new w.Event('change',{bubbles:true}));assert.equal(d.querySelector('[data-action="add"]').dataset.size,select.value);}const input=d.querySelector('#ap-catalog-query');input.value='BPC-157';input.dispatchEvent(new w.Event('input',{bubbles:true}));assert.ok(d.querySelector('#ap-catalog-grid').textContent.includes('BPC-157'));const group=d.querySelectorAll('[data-filter-group]')[1];group.click();assert.equal(group.getAttribute('aria-pressed'),'true');input.value='';input.dispatchEvent(new w.Event('input',{bubbles:true}));d.querySelector('[data-filter-group=Supplies]').click();assert.equal(d.querySelectorAll('#ap-catalog-grid .ap-product-card').length,2);d.querySelector('[data-filter-group=Equipment]').click();assert.deepEqual([...d.querySelectorAll('#ap-catalog-grid .ap-product-card')].map(card=>card.dataset.product),['needles']);d.querySelector('[data-filter-group=Supplies]').click();const sort=d.querySelector('#ap-catalog-sort');sort.value='low';sort.dispatchEvent(new w.Event('change',{bubbles:true}));const prices=[...d.querySelectorAll('#ap-catalog-grid .ap-product-card')].map(card=>Math.min(...w.AltaStore.catalog.find(p=>p.id===card.dataset.product).variants.map(v=>v.price)));assert.deepEqual(prices,[...prices].sort((a,b)=>a-b));dom.window.close();}
  {const{dom,d,w}=await setup('/product/retatrutide');assert.equal(d.querySelector('#ap-detail-quantity').value,'1');d.querySelector('[data-action="detail-add"]').click();assert.equal(w.AltaStore.cart[0].qty,1);const options=d.querySelectorAll('[data-action="detail-size"]');options[1].click();assert.ok(d.querySelector('h1').textContent.includes(options[1].dataset.size));dom.window.close();}
  {const{dom,d,w}=await setup('/bulk-orders');

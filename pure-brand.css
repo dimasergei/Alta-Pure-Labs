@@ -7,7 +7,12 @@
   font-display: swap;
 }
 html:root body,
-html:root body :is(h1, h2, h3, h4, h5, h6, p, a, span, strong, b, em, small, label, input, button, select, textarea, summary, li, th, td, dt, dd, blockquote, legend, figcaption) {
+html:root body :is(
+  h1, h2, h3, h4, h5, h6, p, a, span, strong, b, em, small,
+  div, main, section, article, header, footer, nav, aside, form, fieldset, details, dialog,
+  label, input, button, select, textarea, summary, li, th, td, dt, dd,
+  blockquote, legend, figcaption, caption, address, output, code, pre, kbd, samp, time, cite, q, sup, sub
+) {
   font-family: 'Archivo', Arial, sans-serif !important;
 }
 /* The reference wordmark is vector artwork, never a browser font substitute. */
@@ -42,9 +47,88 @@ body.ap-site .ap-detail-image > img {
   overflow: hidden;
   text-indent: -9999px;
   background-color: currentColor;
-  -webkit-mask: url('/assets/pure-wordmark.svg') center top / 100% auto no-repeat;
-  mask: url('/assets/pure-wordmark.svg') center top / 100% auto no-repeat;
+  -webkit-mask: url('/assets/pure-wordmark.svg') center / contain no-repeat;
+  mask: url('/assets/pure-wordmark.svg') center / contain no-repeat;
 }
 @media (max-width: 480px) {
   .ap-header .ap-brand .pure-wordmark { width: 95px; height: 22px; }
+}
+
+/* Match the hero action across the storefront without changing control sizes. */
+html:root body.ap-site :is(
+  .ap-button, .ap-add, .pill,
+  .nlc-proceed, .nlx-primary, .nlx-pay-button,
+  .nl-bulk-plus-ten, .nlc-rec button, .nlx-cross-sell article button,
+  .nlc-coupon button, .nlx-coupon button,
+  .nl-filter-pills button, .nl-bulk-categories button, .nl-bulk-sizes button,
+  .ap-size-options button, .ap-save,
+  .account-nav a, .account-nav-logout, .ae-subnav a, .rd-partner-tabs button,
+  .ap-feature .ap-text-link, .ap-contact-card .ap-text-link, .nl-partner-details .ap-text-link
+) {
+  font-family: 'Archivo', Arial, sans-serif !important;
+  font-weight: 800 !important;
+  font-style: normal !important;
+  letter-spacing: .045em !important;
+  line-height: 1.2;
+  text-transform: uppercase !important;
+}
+
+/* Only filled actions and selected controls get white text. Ghost and light
+   controls keep their existing ink, and payment-brand lockups stay untouched. */
+html:root body.ap-site :is(
+  .ap-button:not(.ap-button-secondary):not(.ap-button-light), .ap-add, .pill-dark,
+  .nl-shop .ap-button-secondary, .nl-shop .ap-load-more,
+  .ap-supplier-coa-grid .ap-button, .ap-coa-dialog .ap-button,
+  .nl-bulk-summary :where(#ap-bulk-summary) > .ap-button,
+  .nlc-proceed, .nlx-primary, .nlx-pay-button, .nl-bulk-plus-ten,
+  .nl-filter-pills button[aria-pressed=true],
+  .nl-bulk-categories button[aria-pressed=true],
+  .nl-bulk-sizes button[aria-pressed=true],
+  .ap-size-options button[aria-pressed=true], .ap-save[aria-pressed=true],
+  .account-nav a[aria-current=page], .account-nav a.active,
+  .ae-subnav a[aria-current=page], .rd-partner-tabs button[aria-selected=true],
+  .ap-feature .ap-text-link, .ap-contact-card .ap-text-link, .nl-partner-details .ap-text-link
+) {
+  color: #fff !important;
+}
+
+/* Keep the announcement readable while a soft band of light passes behind it.
+   This specificity also restores the effect through the mobile parity layer. */
+html:root body.ap-site .ap-announcement {
+  isolation: isolate;
+  overflow: hidden !important;
+  font-family: 'Archivo', Arial, sans-serif !important;
+  font-weight: 700;
+  letter-spacing: .015em;
+}
+html:root body.ap-site .ap-announcement #ap-announcement-text {
+  position: relative !important;
+  z-index: 1;
+  font: inherit;
+  color: #fff;
+  animation: none !important;
+}
+html:root body.ap-site .ap-announcement::before {
+  content: '' !important;
+  display: block !important;
+  position: absolute;
+  z-index: 0;
+  top: -80%;
+  bottom: -80%;
+  left: 0;
+  width: 28%;
+  pointer-events: none;
+  background: linear-gradient(90deg, transparent, #ffffff08 20%, #ffffff30 50%, #ffffff08 80%, transparent) !important;
+  transform: translateX(-150%) skewX(-18deg);
+  animation: pure-announcement-shimmer 6.6s ease-in-out infinite !important;
+}
+@keyframes pure-announcement-shimmer {
+  0%, 12% { transform: translateX(-150%) skewX(-18deg); }
+  48%, 100% { transform: translateX(470%) skewX(-18deg); }
+}
+@media (prefers-reduced-motion: reduce) {
+  html:root body.ap-site .ap-announcement::before {
+    display: none !important;
+    animation: none !important;
+  }
 }
