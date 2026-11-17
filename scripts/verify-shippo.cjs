@@ -42,11 +42,15 @@ async function pdfDimensions(bytes) {
         effective_width_points: round(rotated ? height : width), effective_height_points: round(rotated ? width : height) };
     });
   } catch (error) { fail(error.verification_code || 'invalid_pdf_page_geometry'); }
+  // Shippo documents both 4×6 inches and 102×153 mm for PDF_4x6. UPS Canada
+  // returns the metric size (289.134×433.701 points); do not crop its label.
+  // https://docs.goshippo.com/shipments/shipping-label-sizes
+  const supportedSizes = [[288, 432], [102 * 72 / 25.4, 153 * 72 / 25.4]];
   if (geometry.some(page => {
     const [width, height] = [page.effective_width_points, page.effective_height_points].sort((a, b) => a - b);
-    return Math.abs(width - 288) > 1 || Math.abs(height - 432) > 1;
+    return !supportedSizes.some(([w, h]) => Math.abs(width - w) <= 1 && Math.abs(height - h) <= 1);
   })) fail('pdf_is_not_4x6', { pdf_geometry: geometry });
-  return { width_inches: 4, height_inches: 6, verified_page_boxes: geometry.length, page_geometry: geometry };
+  return { format: 'PDF_4x6', nominal_width_inches: 4, nominal_height_inches: 6, verified_page_boxes: geometry.length, page_geometry: geometry };
 }
 
 async function verify({ env = process.env, fetch: fetcher = fetch, log = value => console.log('PURE_SHIPPO_VERIFY ' + JSON.stringify(value)) } = {}) {

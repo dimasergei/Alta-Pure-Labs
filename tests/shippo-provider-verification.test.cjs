@@ -96,8 +96,8 @@ test('verification reads live carriers, creates one Canadian test label, refresh
   assert.equal(result.test_label_status, 'SUCCESS');
   assert.equal(result.test_transaction_id, transactionId);
   assert.equal(result.refresh, 'passed');
-  assert.equal(result.pdf.width_inches, 4);
-  assert.equal(result.pdf.height_inches, 6);
+  assert.equal(result.pdf.nominal_width_inches, 4);
+  assert.equal(result.pdf.nominal_height_inches, 6);
   assert.equal(result.pdf.verified_page_boxes, 1);
   assert.deepEqual(result.pdf.page_geometry, [{ page: 1, media_box: { x: 0, y: 0, width: 288, height: 432 },
     crop_box: { x: 0, y: 0, width: 288, height: 432 }, user_unit: 1, rotation: 0, effective_width_points: 288, effective_height_points: 432 }]);
@@ -219,8 +219,8 @@ test('a PDF with incorrect dimensions fails after one test label without claimin
   assert.deepEqual(h.logs.at(-1).pdf_geometry, [{ page: 1, media_box: { x: 0, y: 0, width: 612, height: 792 },
     crop_box: { x: 0, y: 0, width: 612, height: 792 }, user_unit: 1, rotation: 0, effective_width_points: 612, effective_height_points: 792 }]);
   const landscape = await pdfDimensions(await fixturePdf('0 0 432 288'));
-  assert.equal(landscape.width_inches, 4);
-  assert.equal(landscape.height_inches, 6);
+  assert.equal(landscape.nominal_width_inches, 4);
+  assert.equal(landscape.nominal_height_inches, 6);
 });
 
 test('successful and failed logs exclude credentials and raw provider exception text', async () => {
@@ -245,8 +245,8 @@ test('PDF parser resolves object streams, crop boxes, rotation and user units', 
   const bytes = await fixturePdf('0 0 612 792', { crop: [10, 20, 144, 216], rotate: 90, userUnit: 2 });
   assert.ok(!bytes.toString('latin1').includes('/MediaBox'), 'the fixture uses compressed PDF objects');
   const result = await pdfDimensions(bytes);
-  assert.equal(result.width_inches, 4);
-  assert.equal(result.height_inches, 6);
+  assert.equal(result.nominal_width_inches, 4);
+  assert.equal(result.nominal_height_inches, 6);
   assert.deepEqual(result.page_geometry[0], {
     page: 1, media_box: { x: 0, y: 0, width: 612, height: 792 }, crop_box: { x: 10, y: 20, width: 144, height: 216 },
     user_unit: 2, rotation: 90, effective_width_points: 432, effective_height_points: 288
@@ -316,4 +316,12 @@ test('carrier diagnostics include bounded messages and authentication status whi
   assert.equal(result.carrier_messages[1].text.length, 350);
   const logs = JSON.stringify(h.logs);
   for (const secret of [TEST_TOKEN, LIVE_TOKEN, 'https://example.test/private']) assert.ok(!logs.includes(secret));
+});
+
+test('PDF_4x6 accepts Shippo documented 102×153 mm UPS Canada output without altering the label', async () => {
+  const result = await pdfDimensions(await fixturePdf('0 0 289.134 433.701'));
+  assert.equal(result.format, 'PDF_4x6');
+  assert.equal(result.page_geometry[0].effective_width_points, 289.134);
+  assert.equal(result.page_geometry[0].effective_height_points, 433.701);
+  await assert.rejects(pdfDimensions(await fixturePdf('0 0 297.638 419.528')), error => error.verification_code === 'pdf_is_not_4x6', 'A6 is a different label format');
 });
