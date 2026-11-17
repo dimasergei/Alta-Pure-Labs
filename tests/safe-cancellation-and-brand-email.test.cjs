@@ -31,11 +31,12 @@ test('admin rejects refund before verified external refund and never initiates c
  assert.equal(out.status,409);
  assert.deepEqual(d.calls,[]);
 });
-test('checkout email uses PURE Labs with compact order reference and sanitized items',()=>{
+test('checkout email uses PURE with compact order reference and sanitized items',()=>{
  const notice={audience:'customer',event_action:'checkout_placed',snapshot:{id:order.id,checkout_version:'checkout-2026-11-v4',customer_name:'Test <script>',customer_email:'test@example.test',currency:'USD',status:'accepted',total_cents:7900},detail:{pricing:{lines:[{name:'Compound <img>',size:'10mg',qty:2,line_total_cents:5400}]},request_data:{name:'Test Researcher',address:{line1:'Research Lane',city:'Miami',country:'US'}},subtotal_cents:12000,shipping_cents:2500}};
  const m=email.envelope(notice,env);
  assert.match(m.subject,/AP1000000000/);
- assert.match(m.html,/PURE Labs/);
+ assert.match(m.html,/<h1[^>]*><img src="https:\/\/getpurelabs.com\/assets\/pure-wordmark-white.png" alt="PURE"/);
+ assert.doesNotMatch(m.subject+' '+m.html+' '+m.text,/PURE Labs|AltaPure Labs/i);
  assert.equal(m.from,'PURE <orders@example.test>');
  assert.match(m.html,/Compound &lt;img&gt;/);
  assert.doesNotMatch(m.html,/Compound <img>/);

@@ -4,7 +4,7 @@ const path = require('node:path');
 const out = path.join(process.cwd(), 'public-build');
 const guide = '/research-documentation.html';
 let sitemap = fs.readFileSync(path.join(out, 'sitemap.xml'), 'utf8');
-if (!sitemap.includes(guide)) sitemap = sitemap.replace('</urlset>', '<url><loc>https://altapurelabs.com' + guide + '</loc></url></urlset>');
+if (!sitemap.includes(guide)) sitemap = sitemap.replace('</urlset>', '<url><loc>https://getpurelabs.com' + guide + '</loc></url></urlset>');
 fs.writeFileSync(path.join(out, 'sitemap.xml'), sitemap);
 const urls = [...sitemap.matchAll(/<loc>([^<]+)<\/loc>/g)].map(m => new URL(m[1]).pathname);
 // The sitemap contains a tracking-login landing page; explicitly exclude it.

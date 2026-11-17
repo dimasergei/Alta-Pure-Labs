@@ -15,7 +15,7 @@ const expected = { provider: 'rampex', mode: 'live', link_id: completion.link_id
 const request = { amount_cents: 10050, currency: 'USD', email: 'buyer@example.invalid',
   order_id: 'invoice_123', provider: 'rampnetwork',
   provider_status: { id: 'rampnetwork', status: 'active', minimum_amount: 4, minimum_currency: 'USD' },
-  return_url: 'https://altapurelabs.com/invoice.html?id=invoice_123' };
+  return_url: 'https://getpurelabs.com/invoice.html?id=invoice_123' };
 
 test('converts decimal fiat without rounding', () => {
   assert.equal(r.toCents('100.50'), 10050); assert.equal(r.toCents(0.01), 1);
@@ -80,6 +80,12 @@ test('builds an exact-amount request without network calls or secrets', () => {
   assert.equal(made.url, 'https://api.rampex.io/api-create-payment-link');
   assert.equal(made.body.amount, 100.5); assert.equal(made.body.provider, 'rampnetwork');
   assert.equal(made.body.woo_order_id, 'invoice_123'); assert.equal(made.headers, undefined);
+  assert.equal(made.body.woo_store_url, 'https://altapurelabs.com');
+  assert.equal(made.body.payment_url, request.return_url);
+});
+test('retains legacy invoice return URLs during the verified domain migration', () => {
+  const return_url = 'https://altapurelabs.com/invoice.html?id=invoice_123';
+  assert.equal(r.buildPaymentRequest({...request, return_url}).body.payment_url, return_url);
 });
 test('blocks unsupported direct routes and invented providers', () => {
   for (const provider of ['stripe','unknown','STRIPE']) {
@@ -97,6 +103,7 @@ test('blocks invalid amounts, email and unsafe return URLs', () => {
   assert.throws(() => r.buildPaymentRequest({...request, email:'bad'}));
   assert.throws(() => r.buildPaymentRequest({...request, currency:'CAD'}));
   for (const return_url of ['http://altapurelabs.com/invoice.html?id=invoice_123',
+    'http://getpurelabs.com/invoice.html?id=invoice_123', 'https://getpurelabs.com.evil.invalid/invoice.html?id=invoice_123',
     'https://evil.invalid/invoice.html?id=invoice_123', 'https://altapurelabs.com/invoice.html?id=other',
     'https://altapurelabs.com/invoice.html?id=invoice_123&next=https://evil.invalid',
     'https://user:pass@altapurelabs.com/invoice.html?id=invoice_123']) {

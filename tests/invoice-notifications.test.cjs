@@ -6,10 +6,11 @@ const env={RESEND_API_KEY:'fixture-only',ORDER_CONFIRMATION_FROM:'AltaPure <orde
 const notification={id:nid,invoice_id:id,audience:'customer',event_action:'issued',snapshot:{id,customer_email:'owner@example.test',customer_name:'<script>bad</script>',status:'issued',kind:'goods',total_cents:12900,currency:'USD',expires_at:'2026-12-01T00:00:00Z',event_at:'2026-11-10T00:00:00Z',payment_instructions:'BANK-PRIVATE-SHOULD-NOT-APPEAR'}};
 test('email sender rebrands only the display name and preserves the configured mailbox',()=>{
  const {emailSender}=require('../lib/brand-display');
- for(const value of ['AltaPure Labs <orders@altapurelabs.com>','ALTAPURELABS <orders@altapurelabs.com>','Alta Pure Labs <orders@altapurelabs.com>'])assert.equal(emailSender(value),'PURE Labs <orders@altapurelabs.com>');
+ for(const value of ['AltaPure Labs <orders@altapurelabs.com>','ALTAPURELABS <orders@altapurelabs.com>','Alta Pure Labs <orders@altapurelabs.com>','PURE Labs <orders@altapurelabs.com>','PureLabs <orders@altapurelabs.com>','Pure Labs <orders@altapurelabs.com>'])assert.equal(emailSender(value),'PURE <orders@altapurelabs.com>');
  assert.equal(emailSender('"AltaPure" <orders@example.test>'),'"PURE" <orders@example.test>');
- for(const value of ['altapurelabs@protonmail.com','AltaPureLabs@example.test','Operations <altapurelabs@protonmail.com>','PURE Labs <orders@altapurelabs.com>'])assert.equal(emailSender(value),value);
- const out=mail.envelope(notification,env);assert.equal(out.from,'PURE <orders@example.test>');assert.match(out.subject,/^PURE — /);assert.match(out.html,/PURE Labs/);
+ assert.equal(emailSender('"PURE Labs" <Orders+status@altapurelabs.com>'),'"PURE" <Orders+status@altapurelabs.com>');
+ for(const value of ['altapurelabs@protonmail.com','AltaPureLabs@example.test','purelabs@example.test','Operations <altapurelabs@protonmail.com>','PURE <orders@altapurelabs.com>'])assert.equal(emailSender(value),value);
+ const out=mail.envelope(notification,{...env,ORDER_CONFIRMATION_FROM:'PURE Labs <orders@example.test>'});assert.equal(out.from,'PURE <orders@example.test>');assert.match(out.subject,/^PURE — /);assert.match(out.html,/<h1[^>]*><img src="https:\/\/getpurelabs.com\/assets\/pure-wordmark-dark.png" alt="PURE"/);assert.doesNotMatch(out.html,/PURE Labs/);
 });
 function response(){return{code:200,body:null,setHeader(){},status(n){this.code=n;return this;},json(b){this.body=b;return this;}};}
 function dbMock(options={}){const calls=[];const q={select(){return q;},in(){return q;},lte(){return q;},eq(){return q;},order(){return q;},limit:async()=>({data:[notification]})};return{calls,from(){return q;},rpc:async(name,args)=>{calls.push({name,args});if(name==='commerce_claim_notification')return{data:{claimed:options.claimed!==false,state:'accepted',claim:id,envelope:options.storedEnvelope||args.p_envelope}};return options.finishError?{error:{code:'fixture'}}:{data:true};}};}

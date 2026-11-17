@@ -214,10 +214,10 @@
   function template(lead,type,context){
     const greet=lead.name?('Hi '+lead.name.split(' ')[0]+','):'Hi,';
     const reference=context?'\n\n'+context.trim()+'\n':'';
-    const outro='\n\nBest,\nPURE Labs\nadmin@altapurelabs.com';
-    if(type==='followup')return greet+'\n\nFollowing up on my note about a potential PURE Labs creator partnership. Would you be open to sharing your media kit or the best contact for collaboration inquiries?'+reference+outro;
+    const outro='\n\nBest,\nPURE\nadmin@altapurelabs.com';
+    if(type==='followup')return greet+'\n\nFollowing up on my note about a potential PURE creator partnership. Would you be open to sharing your media kit or the best contact for collaboration inquiries?'+reference+outro;
     if(type==='reply')return greet+'\n\nThanks for getting back to us. I would be glad to discuss a possible collaboration and learn what placements work best for your audience. Could you share your media kit, audience geography and standard deliverables?'+reference+outro;
-    return greet+'\n\nI’m reaching out from PURE Labs. We’re exploring a small number of ongoing creator collaborations, and I’d like to see whether there could be a fit with your content.'+reference+'\n\nAre you currently considering brand partnerships? If so, could you share your media kit or business contact?'+outro;
+    return greet+'\n\nI’m reaching out from PURE. We’re exploring a small number of ongoing creator collaborations, and I’d like to see whether there could be a fit with your content.'+reference+'\n\nAre you currently considering brand partnerships? If so, could you share your media kit or business contact?'+outro;
   }
   function draft(id){
     const lead=find(id);if(!lead)return;

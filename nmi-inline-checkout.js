@@ -70,7 +70,7 @@
    tokenizationKey:config.tokenization_key,paymentMethods:methods,
    payButtonText:'Place order · '+new Intl.NumberFormat('en-US',{style:'currency',currency}).format(amount/100),
    expressCheckoutConfig:{amount:(amount/100).toFixed(2),currency,countryCode:form.elements.country?.value||'US',
-    emailRequired:true,billingRequired:true,applePay:{totalLabel:'PURE Labs'},
+    emailRequired:true,billingRequired:true,applePay:{totalLabel:'PURE'},
     googlePay:{totalPriceStatus:'FINAL',buttonType:'pay'}},
    onPay:pay,onExpressCheckout:pay
   });

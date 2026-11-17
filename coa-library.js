@@ -33,7 +33,7 @@
     if(!Array.isArray(data))throw Error('Invalid registry');
     // Published registry is curated server-side; fail closed for unknown states.
     reports=data.filter(r=>r&&r.status==='verified'&&r.publication_approved===true&&
-      typeof r.document_url==='string'&&/^https:\/\/altapurelabs\.com\//.test(r.document_url)&&
+      typeof r.document_url==='string'&&/^https:\/\/(?:getpurelabs|altapurelabs)\.com\//.test(r.document_url)&&
       typeof r.sku_key==='string'&&typeof r.lot==='string'&&typeof r.report_id==='string');
     render();
   }).catch(()=>{count.textContent='Certificate library temporarily unavailable.';results.replaceChildren(element('p','Please check back later.'));});

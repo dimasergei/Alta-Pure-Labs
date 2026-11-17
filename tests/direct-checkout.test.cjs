@@ -13,6 +13,13 @@ function dbMock({balance={points:1000,credit_cents:5000},membership=null,existin
   const q={select(){return q;},eq(){return q;},is(){return q;},lte(){return q;},gt(){return q;},order(){return q;},limit(){return q;},maybeSingle(){return q;},then(resolve,reject){return Promise.resolve({data:value}).then(resolve,reject);}};return q;},rpc:async(name,args)=>{calls.push({name,args});return{data:{id,status:'accepted'}};}};
 }
 const request=(b,headers={})=>({method:'POST',headers:{origin:env.SITE_URL,'content-type':'application/json',authorization:'Bearer fixture-auth-token-long-enough',...headers},body:b});
+test('checkout quotes work on both verified domains without placing an order during migration',async()=>{
+ for(const configured of ['https://getpurelabs.com','https://altapurelabs.com'])for(const origin of ['https://getpurelabs.com','https://altapurelabs.com']){
+  const db=dbMock(),res=response();
+  await checkout.handle(request({...body,action:'quote'},{origin}),res,new URLSearchParams(),{env:{...env,SITE_URL:configured},db,catalog,rateLimit:async()=>{}});
+  assert.equal(res.code,200,configured+' accepts '+origin);assert.equal(db.calls.length,0);
+ }
+});
 test('authoritative catalog ignores client prices; member/volume then bank discount are server-selected',async()=>{
  const r=await checkout.normalize({},user,body,catalog);const p=checkout.price(r,method,{plan:'elite',invoice_id:id},{points:0,credit_cents:0});
  assert.equal(p.subtotal_cents,10000);assert.equal(p.discount_cents,1450);assert.equal(p.total_cents,8550);assert.equal(p.earned_points,855);

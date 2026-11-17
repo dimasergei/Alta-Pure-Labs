@@ -1,0 +1,29 @@
+/* The reference wordmark is vector artwork, never a browser font substitute. */
+.pure-wordmark {
+  display: inline-block;
+  flex: 0 0 auto;
+  width: 104px;
+  height: 24px;
+  max-width: 100%;
+  overflow: hidden;
+  white-space: nowrap;
+  text-indent: -9999px;
+  vertical-align: middle;
+  background-color: currentColor;
+  -webkit-mask: url('/assets/pure-wordmark.svg') center / contain no-repeat;
+  mask: url('/assets/pure-wordmark.svg') center / contain no-repeat;
+}
+.ap-brand .pure-wordmark { width: 104px; height: 24px; }
+.admin-login-brand .pure-wordmark { width: 104px; height: 24px; }
+.admin-brand-name.pure-wordmark { width: 95px; height: 22px; }
+.ap-auth-bottom-brand.pure-wordmark { width: 65px; height: 15px; }
+.nl-stage-word {
+  overflow: hidden;
+  text-indent: -9999px;
+  background-color: currentColor;
+  -webkit-mask: url('/assets/pure-wordmark.svg') center top / 100% auto no-repeat;
+  mask: url('/assets/pure-wordmark.svg') center top / 100% auto no-repeat;
+}
+@media (max-width: 480px) {
+  .ap-header .ap-brand .pure-wordmark { width: 95px; height: 22px; }
+}

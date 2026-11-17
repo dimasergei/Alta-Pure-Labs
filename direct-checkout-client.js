@@ -73,7 +73,7 @@
    const params=new URLSearchParams(location.search),plan=params.get('plan'),goods=!['vip','elite'].includes(plan),
     membershipPeriod=goods?null:(params.get('period')||'annual'),bulk=goods&&params.get('bulk')==='1',data=await api(auth),cart=bulk?window.AltaStore.normalizeLines(window.AltaStore.read('ap-bulk-draft-v2',[])):window.AltaStore?.cart||[],researchCart=goods&&!bulk?window.AltaStore?.read?.('ap-research-cart-origin-v1',null):null,
     researchBuilder=Array.isArray(researchCart)&&researchCart.length>0&&cartSignature(cart)===cartSignature(researchCart);
-   root.innerHTML='<div class="dc-topline"><a href="'+(bulk?'/bulk-orders':'/shop')+'">← Continue shopping</a><a href="/account/purchases">My orders</a></div><header class="dc-heading"><h1>Checkout</h1><p class="dc-steps">Your details &nbsp; / &nbsp; Review order &nbsp; / &nbsp; Payment</p></header>'; document.title='Checkout | PURE Labs';
+   root.innerHTML='<div class="dc-topline"><a href="'+(bulk?'/bulk-orders':'/shop')+'">← Continue shopping</a><a href="/account/purchases">My orders</a></div><header class="dc-heading"><h1>Checkout</h1><p class="dc-steps">Your details &nbsp; / &nbsp; Review order &nbsp; / &nbsp; Payment</p></header>'; document.title='Checkout | PURE';
    if(goods&&!cart.length){root.append(node('p',bulk?'Your bulk order is empty.':'Your cart is empty.'),link(bulk?'Build a bulk order':'Shop products',bulk?'/bulk-orders':'/shop'));return;}
    if(!goods&&data.membership){root.append(node('p','You already have an active '+data.membership.plan.toUpperCase()+' pass.'),link('View membership','/account/membership'));return;}
    if(!goods&&membershipPeriod!=='annual'){

@@ -76,11 +76,13 @@ function vial(cx, id, tone, label, size) {
       <rect x="${x}" y="70" width="76" height="157" rx="15" fill="#d8e1df"/>
       <rect x="${x + 6}" y="72" width="64" height="150" rx="12" fill="#edf1ef"/>
       <rect x="${x + 12}" y="80" width="5" height="132" rx="2" fill="white" opacity=".85"/>
-      <rect x="${x + 3}" y="115" width="70" height="86" fill="#fff"/>
-      <rect x="${x + 3}" y="172" width="70" height="29" fill="${tone}"/>
-      <image class="vial-brand" href="assets/pure-brand-label.svg" x="${cx - 30}" y="122" width="60" height="16" aria-label="PURE Labs" />
-      <text x="${cx}" y="155" text-anchor="middle" font-family="Plus Jakarta Sans, Arial" font-size="8" font-weight="700" fill="#143832">${escapeXml(label)}</text>
-      <text x="${cx}" y="190" text-anchor="middle" font-family="Plus Jakarta Sans, Arial" font-size="9" fill="#143832">${escapeXml(size)}</text>
+      <rect x="${x + 3}" y="115" width="70" height="86" fill="#101010"/>
+      <image class="vial-brand" href="assets/pure-brand-label.svg" x="${cx - 30}" y="126" width="60" height="14" aria-label="PURE" />
+      <text x="${cx - 29}" y="176" font-family="Arial Narrow, Arial, sans-serif" font-size="6.5" font-weight="700" fill="#ffffff">${escapeXml(label)}</text>
+      <path transform="translate(${cx + 23} 166) scale(.16)" d="M8 12H16L8 44H0Z M21 1H29L16 54H8Z M31 8H38L29 47H22Z" fill="#ffffff"/>
+      <text x="${cx - 29}" y="192" font-family="Arial Narrow, Arial, sans-serif" font-size="3.5" fill="#ffffff">RESEARCH USE ONLY</text>
+      <path d="M${cx + 9} 185V194" stroke="#ffffff" stroke-width=".4"/>
+      <text x="${cx + 29}" y="192" text-anchor="end" font-family="Arial Narrow, Arial, sans-serif" font-size="6" fill="#ffffff">${escapeXml(size)}</text>
     </g>`;
 }
 

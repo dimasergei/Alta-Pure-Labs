@@ -9,7 +9,7 @@
   function optedOut() {
     return navigator.globalPrivacyControl === true || navigator.doNotTrack === '1' || window.doNotTrack === '1';
   }
-  if (location.hostname !== 'altapurelabs.com' || !permittedPath(location.pathname) || optedOut()) return;
+  if (!['getpurelabs.com','altapurelabs.com'].includes(location.hostname) || !permittedPath(location.pathname) || optedOut()) return;
   window.va = window.va || function () { (window.vaq = window.vaq || []).push(arguments); };
   window.va('beforeSend', function (event) {
     // No custom events, form contents, campaign identifiers or private pages.

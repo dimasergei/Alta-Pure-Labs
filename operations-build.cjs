@@ -1,7 +1,7 @@
 'use strict';
 const fs=require('node:fs'),path=require('node:path'),vm=require('node:vm');
 const esc=v=>String(v??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
-const root=process.cwd(),out=path.join(root,'public-build'),base='https://altapurelabs.com';
+const root=process.cwd(),out=path.join(root,'public-build'),base='https://getpurelabs.com';
 const catalog=JSON.parse(fs.readFileSync('lib/catalog.json','utf8'));
 // Build-time integration preserves the existing account authentication and order logic.
 let account=fs.readFileSync('account.js','utf8');
@@ -46,18 +46,18 @@ const routes={
  '/rewards':['Rewards and Credit','Find the account workspaces for issued rewards and store credit.'],
  '/offers':['Current Offers','Review explicitly published PURE offers and their terms.'],
  '/coas':['Certificates of Analysis','Browse COA reports by product, strength and reported lot. The original report sheets remain available.'],
- '/about':['About PURE Labs','Learn about the connected PURE laboratory research workspace.'],
- '/contact':['Contact PURE Labs','Submit a documented inquiry for support, product documentation or an existing order.'],
+ '/about':['About PURE','Learn about the connected PURE laboratory research workspace.'],
+ '/contact':['Contact PURE','Submit a documented inquiry for support, product documentation or an existing order.'],
  '/partner-program':['Partner Program','Submit an organizational partnership inquiry.'],
  '/track-order':['Track Your Order','Sign in to see your order and assigned carrier tracking.']
 };
-fs.writeFileSync(path.join(out,'index.html'),page(shell,'/','PURE Labs | Your research. All connected.','Research compounds, exact product sizes, planning lists and documentation in one workspace.'));
-for(const [url,[title,description]] of Object.entries(routes)){const body='<section class="ap-container ap-page-intro"><h1>'+esc(title)+'</h1><p>'+esc(description)+'</p><a href="/shop">Explore the catalog</a></section>';fs.writeFileSync(path.join(out,url.slice(1)+'.html'),page(shell,url,title+' | PURE Labs',description,body));}
+fs.writeFileSync(path.join(out,'index.html'),page(shell,'/','PURE | Your research. All connected.','Research compounds, exact product sizes, planning lists and documentation in one workspace.'));
+for(const [url,[title,description]] of Object.entries(routes)){const body='<section class="ap-container ap-page-intro"><h1>'+esc(title)+'</h1><p>'+esc(description)+'</p><a href="/shop">Explore the catalog</a></section>';fs.writeFileSync(path.join(out,url.slice(1)+'.html'),page(shell,url,title+' | PURE',description,body));}
 fs.mkdirSync(path.join(out,'product'),{recursive:true});
-for(const p of catalog){const sizes=p.variants.map(v=>esc(v.size)).join(', '),url='/product/'+p.id;const main='<section class="ap-container ap-page-intro"><p>'+esc(p.group)+'</p><h1>'+esc(p.name)+'</h1><p>'+esc(p.blurb)+'</p><p>Listed sizes: '+sizes+'.</p><p>For controlled laboratory research only. Online checkout is paused.</p><a href="/coas?product='+encodeURIComponent(p.id)+'">Product documentation</a></section>';fs.writeFileSync(path.join(out,'product',p.id+'.html'),page(shell,url,p.name+' | PURE Labs',p.blurb+' Sizes: '+p.variants.map(v=>v.size).join(', ')+'.',main,{'@context':'https://schema.org','@type':'Product',name:p.name,description:p.blurb,sku:p.id,brand:{'@type':'Brand',name:'PURE Labs'},url:base+url}));}
+for(const p of catalog){const sizes=p.variants.map(v=>esc(v.size)).join(', '),url='/product/'+p.id;const main='<section class="ap-container ap-page-intro"><p>'+esc(p.group)+'</p><h1>'+esc(p.name)+'</h1><p>'+esc(p.blurb)+'</p><p>Listed sizes: '+sizes+'.</p><p>For controlled laboratory research only. Online checkout is paused.</p><a href="/coas?product='+encodeURIComponent(p.id)+'">Product documentation</a></section>';fs.writeFileSync(path.join(out,'product',p.id+'.html'),page(shell,url,p.name+' | PURE',p.blurb+' Sizes: '+p.variants.map(v=>v.size).join(', ')+'.',main,{'@context':'https://schema.org','@type':'Product',name:p.name,description:p.blurb,sku:p.id,brand:{'@type':'Brand',name:'PURE'},url:base+url}));}
 const urls=['/',...Object.keys(routes),...catalog.map(p=>'/product/'+p.id)];
 fs.writeFileSync(path.join(out,'sitemap.xml'),'<?xml version="1.0" encoding="UTF-8"?><urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">'+urls.map(url=>'<url><loc>'+base+url+'</loc></url>').join('')+'</urlset>');
 fs.writeFileSync(path.join(out,'robots.txt'),'User-agent: *\nDisallow: /admin-\nDisallow: /account\nDisallow: /my-account\nDisallow: /api/\nSitemap: '+base+'/sitemap.xml\n');
-fs.writeFileSync(path.join(out,'404.html'),'<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width"><meta name="robots" content="noindex"><title>Page not found | PURE Labs</title><link rel="stylesheet" href="/storefront-v2.css"></head><body class="ap-site"><main class="ap-container ap-page-intro"><h1>That page is not here.</h1><p>Browse the current catalog or contact our team.</p><a class="ap-button" href="/shop">Open the catalog</a> <a href="/contact">Contact support</a></main></body></html>');
+fs.writeFileSync(path.join(out,'404.html'),'<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width"><meta name="robots" content="noindex"><title>Page not found | PURE</title><link rel="stylesheet" href="/storefront-v2.css"></head><body class="ap-site"><main class="ap-container ap-page-intro"><h1>That page is not here.</h1><p>Browse the current catalog or contact our team.</p><a class="ap-button" href="/shop">Open the catalog</a> <a href="/contact">Contact support</a></main></body></html>');
 for(const file of fs.readdirSync(out).filter(f=>f.startsWith('admin-')&&f.endsWith('.html'))){const p=path.join(out,file);let h=fs.readFileSync(p,'utf8');if(!h.includes('name="robots"'))h=h.replace('</head>','<meta name="robots" content="noindex,nofollow"></head>');fs.writeFileSync(p,h);}
 console.log('Public-only build ready: '+urls.length+' canonical URLs; backend, migrations, tests and private operational requirements excluded.');

@@ -51,7 +51,7 @@ function card(id){
 function render(){
  const root=target();if(!root)return;
  root.innerHTML='<section class="mx-membership-page'+(fullPage?'':' mx-membership-embedded')+'">'+
- '<header class="mx-hero"><span class="mx-eyebrow">'+membershipIcon+'PURE Labs MEMBERSHIPS</span><'+(fullPage?'h1':'h2')+'>Save on every order,<br><em>automatically.</em></'+(fullPage?'h1':'h2')+'>'+
+ '<header class="mx-hero"><span class="mx-eyebrow">'+membershipIcon+'PURE MEMBERSHIPS</span><'+(fullPage?'h1':'h2')+'>Save on every order,<br><em>automatically.</em></'+(fullPage?'h1':'h2')+'>'+
  '<p>Choose a prepaid membership to unlock eligible savings, free standard US delivery and extra rewards on future orders after confirmed payment.</p></header>'+
  '<div class="mx-period" role="group" aria-label="Membership billing"><button type="button" data-mx-period="monthly" aria-pressed="'+(period==='monthly')+'">Monthly</button><button type="button" data-mx-period="annual" aria-pressed="'+(period==='annual')+'">Annual <span>Save 20%</span></button></div>'+
  '<div class="mx-card-grid">'+['member','vip','elite'].map(card).join('')+'</div>'+

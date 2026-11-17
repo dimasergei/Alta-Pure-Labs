@@ -47,7 +47,7 @@ test('live provider status is public and validates limits without leaking the ke
 test('creation sends the stored amount/reference once and never follows redirects',async()=>{
  let calls=0;
  const result=await r.create(attempt,user.email,env,async(url,opts)=>{calls++;assert.equal(url,'https://api.rampex.io/api-create-payment-link');assert.equal(opts.headers['X-API-Key'],env.RAMPEX_API_KEY);assert.equal(opts.redirect,'error');
- const sent=JSON.parse(opts.body);assert.equal(sent.amount,49);assert.equal(sent.provider,'rampnetwork');assert.equal(sent.woo_order_id,id);assert.equal(sent.payment_url,'https://altapurelabs.com/pay.html?invoice='+iid);
+ const sent=JSON.parse(opts.body);assert.equal(sent.amount,49);assert.equal(sent.provider,'rampnetwork');assert.equal(sent.woo_order_id,id);assert.equal(sent.woo_store_url,'https://altapurelabs.com');assert.equal(sent.payment_url,'https://getpurelabs.com/pay.html?invoice='+iid);
  return response({link_id:'fixture-123',status:'active',amount:49,currency:'USD',customer_email:user.email,redirect_url:'https://checkout.rampex.io/pay/fixture-123'});
  });assert.equal(calls,1);assert.equal(result.id,'fixture-123');
  await assert.rejects(()=>r.create(attempt,user.email,env,async()=>{calls++;throw Error('fixture network failure')}));assert.equal(calls,2);

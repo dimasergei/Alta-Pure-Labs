@@ -142,7 +142,7 @@ async function sendOrderEmails(db, orderId, session) {
   const items = itemsResponse.data || [];
   const customerEmail = order.customer_email;
   const adminEmail = process.env.ADMIN_ORDER_EMAIL;
-  const fromEmail = emailSender(process.env.ORDER_CONFIRMATION_FROM || 'PURE Labs <orders@altapurelabs.com>');
+  const fromEmail = emailSender(process.env.ORDER_CONFIRMATION_FROM || 'PURE <orders@altapurelabs.com>');
   if (!customerEmail) throw new Error('Customer email is missing.');
   let queued;
   try {
@@ -154,7 +154,7 @@ async function sendOrderEmails(db, orderId, session) {
   if (!queued.created) return;
   const emailData = buildEmailData(order, items, session);
   try {
-    const result = await sendEmail({ to: customerEmail, from: fromEmail, subject: `Your PURE Labs order is confirmed — ${emailData.orderNumber}`, html: customerEmailHtml(emailData) });
+    const result = await sendEmail({ to: customerEmail, from: fromEmail, subject: `Your PURE order is confirmed — ${emailData.orderNumber}`, html: customerEmailHtml(emailData) });
     await markNotificationSent({ notificationId: queued.id, providerMessageId: result?.id || null });
   } catch (error) {
     try { await markNotificationFailed({ notificationId: queued.id, error: sanitizeLogMessage(error.message) }); }
@@ -228,7 +228,7 @@ function customerEmailHtml(data) {
   return `
     <div style="font-family:Arial,Helvetica,sans-serif;max-width:620px;margin:0 auto;color:#111314;">
       <div style="background:#143832;color:#ffffff;padding:28px 32px;border-radius:12px 12px 0 0;">
-        <h1 style="margin:0;font-size:22px;letter-spacing:.08em;">PURE<span style="font-weight:500;"> Labs</span></h1>
+        <h1 style="margin:0;font-size:22px;letter-spacing:.08em;"><img src="https://getpurelabs.com/assets/pure-wordmark-white.png" alt="PURE" width="112" height="26" style="display:block;width:112px;height:26px;border:0;"></h1>
         <p style="margin:10px 0 0;color:#cfe3de;font-size:14px;">Order confirmation</p>
       </div>
 
@@ -295,7 +295,7 @@ function customerEmailHtml(data) {
       </div>
 
       <div style="padding:20px 32px;color:#6b7280;font-size:12px;">
-        PURE Labs · Research use only · Not for human consumption
+        PURE · Research use only · Not for human consumption
       </div>
     </div>`;
 }

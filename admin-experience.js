@@ -16,7 +16,7 @@
     const contents=el('div','ap-auth-content');
     while(login.firstChild)contents.append(login.firstChild);
     const left=el('aside','ap-auth-visual');
-    left.setAttribute('aria-label','PURE Labs secure business workspace');
+    left.setAttribute('aria-label','PURE secure business workspace');
     const logo=el('div','ap-auth-symbol');
     const img=document.createElement('img');
     img.src='/favicon-bright-96.png';
@@ -29,7 +29,7 @@
     title.append(el('h2','ap-auth-hero-title','One focused place<br>to run what matters.'));
     title.append(el('p','ap-auth-hero-copy','Orders and creator relationships, organized around the work you do every day.'));
     const bottom=el('div','ap-auth-bottom');
-    bottom.append(el('span','ap-auth-bottom-brand','PURE <span>Labs</span>'));
+    bottom.append(el('span','ap-auth-bottom-brand pure-wordmark','PURE'));
     bottom.append(el('span','ap-auth-bottom-status','ADMIN CONSOLE'));
     left.append(logo,title,bottom);
     const main=el('div','ap-auth-form-panel');

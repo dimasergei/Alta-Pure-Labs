@@ -4,580 +4,663 @@
     "name": "Retatrutide",
     "size": "10mg",
     "file": "assets/products-pure/01_retatrutide_10mg.svg",
-    "label": "black"
+    "label": "black",
+    "contents": "lyophilized compound"
   },
   {
     "product_id": "retatrutide",
     "name": "Retatrutide",
     "size": "15mg",
     "file": "assets/products-pure/02_retatrutide_15mg.svg",
-    "label": "black"
+    "label": "black",
+    "contents": "lyophilized compound"
   },
   {
     "product_id": "retatrutide",
     "name": "Retatrutide",
     "size": "20mg",
     "file": "assets/products-pure/03_retatrutide_20mg.svg",
-    "label": "black"
+    "label": "black",
+    "contents": "lyophilized compound"
   },
   {
     "product_id": "retatrutide",
     "name": "Retatrutide",
     "size": "30mg",
     "file": "assets/products-pure/04_retatrutide_30mg.svg",
-    "label": "black"
+    "label": "black",
+    "contents": "lyophilized compound"
   },
   {
     "product_id": "retatrutide",
     "name": "Retatrutide",
     "size": "40mg",
     "file": "assets/products-pure/05_retatrutide_40mg.svg",
-    "label": "black"
+    "label": "black",
+    "contents": "lyophilized compound"
   },
   {
     "product_id": "retatrutide",
     "name": "Retatrutide",
     "size": "60mg",
     "file": "assets/products-pure/06_retatrutide_60mg.svg",
-    "label": "black"
+    "label": "black",
+    "contents": "lyophilized compound"
   },
   {
     "product_id": "tirzepatide",
     "name": "Tirzepatide",
     "size": "10mg",
     "file": "assets/products-pure/07_tirzepatide_10mg.svg",
-    "label": "black"
+    "label": "black",
+    "contents": "lyophilized compound"
   },
   {
     "product_id": "tirzepatide",
     "name": "Tirzepatide",
     "size": "20mg",
     "file": "assets/products-pure/08_tirzepatide_20mg.svg",
-    "label": "black"
+    "label": "black",
+    "contents": "lyophilized compound"
   },
   {
     "product_id": "tirzepatide",
     "name": "Tirzepatide",
     "size": "30mg",
     "file": "assets/products-pure/09_tirzepatide_30mg.svg",
-    "label": "black"
+    "label": "black",
+    "contents": "lyophilized compound"
   },
   {
     "product_id": "tirzepatide",
     "name": "Tirzepatide",
     "size": "40mg",
     "file": "assets/products-pure/10_tirzepatide_40mg.svg",
-    "label": "black"
+    "label": "black",
+    "contents": "lyophilized compound"
   },
   {
     "product_id": "tirzepatide",
     "name": "Tirzepatide",
     "size": "60mg",
     "file": "assets/products-pure/11_tirzepatide_60mg.svg",
-    "label": "black"
+    "label": "black",
+    "contents": "lyophilized compound"
   },
   {
     "product_id": "semaglutide",
     "name": "Semaglutide",
     "size": "10mg",
     "file": "assets/products-pure/12_semaglutide_10mg.svg",
-    "label": "black"
+    "label": "black",
+    "contents": "lyophilized compound"
   },
   {
     "product_id": "semaglutide",
     "name": "Semaglutide",
     "size": "20mg",
     "file": "assets/products-pure/13_semaglutide_20mg.svg",
-    "label": "black"
+    "label": "black",
+    "contents": "lyophilized compound"
   },
   {
     "product_id": "semaglutide",
     "name": "Semaglutide",
     "size": "30mg",
     "file": "assets/products-pure/14_semaglutide_30mg.svg",
-    "label": "black"
+    "label": "black",
+    "contents": "lyophilized compound"
   },
   {
     "product_id": "5-amino-1mq",
     "name": "5-Amino-1MQ",
     "size": "10mg",
     "file": "assets/products-pure/15_5-amino-1mq_10mg.svg",
-    "label": "black"
+    "label": "black",
+    "contents": "lyophilized compound"
   },
   {
     "product_id": "5-amino-1mq",
     "name": "5-Amino-1MQ",
     "size": "50mg",
     "file": "assets/products-pure/16_5-amino-1mq_50mg.svg",
-    "label": "black"
+    "label": "black",
+    "contents": "lyophilized compound"
   },
   {
     "product_id": "aod-9604",
     "name": "AOD-9604",
     "size": "5mg",
     "file": "assets/products-pure/17_aod-9604_5mg.svg",
-    "label": "black"
+    "label": "black",
+    "contents": "lyophilized compound"
   },
   {
     "product_id": "aod-9604",
     "name": "AOD-9604",
     "size": "10mg",
     "file": "assets/products-pure/18_aod-9604_10mg.svg",
-    "label": "black"
+    "label": "black",
+    "contents": "lyophilized compound"
   },
   {
     "product_id": "cagrilintide",
     "name": "Cagrilintide",
     "size": "5mg",
     "file": "assets/products-pure/76_cagrilintide_5mg.svg",
-    "label": "black"
+    "label": "black",
+    "contents": "lyophilized compound"
   },
   {
     "product_id": "cagrilintide",
     "name": "Cagrilintide",
     "size": "10mg",
     "file": "assets/products-pure/77_cagrilintide_10mg.svg",
-    "label": "black"
+    "label": "black",
+    "contents": "lyophilized compound"
   },
   {
     "product_id": "bpc-157",
     "name": "BPC-157",
     "size": "5mg",
     "file": "assets/products-pure/20_bpc-157_5mg.svg",
-    "label": "black"
+    "label": "black",
+    "contents": "lyophilized compound"
   },
   {
     "product_id": "bpc-157",
     "name": "BPC-157",
     "size": "10mg",
     "file": "assets/products-pure/21_bpc-157_10mg.svg",
-    "label": "black"
+    "label": "black",
+    "contents": "lyophilized compound"
   },
   {
     "product_id": "tb-500",
     "name": "TB-500",
     "size": "5mg",
     "file": "assets/products-pure/22_tb-500_5mg.svg",
-    "label": "black"
+    "label": "black",
+    "contents": "lyophilized compound"
   },
   {
     "product_id": "tb-500",
     "name": "TB-500",
     "size": "10mg",
     "file": "assets/products-pure/23_tb-500_10mg.svg",
-    "label": "black"
+    "label": "black",
+    "contents": "lyophilized compound"
   },
   {
     "product_id": "bpc-tb-500",
     "name": "BPC/TB-500",
     "size": "10mg/10mg",
     "file": "assets/products-pure/24_bpc_tb-500_10mg_10mg.svg",
-    "label": "black"
+    "label": "black",
+    "contents": "lyophilized compound"
   },
   {
     "product_id": "bpc-tb-500",
     "name": "BPC/TB-500",
     "size": "15mg/15mg",
     "file": "assets/products-pure/25_bpc_tb-500_15mg_15mg.svg",
-    "label": "black"
+    "label": "black",
+    "contents": "lyophilized compound"
   },
   {
     "product_id": "kpv",
     "name": "KPV",
     "size": "5mg",
     "file": "assets/products-pure/27_kpv_5mg.svg",
-    "label": "black"
+    "label": "black",
+    "contents": "lyophilized compound"
   },
   {
     "product_id": "kpv",
     "name": "KPV",
     "size": "10mg",
     "file": "assets/products-pure/28_kpv_10mg.svg",
-    "label": "black"
+    "label": "black",
+    "contents": "lyophilized compound"
   },
   {
     "product_id": "ara-290",
     "name": "ARA-290",
     "size": "10mg",
     "file": "assets/products-pure/31_ara-290_10mg.svg",
-    "label": "black"
+    "label": "black",
+    "contents": "lyophilized compound"
   },
   {
     "product_id": "ll-37",
     "name": "LL-37",
     "size": "5mg",
     "file": "assets/products-pure/78_ll-37_5mg.svg",
-    "label": "black"
+    "label": "black",
+    "contents": "lyophilized compound"
   },
   {
     "product_id": "ll-37",
     "name": "LL-37",
     "size": "10mg",
     "file": "assets/products-pure/79_ll-37_10mg.svg",
-    "label": "black"
+    "label": "black",
+    "contents": "lyophilized compound"
   },
   {
     "product_id": "thymosin-alpha-1",
     "name": "Thymosin Alpha-1",
     "size": "10mg",
     "file": "assets/products-pure/81_thymosin_alpha-1_10mg.svg",
-    "label": "black"
+    "label": "black",
+    "contents": "lyophilized compound"
   },
   {
     "product_id": "ghk-cu",
     "name": "GHK-Cu",
     "size": "50mg",
     "file": "assets/products-pure/64_ghk-cu_50mg.svg",
-    "label": "black"
+    "label": "black",
+    "contents": "lyophilized compound"
   },
   {
     "product_id": "ghk-cu",
     "name": "GHK-Cu",
     "size": "100mg",
     "file": "assets/products-pure/65_ghk-cu_100mg.svg",
-    "label": "black"
+    "label": "black",
+    "contents": "lyophilized compound"
   },
   {
     "product_id": "ahk-cu",
     "name": "AHK-Cu",
     "size": "50mg",
     "file": "assets/products-pure/66_ahk-cu_50mg.svg",
-    "label": "black"
+    "label": "black",
+    "contents": "lyophilized compound"
   },
   {
     "product_id": "ahk-cu",
     "name": "AHK-Cu",
     "size": "100mg",
     "file": "assets/products-pure/67_ahk-cu_100mg.svg",
-    "label": "black"
+    "label": "black",
+    "contents": "lyophilized compound"
   },
   {
     "product_id": "glow",
     "name": "Glow",
     "size": "70mg",
     "file": "assets/products-pure/68_glow_70mg.svg",
-    "label": "black"
+    "label": "black",
+    "contents": "lyophilized compound"
   },
   {
     "product_id": "klow",
     "name": "KLOW",
     "size": "80mg",
     "file": "assets/products-pure/26_klow_80mg.svg",
-    "label": "black"
+    "label": "black",
+    "contents": "lyophilized compound"
   },
   {
     "product_id": "snap8",
     "name": "Snap8",
     "size": "10mg",
     "file": "assets/products-pure/80_snap8_10mg.svg",
-    "label": "black"
+    "label": "black",
+    "contents": "lyophilized compound"
   },
   {
     "product_id": "cjc-1295-no-dac",
     "name": "CJC-1295 No DAC",
     "size": "5mg",
     "file": "assets/products-pure/32_cjc-1295_no_dac_5mg.svg",
-    "label": "black"
+    "label": "black",
+    "contents": "lyophilized compound"
   },
   {
     "product_id": "cjc-1295-no-dac",
     "name": "CJC-1295 No DAC",
     "size": "10mg",
     "file": "assets/products-pure/33_cjc-1295_no_dac_10mg.svg",
-    "label": "black"
+    "label": "black",
+    "contents": "lyophilized compound"
   },
   {
     "product_id": "cjc-1295-dac",
     "name": "CJC-1295 W/DAC",
     "size": "5mg",
     "file": "assets/products-pure/34_cjc-1295_w_dac_5mg.svg",
-    "label": "black"
+    "label": "black",
+    "contents": "lyophilized compound"
   },
   {
     "product_id": "cjc-1295-dac",
     "name": "CJC-1295 W/DAC",
     "size": "10mg",
     "file": "assets/products-pure/35_cjc-1295_w_dac_10mg.svg",
-    "label": "black"
+    "label": "black",
+    "contents": "lyophilized compound"
   },
   {
     "product_id": "cjc-ipamorelin",
     "name": "CJC/Ipamorelin",
     "size": "10mg/10mg",
     "file": "assets/products-pure/36_cjc_ipamorelin_10mg_10mg.svg",
-    "label": "black"
+    "label": "black",
+    "contents": "lyophilized compound"
   },
   {
     "product_id": "ipamorelin",
     "name": "Ipamorelin",
     "size": "5mg",
     "file": "assets/products-pure/37_ipamorelin_5mg.svg",
-    "label": "black"
+    "label": "black",
+    "contents": "lyophilized compound"
   },
   {
     "product_id": "ipamorelin",
     "name": "Ipamorelin",
     "size": "10mg",
     "file": "assets/products-pure/38_ipamorelin_10mg.svg",
-    "label": "black"
+    "label": "black",
+    "contents": "lyophilized compound"
   },
   {
     "product_id": "sermorelin",
     "name": "Sermorelin",
     "size": "5mg",
     "file": "assets/products-pure/39_sermorelin_5mg.svg",
-    "label": "black"
+    "label": "black",
+    "contents": "lyophilized compound"
   },
   {
     "product_id": "sermorelin",
     "name": "Sermorelin",
     "size": "10mg",
     "file": "assets/products-pure/40_sermorelin_10mg.svg",
-    "label": "black"
+    "label": "black",
+    "contents": "lyophilized compound"
   },
   {
     "product_id": "tesamorelin",
     "name": "Tesamorelin",
     "size": "10mg",
     "file": "assets/products-pure/41_tesamorelin_10mg.svg",
-    "label": "black"
+    "label": "black",
+    "contents": "lyophilized compound"
   },
   {
     "product_id": "tesamorelin",
     "name": "Tesamorelin",
     "size": "20mg",
     "file": "assets/products-pure/42_tesamorelin_20mg.svg",
-    "label": "black"
+    "label": "black",
+    "contents": "lyophilized compound"
   },
   {
     "product_id": "tesa-ipa",
     "name": "Tesa/IPA",
     "size": "5mg/5mg",
     "file": "assets/products-pure/43_tesa_ipa_5mg_5mg.svg",
-    "label": "black"
+    "label": "black",
+    "contents": "lyophilized compound"
   },
   {
     "product_id": "semax",
     "name": "Semax",
     "size": "5mg",
     "file": "assets/products-pure/56_semax_5mg.svg",
-    "label": "black"
+    "label": "black",
+    "contents": "lyophilized compound"
   },
   {
     "product_id": "semax",
     "name": "Semax",
     "size": "10mg",
     "file": "assets/products-pure/57_semax_10mg.svg",
-    "label": "black"
+    "label": "black",
+    "contents": "lyophilized compound"
   },
   {
     "product_id": "selank",
     "name": "Selank",
     "size": "5mg",
     "file": "assets/products-pure/58_selank_5mg.svg",
-    "label": "black"
+    "label": "black",
+    "contents": "lyophilized compound"
   },
   {
     "product_id": "selank",
     "name": "Selank",
     "size": "10mg",
     "file": "assets/products-pure/59_selank_10mg.svg",
-    "label": "black"
+    "label": "black",
+    "contents": "lyophilized compound"
   },
   {
     "product_id": "semax-selank",
     "name": "Semax/Selank",
     "size": "10mg/10mg",
     "file": "assets/products-pure/60_semax_selank_10mg_10mg.svg",
-    "label": "black"
+    "label": "black",
+    "contents": "lyophilized compound"
   },
   {
     "product_id": "adamax",
     "name": "Adamax",
     "size": "10mg",
     "file": "assets/products-pure/61_adamax_10mg.svg",
-    "label": "black"
+    "label": "black",
+    "contents": "lyophilized compound"
   },
   {
     "product_id": "pinealon",
     "name": "Pinealon",
     "size": "10mg",
     "file": "assets/products-pure/55_pinealon_10mg.svg",
-    "label": "black"
+    "label": "black",
+    "contents": "lyophilized compound"
   },
   {
     "product_id": "dsip",
     "name": "DSIP",
     "size": "5mg",
     "file": "assets/products-pure/62_dsip_5mg.svg",
-    "label": "black"
+    "label": "black",
+    "contents": "lyophilized compound"
   },
   {
     "product_id": "dsip",
     "name": "DSIP",
     "size": "10mg",
     "file": "assets/products-pure/63_dsip_10mg.svg",
-    "label": "black"
+    "label": "black",
+    "contents": "lyophilized compound"
   },
   {
     "product_id": "nad",
     "name": "NAD+",
     "size": "500mg",
     "file": "assets/products-pure/44_nadplus_500mg.svg",
-    "label": "black"
+    "label": "black",
+    "contents": "lyophilized compound"
   },
   {
     "product_id": "nad",
     "name": "NAD+",
     "size": "1000mg",
     "file": "assets/products-pure/45_nadplus_1000mg.svg",
-    "label": "black"
+    "label": "black",
+    "contents": "lyophilized compound"
   },
   {
     "product_id": "epithalon",
     "name": "Epithalon",
     "size": "10mg",
     "file": "assets/products-pure/46_epithalon_10mg.svg",
-    "label": "black"
+    "label": "black",
+    "contents": "lyophilized compound"
   },
   {
     "product_id": "epithalon",
     "name": "Epithalon",
     "size": "50mg",
     "file": "assets/products-pure/47_epithalon_50mg.svg",
-    "label": "black"
+    "label": "black",
+    "contents": "lyophilized compound"
   },
   {
     "product_id": "glutathione",
     "name": "Glutathione",
     "size": "600mg",
     "file": "assets/products-pure/48_glutathione_600mg.svg",
-    "label": "black"
+    "label": "black",
+    "contents": "lyophilized compound"
   },
   {
     "product_id": "glutathione",
     "name": "Glutathione",
     "size": "1500mg",
     "file": "assets/products-pure/49_glutathione_1500mg.svg",
-    "label": "black"
+    "label": "black",
+    "contents": "lyophilized compound"
   },
   {
     "product_id": "ss-31",
     "name": "SS-31",
     "size": "10mg",
     "file": "assets/products-pure/50_ss-31_10mg.svg",
-    "label": "black"
+    "label": "black",
+    "contents": "lyophilized compound"
   },
   {
     "product_id": "ss-31",
     "name": "SS-31",
     "size": "50mg",
     "file": "assets/products-pure/51_ss-31_50mg.svg",
-    "label": "black"
+    "label": "black",
+    "contents": "lyophilized compound"
   },
   {
     "product_id": "mots-c",
     "name": "MOTS-C",
     "size": "10mg",
     "file": "assets/products-pure/52_mots-c_10mg.svg",
-    "label": "black"
+    "label": "black",
+    "contents": "lyophilized compound"
   },
   {
     "product_id": "mots-c",
     "name": "MOTS-C",
     "size": "20mg",
     "file": "assets/products-pure/53_mots-c_20mg.svg",
-    "label": "black"
+    "label": "black",
+    "contents": "lyophilized compound"
   },
   {
     "product_id": "mots-c",
     "name": "MOTS-C",
     "size": "40mg",
     "file": "assets/products-pure/54_mots-c_40mg.svg",
-    "label": "black"
+    "label": "black",
+    "contents": "lyophilized compound"
   },
   {
     "product_id": "b-12",
     "name": "B-12",
     "size": "10mg",
     "file": "assets/products-pure/19_b-12_10mg.svg",
-    "label": "black"
+    "label": "black",
+    "contents": "lyophilized compound"
   },
   {
     "product_id": "melanotan-ii",
     "name": "Melanotan II",
     "size": "10mg",
     "file": "assets/products-pure/69_melanotan_ii_10mg.svg",
-    "label": "black"
+    "label": "black",
+    "contents": "lyophilized compound"
   },
   {
     "product_id": "melanotan-1",
     "name": "Melanotan 1",
     "size": "10mg",
     "file": "assets/products-pure/70_melanotan_1_10mg.svg",
-    "label": "black"
+    "label": "black",
+    "contents": "lyophilized compound"
   },
   {
     "product_id": "pt-141",
     "name": "PT-141",
     "size": "10mg",
     "file": "assets/products-pure/71_pt-141_10mg.svg",
-    "label": "black"
+    "label": "black",
+    "contents": "lyophilized compound"
   },
   {
     "product_id": "kisspeptin",
     "name": "Kisspeptin",
     "size": "5mg",
     "file": "assets/products-pure/72_kisspeptin_5mg.svg",
-    "label": "black"
+    "label": "black",
+    "contents": "lyophilized compound"
   },
   {
     "product_id": "kisspeptin",
     "name": "Kisspeptin",
     "size": "10mg",
     "file": "assets/products-pure/73_kisspeptin_10mg.svg",
-    "label": "black"
+    "label": "black",
+    "contents": "lyophilized compound"
   },
   {
     "product_id": "oxytocin",
     "name": "Oxytocin",
     "size": "5mg",
     "file": "assets/products-pure/74_oxytocin_5mg.svg",
-    "label": "black"
+    "label": "black",
+    "contents": "lyophilized compound"
   },
   {
     "product_id": "oxytocin",
     "name": "Oxytocin",
     "size": "10mg",
     "file": "assets/products-pure/75_oxytocin_10mg.svg",
-    "label": "black"
+    "label": "black",
+    "contents": "lyophilized compound"
   },
   {
     "product_id": "vip",
     "name": "VIP",
     "size": "5mg",
     "file": "assets/products-pure/29_vip_5mg.svg",
-    "label": "black"
+    "label": "black",
+    "contents": "lyophilized compound"
   },
   {
     "product_id": "vip",
     "name": "VIP",
     "size": "10mg",
     "file": "assets/products-pure/30_vip_10mg.svg",
-    "label": "black"
+    "label": "black",
+    "contents": "lyophilized compound"
   },
   {
     "product_id": "bac-3",
     "name": "BAC Water",
     "size": "3 mL",
     "file": "assets/products-pure/82_bac_water_3ml.svg",
-    "label": "white"
+    "label": "black",
+    "contents": "clear liquid"
   },
   {
     "product_id": "bac-10",
     "name": "BAC Water",
     "size": "10 mL",
     "file": "assets/products-pure/83_bac_water_10ml.svg",
-    "label": "white"
+    "label": "black",
+    "contents": "clear liquid"
   }
 ]

@@ -48,7 +48,7 @@ const PRODUCT_IMAGE_FALLBACKS = {
 };
 
 
-// Per-dosage PURE Labs assets use exact catalog text over the original photographic vial framing.
+// Per-dosage PURE assets use exact catalog text over the original photographic vial framing.
 // Needles 31G 5/16\" — 10pk has no matching uploaded photo and retains its existing fallback.
 const PRODUCT_IMAGES = {
   "retatrutide": {

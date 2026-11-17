@@ -6,6 +6,7 @@ const theme='brand-theme.css';
 const {ends_at: promoEnd}=require('./config/checkout.json').promotions;
 if(!fs.existsSync(out))throw new Error('public-build output is missing.');
 fs.copyFileSync(theme,path.join(out,theme));
+fs.copyFileSync('pure-brand.css',path.join(out,'pure-brand.css'));
 fs.copyFileSync('mobile-parity.css',path.join(out,'mobile-parity.css'));
 fs.copyFileSync('research-builder-parity.css',path.join(out,'research-builder-parity.css'));
 fs.copyFileSync('unified-palette.css',path.join(out,'unified-palette.css'));
@@ -15,12 +16,14 @@ for(const [source,target] of [['altapure-favicon.svg','favicon.svg'],['altapure-
 fs.mkdirSync(path.join(out,'assets','payment-brands'),{recursive:true});
 fs.cpSync(path.join(process.cwd(),'assets','payment-brands'),path.join(out,'assets','payment-brands'),{recursive:true});
 const iconLinks=`<meta name="altapure-promo-end" content="${promoEnd}">`+'<link rel="icon" type="image/png" sizes="96x96" href="/favicon-bright-96.png"><link rel="shortcut icon" type="image/x-icon" href="/favicon-bright-20261116.ico"><meta name="theme-color" content="#ffffff">';
-const organization='<script type="application/ld+json">{"@context":"https://schema.org","@type":"Organization","name":"PURE Labs","url":"https://altapurelabs.com/","logo":"https://altapurelabs.com/brand-logo.png"}</script>';
+const organization='<script type="application/ld+json">{"@context":"https://schema.org","@type":"Organization","name":"PURE","url":"https://getpurelabs.com/","logo":"https://getpurelabs.com/brand-logo.png"}</script>';
 let count=0;
 for(const file of fs.readdirSync(out,{recursive:true}).filter(f=>f.endsWith('.html'))){
-  if(path.basename(file).startsWith('admin-'))continue;
   const target=path.join(out,file);
   let html=fs.readFileSync(target,'utf8');
+  // Admin and public shells share the exact same reference-derived wordmark.
+  if(!html.includes('href="/pure-brand.css'))html=html.replace('</head>','<link rel="stylesheet" href="/pure-brand.css?v=20261117"></head>');
+  if(path.basename(file).startsWith('admin-')){fs.writeFileSync(target,html);continue;}
   html=html.replace(/<link\b[^>]*\brel=["'](?:(?:shortcut )?icon|apple-touch-icon)["'][^>]*>/gi,'');
   html=html.replace(/<meta\b[^>]*\bname=["'](?:theme-color|altapure-promo-end)["'][^>]*>/gi,'');
   const themeLink=html.includes('href="/brand-theme.css"')?'':'<link rel="stylesheet" href="/brand-theme.css">';

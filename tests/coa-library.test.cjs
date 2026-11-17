@@ -11,7 +11,7 @@ const record={
  reviewer:'Quality reviewer',evidence_reference:'Internal verification record',
  report_date:'2026-11-01',review_date:'2026-11-02',status:'verified',
  publication_approved:true,
- document_url:'https://altapurelabs.com/verified-coas/report-001.pdf',
+ document_url:'https://getpurelabs.com/verified-coas/report-001.pdf',
  verification_url:null
 };
 test('empty registry publishes no fabricated COAs',()=>{
@@ -21,12 +21,15 @@ test('empty registry publishes no fabricated COAs',()=>{
 });
 test('only individually reviewed and verified batch reports may be published',()=>{
  assert.equal(validateReport(record),true);
+ assert.equal(validateReport({...record,document_url:'https://altapurelabs.com/verified-coas/report-001.pdf'}),true);
  for(const change of [
   {status:'pending'}, {publication_approved:false},{lot:''},
   {report_date:'2026-02-30'}, {reviewer:''},{evidence_reference:''},
   {document_url:'https://evil.example/report.pdf'},
   {document_url:'javascript:alert(1)'},
   {document_url:'https://altapurelabs.com.evil.example/report.pdf'},
+  {document_url:'https://getpurelabs.com.evil.example/report.pdf'},
+  {document_url:'http://getpurelabs.com/report.pdf'},
   {verification_url:'javascript:alert(1)'}
  ])assert.equal(validateReport({...record,...change}),false,JSON.stringify(change));
  assert.equal(publicReports([record,{...record,id:'another-id',status:'pending'}]).length,1);

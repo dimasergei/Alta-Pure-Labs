@@ -16,7 +16,7 @@
  const sparkleIcon='<svg data-icon="sparkles" viewBox="0 0 24 24" width="19" height="19" fill="none" stroke="currentColor" stroke-width="1.7" aria-hidden="true"><path d="m12 2 1.8 6.2L20 10l-6.2 1.8L12 18l-1.8-6.2L4 10l6.2-1.8L12 2ZM19 16l.8 2.2L22 19l-2.2.8L19 22l-.8-2.2L16 19l2.2-.8L19 16Z"/></svg>';
  const cartKey=items=>'ap-v2-cart-extras:'+JSON.stringify(items.map(({id,size,qty})=>({id,size,qty})));
  const terms1='I confirm that I am at least 21 years of age and am purchasing these products for research purposes only. These products are not intended for human consumption.';
- const terms2='Purchaser Responsibility & Research Use Only. By purchasing, I accept full responsibility for safe, lawful, research-only use and acknowledge that PURE Labs bears no liability for misuse. I agree to indemnify and hold harmless PURE Labs from any claim. I also attest that I am a qualified researcher and will only use these products for their intended use. I also acknowledge and accept the Research Use Only Agreement and Terms & Conditions.';
+ const terms2='Purchaser Responsibility & Research Use Only. By purchasing, I accept full responsibility for safe, lawful, research-only use and acknowledge that PURE bears no liability for misuse. I agree to indemnify and hold harmless PURE from any claim. I also attest that I am a qualified researcher and will only use these products for their intended use. I also acknowledge and accept the Research Use Only Agreement and Terms & Conditions.';
  // Keep the original membership-only checkout before overriding goods checkout.
  const membershipCheckout=window.DirectCheckout?.checkout;
  async function checkout(root,auth,user,options={}){
@@ -44,7 +44,7 @@
   const state={country:supported.includes(saved.country)?saved.country:'US',
     shipping:'standard',extras:new Set([...(Array.isArray(priorExtras)?priorExtras.filter(x=>isActive(x)):[]),...(isActive('protection')&&(supported.includes(saved.country)?saved.country:'US')==='US'?['protection']:[])]),
     coupon:localStorage.getItem('ap-checkout-coupon')||'',priorityPeriod:'monthly',shippingProtection:isActive('protection'),shippingData:null,billingData:null,billingSame:true,note:'',smsOptIn:false};
-  root.classList.add('nlx-checkout-root');document.title='Checkout | PURE Labs';
+  root.classList.add('nlx-checkout-root');document.title='Checkout | PURE';
   const div=document.createElement('div');div.className='nlx-page';root.replaceChildren(div);
   div.innerHTML='<div class="nlx-heading"><h1>Checkout</h1><p>Complete your order securely</p></div><div class="nlx-columns">'
     +'<section class="nlx-left"><nav class="nlx-progress" aria-label="Checkout steps">'+stepTitles.map((s,i)=>'<button type="button" data-nlx-step="'+i+'"><span>'+(i+1)+'</span>'+s+'</button>').join('')+'</nav><form id="nlx-form" novalidate></form></section>'
@@ -296,7 +296,7 @@
       +'<div class="nlx-two"><label>City *<input name="city" required maxlength="80" autocomplete="shipping address-level2" placeholder="City" value="'+esc(state.shippingData?.city||saved.city||'')+'"></label><label>State / Province / Region *<input name="region" required maxlength="80" autocomplete="shipping address-level1" placeholder="State or region" value="'+esc(state.shippingData?.region||saved.region||'')+'"></label></div>'
       +'<label>Postal / ZIP code *<input name="postal_code" required minlength="2" maxlength="20" autocomplete="shipping postal-code" placeholder="Postal or ZIP code" value="'+esc(state.shippingData?.postal_code||saved.postal_code||'')+'"></label>'
       +'<label>Email (optional)<input name="email" type="email" readonly value="'+esc(user.email)+'"></label><p class="nlx-email-help">Order confirmation and tracking go here. Leave blank to use your account email.</p>'
-      +'<label class="nlx-small-check nlx-sms"><input type="checkbox" name="sms_opt" '+(state.smsOptIn?'checked':'')+'><span><strong>Text me order updates and offers.</strong><small>By providing your phone number you agree to receive informational and marketing text messages from PURE Labs. Consent is not a condition of purchase. Message frequency will vary. Msg &amp; data rates may apply. Reply HELP for help or STOP to cancel. <a href="/terms-and-conditions.html">Terms</a> &amp; <a href="/privacy-policy.html">Privacy</a>.</small></span></label>'
+      +'<label class="nlx-small-check nlx-sms"><input type="checkbox" name="sms_opt" '+(state.smsOptIn?'checked':'')+'><span><strong>Text me order updates and offers.</strong><small>By providing your phone number you agree to receive informational and marketing text messages from PURE. Consent is not a condition of purchase. Message frequency will vary. Msg &amp; data rates may apply. Reply HELP for help or STOP to cancel. <a href="/terms-and-conditions.html">Terms</a> &amp; <a href="/privacy-policy.html">Privacy</a>.</small></span></label>'
       +'<label class="nlx-small-check"><input type="checkbox" name="billing_same" '+(state.billingSame?'checked':'')+'>Billing address same as shipping</label>'
       +'<div class="nlx-billing-other" hidden><h3>BILLING ADDRESS</h3>'
       +'<label>Billing street *<input name="billing_line1" maxlength="180" placeholder="Billing street address"></label>'
