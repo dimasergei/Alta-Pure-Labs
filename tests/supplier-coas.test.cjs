@@ -19,6 +19,11 @@ test('report client, lot and laboratory are searchable without changing provenan
  assert(selectReports(data.reports,{query:'Wholesale Peptide Supply'}).length>0);
  assert(selectReports(data.reports,{query:'Your Peptide Brand'}).length>0);
  assert(selectReports(data.reports,{query:'BC5'}).some(r=>r.id==='ypb-212'));
+ const crossField=selectReports(data.reports,{query:'bpc157 10 mg Janoshik'});
+ assert.deepEqual(crossField.map(r=>r.id),['pd-bpc-157-10mg']);
+ assert.deepEqual(selectReports(data.reports,{product:'bpc-157',size:'10mg',laboratory:'Janoshik Analytical'}).map(r=>r.id),['pd-bpc-157-10mg']);
+ assert.equal(selectReports(data.reports,{product:'bpc-157',query:'5 mg'}).some(r=>r.size!=='5mg'),false);
+ assert.equal(selectReports(data.reports,{query:'149043'}).some(r=>r.id==='pd-bpc-157-10mg'),true);
 });
 test('viewer rejects arbitrary URLs, credentials and non-HTTPS protocols',()=>{
  for(const url of ['javascript:alert(1)','http://api.purityanalytics.com/x','https://api.purityanalytics.com.evil.test/x','https://user:secret@api.purityanalytics.com/x','https://api.purityanalytics.com:444/x'])assert.equal(safeUrl(url),null);

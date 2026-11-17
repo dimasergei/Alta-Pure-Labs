@@ -14,6 +14,10 @@
   if(window.AltaSupplierCoas)return window.AltaSupplierCoas.render(root,A.catalog);
   root.textContent='COA report viewer is unavailable. Please reload the page.';
  }
+ function coaPage(){
+  const params=new URLSearchParams(location.search),selectedProduct=product(params.get('product'))?.id||'',selectedSize=params.get('size')||'';
+  return heading('CERTIFICATES OF ANALYSIS','Find your product documentation.','Search original reports by compound, strength, laboratory, lot or report ID.')+`<section class="ap-container ap-coa-library" id="coa-library" aria-label="Search certificates of analysis"><div class="ap-coa-search-panel"><label class="ap-coa-search-label" for="ap-coa-query">Search COAs</label><div class="ap-coa-search-field"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="10.5" cy="10.5" r="6.5"/><path d="m16 16 5 5"/></svg><input class="ap-input" id="ap-coa-query" type="search" maxlength="120" value="${esc(params.get('q')||'')}" placeholder="Product, strength, laboratory, lot or report ID" autocomplete="off" aria-controls="ap-supplier-references"></div><div class="ap-coa-controls"><label for="ap-coa-product">Product<select class="ap-input" id="ap-coa-product" aria-controls="ap-supplier-references"><option value="">All products</option>${[...A.catalog].sort((a,b)=>a.name.localeCompare(b.name)).map(p=>`<option value="${esc(p.id)}" ${p.id===selectedProduct?'selected':''}>${esc(p.name)}</option>`).join('')}</select></label><label for="ap-coa-size">Strength<select class="ap-input" id="ap-coa-size" data-initial-size="${esc(selectedSize)}" aria-controls="ap-supplier-references"><option value="">All strengths</option></select></label><label for="ap-coa-lab">Laboratory<select class="ap-input" id="ap-coa-lab" aria-controls="ap-supplier-references"><option value="">All laboratories</option></select></label><button id="ap-coa-reset" class="ap-button ap-button-secondary" type="button">Clear filters</button></div></div><div class="ap-coa-results-heading"><p id="ap-coa-count" role="status" aria-live="polite" aria-atomic="true">Loading COA reports…</p><a class="ap-text-link" href="/contact">Request a lot-specific COA ↗</a></div><div id="ap-supplier-references" aria-busy="true"></div></section>`;
+ }
  const simpleLines=lines=>lines.map(({id,size,qty})=>({id,size,qty}));
  const total=lines=>lines.reduce((n,x)=>n+x.qty*x.price,0);
  function empty(title,body,href,label){return `<div class="ap-empty"><h3>${esc(title)}</h3><p>${esc(body)}</p>${href?`<a class="ap-button ap-button-secondary" href="${href}">${esc(label)} ↗</a>`:''}</div>`;}
@@ -71,7 +75,7 @@
   const routes={
    '/bulk-orders':bulkPage,
    '/rewards':pageFallback('Points & Credit','Sign in to view your issued points and store credit.','/account/points','View your balance'),
-   '/coas':()=>heading('CERTIFICATE OF ANALYSIS','Batch documentation, clearly linked.','Browse product and analysis documentation for the exact items available.')+'<section class="ap-container ap-section"><div id="ap-supplier-references"></div></section>',
+   '/coas':coaPage,
    '/contact':contactPage,'/partner-program':partnerPage,
    '/about':pageFallback('About PURE','Research compounds and product documentation for laboratory teams.','/shop','Explore the catalog'),
    '/track-order':pageFallback('Track your order','Sign in to view order status and available tracking information.','/account/purchases','View my orders')

@@ -1,8 +1,9 @@
 'use strict';
 const {test}=require('node:test'),assert=require('node:assert/strict'),fs=require('node:fs');
 const js=fs.readFileSync('checkout-reference.js','utf8');
-test('hosted checkout does not advertise unverified native wallet or bank brands',()=>{
- for(const name of ['nlx-apple-symbol','nlx-google-symbol','chase-reference.png','bofa-reference.png','wf-reference.png','No Fees!'])assert.equal(js.includes(name),false);
+test('hosted checkout restores wallet artwork without inventing native wallet or bank collection',()=>{
+ for(const asset of ['apple-mark-clean.svg','google-g-clean.svg'])assert.ok(js.includes(asset));
+ for(const name of ['ApplePaySession','google.payments.api','chase-reference.png','bofa-reference.png','wf-reference.png','No Fees!'])assert.equal(js.includes(name),false);
  assert.match(js,/Cards|cards/);assert.match(js,/digital wallets depend on your country, device and provider eligibility/);
 });
 test('new checkout offers two concise payment choices and does not collect raw card data',()=>{

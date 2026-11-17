@@ -95,8 +95,8 @@ test('Canadian delivery offers next-day service and keeps protection selected wh
   assert.match(f.root.textContent,/provider displays its fees/);
   assert.match(f.root.textContent,/SETUP PENDING/);
   assert.equal(f.root.querySelectorAll('.nlx-terms input[type=checkbox]').length,2);
-  assert.equal(f.root.querySelectorAll('.nlx-wallet-unavailable').length,0);
-  assert.ok([...f.root.querySelectorAll('.nlx-wallet-unavailable')].every(b=>b.disabled),'Wallet buttons cannot claim acceptance before onboarding');
+  assert.equal(f.root.querySelectorAll('[data-nlx-wallet]').length,2);
+  assert.ok([...f.root.querySelectorAll('[data-nlx-wallet]')].every(b=>!b.disabled),'Canadian hosted Card supports wallet-selection shortcuts');
  }finally{f.dom.window.close();}
 });
 test('protected line is added/removed from server quote and cart quantities update via AltaStore',async()=>{
@@ -135,7 +135,8 @@ test('card and wallet displays stay disabled even with legacy NMI configuration'
   boxes.forEach(b=>{b.checked=true;b.dispatchEvent(new f.w.Event('change',{bubbles:true}));});
   await wait();
   assert.equal(mounts,0,'Historical NMI configuration cannot mount in the new hosted layout');
-  assert.ok([...f.root.querySelectorAll('.nlx-wallet-unavailable')].every(b=>b.disabled));
+  assert.equal(f.root.querySelectorAll('[data-nlx-wallet]').length,2);
+  assert.ok([...f.root.querySelectorAll('[data-nlx-wallet]')].every(b=>b.disabled));
   assert.equal(f.root.querySelector('[data-nlx-place]').disabled,true);
   assert.equal(f.orders.filter(x=>x.action==='place').length,0);
  }finally{f.dom.window.close();}

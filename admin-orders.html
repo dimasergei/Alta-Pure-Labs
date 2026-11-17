@@ -13,7 +13,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="/admin-dashboard.css?v=20261117b">
+  <link rel="stylesheet" href="/admin-dashboard.css?v=20261117c">
 
   <style>
     :root {
@@ -990,15 +990,21 @@
           <img class="ap-brand-symbol" src="/favicon-pure-96.png?v=20261117b" alt="" width="34" height="34">
           <span><strong class="pure-wordmark">PURE</strong><small>ADMIN</small></span>
         </div>
-        <h2>Admin access</h2>
-        <p>Use a secure email link to manage orders and fulfillment. Your session is shared with Marketing.</p>
+        <h2 id="login-heading">Admin access</h2>
+        <p id="login-description">Enter your password to manage orders and fulfillment. Your session is shared with Marketing.</p>
 
-        <form id="login-form">
-
-          <button id="login-button" class="primary" type="submit">
-            Send sign-in link
-          </button>
-
+        <form id="login-form" class="admin-password-form">
+          <label class="admin-password-field" for="admin-password">
+            <span data-admin-password-label>Admin password</span>
+            <input id="admin-password" name="password" data-admin-password type="password" autocomplete="current-password" maxlength="256" required aria-describedby="admin-password-hint">
+          </label>
+          <label class="admin-password-field" for="admin-password-confirm" data-admin-confirm-field hidden>
+            <span>Confirm new password</span>
+            <input id="admin-password-confirm" name="password_confirmation" data-admin-password-confirm type="password" autocomplete="new-password" maxlength="256" disabled>
+          </label>
+          <p id="admin-password-hint" class="admin-password-hint" data-admin-password-hint hidden></p>
+          <button id="login-button" class="primary" type="submit" disabled>Checking session…</button>
+          <button class="ghost admin-password-setup" data-admin-request-setup type="button" disabled>Set up / reset password</button>
           <p id="login-status" role="status" hidden></p>
           <p id="login-error" class="error" role="alert" hidden></p>
         </form>
@@ -1352,14 +1358,13 @@
     </div>
   </main>
 
-  <script src="/admin-auth.js?v=20261117b"></script>
+  <script src="/admin-auth.js?v=20261117c"></script>
   <script src="/admin-fulfillment.js?v=20261116-purity"></script>
   <script src="/admin-unified-notifications.js"></script>
   <script>
     const $ = (selector) => document.querySelector(selector);
 
     const loginForm = $('#login-form');
-    const loginButton = $('#login-button');
     const loginError = $('#login-error');
     const loginView = $('#login-view');
     const ordersView = $('#orders-view');
@@ -2630,7 +2635,7 @@
             Report: ${escapeHtml(reportId)}<br>
             Generated: ${escapeHtml(formatDate(new Date().toISOString()))}<br>
             Orders included: ${orders.length}<br>
-            Contact: altapurelabs@protonmail.com
+            Contact: support@getpurelabs.com
           </p>
 
           <h2>Consolidated item quantities</h2>
@@ -2681,29 +2686,11 @@
       return task;
     }
 
-    loginForm.addEventListener('submit', async (event) => {
-      event.preventDefault();
-      loginError.hidden = true;
-      const status = $('#login-status');
-      status.hidden = true;
-      loginButton.disabled = true;
-      loginButton.textContent = window.PureAdminAuth.pendingLink ? 'Signing in…' : 'Sending link…';
-      try {
-        if (window.PureAdminAuth.pendingLink) {
-          await window.PureAdminAuth.completeLink();
-          await openAdminWorkspace();
-        } else {
-          const result = await window.PureAdminAuth.requestLink('orders');
-          status.textContent = result.message;
-          status.hidden = false;
-        }
-      } catch (error) {
-        loginError.textContent = error.message;
-        loginError.hidden = false;
-      } finally {
-        loginButton.disabled = false;
-        loginButton.textContent = window.PureAdminAuth.pendingLink ? 'Continue to Orders' : 'Send sign-in link';
-      }
+    window.PureAdminAuth.bindForm({
+      form: loginForm,
+      heading: $('#login-heading'), description: $('#login-description'),
+      status: $('#login-status'), error: loginError,
+      workspace: 'orders', onAuthenticated: openAdminWorkspace
     });
 
     document.addEventListener('alta-open-payment-desk',()=>window.AltaFulfillment.paymentDesk());
@@ -3934,21 +3921,6 @@
       }
     });
 
-    loginButton.disabled = true;
-    loginButton.textContent = 'Checking session…';
-    window.PureAdminAuth.ready()
-      .then(async authenticated => {
-        if (!authenticated) return;
-        await openAdminWorkspace();
-      })
-      .catch(error => {
-        loginError.textContent = error.message;
-        loginError.hidden = false;
-      })
-      .finally(() => {
-        loginButton.disabled = false;
-        loginButton.textContent = window.PureAdminAuth.pendingLink ? 'Continue to Orders' : 'Send sign-in link';
-      });
   </script>
   <script src="/admin-experience.js?v=20261117b" defer></script>
 </body>

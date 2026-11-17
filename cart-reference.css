@@ -43,8 +43,8 @@
 .nlc-wallet-area{padding-top:5px;text-align:center;border-top:1px solid #e5e5e5}
 .nlc-wallet-area>small{color:#666;display:block;font-size:10px;letter-spacing:.1em;margin-bottom:11px}
 .nlc-wallet-row{display:flex;align-items:center;gap:7px}
-.nlc-wallet-row button{height:37px;border-radius:25px;background:#111;border:0;color:#fff;flex:1;font-family:Arial,sans-serif;font-weight:500;font-size:20px;letter-spacing:-.04em;display:flex;align-items:center;justify-content:center;gap:3px}
-.nlc-wallet-row button:disabled{opacity:1;cursor:not-allowed;filter:grayscale(.45)}
+.nlc-wallet-row :is(button,.nlc-wallet-link){height:37px;border-radius:25px;background:#111;border:0;color:#fff;flex:1;font-family:Arial,sans-serif;font-weight:500;font-size:20px;letter-spacing:-.04em;display:flex;align-items:center;justify-content:center;gap:3px}
+.nlc-wallet-row :is(button,.nlc-wallet-link):disabled{opacity:1;cursor:not-allowed;filter:grayscale(.45)}
 .nlc-wallet-row span{font-size:11px;color:#666}
 .nlc-g{font-size:17px;background:conic-gradient(#4285f4 0 90deg,#34a853 90deg 175deg,#fbbc05 175deg 250deg,#ea4335 250deg 330deg,#4285f4 330deg);-webkit-background-clip:text;background-clip:text;color:transparent}
 .nlc-wallet-area p{font-size:9px;color:#666;line-height:1.35;margin:5px 0 0}
@@ -63,7 +63,7 @@
 .nlc-apple-mark{font-family:Arial,sans-serif;font-size:25px;line-height:1}
 .nlc-google-mark{font-family:Arial,sans-serif;font-weight:700;font-size:23px;line-height:1;background:conic-gradient(#4285f4 0deg 90deg,#34a853 90deg 175deg,#fbbc05 175deg 250deg,#ea4335 250deg 330deg,#4285f4 330deg);-webkit-background-clip:text;background-clip:text;color:transparent}
 .nlc-wallet-or{font-size:11px;color:#666}
-@media(max-height:650px){.nlc-cart-checkout{padding:3px 10px 5px}.nlc-cart-totals>div{padding:2px 0}.nlc-proceed{padding:9px;margin:3px 0 5px}.nlc-wallet-row button{height:32px}.nlc-delivery-est{padding:3px 0}.nlc-coupon input{height:32px}}
+@media(max-height:650px){.nlc-cart-checkout{padding:3px 10px 5px}.nlc-cart-totals>div{padding:2px 0}.nlc-proceed{padding:9px;margin:3px 0 5px}.nlc-wallet-row :is(button,.nlc-wallet-link){height:32px}.nlc-delivery-est{padding:3px 0}.nlc-coupon input{height:32px}}
 
 /* Cart reference polish */
 .ap-cart-dialog .ap-dialog-head>button{border:0!important;outline:0!important;box-shadow:none!important;width:40px;height:40px;background:#f5f5f5!important;color:#111!important;font-size:23px;line-height:1;border-radius:50%;cursor:pointer}
@@ -114,12 +114,12 @@
 
 /* Use the identical isolated wallet artwork in the cart drawer and checkout. */
 .nlc-wallet-row .nlc-wallet-lockup{display:inline-flex!important;align-items:center!important;justify-content:center!important;gap:3px!important;white-space:nowrap!important}
-.nlc-wallet-row button:disabled{filter:none!important;opacity:1!important}
-.nlc-wallet-row button .nlc-wallet-logo{position:static!important;display:block!important;object-fit:contain!important;border:0!important;background:none!important;filter:none!important;box-shadow:none!important;transform:none!important;flex:none!important}
-.nlc-wallet-row button img.nlc-apple-mark{width:17px!important;height:22px!important}
-.nlc-wallet-row button img.nlc-google-mark{width:20px!important;height:20px!important}
-.nlc-wallet-row button .nlc-apple-pay-word{font-family:-apple-system,BlinkMacSystemFont,"SF Pro Display","Helvetica Neue",Arial,sans-serif!important;font-size:18px!important;letter-spacing:-.05em;color:#fff!important;font-weight:500!important}
-.nlc-wallet-row button .nlc-google-pay-word{font-family:"Google Sans","Product Sans",Arial,Helvetica,sans-serif!important;font-size:18px!important;letter-spacing:-.035em;color:#fff!important;font-weight:400!important}
+.nlc-wallet-row :is(button,.nlc-wallet-link):disabled{filter:none!important;opacity:1!important}
+.nlc-wallet-row :is(button,.nlc-wallet-link) .nlc-wallet-logo{position:static!important;display:block!important;object-fit:contain!important;border:0!important;background:none!important;filter:none!important;box-shadow:none!important;transform:none!important;flex:none!important}
+.nlc-wallet-row :is(button,.nlc-wallet-link) img.nlc-apple-mark{width:17px!important;height:22px!important}
+.nlc-wallet-row :is(button,.nlc-wallet-link) img.nlc-google-mark{width:20px!important;height:20px!important}
+.nlc-wallet-row :is(button,.nlc-wallet-link) .nlc-apple-pay-word{font-family:-apple-system,BlinkMacSystemFont,"SF Pro Display","Helvetica Neue",Arial,sans-serif!important;font-size:18px!important;letter-spacing:-.05em;color:#fff!important;font-weight:500!important}
+.nlc-wallet-row :is(button,.nlc-wallet-link) .nlc-google-pay-word{font-family:"Google Sans","Product Sans",Arial,Helvetica,sans-serif!important;font-size:18px!important;letter-spacing:-.035em;color:#fff!important;font-weight:400!important}
 
 /* Compact cart item stack: product and strength share a line, with the
    free-unit badge beside the quantity pill. Keeps existing cart actions. */
@@ -319,3 +319,7 @@
 
 /* Coupon state remains visible without enlarging the product scroll area. */
 .nlc-coupon>p{font-size:11px;line-height:1.4;margin:5px 0}.nlc-coupon [data-nlc-coupon-status]:empty{display:none}.nlc-coupon button:disabled{opacity:.55;cursor:wait}.nlc-coupon button[hidden]{display:none!important}
+
+.nlc-wallet-link{text-decoration:none;cursor:pointer}
+.nlc-wallet-link[aria-disabled="true"]{cursor:not-allowed}
+.nlc-wallet-link:focus-visible{outline:2px solid #111;outline-offset:3px}

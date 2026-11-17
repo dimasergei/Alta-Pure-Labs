@@ -18,13 +18,34 @@ function request(body, headers = {}) {
     headers: { origin: env.SITE_URL, 'sec-fetch-site': 'same-origin', ...(body ? { 'content-type': 'application/json' } : {}), ...headers }, body };
 }
 function store(now) {
-  const requests = new Map(), sessions = new Map(), calls = [];
-  return { requests, sessions, calls, limited: false, async rpc(name, p) {
+  const requests = new Map(), sessions = new Map(), credentials = new Map(), calls = [];
+  return { requests, sessions, credentials, calls, limited: false, async rpc(name, p) {
     calls.push({ name, p });
-    if (name === 'pure_admin_request_login') {
+    if (name === 'pure_admin_request_password_setup') {
       if (this.limited) return { data: 'rate_limited' };
       requests.set(p.p_nonce_hash, { owner: p.p_owner_hash, expires: p.p_expires_at, consumed: false });
       return { data: 'created' };
+    }
+    if (name === 'pure_admin_password_status') return { data: credentials.has(p.p_owner_hash) };
+    if (name === 'pure_admin_get_password') return { data: credentials.has(p.p_owner_hash) ? [{ password_hash: credentials.get(p.p_owner_hash) }] : [] };
+    if (name === 'pure_admin_password_attempt') return { data: !this.limited };
+    if (name === 'pure_admin_password_setup_valid') {
+      const r = requests.get(p.p_nonce_hash);
+      return { data: Boolean(r && !r.consumed && r.owner === p.p_owner_hash && Date.parse(r.expires) > now()) };
+    }
+    if (name === 'pure_admin_set_password') {
+      const r = requests.get(p.p_nonce_hash);
+      if (!r || r.consumed || r.owner !== p.p_owner_hash || Date.parse(r.expires) <= now()) return { data: false };
+      credentials.set(p.p_owner_hash, p.p_password_hash);
+      for (const record of requests.values()) if (record.owner === p.p_owner_hash) record.consumed = true;
+      for (const session of sessions.values()) if (session.owner === p.p_owner_hash) session.revoked = true;
+      sessions.set(p.p_session_hash, { owner: p.p_owner_hash, expires_at: p.p_expires_at, revoked: false });
+      return { data: true };
+    }
+    if (name === 'pure_admin_create_password_session') {
+      if (credentials.get(p.p_owner_hash) !== p.p_password_hash) return { data: false };
+      sessions.set(p.p_session_hash, { owner: p.p_owner_hash, expires_at: p.p_expires_at, revoked: false });
+      return { data: true };
     }
     if (name === 'pure_admin_create_session') {
       if (p.p_nonce_hash) {
@@ -55,20 +76,20 @@ async function bootstrap(ctx) {
   return { res, cookie: res.headers['Set-Cookie'].split(';')[0], csrf: res.body.csrf_token };
 }
 
-test('owner link is sent only by the explicit action, only to the server mailbox, with no recipient/proof disclosure', async () => {
+test('owner password setup link is sent only by the explicit action, only to the server mailbox, with no recipient/proof disclosure', async () => {
   const ctx = setup();
   const status = await ctx.call();
-  assert.deepEqual(status.body, { authenticated: false });
+  assert.deepEqual(status.body, { authenticated: false, password_configured: false });
   assert.equal(ctx.mail.length, 0);
-  const sent = await ctx.call({ action: 'request_link', return_to: 'marketing', email: 'attacker@example.test' });
+  const sent = await ctx.call({ action: 'request_setup', return_to: 'marketing', email: 'attacker@example.test' });
   assert.equal(sent.statusCode, 202);
   assert.equal(ctx.mail.length, 1);
   assert.deepEqual(ctx.mail[0].message.to, ['owner@example.test']);
-  assert.doesNotMatch(JSON.stringify(sent.body), /owner@example|pure_admin=|v1\./);
+  assert.doesNotMatch(JSON.stringify(sent.body), /owner@example|pure_admin_setup=|v2\./);
   const link = ctx.mail[0].message.text.match(/https:\/\/[^\s]+/)[0];
   assert.equal(new URL(link).pathname, '/admin-marketing.html');
   assert.equal(new URL(link).search, '');
-  const token = new URLSearchParams(new URL(link).hash.slice(1)).get('pure_admin');
+  const token = new URLSearchParams(new URL(link).hash.slice(1)).get('pure_admin_setup');
   const proof = auth.verifyLink(token, env, ctx.deps.now());
   assert.ok(ctx.db.requests.has(proof.nonce_hash));
   assert.doesNotMatch(JSON.stringify([...ctx.db.requests]), new RegExp(token.replaceAll('.', '\\.')));
@@ -80,7 +101,7 @@ test('mailbox lists, display names, malformed mailboxes and arbitrary return URL
   }
   const ctx = setup();
   for (const return_to of ['https://evil.example/', '//evil.example', '/admin-orders.html', '__proto__']) {
-    const res = await ctx.call({ action: 'request_link', return_to });
+    const res = await ctx.call({ action: 'request_setup', return_to });
     assert.equal(res.statusCode, 400);
   }
   assert.equal(ctx.mail.length, 0);
@@ -99,12 +120,12 @@ test('signed links reject tampering, expiry, future issue times, another owner, 
   assert.throws(() => auth.verifyLink(link.token, { ...env, ADMIN_AUTH_SIGNING_SECRET: 'changed-secret-'.repeat(4) }, now), /invalid or expired/);
 });
 
-test('one-time exchange consumes the server nonce, rejects replay and issues only a hashed opaque secure session', async () => {
+test('one-time password setup consumes the server nonce, rejects replay and issues only a hashed opaque secure session', async () => {
   const ctx = setup();
-  await ctx.call({ action: 'request_link', return_to: 'orders' });
+  await ctx.call({ action: 'request_setup', return_to: 'orders' });
   const url = new URL(ctx.mail[0].message.text.match(/https:\/\/[^\s]+/)[0]);
-  const token = new URLSearchParams(url.hash.slice(1)).get('pure_admin');
-  const [a, b] = await Promise.all([ctx.call({ action: 'exchange', token }), ctx.call({ action: 'exchange', token })]);
+  const token = new URLSearchParams(url.hash.slice(1)).get('pure_admin_setup');
+  const [a, b] = await Promise.all([ctx.call({ action: 'set_password', token, password: 'correct horse battery staple' }), ctx.call({ action: 'set_password', token, password: 'correct horse battery staple' })]);
   assert.deepEqual([a.statusCode, b.statusCode].sort(), [200, 401]);
   const ok = a.statusCode === 200 ? a : b;
   assert.match(ok.headers['Set-Cookie'], /^__Host-pure_admin=[A-Za-z0-9_-]{43}; Path=\/; Max-Age=604800; Secure; HttpOnly; SameSite=Strict$/);
@@ -113,7 +134,7 @@ test('one-time exchange consumes the server nonce, rejects replay and issues onl
   assert.ok(ctx.db.sessions.has(hash(cookieToken)));
   assert.equal(ctx.db.sessions.size, 1);
   assert.ok(!JSON.stringify(ok.body).includes(cookieToken));
-  assert.equal((await ctx.call({ action: 'exchange', token })).statusCode, 401);
+  assert.equal((await ctx.call({ action: 'set_password', token, password: 'correct horse battery staple' })).statusCode, 401);
   assert.equal(ctx.mail.length, 1);
 });
 
@@ -145,7 +166,7 @@ test('session GET verifies server state, grants both dashboards, and requires or
     assert.equal((await auth.assertAdmin({ ...request({}, { cookie, 'x-pure-admin-csrf': csrf }), method }, ctx.deps)).method, 'session');
   }
   await assert.rejects(auth.assertAdmin(request(undefined, { cookie, 'sec-fetch-site': 'cross-site' }), ctx.deps), { status: 403 });
-  const crossSiteRequest = await ctx.call({ action: 'request_link' }, { origin: 'https://evil.example' });
+  const crossSiteRequest = await ctx.call({ action: 'request_setup' }, { origin: 'https://evil.example' });
   assert.equal(crossSiteRequest.statusCode, 403);
   assert.equal(ctx.mail.length, 0);
 });
@@ -168,10 +189,10 @@ test('logout revokes the shared session; expiry and owner/signing-key changes al
 
 test('rate-limit and storage failures never send an email or expose a token', async () => {
   const ctx = setup(); ctx.db.limited = true;
-  assert.equal((await ctx.call({ action: 'request_link' })).statusCode, 429);
+  assert.equal((await ctx.call({ action: 'request_setup' })).statusCode, 429);
   assert.equal(ctx.mail.length, 0);
   ctx.db.rpc = async () => ({ error: { message: 'private storage detail' } });
-  const res = await ctx.call({ action: 'request_link' });
+  const res = await ctx.call({ action: 'request_setup' });
   assert.equal(res.statusCode, 503);
   assert.doesNotMatch(JSON.stringify(res.body), /private storage detail|owner@example/);
   assert.equal(ctx.mail.length, 0);
@@ -179,9 +200,9 @@ test('rate-limit and storage failures never send an email or expose a token', as
 
 test('new admin links use the PURE domain even when the legacy production alias is configured', async () => {
   const ctx = setup(); ctx.deps.env = { ...env, SITE_URL: 'https://altapurelabs.com' };
-  const result = await ctx.call({ action: 'request_link', return_to: 'orders' });
+  const result = await ctx.call({ action: 'request_setup', return_to: 'orders' });
   assert.equal(result.statusCode, 202);
-  assert.match(ctx.mail[0].message.text, /https:\/\/getpurelabs\.com\/admin-orders\.html#pure_admin=/);
+  assert.match(ctx.mail[0].message.text, /https:\/\/getpurelabs\.com\/admin-orders\.html#pure_admin_setup=/);
   assert.doesNotMatch(ctx.mail[0].message.text, /https:\/\/altapurelabs\.com/);
 });
 
@@ -242,4 +263,72 @@ test('authentication storage uses private RLS tables and service-role-only invok
   }
   assert.match(sql, /pg_advisory_xact_lock/);
   assert.match(sql, /consumed_at is null and expires_at > now\(\)/);
+});
+
+async function setupPassword(ctx, password = 'correct horse battery staple') {
+  const requested = await ctx.call({ action: 'request_setup' });
+  assert.equal(requested.statusCode, 202);
+  const url = new URL(ctx.mail.at(-1).message.text.match(/https:\/\/[^\s]+/)[0]);
+  const token = new URLSearchParams(url.hash.slice(1)).get('pure_admin_setup');
+  return { token, response: await ctx.call({ action: 'set_password', token, password }) };
+}
+
+test('password setup recipient uses the server admin email override and never request data', async () => {
+  const ctx = setup(); ctx.deps.env = { ...env, ADMIN_AUTH_EMAIL: 'dimasrgh@gmail.com' };
+  const sent = await ctx.call({ action: 'request_setup', email: 'attacker@example.test', recipient: 'attacker@example.test' });
+  assert.equal(sent.statusCode, 202);
+  assert.deepEqual(ctx.mail[0].message.to, ['dimasrgh@gmail.com']);
+  assert.equal(ctx.mail[0].message.subject, 'Set your PURE admin password');
+  assert.match(ctx.mail[0].message.text, /30 minutes/);
+  assert.doesNotMatch(JSON.stringify(sent.body), /dimasrgh|attacker|v2\./);
+  for (const action of ['exchange', 'request_link']) {
+    assert.equal((await ctx.call({ action, token: 'old-sign-in-proof' })).statusCode, 400);
+  }
+});
+
+test('chosen password signs in without email, rejects wrong passwords, and reset revokes existing sessions', async () => {
+  const ctx = setup();
+  const initial = await setupPassword(ctx);
+  assert.equal(initial.response.statusCode, 200);
+  assert.equal((await ctx.call()).body.password_configured, true);
+  const oldCookie = initial.response.headers['Set-Cookie'].split(';')[0];
+  const encoded = [...ctx.db.credentials.values()][0];
+  assert.match(encoded, /^scrypt-v1\$[a-f0-9]{32}\$[a-f0-9]{128}$/);
+  assert.doesNotMatch(JSON.stringify(initial.response.body), /scrypt|battery|password_hash/);
+  const signed = await ctx.call({ action: 'password_login', password: 'correct horse battery staple' });
+  assert.equal(signed.statusCode, 200);
+  assert.equal(ctx.mail.length, 1, 'routine password login sends no email');
+  assert.equal((await ctx.call({ action: 'password_login', password: 'wrong password' })).statusCode, 401);
+  ctx.db.limited = true;
+  assert.equal((await ctx.call({ action: 'password_login', password: 'correct horse battery staple' })).statusCode, 429);
+  ctx.db.limited = false;
+  const reset = await setupPassword(ctx, 'another long password phrase');
+  assert.equal(reset.response.statusCode, 200);
+  assert.equal((await ctx.call(undefined, { cookie: oldCookie })).body.authenticated, false);
+  assert.equal((await ctx.call({ action: 'password_login', password: 'correct horse battery staple' })).statusCode, 401);
+  assert.equal((await ctx.call({ action: 'password_login', password: 'another long password phrase' })).statusCode, 200);
+});
+
+test('password setup enforces length and explicit new password before consuming its proof', async () => {
+  const ctx = setup();
+  const start = await setupPassword(ctx, 'short');
+  assert.equal(start.response.statusCode, 400);
+  assert.equal(ctx.db.credentials.size, 0);
+  assert.equal((await ctx.call({ action: 'set_password', token: start.token })).statusCode, 400);
+  assert.equal((await ctx.call({ action: 'set_password', token: start.token, password: 'x'.repeat(129) })).statusCode, 400);
+  assert.equal((await ctx.call({ action: 'set_password', token: start.token, password: 'twelve words and café 🔬' })).statusCode, 200);
+  assert.equal((await ctx.call({ action: 'password_login', password: 'twelve words and café 🔬' })).statusCode, 200);
+  assert.equal((await ctx.call({ action: 'password_login', password: 'twelve words and cafe 🔬' })).statusCode, 401);
+});
+
+test('a concurrent reset after password verification cannot mint a session from the stale hash', async () => {
+  const ctx = setup(); await setupPassword(ctx);
+  const original = ctx.db.rpc.bind(ctx.db);
+  ctx.db.rpc = async (name, p) => {
+    if (name === 'pure_admin_create_password_session') return { data: false };
+    return original(name, p);
+  };
+  const result = await ctx.call({ action: 'password_login', password: 'correct horse battery staple' });
+  assert.equal(result.statusCode, 401);
+  assert.ok(!result.headers['Set-Cookie']);
 });

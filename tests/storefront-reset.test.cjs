@@ -21,11 +21,11 @@ async function fixture(route,{workspace=false,cart=[]}={}){
  w.HTMLElement.prototype.scrollIntoView=()=>{};
  w.HTMLDialogElement.prototype.showModal=function(){this.open=true;};
  w.HTMLDialogElement.prototype.close=function(){this.open=false;};
- w.fetch=async()=>({ok:true,json:async()=>[]});
+ w.fetch=async url=>({ok:true,json:async()=>String(url).includes('/data/supplier-coas.json')?require('../data/supplier-coas.json'):[]});
  const scripts=['products.js','product-images.js'].map(read);
  // The production build replaces these views inside the storefront closure.
  scripts.push(referenceSource('storefront-v2.js','store',' window.AltaStore='));
- if(workspace)scripts.push(referenceSource('workspace-v2.js','workspace',' window.AltaWorkspace='));
+ if(workspace)scripts.push(read('supplier-coas.js'),referenceSource('workspace-v2.js','workspace',' window.AltaWorkspace='));
  scripts.push(read('reference-ui.js'));
  w.eval(scripts.join('\n'));
  await settle();
@@ -212,5 +212,31 @@ test('bulk ordering grows and clears its summary while preserving exact prices, 
   assert.equal(JSON.stringify(w.AltaStore.cart),regularCart,'bulk selections never replace the existing regular cart');
   assert.equal(w.localStorage.getItem('pp-cart'),storedCart,'the saved regular cart remains intact');
   assert.doesNotMatch(d.querySelector('#ap-main').textContent,/BOGO|membership|research builder|10 units minimum|50%|60%|free 2-day|express delivery/i);
+ }finally{await f.close();}
+});
+
+test('COA page filters original reports by product, strength, laboratory and cross-field search',async()=>{
+ const f=await fixture('/coas?product=bpc-157&size=10mg',{workspace:true});
+ try{
+  const {d,w}=f,query=d.querySelector('#ap-coa-query'),cards=()=>[...d.querySelectorAll('.ap-coa-card')];
+  const change=async(id,value,event='change')=>{const input=d.querySelector(id);input.value=value;input.dispatchEvent(new w.Event(event,{bubbles:true}));await settle();};
+  assert.equal(d.querySelector('#ap-coa-product').value,'bpc-157');
+  assert.equal(d.querySelector('#ap-coa-size').value,'10mg');
+  assert.equal(cards().length,3);
+  assert.ok(cards().every(card=>card.querySelector('h2').textContent==='BPC-157 · 10mg'));
+  await change('#ap-coa-lab','Janoshik Analytical');
+  assert.equal(cards().length,1);assert.match(cards()[0].textContent,/#149043/);
+  await change('#ap-coa-query','BPC157 10 mg Janoshik','input');
+  assert.equal(cards().length,1);assert.match(d.querySelector('#ap-coa-count').textContent,/1 COA report found/);
+  await change('#ap-coa-query','unmatched-report-identifier','input');
+  assert.equal(cards().length,0);assert.match(d.querySelector('#ap-supplier-references').textContent,/No COA report matches/);
+  d.querySelector('#ap-coa-reset').click();await settle();
+  assert.equal(query.value,'');assert.equal(d.activeElement,query);
+  assert.equal(d.querySelector('#ap-coa-product').value,'');assert.equal(d.querySelector('#ap-coa-size').value,'');assert.equal(d.querySelector('#ap-coa-lab').value,'');
+  assert.equal(cards().length,require('../data/supplier-coas.json').reports.length);
+  await change('#ap-coa-query','149043','input');
+  assert.equal(cards().length,1);assert.match(cards()[0].textContent,/Janoshik Analytical/);
+  assert.equal(d.querySelector('#ap-supplier-references').getAttribute('aria-busy'),'false');
+  assert.match(d.querySelector('#ap-supplier-references').textContent,/request the exact fulfilled-lot COA/);
  }finally{await f.close();}
 });

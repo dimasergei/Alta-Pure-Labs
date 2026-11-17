@@ -1,3 +1,20 @@
 .ap-supplier-coa-grid{grid-template-columns:repeat(2,minmax(0,1fr))}.ap-supplier-coa-grid h2{font-size:1.4rem;margin:16px 0 5px}.ap-coa-supplier-name{font-weight:700;color:var(--ap-teal,#111)}.ap-supplier-coa-grid dl{display:grid;grid-template-columns:minmax(120px,38%) minmax(0,1fr);gap:9px 16px}.ap-supplier-coa-grid dd{margin:0;overflow-wrap:anywhere}.ap-supplier-coa-grid dt{color:#666;font-size:.85rem}.ap-supplier-coa-grid .ap-actions{flex-wrap:wrap;gap:16px;margin-top:22px}.ap-supplier-coa-grid .ap-fine{margin-top:20px}.ap-coa-missing{padding:24px;margin:24px 0;border:1px solid #d4d4d4;border-radius:18px}.ap-coa-missing summary{cursor:pointer;font-weight:700}.ap-coa-missing ul{columns:2;line-height:1.9}.ap-coa-dialog{width:min(1100px,95vw);max-width:95vw;height:92vh;max-height:92vh;border:0;border-radius:18px;padding:0;background:#f5f5f5;color:#111}.ap-coa-dialog::backdrop{background:#000000db}.ap-coa-viewer-bar{display:flex;align-items:center;justify-content:space-between;gap:16px;padding:18px 24px}.ap-coa-viewer-bar h2{font-size:1.2rem;margin:0}.ap-coa-viewer-context{font-size:.85rem;margin:0 24px 12px}.ap-coa-dialog iframe{display:block;width:100%;height:calc(100% - 155px);border:0;background:#e5e5e5}.ap-coa-controls{flex-wrap:wrap}.ap-coa-controls label{min-width:150px}.ap-coa-context{margin:0 0 28px;max-width:850px}.ap-coa-context p{line-height:1.7}@media(max-width:700px){.ap-supplier-coa-grid{grid-template-columns:1fr}.ap-coa-missing ul{columns:1}.ap-coa-dialog{width:98vw;max-width:98vw;height:96vh;max-height:96vh}.ap-coa-viewer-bar{padding:12px;align-items:flex-start}.ap-coa-viewer-context{margin-left:12px;margin-right:12px}.ap-coa-dialog iframe{height:calc(100% - 185px)}.ap-supplier-coa-grid dl{grid-template-columns:1fr}.ap-supplier-coa-grid dd{margin-bottom:6px}}
 
 .ap-coa-image-pages{height:calc(100% - 170px);overflow:auto;padding:12px;background:#e5e5e5}.ap-coa-image-pages img{display:block;width:100%;height:auto;max-width:1100px;margin:0 auto 18px;background:white}
+
+html:root body.ap-site .ap-coa-library{padding-top:24px;padding-bottom:var(--pure-section-space,64px)}
+.ap-coa-search-panel{padding:24px;border:1px solid #dedede;border-radius:18px;background:#f7f7f7}
+.ap-coa-search-label{display:block;margin-bottom:12px;font-size:16px;font-weight:700}
+.ap-coa-search-field{position:relative}
+.ap-coa-search-field>svg{position:absolute;left:16px;top:50%;width:20px;height:20px;transform:translateY(-50%);fill:none;stroke:currentColor;stroke-width:1.7;pointer-events:none}
+html:root body.ap-site #ap-coa-query{width:100%;max-width:none;min-height:52px;padding:14px 16px 14px 46px;border:1px solid #ccc;border-radius:10px;background:#fff;color:#111;font-size:16px}
+html:root body.ap-site .ap-coa-library .ap-coa-controls{display:grid;grid-template-columns:1.3fr 1fr 1.3fr auto;align-items:end;gap:16px;margin:20px 0 0;padding:0;border:0;background:none}
+.ap-coa-controls label{display:grid;gap:8px;font-size:12px;font-weight:700}
+html:root body.ap-site .ap-coa-controls select{display:block;width:100%;min-height:46px;padding:10px 12px;border:1px solid #ccc;border-radius:8px;background:#fff;color:#111;font-size:14px}
+html:root body.ap-site #ap-coa-reset{min-height:46px;margin:0;white-space:nowrap;color:#111;background:#fff;border:1px solid #ccc}
+.ap-coa-results-heading{display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:12px;margin:24px 0}
+.ap-coa-results-heading p{margin:0;font-size:14px;font-weight:600}
+.ap-coa-results-heading a{font-size:12px}
+.ap-coa-search-panel :is(input,select,button):focus-visible{outline:2px solid #111;outline-offset:3px}
+@media(max-width:900px){html:root body.ap-site .ap-coa-library .ap-coa-controls{grid-template-columns:repeat(2,minmax(0,1fr))}}
+@media(max-width:600px){.ap-coa-search-panel{padding:20px}.ap-coa-results-heading{margin:20px 0}.ap-coa-results-heading a{width:100%}html:root body.ap-site .ap-coa-library .ap-coa-controls{grid-template-columns:minmax(0,1fr);gap:12px}html:root body.ap-site .ap-coa-controls select{font-size:16px}html:root body.ap-site .ap-coa-library{padding-top:8px}}

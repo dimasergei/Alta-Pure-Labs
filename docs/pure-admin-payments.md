@@ -4,15 +4,17 @@ This release uses one shared admin session, hosted Rampex Card checkout, and dir
 
 ## Admin sign-in
 
-Open `/admin-orders.html` or `/admin-marketing.html` and request a sign-in link. Delivery goes only to the server-configured owner inbox; the browser cannot select another recipient. A link expires after ten minutes and is consumed once, after an explicit sign-in click. Its proof is removed from the browser URL before exchange.
+Orders and Marketing now share a password chosen by the owner. Open `/admin-orders.html` or `/admin-marketing.html` to sign in, or use **Set up / reset password** to request a setup link. Delivery goes only to `ADMIN_AUTH_EMAIL` (configured for the owner's requested mailbox); `ADMIN_ORDER_EMAIL` remains the fallback and operational notification recipient. Browsers cannot choose the email recipient. No mailbox or password hash is returned by the public status endpoint.
 
-The resulting seven-day session uses a secure, HTTP-only, same-site cookie shared by the admin workspaces. Mutating requests also require the session's CSRF proof and a permitted origin. Signing out revokes the session and synchronizes the interface across tabs. Neither an unprotected admin page nor a public order API replaces authentication.
+A setup link expires after thirty minutes and is consumed only when the owner submits a new password (12–128 characters). The proof is removed from the URL immediately. Merely opening the email or page does not consume it. The backend stores a salted, versioned scrypt hash, never the chosen password. Setup/reset updates the hash, invalidates all older sessions and setup links, and creates one new session in a single database transaction. Concurrent logins are bound to the verified password hash so a reset cannot issue a session using the superseded password. Failed password attempts are limited per owner and IP.
 
-Required existing configuration: `ADMIN_ORDER_EMAIL`, `RESEND_API_KEY`, `ORDER_CONFIRMATION_FROM`, and `SITE_URL`. `ADMIN_AUTH_SIGNING_SECRET` is the preferred signing key; the existing `ADMIN_ORDERS_PASSWORD` is the compatibility fallback. Do not delete or rotate that fallback without first configuring the intended signing key and planning session invalidation. Valid legacy header clients remain supported, and an already-authorized browser can exchange its old stored credential for a session without displaying a password form.
+The seven-day session uses a secure, HTTP-only, same-site cookie shared by the admin workspaces. Mutations require the session's CSRF proof and a permitted origin. Signing out revokes the session and synchronizes the interface across tabs. Passwordless `exchange` and `request_link` actions are no longer accepted. Valid legacy header clients remain supported for existing server integrations; already-authorized browsers can still exchange their old stored credential for a session.
 
-For failed sign-in, inspect the redacted response from `/api/customer-config?admin_auth=session`, email delivery status, and the private admin session tables. Do not log or paste sign-in links, cookies, CSRF proofs, or credential values. Requesting a new email link sends a real email.
+Required configuration: `ADMIN_AUTH_EMAIL`, `RESEND_API_KEY`, `ORDER_CONFIRMATION_FROM`, and `SITE_URL`. `ADMIN_AUTH_SIGNING_SECRET` signs setup proofs and owner binding; the existing `ADMIN_ORDERS_PASSWORD` remains a compatibility fallback for signing and server clients, not the owner's chosen password. Do not delete or rotate these without considering integration access and session invalidation. Changing the configured admin mailbox changes owner identity.
 
-Implementation: [server authentication](../lib/admin-auth.js), [browser session handling](../admin-auth.js), and [storage migration](../supabase/migrations/20261117192716_pure_passwordless_admin_sessions.sql).
+For failed access inspect the redacted status from `/api/customer-config?admin_auth=session`, email delivery, and private authentication storage. Do not log or paste passwords, setup links, cookies, CSRF proofs, or stored password hashes. Requesting a setup link sends a real email; routine password sign-in sends none.
+
+Implementation: [server authentication](../lib/admin-auth.js), [password hashing](../lib/admin-password.js), [browser session handling](../admin-auth.js), [session storage](../supabase/migrations/20261117192716_pure_passwordless_admin_sessions.sql), and [password setup storage](../supabase/migrations/20261117204240_pure_admin_password_setup.sql).
 
 ## Payment choices and pricing
 

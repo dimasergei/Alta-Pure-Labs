@@ -2,15 +2,15 @@
 const {test}=require('node:test'),assert=require('node:assert/strict'),fs=require('fs'),{JSDOM}=require('jsdom');
 const source=fs.readFileSync('cart-reference.js','utf8');
 const wait=()=>new Promise(resolve=>setTimeout(resolve,25));
-function fixture(authorized=false){
+function fixture(authorized=false,country='US'){
  const dom=new JSDOM('<div id="cart"><p>Old cart</p></div>',{url:'https://altapurelabs.com/shop',runScripts:'outside-only'}),w=dom.window,requests=[];
  let cart=[{id:'compound',key:'compound:5mg',name:'Research compound',size:'5mg',qty:2,price:50}];
  const catalog=[{id:'compound',name:'Research compound',variants:[{size:'5mg',price:50}]},{id:'extra',name:'Research add-on',variants:[{size:'10mg',price:20}]}];
  w.AltaStore={get cart(){return cart},catalog,product:id=>catalog.find(p=>p.id===id),image:()=>'/fixture.webp'};
- w.AltaCartNmi={open(){}};
+ w.AltaCartNmi={open(){}};w.localStorage.setItem('ap-shipping-country',country);
  w.fetch=async(url,options={})=>{
   requests.push({url,body:options.body?JSON.parse(options.body):undefined});
-  if(String(url).includes('checkout=public'))return{ok:true,json:async()=>({methods:authorized?[{id:'method-1',native_provider:'nmi',kind:'card'}]:[],delivery_options:[{id:'protection',enabled:true,price_cents:500}],nmi:authorized?{ready:true,method_id:'method-1',wallets:{apple:true,google:true}}:null})};
+  if(String(url).includes('checkout=public'))return{ok:true,json:async()=>({methods:authorized?[{id:'method-1',native_provider:'nmi',kind:'card'}]:[{id:'rampex-1',native_provider:'rampex',rampex_provider:'hosted',countries:['US','CA'],kind:'hosted_link'}],delivery_options:[{id:'protection',enabled:true,price_cents:500}],nmi:authorized?{ready:true,method_id:'method-1',wallets:{apple:true,google:true}}:null})};
   const b=JSON.parse(options.body);
   const protectedFee=b.delivery.extras.includes('protection')?500:0;
   return{ok:true,json:async()=>({subtotal_cents:10000,discount_cents:b.coupon==='BLACKFRIDAY15'?1500:0,total_cents:11495+protectedFee-(b.coupon==='BLACKFRIDAY15'?1500:0),free_shipping_threshold_cents:15000,free_shipping_remaining_cents:5000+(b.coupon==='BLACKFRIDAY15'?1500:0),pricing:{coupon_code:b.coupon==='BLACKFRIDAY15'?'BLACKFRIDAY15':null,delivery:{shipping_cents:1495,extras:protectedFee?[{id:'protection',label:'Shipping Protection',amount_cents:500}]:[]}}})};
@@ -18,7 +18,7 @@ function fixture(authorized=false){
  w.eval(source);
  return{dom,w,cart:dom.window.document.getElementById('cart'),requests};
 }
-test('cart has editable rows, recommendations, coupon, protection and one honest checkout action',async()=>{
+test('cart has editable rows, coupon, protection and wallet shortcuts to reviewed hosted checkout',async()=>{
  const f=fixture();try{
   await f.w.AltaCartNmi.offer(f.cart);await wait();
   assert.match(f.cart.textContent,/Research compound/);
@@ -28,12 +28,14 @@ test('cart has editable rows, recommendations, coupon, protection and one honest
   assert.ok(f.cart.querySelector('[name=nlc_coupon]'));
   assert.equal(f.cart.querySelector('[name=nlc_protection]'),null,'No shipping protection checkbox or removal action');
   assert.ok(f.cart.querySelector('.nlc-protection-static'),'Shipping protection must appear as a fixed line item');
-  assert.doesNotMatch(f.cart.textContent,/OR PAY INSTANTLY|Apple Pay|Google Pay/);
+  assert.doesNotMatch(f.cart.textContent,/OR PAY INSTANTLY/);
+  assert.match(f.cart.textContent,/Apple Pay or Google Pay.*secure provider checkout/);
   assert.ok(f.cart.querySelector('[data-nlc-estimate]').textContent.includes('–'));
-  assert.match(f.cart.textContent,/Choose Card or Crypto at checkout/);
+  assert.match(f.cart.textContent,/Review delivery and your total first/);
   assert.match(f.cart.textContent,/Shipping Protection/);
   assert.match(f.cart.textContent,/Proceed to Checkout/);
-  assert.equal(f.cart.querySelectorAll('[data-nlc-wallets] button').length,0);
+  assert.equal(f.cart.querySelectorAll('[data-nlc-wallet]').length,2);
+  for(const wallet of ['apple','google']){const link=f.cart.querySelector('[data-nlc-wallet='+wallet+']');assert.equal(link.getAttribute('href'),'/checkout?wallet='+wallet);assert.equal(link.getAttribute('aria-disabled'),'false');}
   assert.ok(f.cart.textContent.includes('$119.95'));
   assert.equal(f.requests.find(x=>String(x.url).includes('checkout=cart')).body.method_id,null);
   f.cart.querySelector('[name=nlc_coupon]').value='BLACKFRIDAY15';
@@ -44,7 +46,8 @@ test('cart has editable rows, recommendations, coupon, protection and one honest
 test('legacy NMI configuration cannot add a retired payment option to the new cart',async()=>{
  const f=fixture(true);try{
   await f.w.AltaCartNmi.offer(f.cart);await wait();
-  assert.equal(f.cart.querySelector('[data-nlc-wallets]'),null);
+  assert.equal(f.cart.querySelectorAll('[data-nlc-wallet]').length,2);
+  assert.ok([...f.cart.querySelectorAll('[data-nlc-wallet]')].every(link=>link.getAttribute('aria-disabled')==='true'&&!link.hasAttribute('href')));
   assert.equal(f.requests.find(x=>String(x.url).includes('checkout=cart')).body.method_id,null);
  }finally{f.dom.window.close();}
 });
@@ -82,4 +85,12 @@ test('final storefront build selects the new cart and never invokes the retired 
  assert.doesNotMatch(src,/renderCart=/);
  assert.doesNotMatch(src,/window\.ConversionUI\.cart\(root,cart\)/);
  assert.match(storefront,/window\.AltaCartNmi\?\.offer\(root\)/);
+});
+
+test('cart wallet shortcuts stay unavailable outside the hosted Card destinations',async()=>{
+ const f=fixture(false,'GB');try{
+  await f.w.AltaCartNmi.offer(f.cart);await wait();
+  assert.ok([...f.cart.querySelectorAll('[data-nlc-wallet]')].every(link=>link.getAttribute('aria-disabled')==='true'&&!link.hasAttribute('href')));
+  assert.match(f.cart.textContent,/Digital wallet payments are unavailable for this destination/);
+ }finally{f.dom.window.close();}
 });

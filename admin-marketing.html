@@ -9,7 +9,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="/admin-dashboard.css?v=20261117b">
+  <link rel="stylesheet" href="/admin-dashboard.css?v=20261117c">
   <link rel="stylesheet" href="/admin-marketing.css?v=20261117b">
 
 
@@ -23,10 +23,20 @@
   <div class="shell">
     <section id="mk-login" class="mk-login panel">
       <div class="admin-login-brand"><img class="ap-brand-symbol" src="/favicon-pure-96.png?v=20261117b" alt="" width="34" height="34"><span><strong class="pure-wordmark">PURE</strong><small>ADMIN</small></span></div>
-      <h1>Marketing access</h1>
-      <p>Use a secure email link. Your session is shared with Orders. This workspace does not send Instagram messages automatically.</p>
-      <form id="mk-login-form">
-        <button class="mk-button" type="submit">Send sign-in link</button>
+      <h1 id="mk-login-heading">Marketing access</h1>
+      <p id="mk-login-description">Enter your password to open Marketing. Your session is shared with Orders.</p>
+      <form id="mk-login-form" class="admin-password-form">
+        <label class="admin-password-field" for="mk-password">
+          <span data-admin-password-label>Admin password</span>
+          <input id="mk-password" name="password" data-admin-password type="password" autocomplete="current-password" maxlength="256" required aria-describedby="mk-password-hint">
+        </label>
+        <label class="admin-password-field" for="mk-password-confirm" data-admin-confirm-field hidden>
+          <span>Confirm new password</span>
+          <input id="mk-password-confirm" name="password_confirmation" data-admin-password-confirm type="password" autocomplete="new-password" maxlength="256" disabled>
+        </label>
+        <p id="mk-password-hint" class="admin-password-hint" data-admin-password-hint hidden></p>
+        <button class="mk-button" type="submit" disabled>Checking session…</button>
+        <button class="mk-button mk-outline admin-password-setup" data-admin-request-setup type="button" disabled>Set up / reset password</button>
       </form>
       <p id="mk-login-status" role="status" hidden></p>
       <p id="mk-login-error" class="mk-error" role="alert" hidden></p>
@@ -156,8 +166,8 @@
     <div class="mk-dialog-actions"><button id="mk-copy" type="button" class="mk-button mk-outline">Copy text</button><button id="mk-mark-drafted" type="button" class="mk-button">Save draft & status</button></div>
   </form>
 </dialog>
-<script src="/admin-auth.js?v=20261117b" defer></script>
-<script src="/admin-marketing.js?v=20261117b" defer></script>
+<script src="/admin-auth.js?v=20261117c" defer></script>
+<script src="/admin-marketing.js?v=20261117c" defer></script>
   <script src="/admin-experience.js?v=20261117b" defer></script>
 </body>
 </html>

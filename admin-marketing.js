@@ -217,7 +217,7 @@
   function template(lead,type,context){
     const greet=lead.name?('Hi '+lead.name.split(' ')[0]+','):'Hi,';
     const reference=context?'\n\n'+context.trim()+'\n':'';
-    const outro='\n\nBest,\nPURE\nadmin@altapurelabs.com';
+    const outro='\n\nBest,\nPURE\nsupport@getpurelabs.com';
     if(type==='followup')return greet+'\n\nFollowing up on my note about a potential PURE creator partnership. Would you be open to sharing your media kit or the best contact for collaboration inquiries?'+reference+outro;
     if(type==='reply')return greet+'\n\nThanks for getting back to us. I would be glad to discuss a possible collaboration and learn what placements work best for your audience. Could you share your media kit, audience geography and standard deliverables?'+reference+outro;
     return greet+'\n\nI’m reaching out from PURE. We’re exploring a small number of ongoing creator collaborations, and I’d like to see whether there could be a fit with your content.'+reference+'\n\nAre you currently considering brand partnerships? If so, could you share your media kit or business contact?'+outro;
@@ -419,13 +419,10 @@
     for(const panel of ['pipeline','conversations','instagram','insights','settings'])$('mk-panel-'+panel).hidden=panel!==name;
   }
 
-  $('mk-login-form').addEventListener('submit',async e=>{
-    e.preventDefault();
-    const button=e.currentTarget.querySelector('button[type=submit]'),status=$('mk-login-status');
-    button.disabled=true;button.textContent=window.PureAdminAuth.pendingLink?'Signing in…':'Sending link…';$('mk-login-error').hidden=true;status.hidden=true;
-    try{if(window.PureAdminAuth.pendingLink){await window.PureAdminAuth.completeLink();await login();}else{const result=await window.PureAdminAuth.requestLink('marketing');status.textContent=result.message;status.hidden=false;}}
-    catch(err){$('mk-login-error').textContent=err.message;$('mk-login-error').hidden=false;}
-    finally{button.disabled=false;button.textContent=window.PureAdminAuth.pendingLink?'Continue to Marketing':'Send sign-in link';}
+  window.PureAdminAuth.bindForm({
+    form:$('mk-login-form'), heading:$('mk-login-heading'), description:$('mk-login-description'),
+    status:$('mk-login-status'), error:$('mk-login-error'),
+    workspace:'marketing', onAuthenticated:login
   });
   $('mk-logout').addEventListener('click',async()=>{
     try{await window.PureAdminAuth.logout();showLogin('Logged out.');}
@@ -499,8 +496,5 @@
       await endpoint({action:'instagram_send',recipient_id,message});
       $('mk-ig-reply').value='';await refreshInstagram();notice('Instagram confirmed the reply was sent.');
     }catch(err){notice(err.message,true);renderInstagram();}
-  });
-  window.PureAdminAuth.ready().then(authenticated=>{if(authenticated)return login();}).catch(err=>showLogin(err.message)).finally(()=>{
-    $('mk-login-form').querySelector('button[type=submit]').textContent=window.PureAdminAuth.pendingLink?'Continue to Marketing':'Send sign-in link';
   });
 })();

@@ -98,6 +98,17 @@ input::placeholder, textarea::placeholder { color:#666 !important; }
 .login { background:#fff !important; padding:32px !important; margin-top:64px !important; }
 .login h2 { color:#111; font-weight:800; }
 .login p { color:#666; }
+body .admin-password-form { display:grid; gap:14px; margin:24px 0 0; }
+body .admin-password-form .admin-password-field { display:grid; gap:8px; margin:0; font-size:12px; font-weight:700; }
+body .admin-password-form [hidden] { display:none !important; }
+body .admin-password-form input[type="password"] { width:100%; min-height:49px; padding:12px 14px; font-size:16px !important; }
+body .admin-password-form p { margin:0; font-size:12px; line-height:1.6; }
+body #login-view.ap-auth-layout .ap-auth-content .admin-password-form p,
+body #mk-login.ap-auth-layout .ap-auth-content .admin-password-form p { margin:0 !important; }
+body .admin-password-form .admin-password-hint { color:#666; font-weight:400; }
+body .admin-password-form button { width:100%; min-height:46px; }
+body .admin-password-form .admin-password-setup { border-radius:10px !important; }
+body .admin-password-form button:disabled { opacity:.55; cursor:not-allowed; }
 @media (max-width:650px) {
   .admin-brandbar { align-items:flex-start; flex-direction:column; gap:14px; margin-bottom:20px; }
   .admin-nav { width:100%; display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); gap:5px; }

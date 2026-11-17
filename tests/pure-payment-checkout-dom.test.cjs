@@ -5,8 +5,9 @@ const checkout=require('../lib/direct-checkout'),config=require('../config/check
 const tick=()=>new Promise(resolve=>setTimeout(resolve,45));
 const card={id:'11111111-1111-4111-8111-111111111111',kind:'hosted_link',native_provider:'rampex',rampex_provider:'hosted',countries:['US','CA'],currency:'USD',version:2,sale_scope:'goods',label:'Card'};
 const cryptoMethod={...card,id:'22222222-2222-4222-8222-222222222222',native_provider:'polygon_usdc',rampex_provider:null,label:'Crypto'};
-function fixture({cryptoReady=false,payment={state:'unknown'},country='US'}={}){
- const dom=new JSDOM('<main id="root"></main>',{url:'https://getpurelabs.test/checkout',runScripts:'outside-only',virtualConsole:new VirtualConsole()}),w=dom.window;
+function fixture({cryptoReady=false,payment={state:'unknown'},country='US',mobile=false,wallet=null}={}){
+ const dom=new JSDOM('<main id="root"></main>',{url:'https://getpurelabs.test/checkout'+(wallet?'?wallet='+wallet:''),runScripts:'outside-only',virtualConsole:new VirtualConsole()}),w=dom.window;
+ const media={matches:mobile,listeners:new Set(),addEventListener(_event,callback){this.listeners.add(callback);},removeEventListener(_event,callback){this.listeners.delete(callback);}};w.matchMedia=()=>media;
  Object.defineProperty(w,'crypto',{value:webcrypto});w.TextEncoder=TextEncoder;w.HTMLElement.prototype.scrollIntoView=()=>{};
  const cart=[{id:'compound',key:'compound:10mg',name:'Compound',size:'10mg',qty:2,price:100}],methods=cryptoReady?[card,cryptoMethod]:[card];
  w.localStorage.setItem('pp-cart',JSON.stringify(cart));
@@ -30,7 +31,7 @@ function fixture({cryptoReady=false,payment={state:'unknown'},country='US'}={}){
  const user={email:'fixture@example.test',user_metadata:{full_name:'Fixture Researcher',alta_profile:{shipping:{name:'Fixture Researcher',line1:'123 Test Street',city:'Test City',region:'ON',postal_code:'N2L 1A1',country,phone:'3055550157'}}}};
  for(const file of ['readiness-ui.js','direct-checkout-client.js','checkout-reference.js'])w.eval(fs.readFileSync(file,'utf8'));
  const root=w.document.getElementById('root');
- return{dom,w,root,requests,auth,async open(){await w.DirectCheckout.checkout(root,auth,user);await tick();},async paymentStep(){root.querySelector('[data-nlx-next]').click();await tick();root.querySelector('[data-nlx-next]').click();await tick();}};
+ return{dom,w,root,requests,auth,setMobile(value){media.matches=value;for(const callback of media.listeners)callback(media);},async open(){await w.DirectCheckout.checkout(root,auth,user);await tick();},async paymentStep(){root.querySelector('[data-nlx-next]').click();await tick();root.querySelector('[data-nlx-next]').click();await tick();}};
 }
 function change(f,control,value){if(control.type==='checkbox'||control.type==='radio')control.checked=value;else control.value=value;control.dispatchEvent(new f.w.Event('change',{bubbles:true}));}
 function consent(f){for(const name of ['ruo','responsibility'])change(f,f.root.querySelector('[name='+name+']'),true);}
@@ -42,7 +43,7 @@ test('regular checkout has two honest choices and one saved-order handoff; unkno
   assert.deepEqual([...f.root.querySelectorAll('[name=payment_choice]')].map(control=>control.value),['card','crypto']);
   assert.equal(f.root.querySelector('[value=crypto]').disabled,true);
   assert.doesNotMatch(f.root.textContent,/ByteNFT|bank transfer|No Fees!|Awaiting activation/);
-  assert.equal(f.root.querySelectorAll('.nlx-wallet-unavailable').length,0);
+  assert.equal(f.root.querySelectorAll('[data-nlx-wallet]').length,2);
   consent(f);const place=f.root.querySelector('[data-nlx-place]');assert.equal(place.disabled,false);
   place.click();place.click();await tick();await tick();
   assert.equal(f.requests.filter(r=>r.body.action==='quote').length,1);
@@ -84,6 +85,7 @@ test('Canada Card checkout is available while an unsupported payment destination
    await f.open();await f.paymentStep();consent(f);
    assert.equal(f.root.querySelector('[name=payment_choice][value=card]').disabled,country==='GB');
    assert.equal(f.root.querySelector('[data-nlx-place]').disabled,country==='GB');
+   assert.ok([...f.root.querySelectorAll('[data-nlx-wallet]')].every(control=>control.disabled===(country==='GB')));
    if(country==='GB'){f.root.querySelector('[data-nlx-place]').click();await tick();assert.equal(f.requests.filter(r=>r.body.action==='place').length,0);}
   }finally{f.dom.window.close();}
  }
@@ -106,4 +108,52 @@ test('a provider return URL alone never confirms payment or permits an unrelated
   try{await assert.rejects(f.w.DirectCheckout.openHostedPayment(f.auth,webcrypto.randomUUID(),10000,'USD',card));}
   finally{f.dom.window.close();}
  }
+});
+
+test('mobile Shipping, Delivery and Payment actions follow all information and the order summary; desktop positions restore',async()=>{
+ const f=fixture({mobile:true});
+ const verifyOrder=()=>{
+  const action=f.root.querySelector('[data-nlx-next],[data-nlx-place]'),summary=f.root.querySelector('.nlx-right');
+  assert.ok(summary.compareDocumentPosition(action)&f.w.Node.DOCUMENT_POSITION_FOLLOWING,'Summary must precede the action in reading and keyboard order');
+  assert.ok(f.root.querySelector('.nlx-trust').compareDocumentPosition(action)&f.w.Node.DOCUMENT_POSITION_FOLLOWING,'Trust information precedes the action');
+  assert.equal(action.form,f.root.querySelector('#nlx-form'),'Moved action remains associated with the original form');
+  assert.equal(f.root.querySelectorAll('[data-nlx-next],[data-nlx-place]').length,1,'Only one action is present');
+  f.setMobile(false);
+  assert.ok(f.root.querySelector('#nlx-form').contains(action),'Desktop action returns to its original form position');
+  assert.ok(action.compareDocumentPosition(summary)&f.w.Node.DOCUMENT_POSITION_FOLLOWING,'Desktop summary stays in the second column after the form');
+  f.setMobile(true);
+  assert.ok(summary.compareDocumentPosition(action)&f.w.Node.DOCUMENT_POSITION_FOLLOWING);
+ };
+ try{
+  await f.open();verifyOrder();
+  f.root.querySelector('[data-nlx-next]').click();await tick();verifyOrder();
+  f.root.querySelector('[data-nlx-next]').click();await tick();verifyOrder();
+  assert.equal(f.root.querySelector('[data-nlx-place]').disabled,true);
+  consent(f);assert.equal(f.root.querySelector('[data-nlx-place]').disabled,false);
+  f.root.querySelector('[data-nlx-place]').click();await tick();await tick();
+  assert.equal(f.requests.filter(r=>r.body.action==='place').length,1,'The relocated payment button still saves one verified order');
+ }finally{f.dom.window.close();}
+});
+test('wallet preference uses hosted Card, removes crypto discount and never bypasses review or consent',async()=>{
+ const f=fixture({cryptoReady:true,wallet:'google',mobile:true});
+ try{
+  await f.open();await f.paymentStep();
+  assert.equal(f.root.querySelector('[data-nlx-wallet=google]').getAttribute('aria-pressed'),'true');
+  assert.match(f.root.querySelector('[data-nlx-place]').textContent,/CONTINUE TO GOOGLE PAY/);
+  assert.equal(f.root.querySelector('[data-nlx-place]').disabled,true);
+  change(f,f.root.querySelector('[name=payment_choice][value=crypto]'),true);await tick();
+  assert.match(f.root.querySelector('[data-nlx-totals]').textContent,/Crypto discount/);
+  f.root.querySelector('[data-nlx-wallet=apple]').click();await tick();
+  assert.equal(f.root.querySelector('[name=payment_choice][value=card]').checked,true);
+  assert.doesNotMatch(f.root.querySelector('[data-nlx-totals]').textContent,/Crypto discount/);
+  assert.equal(f.requests.at(-1).body.method_id,card.id);
+  assert.match(f.root.querySelector('[data-nlx-place]').textContent,/CONTINUE TO APPLE PAY/);
+  assert.match(f.root.querySelector('[data-nlx-wallet-note]').textContent,/secure provider checkout if offered/);
+  assert.equal(f.requests.filter(r=>['quote','place','pay'].includes(r.body.action)).length,0,'Choosing a wallet neither saves an order nor requests payment');
+  assert.equal(f.root.querySelector('[data-nlx-place]').disabled,true);
+  consent(f);f.root.querySelector('[data-nlx-place]').click();await tick();await tick();
+  assert.equal(f.requests.find(r=>r.body.action==='place').body.method_id,card.id);
+  assert.equal(f.requests.filter(r=>r.body.action==='pay').length,1);
+  assert.equal('wallet' in f.requests.find(r=>r.body.action==='pay').body,false,'No undocumented wallet flag is sent to the provider');
+ }finally{f.dom.window.close();}
 });

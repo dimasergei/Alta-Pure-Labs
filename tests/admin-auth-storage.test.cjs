@@ -82,3 +82,67 @@ test('executed PostgreSQL auth storage enforces nonce, session, throttle and rol
     assert.equal(await request('ip-limit-fourth', 'another-owner', 'ip-limit'), 'rate_limited', 'IP window caps sends across owner keys');
   } finally { await db.close(); }
 });
+
+test('executed password storage limits guesses, isolates hashes, consumes reset once and revokes old sessions atomically', { skip: !PGlite, timeout: 60000 }, async () => {
+  const db = new PGlite();
+  const setupSql = fs.readFileSync(path.join(__dirname, '../supabase/migrations/20261117204240_pure_admin_password_setup.sql'), 'utf8');
+  const owner = digest('password-owner'), ip = digest('password-ip');
+  const encoded = 'scrypt-v1$' + 'ab'.repeat(16) + '$' + 'cd'.repeat(64);
+  const replacement = 'scrypt-v1$' + 'ef'.repeat(16) + '$' + '12'.repeat(64);
+  try {
+    await db.exec('create role anon; create role authenticated; create role service_role bypassrls; alter default privileges in schema public grant execute on functions to anon,authenticated;');
+    await db.exec(migration); await db.exec(setupSql);
+    const signatures = [
+      'pure_admin_password_status(text)','pure_admin_get_password(text)','pure_admin_password_attempt(text,text)',
+      'pure_admin_request_password_setup(text,text,text,timestamptz)','pure_admin_password_setup_valid(text,text)',
+      'pure_admin_create_password_session(text,text,timestamptz,text)','pure_admin_set_password(text,text,text,text,timestamptz)'
+    ];
+    for (const role of ['anon','authenticated','service_role']) {
+      for (const fn of signatures) {
+        const grant = (await db.query("select has_function_privilege($1,$2,'EXECUTE') allowed",[role,'public.'+fn])).rows[0];
+        assert.equal(grant.allowed,role==='service_role',role+' '+fn);
+      }
+      for (const table of ['credentials','password_attempts']) {
+        assert.equal((await db.query("select has_table_privilege($1,$2,'SELECT,INSERT,UPDATE,DELETE') allowed",[role,'pure_admin.'+table])).rows[0].allowed,role==='service_role');
+      }
+    }
+    assert.ok((await db.query("select relrowsecurity from pg_class where oid in ('pure_admin.credentials'::regclass,'pure_admin.password_attempts'::regclass)")).rows.every(r=>r.relrowsecurity));
+    assert.ok((await db.query("select prosecdef from pg_proc where proname like 'pure_admin_%'")).rows.every(r=>!r.prosecdef));
+    await db.exec('set role service_role');
+    const request = async key => (await db.query("select public.pure_admin_request_password_setup($1,$2,$3,now()+interval '30 minutes') result",[digest(key),owner,ip])).rows[0].result;
+    const set = async (key,hash,session) => (await db.query("select public.pure_admin_set_password($1,$2,$3,$4,now()+interval '7 days') result",[digest(key),owner,hash,digest(session)])).rows[0].result;
+    const create = async (session,hash) => (await db.query("select public.pure_admin_create_password_session($1,$2,now()+interval '7 days',$3) result",[digest(session),owner,hash])).rows[0].result;
+    const active = async session => (await db.query('select * from public.pure_admin_get_session($1,$2)',[digest(session),owner])).rows.length;
+    assert.equal((await db.query('select public.pure_admin_password_status($1) configured',[owner])).rows[0].configured,false);
+    assert.equal(await request('setup-1'),'created');
+    assert.equal(await request('setup-2'),'rate_limited');
+    assert.equal(await set('setup-1',encoded,'session-1'),true);
+    assert.equal(await set('setup-1',replacement,'replay'),false);
+    assert.equal((await db.query('select password_hash from public.pure_admin_get_password($1)',[owner])).rows[0].password_hash,encoded);
+    assert.equal(await create('session-2',encoded),true);
+    assert.equal(await create('bad-session',replacement),false);
+    assert.equal(await active('session-1'),1);
+    for (let i=0;i<10;i++) assert.equal((await db.query('select public.pure_admin_password_attempt($1,$2) allowed',[owner,ip])).rows[0].allowed,true);
+    assert.equal((await db.query('select public.pure_admin_password_attempt($1,$2) allowed',[owner,digest('other-ip')])).rows[0].allowed,false);
+    assert.equal((await db.query('select public.pure_admin_password_attempt($1,$2) allowed',[digest('other-owner'),ip])).rows[0].allowed,false);
+    await db.query("update pure_admin.login_requests set created_at=now()-interval '2 minutes' where owner_hash=$1",[owner]);
+    assert.equal(await request('setup-3'),'created');
+    // A failure during session creation must roll back hash, revocations and nonce consumption.
+    await assert.rejects(set('setup-3',replacement,'session-1'),/duplicate key/);
+    assert.equal((await db.query('select password_hash from public.pure_admin_get_password($1)',[owner])).rows[0].password_hash,encoded);
+    assert.equal(await active('session-1'),1);
+    assert.equal(await set('setup-3',replacement,'session-3'),true);
+    assert.equal(await active('session-1'),0);
+    assert.equal(await active('session-2'),0);
+    assert.equal(await active('session-3'),1);
+    assert.equal(await create('stale-login',encoded),false,'login verified before reset cannot issue a stale session afterward');
+    assert.equal(await create('current-login',replacement),true);
+    assert.equal((await db.query('select count(*)::int n from pure_admin.password_attempts where owner_hash=$1',[owner])).rows[0].n,0);
+    assert.equal((await db.query('select public.pure_admin_password_setup_valid($1,$2) valid',[digest('setup-3'),owner])).rows[0].valid,false);
+    await db.query("insert into pure_admin.login_requests(nonce_hash,owner_hash,ip_hash,created_at,expires_at,purpose) values($1,$2,$3,now()-interval '40 minutes',now()-interval '10 minutes','password_setup')",[digest('expired'),owner,ip]);
+    assert.equal(await set('expired',encoded,'expired-session'),false);
+    await db.query("insert into pure_admin.login_requests(nonce_hash,owner_hash,ip_hash,expires_at,purpose) values($1,$2,$3,now()+interval '5 minutes','sign_in')",[digest('old-purpose'),owner,ip]);
+    assert.equal(await set('old-purpose',encoded,'wrong-purpose-session'),false);
+    await assert.rejects(set('missing','plaintext password','no-session'),/Invalid password setup/);
+  } finally { await db.close(); }
+});

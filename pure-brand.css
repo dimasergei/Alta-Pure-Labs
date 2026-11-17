@@ -144,3 +144,43 @@ html:root body.ap-site .ap-announcement::before {
     animation: none !important;
   }
 }
+
+/* One spacing rhythm for the customer content pages and cards. */
+html:root {
+  --pure-section-space: 64px;
+  --pure-panel-space: 28px;
+  --pure-content-gap: 24px;
+}
+html:root body.ap-site .ap-section { padding-block: var(--pure-section-space); }
+html:root body.ap-site .ap-page-intro { padding-top: 64px; padding-bottom: 40px; }
+html:root body.ap-site .ap-section-head { margin-bottom: var(--pure-content-gap); }
+html:root body.ap-site :is(.ap-contact-card, .ap-coa-card) { padding: var(--pure-panel-space); }
+html:root body.ap-site .ap-contact-card { margin-bottom: 16px; }
+html:root body.ap-site .ap-contact-layout { gap: 32px; padding-bottom: var(--pure-section-space); }
+html:root body.ap-site .ap-contact-layout > div > .ap-contact-card:last-child { margin-bottom: 0; }
+html:root body.ap-site .ap-panel-grid { gap: var(--pure-content-gap); }
+html:root body.ap-site .nl-bulk-layout { padding-bottom: var(--pure-section-space); }
+html:root body.ap-site .nl-bulk-faq { padding-top: 0; padding-bottom: var(--pure-section-space); }
+.nl-bulk-title-mobile, .nl-bulk-lead-mobile { display: none; }
+
+/* The compact introduction applies only to phones; the desktop copy stays intact. */
+@media (max-width: 767px) {
+  html:root { --pure-section-space: 40px; --pure-panel-space: 20px; --pure-content-gap: 20px; }
+  html:root body.ap-site .ap-page-intro { padding-top: 40px; padding-bottom: 24px; }
+  html:root body.ap-site .ap-contact-layout { gap: 20px; }
+  html:root body.ap-site .nl-bulk-hero { padding-top: 24px; padding-bottom: 24px; }
+  html:root body.ap-site .nl-bulk-hero h1 { margin: 14px 0 12px; font-size: clamp(28px, 7.5vw, 36px); line-height: 1.1; }
+  html:root body.ap-site .nl-bulk-title-desktop,
+  html:root body.ap-site .nl-bulk-lead-desktop { display: none; }
+  html:root body.ap-site .nl-bulk-title-mobile,
+  html:root body.ap-site .nl-bulk-lead-mobile { display: block; }
+  html:root body.ap-site .nl-bulk-lead-mobile { margin: 0; font-size: 14px; line-height: 1.5; }
+  html:root body.ap-site .nl-bulk-benefits { margin-top: 16px; margin-bottom: 0; gap: 8px; }
+  html:root body.ap-site .nl-bulk-benefits > .nl-bulk-benefit { min-height: 76px; padding: 12px 14px; justify-content: center; gap: 4px; }
+  html:root body.ap-site .nl-bulk-benefit-rate { font-size: 19px !important; line-height: 1.1; }
+  html:root body.ap-site .nl-bulk-benefit-copy { margin: 0; font-size: 12px; line-height: 1.3; }
+  html:root body.ap-site .nl-bulk-benefit > small,
+  html:root body.ap-site .nl-bulk-coa-proof { display: none; }
+  html:root body.ap-site .nl-bulk-benefit-coa > .nl-bulk-benefit-copy { font-size: 13px; }
+  html:root body.ap-site .nl-bulk-layout { padding-top: 20px; }
+}

@@ -43,6 +43,7 @@
   const paymentKind=m=>m?.native_provider==='rampex'&&m.rampex_provider==='hosted'?'card':m?.native_provider==='polygon_usdc'?'crypto':null;
   const paymentMethods=(data.methods||[]).filter(m=>paymentKind(m)&&m.active!==false);
   const preferred=paymentMethods.find(m=>m.id===(options.method||params.get('method')));
+  const walletPreference=['apple','google'].includes(params.get('wallet'))?params.get('wallet'):null;
   const selectedMethod=()=>paymentMethods.find(m=>paymentKind(m)===state.paymentKind&&Array.isArray(m.countries)&&m.countries.includes(shippingCountry()))||null;
   const saved=user.user_metadata?.alta_profile?.shipping||{},names=(saved.name||user.user_metadata?.full_name||'').trim().split(/\s+/);
   const nameFirst=names.shift()||'',nameLast=names.join(' ');
@@ -57,7 +58,7 @@
   const displayAddress=()=>{const a=state.shippingData||formatAddress();return '<b>'+esc(((state.firstName||nameFirst)+' '+(state.lastName||nameLast)).trim())+'</b><span>'+esc(a.line1||'')+'</span>'+(a.line2?'<span>'+esc(a.line2)+'</span>':'')+'<span>'+esc((a.city||'')+(a.region?', '+a.region:'')+(a.postal_code?' '+a.postal_code:''))+'</span>';};
   const state={country:supported.includes(saved.country)?saved.country:'US',
     shipping:'standard',extras:new Set([...(Array.isArray(priorExtras)?priorExtras.filter(x=>x!=='protection'&&isActive(x)):[]),...(isActive('protection')&&wantsProtection(cart)?['protection']:[])]),
-    coupon:initialCoupon(),paymentKind:paymentKind(preferred)||'card',shippingData:null,billingData:null,billingSame:true,note:'',smsOptIn:false};
+    coupon:initialCoupon(),paymentKind:walletPreference?'card':paymentKind(preferred)||'card',wallet:walletPreference,shippingData:null,billingData:null,billingSame:true,note:'',smsOptIn:false};
   root.classList.add('nlx-checkout-root');document.title='Checkout | PURE';
   const div=document.createElement('div');div.className='nlx-page';root.replaceChildren(div);
   div.innerHTML='<div class="nlx-heading"><h1>Checkout</h1><p>Complete your order securely</p></div><div class="nlx-columns">'
@@ -66,8 +67,26 @@
     +'<div class="nlx-protect" data-nlx-protection></div><div class="nlx-products" data-nlx-products></div>'
     +'<p class="nlx-coupon-help">Use <strong>BLACKFRIDAY15</strong> for 15% off merchandise.</p><div class="nlx-coupon"><input aria-label="Coupon code" name="sidebar_coupon" placeholder="BLACKFRIDAY15" maxlength="40"><button type="button" data-nlx-coupon>APPLY</button><button type="button" data-nlx-remove-coupon hidden>REMOVE</button></div><p data-nlx-coupon-status role="status" aria-live="polite"></p>'
     +'<div class="nlx-total-rows" data-nlx-totals></div><div class="nlx-points" data-nlx-points></div><p class="nlx-quote-note" data-nlx-quote-note></p></div></aside></div>';
-  const form=view('#nlx-form',div),detail=view('.nlx-summary',div);
-  const status=()=>view('[data-nlx-status]',form);
+  const form=view('#nlx-form',div),detail=view('.nlx-summary',div),columns=view('.nlx-columns',div);
+  const mobileLayout=window.matchMedia?.('(max-width: 770px)');
+  let stepActions=null,actionsHome=null;
+  // Move the original action block so visual, reading and keyboard order all agree.
+  // Its placeholder restores the exact desktop location when the viewport widens.
+  function positionActions(){
+   if(!div.isConnected){mobileLayout?.removeEventListener?.('change',positionActions);return;}
+   if(!stepActions||!actionsHome)return;
+   stepActions.classList.toggle('nlx-mobile-actions',!!mobileLayout?.matches);
+   if(mobileLayout?.matches)columns.append(stepActions);else actionsHome.after(stepActions);
+  }
+  function restoreActions(){if(stepActions&&actionsHome?.parentNode)actionsHome.after(stepActions);stepActions=null;actionsHome=null;}
+  function attachActions(){
+   stepActions=view('.nlx-next,.nlx-payment-controls',form);
+   if(!stepActions)return;
+   all('button',stepActions).forEach(button=>button.setAttribute('form',form.id));
+   actionsHome=document.createComment('Checkout action desktop position');stepActions.before(actionsHome);positionActions();
+  }
+  mobileLayout?.addEventListener?.('change',positionActions);
+  const status=()=>view('[data-nlx-status]',div);
   const note=(message,error=false)=>{const target=status();if(target){target.textContent=message;target.classList.toggle('nlx-error',error);}};
   const snapshotCart=()=>window.AltaStore?.cart||[];
   const checkoutItems=()=>snapshotCart().map(({id,size,qty})=>{
@@ -190,7 +209,7 @@
    }));
    if(onePayment||lastPlaced)lockCheckout();
   }
-  function invalidate(){if(lastPlaced||onePayment)return;sessionStorage.setItem(cartKey(snapshotCart()),JSON.stringify([...state.extras]));quoteVersion++;loadingPreview=false;view('[data-nlx-place]',form)?.setAttribute('disabled','');quote=null;currentPreview=null;orderId=crypto.randomUUID();}
+  function invalidate(){if(lastPlaced||onePayment)return;sessionStorage.setItem(cartKey(snapshotCart()),JSON.stringify([...state.extras]));quoteVersion++;loadingPreview=false;view('[data-nlx-place]',div)?.setAttribute('disabled','');quote=null;currentPreview=null;orderId=crypto.randomUUID();}
   const refresh=async(candidate=state.coupon,action='refresh')=>{
    if(lastPlaced||onePayment)return;
    const apply=view('[data-nlx-coupon]',detail),remove=view('[data-nlx-remove-coupon]',detail),message=view('[data-nlx-coupon-status]',detail);
@@ -214,6 +233,7 @@
     b.classList.toggle('nlx-step-active',n===i);b.classList.toggle('nlx-step-done',n<i);
     b.setAttribute('aria-current',n===i?'step':'false');});
     renderStep();
+    if(mobileLayout?.matches)view('.nlx-left',div).scrollIntoView({behavior:'auto',block:'start'});
   }
   function checkRequired(selector){const input=all(selector,form).find(x=>!x.checkValidity());if(input){input.reportValidity();input.focus();return false;}return true;}
   function goNext(){
@@ -257,11 +277,17 @@
   }
   function lockCheckout(){all('input,select,textarea,button',div).forEach(control=>control.disabled=true);}
   function updatePayment(){
-   const button=view('[data-nlx-place]',form);if(!button)return;
+   const button=view('[data-nlx-place]',div);if(!button)return;
    const method=selectedMethod();
    all('.nlx-payment-choice',form).forEach(row=>{const chosen=row.querySelector('[name=payment_choice]').value===state.paymentKind;row.querySelector('.nlx-payment-choice-body').hidden=!chosen;row.classList.toggle('nlx-selected',chosen);});
    button.disabled=!(method&&currentPreview&&!loadingPreview&&!onePayment&&!lastPlaced&&form.elements.ruo?.checked&&form.elements.responsibility?.checked);
-   button.textContent=(method?(state.paymentKind==='card'?'CONTINUE TO CARD PAYMENT':'CONTINUE TO CRYPTO PAYMENT'):'PAYMENT UNAVAILABLE')+' · '+usd(currentPreview?.total_cents||0);
+   const walletName=state.wallet==='apple'?'APPLE PAY':state.wallet==='google'?'GOOGLE PAY':null;
+   button.textContent=(method?(state.paymentKind==='card'?'CONTINUE TO '+(walletName||'CARD PAYMENT'):'CONTINUE TO CRYPTO PAYMENT'):'PAYMENT UNAVAILABLE')+' · '+usd(currentPreview?.total_cents||0);
+   const card=paymentMethods.find(m=>paymentKind(m)==='card'&&m.countries?.includes(shippingCountry()));
+   all('[data-nlx-wallet]',form).forEach(control=>{control.disabled=!card||onePayment||!!lastPlaced;control.setAttribute('aria-pressed',String(state.paymentKind==='card'&&state.wallet===control.dataset.nlxWallet));});
+   const amount=view('[data-nlx-wallet-amount]',form);if(amount)amount.textContent=usd(currentPreview?.total_cents||0);
+   const walletNote=view('[data-nlx-wallet-note]',form);
+   if(walletNote)walletNote.textContent=!card?'Digital wallet payments are unavailable for this destination.':state.paymentKind==='card'&&walletName?(walletName==='APPLE PAY'?'Apple Pay':'Google Pay')+' selected. Review your order and accept the terms below, then continue. Choose that wallet in the secure provider checkout if offered for your device.':'Choose a wallet, review your order and accept the terms, then continue. Apple Pay and Google Pay are offered by the secure provider when your device, country and transaction are eligible.';
   }
   function paymentLayout(){
    const rows=['card','crypto'].map(key=>{
@@ -272,11 +298,14 @@
      :'Direct USDC on Polygon is being configured. No wallet transfer is requested until the receiving address and on-chain payment confirmation are verified.';
     return '<div class="nlx-payment-choice'+(!available?' nlx-payment-pending':'')+'"><label class="nlx-payment-option"><input type="radio" name="payment_choice" value="'+key+'" '+(state.paymentKind===key?'checked ':'')+(!available?'disabled ':'')+'><span>'+(key==='card'?'Card':'Crypto')+'</span><span class="nlx-payment-state">'+(available?(key==='crypto'?'5% OFF':'SECURE CHECKOUT'):method?'UNAVAILABLE FOR DESTINATION':'SETUP PENDING')+'</span></label><div class="nlx-payment-choice-body" '+(state.paymentKind===key?'':'hidden')+'><p>'+description+'</p>'+(key==='crypto'?'<small>Save 5% on merchandise, or use a better valid coupon. The larger discount applies; discounts do not combine. Shipping, tax and protection are excluded.</small>':'')+'</div></div>';
    }).join('');
-   return '<section class="nlx-payment"><h2>Choose how to pay</h2><p>Your order is priced in USD. Review your total and payment-provider terms before paying.</p><div class="nlx-payment-rows">'+rows+'</div>'
+   return '<section class="nlx-payment"><h2>Choose how to pay</h2><div class="nlx-express-label"><strong>DIGITAL WALLET</strong><span data-nlx-wallet-amount>'+usd(currentPreview?.total_cents||0)+'</span></div>'
+    +'<div class="nlx-wallets" data-nlx-wallets><button type="button" class="nlx-wallet-button nlx-apple-pay" data-nlx-wallet="apple" aria-label="Choose Apple Pay" aria-pressed="false"><span class="nlx-wallet-lockup"><img class="nlx-wallet-symbol nlx-apple-symbol" src="/assets/payment-brands/apple-mark-clean.svg" alt="" aria-hidden="true" width="20" height="24"><span class="nlx-wallet-wordmark">Pay</span></span></button><span class="nlx-or">or</span><button type="button" class="nlx-wallet-button nlx-google-pay" data-nlx-wallet="google" aria-label="Choose Google Pay" aria-pressed="false"><span class="nlx-wallet-lockup"><img class="nlx-wallet-symbol nlx-google-symbol" src="/assets/payment-brands/google-g-clean.svg" alt="" aria-hidden="true" width="22" height="22"><span class="nlx-wallet-wordmark">Pay</span></span></button></div>'
+    +'<p class="nlx-wallet-consent" data-nlx-wallet-note aria-live="polite"></p><div class="nlx-divider"><span>OR PAY ANOTHER WAY</span></div><p>Your order is priced in USD. Review your total and payment-provider terms before paying.</p><div class="nlx-payment-rows">'+rows+'</div>'
     +'<div class="nlx-terms"><label><input type="checkbox" name="ruo" required><span>'+esc(terms1)+'</span></label><label><input type="checkbox" name="responsibility" required><span>'+esc(terms2)+'</span></label></div>'
-    +'<div class="nlx-status" data-nlx-status role="status" aria-live="polite"></div><button type="button" class="nlx-primary" data-nlx-place disabled>CONTINUE TO PAYMENT</button>'+trustMarkup+'</section>';
+    +'<div class="nlx-payment-controls"><div class="nlx-status" data-nlx-status role="status" aria-live="polite"></div><button type="button" class="nlx-primary" data-nlx-place disabled>CONTINUE TO PAYMENT</button></div>'+trustMarkup+'</section>';
   }
   function renderStep(){
+   restoreActions();
    if(stage===0){
     form.innerHTML='<div class="nlx-step-shipping" data-nlx-shipping><h2>Where should it ship?</h2><h3>YOUR INFORMATION</h3>'
       +'<div class="nlx-two"><label>First name *<input name="first_name" autocomplete="given-name" required maxlength="60" value="'+esc(nameFirst)+'" placeholder="First name"></label><label>Last name *<input name="last_name" required maxlength="60" autocomplete="family-name" value="'+esc(nameLast)+'" placeholder="Last name"></label></div>'
@@ -336,7 +365,14 @@
       +paymentLayout()+'</div>';
     all('[data-nlx-edit]',form).forEach(x=>x.addEventListener('click',()=>showStep(Number(x.dataset.nlxEdit))));
     all('[name=payment_choice]',form).forEach(control=>control.addEventListener('change',()=>{
-     if(control.disabled||onePayment||lastPlaced)return;state.paymentKind=control.value;invalidate();updatePayment();renderSummary();void refresh();
+     if(control.disabled||onePayment||lastPlaced)return;state.paymentKind=control.value;state.wallet=null;invalidate();updatePayment();renderSummary();void refresh();
+    }));
+    all('[data-nlx-wallet]',form).forEach(control=>control.addEventListener('click',()=>{
+     if(control.disabled||onePayment||lastPlaced)return;
+     const changed=state.paymentKind!=='card';state.wallet=control.dataset.nlxWallet;state.paymentKind='card';
+     const cardControl=view('[name=payment_choice][value=card]',form);if(cardControl)cardControl.checked=true;
+     if(changed){invalidate();renderSummary();void refresh();}
+     updatePayment();
     }));
     all('[name=ruo],[name=responsibility]',form).forEach(control=>control.addEventListener('change',updatePayment));
     view('[data-nlx-place]',form).addEventListener('click',async()=>{
@@ -375,7 +411,7 @@
     });
     updatePayment();
    }
-   renderSummary();
+   attachActions();renderSummary();
   }
   const changeCoupon=(candidate,action)=>{if(lastPlaced||onePayment)return;clearTimeout(quoteTimer);invalidate();renderSummary();void refresh(candidate,action);};
   view('[data-nlx-coupon]',detail).addEventListener('click',()=>changeCoupon(view('[name=sidebar_coupon]',detail).value.trim().toUpperCase(),'apply'));

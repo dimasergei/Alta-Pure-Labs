@@ -52,13 +52,17 @@
    +'<p class="nlc-delivery-est"><svg viewBox="0 0 24 24" width="17" height="17" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><path d="M3 6h11v11H3zM14 10h4l3 4v3h-7z"/><circle cx="7" cy="18" r="2"/><circle cx="18" cy="18" r="2"/></svg> <strong>Estimated delivery:</strong> <span data-nlc-estimate></span></p>'
    +'<div class="nlc-cart-totals" data-nlc-cart-totals><p role="status">Calculating your order total…</p></div>'
    +'<a class="nlc-proceed" href="/checkout">Proceed to Checkout</a>'
-   +'<div class="nlc-wallet-area"><p>Choose Card or Crypto at checkout. Eligible digital wallets appear in the secure card provider checkout.</p>'
+   +'<div class="nlc-wallet-area"><div class="nlc-pay-divider"><span>OR PAY WITH</span> <strong data-nlc-instant-amount></strong></div><div class="nlc-wallet-row" data-nlc-wallets>'
+   +'<a class="nlc-wallet-link" data-nlc-wallet="apple" role="link" aria-disabled="true" aria-label="Continue with Apple Pay"><span class="nlc-wallet-lockup"><img class="nlc-wallet-logo nlc-apple-mark" src="/assets/payment-brands/apple-mark-clean.svg" width="18" height="23" alt="" aria-hidden="true"><span class="nlc-apple-pay-word">Pay</span></span></a><span class="nlc-wallet-or">or</span>'
+   +'<a class="nlc-wallet-link" data-nlc-wallet="google" role="link" aria-disabled="true" aria-label="Continue with Google Pay"><span class="nlc-wallet-lockup"><img class="nlc-wallet-logo nlc-google-mark" src="/assets/payment-brands/google-g-clean.svg" width="20" height="20" alt="" aria-hidden="true"><span class="nlc-google-pay-word">Pay</span></span></a></div>'
+   +'<p data-nlc-wallet-note>Choose Card or Crypto at checkout. Digital wallets are offered in the secure provider checkout when eligible.</p>'
    +'<p>Orders are for customers 21+ and research use only. Review the <a href="/research-use-policy.html">RUO Agreement</a> and <a href="/commercial-terms.html">Terms</a> before checkout.</p></div></div>';
   const track=root.querySelector('[data-nlc-cart-totals]'),input=root.querySelector('[name=nlc_coupon]'),apply=root.querySelector('[data-nlc-apply]'),remove=root.querySelector('[data-nlc-remove-coupon]'),couponStatus=root.querySelector('[data-nlc-coupon-status]');
   const redraw=async(candidate=appliedCoupon,action='refresh')=>{
    const id=++seq;
    apply.disabled=true;remove.disabled=true;
    couponStatus.textContent=action==='remove'?'Removing coupon…':candidate?'Checking coupon…':'';
+   root.querySelectorAll('[data-nlc-wallet]').forEach(link=>{link.removeAttribute('href');link.setAttribute('aria-disabled','true');link.tabIndex=-1;});
    try{
     const settings=await methods();
     if(!root.isConnected||id!==seq)return;
@@ -94,6 +98,10 @@
     const progress=root.querySelector('.nlc-progress');progress.hidden=country!=='US';progress.setAttribute('aria-valuemax',String(threshold/100));progress.setAttribute('aria-valuenow',String(Math.min(threshold,merchandise)/100));
     root.querySelector('.nlc-progress-fill').style.width=Math.min(100,merchandise/threshold*100)+'%';
     root.querySelector('.nlc-proceed').textContent='Proceed to Checkout ('+money(data.total_cents)+')';
+    root.querySelector('[data-nlc-instant-amount]').textContent=money(data.total_cents);
+    const hostedCard=(settings.methods||[]).find(method=>method.native_provider==='rampex'&&method.rampex_provider==='hosted'&&method.active!==false&&method.countries?.includes(country));
+    root.querySelector('[data-nlc-wallet-note]').textContent=hostedCard?'Review delivery and your total first. Apple Pay or Google Pay can be selected in the secure provider checkout when eligible.':'Digital wallet payments are unavailable for this destination. Choose an available method at checkout.';
+    if(hostedCard)root.querySelectorAll('[data-nlc-wallet]').forEach(link=>{link.href='/checkout?wallet='+link.dataset.nlcWallet;link.setAttribute('aria-disabled','false');link.removeAttribute('tabindex');});
     hasQuote=true;
    }catch(error){
     if(root.isConnected&&id===seq){couponStatus.textContent=error?.message||'Could not check this coupon.';if(!hasQuote)track.textContent='Your total could not be calculated. Please try again.';}
