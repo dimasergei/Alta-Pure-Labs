@@ -2,6 +2,7 @@
 
 const test = require('node:test');
 const assert = require('node:assert/strict');
+const { PDFDocument, PDFName, PDFNumber, degrees } = require('pdf-lib');
 const { verify, pdfDimensions } = require('../scripts/verify-shippo.cjs');
 
 const TEST_TOKEN = 'shippo_test_VerificationSecret123';
@@ -18,15 +19,25 @@ const transactionId = 'c'.repeat(32);
 const shipmentId = 'd'.repeat(32);
 const pdfUrl = 'https://deliver.goshippo.com/test-only-label.pdf';
 const clone = value => JSON.parse(JSON.stringify(value));
-const fixturePdf = box => Buffer.from('%PDF-1.4\n1 0 obj\n<< /Type /Page /MediaBox [' + box + '] >>\nendobj\n%%EOF\n');
+async function fixturePdf(box = '0 0 288 432', options = {}) {
+  const document = await PDFDocument.create();
+  const [x, y, right, top] = box.split(' ').map(Number);
+  const page = document.addPage([right - x, top - y]);
+  page.setMediaBox(x, y, right - x, top - y);
+  if (options.crop) page.setCropBox(...options.crop);
+  if (options.rotate) page.setRotation(degrees(options.rotate));
+  if (options.userUnit) page.node.set(PDFName.of('UserUnit'), PDFNumber.of(options.userUnit));
+  // Real object streams ensure verification does not depend on PDF text regexes.
+  return Buffer.from(await document.save({ useObjectStreams: true }));
+}
 const json = value => ({ ok: true, status: 200, json: async () => clone(value) });
 
 function harness(options = {}) {
   const calls = [], logs = [];
-  let metadata;
+  let metadata = 'pure-verification:10000000-0000-4000-8000-000000000001';
   const transaction = () => ({
     object_id: transactionId, test: true, rate: rateId, metadata,
-    status: 'SUCCESS', label_url: pdfUrl,
+    status: 'SUCCESS', label_url: pdfUrl, label_file_type: 'PDF_4x6',
     ...(options.transactionChange || {})
   });
   const fetch = async (url, init = {}) => {
@@ -35,7 +46,7 @@ function harness(options = {}) {
     calls.push(call);
     if (options.beforeRequest) await options.beforeRequest(call);
     if (url === pdfUrl) {
-      const bytes = options.pdf || fixturePdf('0 0 288 432');
+      const bytes = await (options.pdf || fixturePdf());
       return { ok: true, status: 200, arrayBuffer: async () => bytes };
     }
     const parsed = new URL(url);
@@ -43,7 +54,7 @@ function harness(options = {}) {
     if (parsed.pathname === '/carrier_accounts/') {
       assert.equal(init.method, 'GET');
       assert.equal(parsed.searchParams.get('results'), '100');
-      return json({ results: [{ object_id: accountId, carrier: 'canada_post', active: true, is_shippo_account: true }], next: null });
+      return json({ results: [{ object_id: accountId, carrier: 'canada_post', active: true, is_shippo_account: true, ...(options.carrierChange || {}) }], next: null });
     }
     if (parsed.pathname === '/shipments/') {
       metadata = body.metadata;
@@ -85,7 +96,12 @@ test('verification reads live carriers, creates one Canadian test label, refresh
   assert.equal(result.test_label_status, 'SUCCESS');
   assert.equal(result.test_transaction_id, transactionId);
   assert.equal(result.refresh, 'passed');
-  assert.deepEqual(result.pdf, { width_inches: 4, height_inches: 6, verified_page_boxes: 1 });
+  assert.equal(result.pdf.width_inches, 4);
+  assert.equal(result.pdf.height_inches, 6);
+  assert.equal(result.pdf.verified_page_boxes, 1);
+  assert.deepEqual(result.pdf.page_geometry, [{ page: 1, media_box: { x: 0, y: 0, width: 288, height: 432 },
+    crop_box: { x: 0, y: 0, width: 288, height: 432 }, user_unit: 1, rotation: 0, effective_width_points: 288, effective_height_points: 432 }]);
+  assert.equal(result.reported_label_file_type, 'PDF_4x6');
 
   assert.equal(h.calls.length, 6);
   assert.equal(h.calls[0].init.headers.Authorization, 'ShippoToken ' + LIVE_TOKEN);
@@ -199,7 +215,12 @@ test('a PDF with incorrect dimensions fails after one test label without claimin
   assert.equal(h.logs.at(-1).stage, 'test_pdf');
   assert.equal(h.logs.at(-1).status, 'failed');
   assert.equal(h.logs.some(log => log.status === 'passed' && log.pdf), false);
-  assert.deepEqual(pdfDimensions(fixturePdf('0 0 432 288')), { width_inches: 4, height_inches: 6, verified_page_boxes: 1 });
+  assert.equal(h.logs.at(-1).reported_label_file_type, 'PDF_4x6');
+  assert.deepEqual(h.logs.at(-1).pdf_geometry, [{ page: 1, media_box: { x: 0, y: 0, width: 612, height: 792 },
+    crop_box: { x: 0, y: 0, width: 612, height: 792 }, user_unit: 1, rotation: 0, effective_width_points: 612, effective_height_points: 792 }]);
+  const landscape = await pdfDimensions(await fixturePdf('0 0 432 288'));
+  assert.equal(landscape.width_inches, 4);
+  assert.equal(landscape.height_inches, 6);
 });
 
 test('successful and failed logs exclude credentials and raw provider exception text', async () => {
@@ -218,4 +239,81 @@ test('successful and failed logs exclude credentials and raw provider exception 
   assert.deepEqual(failure.logs.at(-1), {
     status: 'failed', stage: 'live_read_only_connection', code: 'provider_request_failed', http_status: 503, live_postage_purchases: 0
   });
+});
+
+test('PDF parser resolves object streams, crop boxes, rotation and user units', async () => {
+  const bytes = await fixturePdf('0 0 612 792', { crop: [10, 20, 144, 216], rotate: 90, userUnit: 2 });
+  assert.ok(!bytes.toString('latin1').includes('/MediaBox'), 'the fixture uses compressed PDF objects');
+  const result = await pdfDimensions(bytes);
+  assert.equal(result.width_inches, 4);
+  assert.equal(result.height_inches, 6);
+  assert.deepEqual(result.page_geometry[0], {
+    page: 1, media_box: { x: 0, y: 0, width: 612, height: 792 }, crop_box: { x: 10, y: 20, width: 144, height: 216 },
+    user_unit: 2, rotation: 90, effective_width_points: 432, effective_height_points: 288
+  });
+});
+
+test('resume verifies an existing sandbox transaction using only GET requests and no new shipment', async () => {
+  const h = harness();
+  const result = await h.run({ ...environment, SHIPPO_VERIFY_TRANSACTION_ID: transactionId });
+  assert.equal(result.status, 'passed');
+  assert.equal(result.reused_test_transaction, true);
+  assert.equal(result.test_label_transactions, 0);
+  assert.equal(result.live_postage_purchases, 0);
+  assert.equal(result.test_transaction_id, transactionId);
+  assert.equal(result.reported_label_file_type, 'PDF_4x6');
+  assert.equal(result.refresh, 'passed');
+  assert.equal(h.calls.length, 5);
+  assert.ok(h.calls.every(call => call.init.method === 'GET' && !call.init.body));
+  assert.equal(h.calls.some(call => call.url.includes('/shipments/')), false);
+  assert.equal(transactionPosts(h).length, 0);
+  const gets = h.calls.filter(call => call.url.includes('/transactions/'));
+  assert.equal(gets.length, 2);
+  assert.ok(gets.every(call => call.init.headers.Authorization === 'ShippoToken ' + TEST_TOKEN));
+});
+
+test('invalid resume references fail before any provider request', async () => {
+  for (const reference of ['../transactions', 'not-an-id', 'a'.repeat(31), 123]) {
+    const h = harness();
+    await assert.rejects(h.run({ ...environment, SHIPPO_VERIFY_TRANSACTION_ID: reference }), { verification_code: 'invalid_resume_transaction' });
+    assert.equal(h.calls.length, 0);
+  }
+});
+
+test('resume requires a test transaction with matching ID, valid rate, verification metadata and acceptable status', async () => {
+  for (const [transactionChange, code] of [
+    [{ test: false }, 'test_transaction_mismatch'],
+    [{ object_id: 'f'.repeat(32) }, 'test_transaction_mismatch'],
+    [{ rate: 'invalid-rate' }, 'invalid_resumed_test_transaction'],
+    [{ metadata: 'pure-label:10000000-0000-4000-8000-000000000001' }, 'invalid_resumed_test_transaction'],
+    [{ metadata: 'pure-verification:invalid-id' }, 'invalid_resumed_test_transaction'],
+    [{ status: 'ERROR' }, 'invalid_resumed_test_transaction']
+  ]) {
+    const h = harness({ transactionChange });
+    await assert.rejects(h.run({ ...environment, SHIPPO_VERIFY_TRANSACTION_ID: transactionId }), { verification_code: code });
+    assert.ok(h.calls.every(call => call.init.method === 'GET' && !call.init.body));
+    assert.equal(h.calls.some(call => call.url === pdfUrl), false);
+    assert.equal(transactionPosts(h).length, 0);
+  }
+});
+
+test('carrier diagnostics include bounded messages and authentication status while redacting secrets and URLs', async () => {
+  const h = harness({
+    carrierChange: { object_info: { authentication: { status: 'SUCCESS' } } },
+    shipmentChange: { messages: [
+      { source: 'Canada Post', code: 'fixture_warning', text: 'Account ' + TEST_TOKEN + ' is unavailable. ' + LIVE_TOKEN + ' https://example.test/private' },
+      { source: TEST_TOKEN, code: LIVE_TOKEN, text: 'x'.repeat(1000) }
+    ] }
+  });
+  const result = await h.run();
+  assert.equal(result.live_carriers[0].authentication_status, 'SUCCESS');
+  assert.equal(result.test_carriers[0].authentication_status, 'SUCCESS');
+  assert.equal(result.carrier_messages.length, 2);
+  assert.equal(result.carrier_messages[0].source, 'Canada Post');
+  assert.equal(result.carrier_messages[0].code, 'fixture_warning');
+  assert.match(result.carrier_messages[0].text, /\[redacted\]/);
+  assert.match(result.carrier_messages[0].text, /\[url omitted\]/);
+  assert.equal(result.carrier_messages[1].text.length, 350);
+  const logs = JSON.stringify(h.logs);
+  for (const secret of [TEST_TOKEN, LIVE_TOKEN, 'https://example.test/private']) assert.ok(!logs.includes(secret));
 });
