@@ -20,10 +20,16 @@ test('production build creates the actual unified site and account integration w
   for(const marker of ['ap-header','ap-more-menu','ap-search-dialog','ap-cart-dialog','ap-age-dialog','storefront-v2.js','workspace-v2.js','/bulk-orders','/coas'])assert.ok(html.includes(marker),marker);assert.doesNotMatch(html,/href="\/(?:research-builder|memberships|account\/membership)"/);
   assert.ok(fs.existsSync(path.join(temp,'storefront-v2.html')));
   const account=fs.readFileSync(path.join(temp,'account.html'),'utf8');assert.match(account,/storefront-v2\.css/);assert.match(account,/workspace-v2\.js/);
+  assert.match(account,/<link rel="stylesheet" href="\/cart-reference\.css">/);
+  assert.match(account,/<script src="\/cart-reference\.js"><\/script>/);
+  assert.ok(account.indexOf('src="/cart-reference.js"')<account.indexOf('src="/account.js"'),'Shared cart loads before account and checkout routes render');
   const accountJs=fs.readFileSync(path.join(temp,'account.js'),'utf8');assert.match(accountJs,/AltaWorkspace.renderAccountPanel/);assert.doesNotMatch(accountJs,/No membership, subscription, points, store-credit, or partner actions are enabled in this phase/);
   assert.equal(fs.readFileSync(path.join(temp,'products.js'),'utf8'),source);
   run=spawnSync(process.execPath,['site-build.cjs'],{cwd:temp,encoding:'utf8'});assert.equal(run.status,0,run.stderr);
   assert.equal((fs.readFileSync(path.join(temp,'account.html'),'utf8').match(/id="ap-search-dialog"/g)||[]).length,1);
+  const repeatedAccount=fs.readFileSync(path.join(temp,'account.html'),'utf8');
+  assert.equal((repeatedAccount.match(/src="\/cart-reference\.js"/g)||[]).length,1);
+  assert.equal((repeatedAccount.match(/href="\/cart-reference\.css"/g)||[]).length,1);
  }finally{fs.rmSync(temp,{recursive:true,force:true});}
 });
 test('paid features and fabricated offers are not activated by the visual release',()=>{const config=JSON.parse(read('data/storefront-programs.json'));assert.equal(config.checkout_enabled,false);assert.equal(config.membership_billing_enabled,false);assert.equal(config.subscription_billing_enabled,false);assert.equal(config.partner_payouts_enabled,false);assert.deepEqual(config.active_offers,[]);assert.equal(config.cart_incentive,null);assert.deepEqual(JSON.parse(read('data/verified-coas.json')),[]);});

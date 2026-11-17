@@ -3,6 +3,8 @@ const assert=require('node:assert/strict'),fs=require('node:fs'),vm=require('nod
 const read=f=>fs.readFileSync('public-build/'+f,'utf8');
 for(const file of ['direct-checkout-client.js','account.js','storefront-v2.js','workspace-v2.js','native-pay.js','payment-options-public.js','admin-payments.js'])new vm.Script(read(file),{filename:file});
 assert.match(read('account.html'),/direct-checkout-client\.js/);
+assert.equal((read('account.html').match(/src="\/cart-reference\.js"/g)||[]).length,1,'Checkout must use the shared wallet-enabled cart');
+assert.equal((read('account.html').match(/href="\/cart-reference\.css"/g)||[]).length,1,'Checkout must include the shared cart appearance');
 assert.match(read('account.js'),/p==='\/checkout'/);
 assert.match(read('account.js'),/AccountExperience\.rewards/);
 assert.match(read('storefront-v2.js'),/\/checkout/);

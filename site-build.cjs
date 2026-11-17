@@ -35,6 +35,10 @@ account=account.replace('<main class="account-page">','<main class="account-page
 account=account.replace('href="#ap-main"','href="#ap-main-account"');
 if(!account.includes('/storefront-navigation.css'))account=account.replace('</head>','<link rel="stylesheet" href="/storefront-navigation.css?v=20261113"></head>');
 if(!account.includes('/storefront-navigation.js'))account=account.replace('<script src="/products.js">','<script src="/storefront-navigation.js?v=2"></script><script src="/products.js">');
+// Account and checkout use the same header cart as the storefront, including
+// server-priced totals and hosted Apple Pay / Google Pay shortcuts.
+if(!account.includes('href="/cart-reference.css"'))account=account.replace('</head>','<link rel="stylesheet" href="/cart-reference.css"></head>');
+if(!account.includes('src="/cart-reference.js"'))account=account.replace('<script src="/account.js">','<script src="/cart-reference.js"></script><script src="/account.js">');
 fs.writeFileSync('account.html',account);
 let js=fs.readFileSync('account.js','utf8');
 js=js.replace("const p=location.pathname.replace(/\\/$/,'')||'/account';","const p=location.pathname.replace(/^\\/my-account(?=\\/|$)/,'/account').replace(/\\/$/,'')||'/account';");
