@@ -48,6 +48,8 @@ for(const entry of fs.readdirSync(out,{withFileTypes:true}))if(entry.isFile()&&e
 for(const file of fs.readdirSync(path.join(out,'product')))patch('product/'+file,s=>s.replaceAll('Online checkout is paused.','US checkout is available.'));
 patch('robots.txt',s=>s+'Disallow: /checkout\nDisallow: /pay.html\n');
 fs.copyFileSync('nmi-inline-checkout.js',path.join(out,'nmi-inline-checkout.js'));
+fs.copyFileSync('polygon-usdc-pay.js',path.join(out,'polygon-usdc-pay.js'));
+patch('pay.html',page=>page.includes('/polygon-usdc-pay.js')?page:page.replace('<script src="/native-pay.js"','<script src="/polygon-usdc-pay.js" defer></script><script src="/native-pay.js"'));
 fs.copyFileSync('checkout-reference.js',path.join(out,'checkout-reference.js'));
 fs.copyFileSync('checkout-reference.css',path.join(out,'checkout-reference.css'));
 fs.copyFileSync('cart-reference.js',path.join(out,'cart-reference.js'));

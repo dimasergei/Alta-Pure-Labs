@@ -45,14 +45,11 @@ test('Cart express button is inert/absent unless authorized NMI wallet methods a
   dom.window.close();
  }
 });
-test('NMI checkout is a same-page tokenized order-confirmation flow, not an onramp redirect',()=>{
- const s=fs.readFileSync(path.join(source,'direct-checkout-client.js'),'utf8');
- assert.match(s,/selected\?\.native_provider==='nmi'/);
- assert.match(s,/window.AltaNmiInline.mount/);
- assert.match(s,/chargeNmi/);
- assert.match(s,/Payment confirmed/);
- assert.match(s,/Payment verification is pending/);
+test('historical NMI invoice remains tokenized while new checkout uses supported hosted providers',()=>{
+ const sourceText=fs.readFileSync(path.join(source,'direct-checkout-client.js'),'utf8');
+ assert.doesNotMatch(sourceText,/selected\?\.native_provider==='nmi'|chargeNmi/);
+ const native=fs.readFileSync(path.join(source,'native-pay.js'),'utf8');
+ assert.match(native,/g\.provider==='nmi'/);assert.match(native,/window.mountNmiPayments/);
  const nmi=fs.readFileSync(path.join(source,'nmi-inline-checkout.js'),'utf8');
- assert.doesNotMatch(nmi,/checkout\.rampex\.io|window\.location\.assign/);
- assert.match(nmi,/onExpressCheckout:pay/);
+ assert.doesNotMatch(nmi,/checkout\.rampex\.io|window\.location\.assign/);assert.match(nmi,/onExpressCheckout:pay/);
 });

@@ -6,10 +6,10 @@ const user={id:'test-user',email:'researcher@example.test',user_metadata:{full_n
 const auth={auth:{getSession:async()=>({data:{session:{access_token:'fixture-token-not-real'}}})}};
 const orderId='80000000-0000-4000-8000-000000000001';
 const quote={quote:'quote-fixture',subtotal_cents:5100,discount_cents:0,shipping_cents:1495,tax_cents:0,points_redeemed:0,credit_redeemed_cents:0,earned_points:0,total_cents:6595,currency:'USD',pricing:{lines:[],shipping_note:'US delivery'}};
-const checkoutMethod={id:'80000000-0000-4000-8000-000000000002',kind:'hosted_link',native_provider:'rampex',label:'Credit / debit card — Stripe via Rampex',sale_scope:'goods'};
+const checkoutMethod={id:'80000000-0000-4000-8000-000000000002',kind:'hosted_link',native_provider:'rampex',rampex_provider:'hosted',countries:['US','CA'],label:'Card',sale_scope:'goods'};
 function fixture(payResult){
  const logs=[],wConsole=new VirtualConsole(),dom=new JSDOM('<main id="root"></main>',{url:'https://altapurelabs.test/checkout',runScripts:'outside-only',virtualConsole:wConsole}),w=dom.window;
- w.TextEncoder=TextEncoder;Object.defineProperty(w.crypto,'subtle',{value:crypto.subtle});w.HTMLElement.prototype.scrollIntoView=()=>{};
+ w.TextEncoder=TextEncoder;Object.defineProperty(w.crypto,'randomUUID',{value:()=>orderId});Object.defineProperty(w.crypto,'subtle',{value:crypto.subtle});w.HTMLElement.prototype.scrollIntoView=()=>{};
  w.AltaStore={cart:[{id:'bpc',name:'BPC-157',size:'5mg',qty:1,price:51}],product:()=>({}),image:()=>'/image.png'};
  const data={config:require('../config/checkout.json'),delivery_options:require('../config/delivery-options.json'),capabilities:{card:false,apple_pay:false,google_pay:false},terms:{...require('../config/launch-commercial-terms.json'),conversion:require('../config/conversion.json')},methods:[checkoutMethod],membership:null,balances:{points:200,credit_cents:500},events:[]};
  w.fetch=async(url,options={})=>{
@@ -34,11 +34,11 @@ async function submitReview(f){
  return f.root.querySelector('.dc-summary button');
 }
 test('Place order submits exactly one Rampex pay request directly from the final review',async()=>{
- const f=fixture({state:'redirected',redirect_url:'https://checkout.rampex.io/process-payment.php?provider=stripe&ref=test'});
+ const f=fixture({state:'redirected',redirect_url:'https://checkout.rampex.io/process-payment.php?provider=hosted&ref=test'});
  try{
   const button=await submitReview(f);
   assert.equal(button.textContent,'Place order & pay by card');
-  assert.match(f.root.textContent,/One-time payment of the final total/);
+  assert.match(f.root.textContent,/provider displays its fees, conversion rate and final charge/);
   assert.equal(f.root.querySelector('a[href^="/pay.html"]'),null);
   await button.onclick();
   const actions=f.logs.filter(x=>x.body?.action).map(x=>x.body.action);

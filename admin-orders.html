@@ -7,26 +7,26 @@
   <meta name="referrer" content="no-referrer">
   <title>Admin Orders — PURE</title>
 
-  <link rel="icon" type="image/png" sizes="96x96" href="/favicon-bright-96.png">
-  <link rel="shortcut icon" type="image/x-icon" href="/favicon-bright-20261116.ico">
+
+
 
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="/admin-dashboard.css">
+  <link rel="stylesheet" href="/admin-dashboard.css?v=20261117b">
 
   <style>
     :root {
       color-scheme: dark;
-      --bg: #0a0e0f;
-      --panel: #111617;
-      --panel-soft: #171e1f;
-      --border: #273132;
-      --text: #e8edeb;
-      --muted: #99a6a2;
-      --teal: #68cbbb;
-      --teal-dark: #17302c;
-      --red: #ffaaaa;
+      --bg: #111;
+      --panel: #111;
+      --panel-soft: #111;
+      --border: #111;
+      --text: #f5f5f5;
+      --muted: #999;
+      --teal: #111;
+      --teal-dark: #111;
+      --red: #111;
     }
 
     * {
@@ -144,17 +144,17 @@
 
     .ghost:hover:not(:disabled) {
       background: var(--panel-soft);
-      border-color: #465754;
+      border-color: #333;
     }
 
     .primary {
       border: 1px solid var(--teal);
       background: var(--teal);
-      color: #08231e;
+      color: #111;
     }
 
     .primary:hover:not(:disabled) {
-      background: #87ddcf;
+      background: #333;
     }
 
     .login {
@@ -199,13 +199,13 @@
       padding: 10px 12px;
       border: 1px solid var(--border);
       border-radius: 6px;
-      background: #0c1112;
+      background: #111;
       color: var(--text);
     }
 
     input::placeholder,
     textarea::placeholder {
-      color: #778681;
+      color: #666;
     }
 
     input:focus,
@@ -275,12 +275,12 @@
 
     .tab:hover {
       color: var(--text);
-      border-color: #465754;
+      border-color: #333;
     }
 
     .tab.active {
       background: var(--teal-dark);
-      border-color: #315c53;
+      border-color: #333;
       color: var(--teal);
     }
 
@@ -317,9 +317,9 @@
     .bulkbar {
       padding: 11px 13px;
       margin-bottom: 12px;
-      border: 1px solid #315c53;
+      border: 1px solid #333;
       border-radius: 8px;
-      background: #11201d;
+      background: #111;
     }
 
     .bulk-count {
@@ -342,7 +342,7 @@
     }
 
     .order.open {
-      border-color: #3c5952;
+      border-color: #333;
     }
 
     .order-head {
@@ -446,31 +446,31 @@
       font-size: 11px;
       font-weight: 600;
       white-space: nowrap;
-      background: #25302e;
-      color: #c5d2ce;
+      background: #111;
+      color: #d0d0d0;
     }
 
     .status-paid,
     .status-delivered {
-      background: #17302c;
-      color: #8ed9c9;
+      background: #111;
+      color: #ddd;
     }
 
     .status-processing,
     .status-awaiting_supplier {
-      background: #352b18;
-      color: #edc88a;
+      background: #111;
+      color: #ddd;
     }
 
     .status-shipped {
-      background: #192c42;
-      color: #a1c4ff;
+      background: #111;
+      color: #ddd;
     }
 
     .status-canceled,
     .status-refunded {
-      background: #361f21;
-      color: #f6a8ae;
+      background: #111;
+      color: #ddd;
     }
 
     .chevron {
@@ -528,7 +528,7 @@
     .items {
       border: 1px solid var(--border);
       border-radius: 6px;
-      background: #0d1213;
+      background: #111;
       overflow: hidden;
     }
 
@@ -912,18 +912,18 @@
     }
 
     .notification-card.failed {
-      border-color: #b3261e;
-      background: #361f21;
+      border-color: #333;
+      background: #111;
     }
 
     .notification-card.sent {
-      border-color: #1d7a4f;
-      background: #11201d;
+      border-color: #555;
+      background: #111;
     }
 
     .notification-card.pending {
-      border-color: #b7791f;
-      background: #352b18;
+      border-color: #666;
+      background: #111;
     }
 
     @media (max-width: 520px) {
@@ -963,7 +963,7 @@
     }
 
 </style>
-<link rel="stylesheet" href="/admin-fulfillment.css?v=20261116-orders2"><style id="simplified-order-ui">
+<link rel="stylesheet" href="/admin-fulfillment.css?v=20261117b"><style id="simplified-order-ui">
 #orders-message{display:none!important}
 #admin-notifications-section>.notification-panel{display:none!important}
 .fh-advanced {margin:0 0 14px; padding:9px 12px;border:1px solid var(--border);border-radius:8px;color:var(--muted)}
@@ -972,13 +972,14 @@
 .fh-advanced .advanced-lotus{margin:12px 0}
 .simple-order-list{display:none !important}
 .order-head{grid-template-columns:18px minmax(0,1fr) auto;gap:10px}
-.quick-cancel{margin-right:12px;white-space:nowrap;background:#382225;border:1px solid #945658;color:#ffcfcd;border-radius:6px;padding:8px 11px;font-size:12px;font-weight:700;min-height:36px}
-.quick-cancel:hover{background:#533034}
-.quick-cancel:focus-visible{outline:2px solid #ffaaa8}
+.quick-cancel{margin-right:12px;white-space:nowrap;background:#111;border:1px solid #555;color:#fff;border-radius:6px;padding:8px 11px;font-size:12px;font-weight:700;min-height:36px}
+.quick-cancel:hover{background:#111}
+.quick-cancel:focus-visible{outline:2px solid #111}
 @media(max-width:640px){.order-head{grid-template-columns:18px minmax(0,1fr);gap:7px}.quick-cancel{grid-column:2;justify-self:end;margin:0 11px 10px 0}.order-toggle{padding-bottom:7px}}
-</style>  <link rel="stylesheet" href="/admin-ui-polish.css">
-  <link rel="stylesheet" href="/admin-experience.css?v=1">
-  <link rel="stylesheet" href="/admin-violet.css?v=20261116b">
+</style>  <link rel="stylesheet" href="/admin-ui-polish.css?v=20261117b">
+  <link rel="stylesheet" href="/admin-experience.css?v=20261117b">
+  <link rel="stylesheet" href="/admin-violet.css?v=20261117b">
+<link rel="icon" type="image/svg+xml" sizes="any" href="/favicon-pure.svg?v=20261117b"><link rel="icon" type="image/png" sizes="16x16" href="/favicon-pure-16.png?v=20261117b"><link rel="icon" type="image/png" sizes="32x32" href="/favicon-pure-32.png?v=20261117b"><link rel="icon" type="image/png" sizes="96x96" href="/favicon-pure-96.png?v=20261117b"><link rel="shortcut icon" type="image/x-icon" href="/favicon-pure-20261117b.ico"><link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png?v=20261117b"><meta name="theme-color" content="#ffffff">
 </head>
 
 <body>
@@ -986,27 +987,19 @@
     <div class="shell">
       <section id="login-view" class="login">
         <div class="admin-login-brand">
-          <img class="ap-brand-symbol" src="/favicon-bright-96.png" alt="" width="34" height="34">
+          <img class="ap-brand-symbol" src="/favicon-pure-96.png?v=20261117b" alt="" width="34" height="34">
           <span><strong class="pure-wordmark">PURE</strong><small>ADMIN</small></span>
         </div>
         <h2>Admin access</h2>
-        <p>Sign in to manage orders and fulfillment.</p>
+        <p>Use a secure email link to manage orders and fulfillment. Your session is shared with Marketing.</p>
 
         <form id="login-form">
-          <label class="field" for="admin-password">
-            Admin password
-            <input
-              id="admin-password"
-              type="password"
-              autocomplete="current-password"
-              required
-            >
-          </label>
 
           <button id="login-button" class="primary" type="submit">
-            View orders
+            Send sign-in link
           </button>
 
+          <p id="login-status" role="status" hidden></p>
           <p id="login-error" class="error" role="alert" hidden></p>
         </form>
       </section>
@@ -1015,7 +1008,7 @@
         <div class="admin-brandbar">
           <div class="admin-header-left">
             <a class="admin-brand" href="/" aria-label="PURE home">
-              <img class="ap-brand-symbol" src="/favicon-bright-96.png" alt="" width="34" height="34">
+              <img class="ap-brand-symbol" src="/favicon-pure-96.png?v=20261117b" alt="" width="34" height="34">
               <span class="admin-brand-copy">
                 <span class="admin-brand-name pure-wordmark">PURE</span>
                 <span class="admin-brand-label">ADMIN</span>
@@ -1359,12 +1352,12 @@
     </div>
   </main>
 
+  <script src="/admin-auth.js?v=20261117b"></script>
   <script src="/admin-fulfillment.js?v=20261116-purity"></script>
   <script src="/admin-unified-notifications.js"></script>
   <script>
     const $ = (selector) => document.querySelector(selector);
 
-    const passwordInput = $('#admin-password');
     const loginForm = $('#login-form');
     const loginButton = $('#login-button');
     const loginError = $('#login-error');
@@ -1404,7 +1397,7 @@
       });
       const heading = $('.admin-section-heading h1');
       const subtitle = $('.admin-section-heading .subtitle');
-      if(view==='lotus'&&!$('#lotus-embedded').getAttribute('src')){const frame=$('#lotus-embedded');frame.onload=()=>{const doc=frame.contentDocument,form=doc?.getElementById('supplier-login');if(form){form.elements.password.value=adminPassword;form.requestSubmit();}};frame.src='/admin-supplier.html';}
+      if(view==='lotus'&&!$('#lotus-embedded').getAttribute('src'))$('#lotus-embedded').src='/admin-supplier.html';
       const copy = {
         lotus: ['Lotus', 'Catalog mappings, supplier status and exceptions.'],
         orders: ['Orders', 'Review payments and manage fulfillment.'],
@@ -1413,7 +1406,7 @@
       }[view];
       heading.textContent = copy[0];
       subtitle.textContent = copy[1];
-      if(view==='notifications'&&adminPassword)window.AltaUnifiedNotifications?.mount(api);
+      if(view==='notifications'&&window.PureAdminAuth.authenticated)window.AltaUnifiedNotifications?.mount(api);
     }
 
     document.querySelectorAll('[data-admin-view]').forEach((button) => {
@@ -1447,7 +1440,6 @@
       expired: 'Expired'
     };
 
-    let adminPassword = readSavedPassword();
     let currentStatus = 'active';
     let currentSearch = '';
     let selectedOrders = new Set();
@@ -1455,6 +1447,7 @@
     let openOrderId = null;
     let searchTimer;
     let requestNumber = 0;
+    let workspaceOpening = null;
     let saving = false;
     let notificationSearchTimer = null;
 
@@ -1621,26 +1614,6 @@
         !pagination.has_next;
     }
 
-    function readSavedPassword() {
-      try {
-        return sessionStorage.getItem('altapure_admin_password') || '';
-      } catch {
-        return '';
-      }
-    }
-
-    function savePassword(value) {
-      try {
-        if (value) {
-          sessionStorage.setItem('altapure_admin_password', value);
-        } else {
-          sessionStorage.removeItem('altapure_admin_password');
-        }
-      } catch {
-        // Login still works without browser storage.
-      }
-    }
-
     function escapeHtml(value) {
       return String(value ?? '')
         .replaceAll('&', '&amp;')
@@ -1728,13 +1701,11 @@
       csvExportController?.abort();
 
       requestNumber += 1;
+      workspaceOpening = null;
       clearTimeout(searchTimer);
       window.AltaFulfillment.clear();
       window.AltaUnifiedNotifications?.clear();
       $('#lotus-embedded').removeAttribute('src');
-      adminPassword = '';
-      savePassword('');
-      passwordInput.value = '';
       selectedOrders.clear();
       loadedOrders = [];
       openOrderId = null;
@@ -1745,14 +1716,7 @@
 
     async function api(path, options = {}) {
       const { responseType, ...requestOptions } = options;
-      const response = await fetch(path, {
-        ...requestOptions,
-        cache: 'no-store',
-        headers: {
-          ...options.headers,
-          'x-admin-password': adminPassword
-        }
-      });
+      const response = await window.PureAdminAuth.fetch(path, requestOptions);
 
       if (response.ok && responseType === 'blob') return response.blob();
       const data = await response.json().catch(() => ({}));
@@ -2595,14 +2559,14 @@
               margin: 0 auto;
               max-width: 1000px;
               padding: 32px;
-              color: #18221f;
+              color: #111;
               background: white;
               font: 13px/1.5 Arial, sans-serif;
             }
             h1 { margin: 0; font-size: 25px; }
             h2 { font-size: 18px; margin: 28px 0 8px; }
             h3 { font-size: 13px; margin-bottom: 5px; }
-            .meta { color: #58635e; font-size: 12px; }
+            .meta { color: #555; font-size: 12px; }
             table {
               width: 100%;
               border-collapse: collapse;
@@ -2610,22 +2574,22 @@
             }
             th, td {
               padding: 9px;
-              border: 1px solid #d4dad6;
+              border: 1px solid #d0d0d0;
               text-align: left;
               vertical-align: top;
               overflow-wrap: anywhere;
             }
-            th { background: #edf2ef; }
+            th { background: #f5f5f5; }
             thead { display: table-header-group; }
             tr { break-inside: avoid; }
             .order-section {
-              border-top: 2px solid #d4dad6;
+              border-top: 2px solid #d0d0d0;
               margin-top: 28px;
             }
             .notice {
               margin-top: 28px;
               padding: 14px;
-              border: 1px solid #d4dad6;
+              border: 1px solid #d0d0d0;
               font-size: 11px;
             }
             .print-tools {
@@ -2634,13 +2598,13 @@
               gap: 14px;
               padding: 14px;
               margin-bottom: 24px;
-              background: #edf2ef;
+              background: #f5f5f5;
             }
             button {
               padding: 10px 16px;
               cursor: pointer;
               border: 0;
-              background: #143832;
+              background: #111;
               color: white;
               border-radius: 5px;
             }
@@ -2650,7 +2614,8 @@
               .print-tools { display: none; }
             }
           </style>
-        </head>
+
+</head>
         <body>
           <div class="print-tools">
             <button id="print-report" type="button">
@@ -2706,34 +2671,52 @@
 
     $('#generate-pdf').addEventListener('click', generateSupplierReport);
 
+    function openAdminWorkspace() {
+      if (workspaceOpening) return workspaceOpening;
+      const task = (async () => {
+        await loadOrders();
+        if (window.PureAdminAuth.authenticated) await Promise.all([loadSupplierData(), loadNotifications()]);
+      })().finally(() => { if (workspaceOpening === task) workspaceOpening = null; });
+      workspaceOpening = task;
+      return task;
+    }
+
     loginForm.addEventListener('submit', async (event) => {
       event.preventDefault();
-
-      adminPassword = passwordInput.value;
       loginError.hidden = true;
+      const status = $('#login-status');
+      status.hidden = true;
       loginButton.disabled = true;
-      loginButton.textContent = 'Signing in…';
-
+      loginButton.textContent = window.PureAdminAuth.pendingLink ? 'Signing in…' : 'Sending link…';
       try {
-        await loadOrders();
-        loadSupplierData();
-        loadNotifications();
-        savePassword(adminPassword);
-        passwordInput.value = '';
-        setNotice('');
+        if (window.PureAdminAuth.pendingLink) {
+          await window.PureAdminAuth.completeLink();
+          await openAdminWorkspace();
+        } else {
+          const result = await window.PureAdminAuth.requestLink('orders');
+          status.textContent = result.message;
+          status.hidden = false;
+        }
       } catch (error) {
-        savePassword('');
         loginError.textContent = error.message;
         loginError.hidden = false;
       } finally {
         loginButton.disabled = false;
-        loginButton.textContent = 'View orders';
+        loginButton.textContent = window.PureAdminAuth.pendingLink ? 'Continue to Orders' : 'Send sign-in link';
       }
     });
 
-    document.addEventListener('alta-open-payment-desk',()=>window.AltaFulfillment.paymentDesk(adminPassword));
-    $('#logout-button').addEventListener('click', () => {
-      if (allowDiscard()) logout();
+    document.addEventListener('alta-open-payment-desk',()=>window.AltaFulfillment.paymentDesk());
+    window.addEventListener('pure-admin-auth-change', event => {
+      if (!event.detail.authenticated) logout();
+      else if (ordersView.hidden) openAdminWorkspace().catch(error => {
+        loginError.textContent = error.message; loginError.hidden = false;
+      });
+    });
+    $('#logout-button').addEventListener('click', async () => {
+      if (!allowDiscard()) return;
+      try { await window.PureAdminAuth.logout(); logout(); }
+      catch (error) { setNotice(error.message, true); }
     });
 
     refreshButton.addEventListener('click', async () => {
@@ -3549,12 +3532,11 @@
         button.disabled = true;
 
         try {
-          // A plain link can't send the admin password header, so fetch it.
-          const response = await fetch(
+          // Download through the shared, verified admin session.
+          const response = await window.PureAdminAuth.fetch(
             `/api/admin-supplier-batch-pdf?batch_id=${encodeURIComponent(batchId)}`,
             {
-              cache: 'no-store',
-              headers: { 'x-admin-password': adminPassword }
+              cache: 'no-store'
             }
           );
 
@@ -3952,23 +3934,22 @@
       }
     });
 
-    if (adminPassword) {
-      loginButton.disabled = true;
-      loginButton.textContent = 'Loading…';
-
-      loadOrders()
-        .then(() => Promise.all([loadSupplierData(), loadNotifications()]))
-        .catch((error) => {
-          savePassword('');
-          loginError.textContent = error.message;
-          loginError.hidden = false;
-        })
-        .finally(() => {
-          loginButton.disabled = false;
-          loginButton.textContent = 'View orders';
-        });
-    }
+    loginButton.disabled = true;
+    loginButton.textContent = 'Checking session…';
+    window.PureAdminAuth.ready()
+      .then(async authenticated => {
+        if (!authenticated) return;
+        await openAdminWorkspace();
+      })
+      .catch(error => {
+        loginError.textContent = error.message;
+        loginError.hidden = false;
+      })
+      .finally(() => {
+        loginButton.disabled = false;
+        loginButton.textContent = window.PureAdminAuth.pendingLink ? 'Continue to Orders' : 'Send sign-in link';
+      });
   </script>
-  <script src="/admin-experience.js?v=1" defer></script>
+  <script src="/admin-experience.js?v=20261117b" defer></script>
 </body>
 </html>

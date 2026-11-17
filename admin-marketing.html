@@ -9,26 +9,26 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="/admin-dashboard.css">
-  <link rel="stylesheet" href="/admin-marketing.css">
-  <link rel="icon" type="image/png" sizes="96x96" href="/favicon-bright-96.png">
-  <link rel="shortcut icon" type="image/x-icon" href="/favicon-bright-20261116.ico">
-  <link rel="stylesheet" href="/admin-ui-polish.css">
-  <link rel="stylesheet" href="/admin-experience.css?v=1">
-  <link rel="stylesheet" href="/admin-violet.css?v=20261116b">
+  <link rel="stylesheet" href="/admin-dashboard.css?v=20261117b">
+  <link rel="stylesheet" href="/admin-marketing.css?v=20261117b">
+
+
+  <link rel="stylesheet" href="/admin-ui-polish.css?v=20261117b">
+  <link rel="stylesheet" href="/admin-experience.css?v=20261117b">
+  <link rel="stylesheet" href="/admin-violet.css?v=20261117b">
+<link rel="icon" type="image/svg+xml" sizes="any" href="/favicon-pure.svg?v=20261117b"><link rel="icon" type="image/png" sizes="16x16" href="/favicon-pure-16.png?v=20261117b"><link rel="icon" type="image/png" sizes="32x32" href="/favicon-pure-32.png?v=20261117b"><link rel="icon" type="image/png" sizes="96x96" href="/favicon-pure-96.png?v=20261117b"><link rel="shortcut icon" type="image/x-icon" href="/favicon-pure-20261117b.ico"><link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png?v=20261117b"><meta name="theme-color" content="#ffffff">
 </head>
 <body class="mk-body">
 <main class="admin-page">
   <div class="shell">
     <section id="mk-login" class="mk-login panel">
-      <div class="admin-login-brand"><img class="ap-brand-symbol" src="/favicon-bright-96.png" alt="" width="34" height="34"><span><strong class="pure-wordmark">PURE</strong><small>ADMIN</small></span></div>
+      <div class="admin-login-brand"><img class="ap-brand-symbol" src="/favicon-pure-96.png?v=20261117b" alt="" width="34" height="34"><span><strong class="pure-wordmark">PURE</strong><small>ADMIN</small></span></div>
       <h1>Marketing access</h1>
-      <p>Use your existing PURE admin password. This workspace does not send Instagram messages automatically.</p>
+      <p>Use a secure email link. Your session is shared with Orders. This workspace does not send Instagram messages automatically.</p>
       <form id="mk-login-form">
-        <label for="mk-password">Admin password</label>
-        <input id="mk-password" type="password" required autocomplete="current-password">
-        <button class="mk-button" type="submit">Open Marketing</button>
+        <button class="mk-button" type="submit">Send sign-in link</button>
       </form>
+      <p id="mk-login-status" role="status" hidden></p>
       <p id="mk-login-error" class="mk-error" role="alert" hidden></p>
       <a href="/admin-orders.html">Return to Orders</a>
     </section>
@@ -37,7 +37,7 @@
       <div class="admin-brandbar mk-header">
         <div class="admin-header-left">
           <a class="admin-brand" href="/" aria-label="PURE storefront">
-            <img class="ap-brand-symbol" src="/favicon-bright-96.png" alt="" width="34" height="34">
+            <img class="ap-brand-symbol" src="/favicon-pure-96.png?v=20261117b" alt="" width="34" height="34">
             <span class="admin-brand-copy"><span class="admin-brand-name pure-wordmark">PURE</span><span class="admin-brand-label">ADMIN</span></span>
           </a>
           <div class="admin-utilities">
@@ -55,7 +55,7 @@
         <div class="mk-header-actions"><button id="mk-import-button" class="mk-button mk-outline" type="button">Import CSV</button><button id="mk-add-button" class="mk-button" type="button">+ Add prospect</button></div>
       </header>
       <p id="mk-alert" class="mk-alert" role="status" aria-live="polite"></p>
-      
+
 
       <div class="mk-metrics" aria-label="Marketing snapshot">
         <article><span>Prospects</span><strong id="mk-total">0</strong><small>Tracked profiles</small></article>
@@ -156,7 +156,8 @@
     <div class="mk-dialog-actions"><button id="mk-copy" type="button" class="mk-button mk-outline">Copy text</button><button id="mk-mark-drafted" type="button" class="mk-button">Save draft & status</button></div>
   </form>
 </dialog>
-<script src="/admin-marketing.js" defer></script>
-  <script src="/admin-experience.js?v=1" defer></script>
+<script src="/admin-auth.js?v=20261117b" defer></script>
+<script src="/admin-marketing.js?v=20261117b" defer></script>
+  <script src="/admin-experience.js?v=20261117b" defer></script>
 </body>
 </html>

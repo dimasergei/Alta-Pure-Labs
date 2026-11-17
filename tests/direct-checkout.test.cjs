@@ -3,13 +3,13 @@ const test=require('node:test'),assert=require('node:assert/strict');
 const checkout=require('../lib/direct-checkout'),config=require('../config/checkout.json');
 const id='c0000000-0000-4000-8000-000000000001',uid='c0000000-0000-4000-8000-000000000002',mid='c0000000-0000-4000-8000-000000000003';
 const user={id:uid,email:'customer@example.test',email_confirmed_at:'2026-01-01'};
-const method={id:mid,active:true,kind:'bank_transfer',version:1,currency:'USD',sale_scope:'both',label:'Bank transfer'};
+const method={id:mid,active:true,kind:'hosted_link',native_provider:'rampex',rampex_provider:'hosted',countries:['US','CA','GB'],version:1,currency:'USD',sale_scope:'goods',label:'Card'};
 const catalog=[{id:'fixture-product',name:'Fixture product',variants:[{size:'5mg',price:100}]}];
 const body={id,kind:'goods',method_id:mid,consent:true,checkout_version:config.version,items:[{id:'fixture-product',size:'5mg',qty:1,price:0.01}],name:'Customer',organization:'Lab',address:{line1:'123 Fixture Street',city:'Fixture City',region:'FL',postal_code:'34287',country:'US'},research_use:true};
-const env={SITE_URL:'https://getpurelabs.com',ADMIN_ORDERS_PASSWORD:'x'.repeat(40),CHECKOUT_RATE_LIMIT_SECRET:'fixture-secret-with-at-least-32-characters'};
+const env={RAMPEX_API_KEY:'isolated-rampex-fixture',RAMPEX_WEBHOOK_SECRET:'isolated-rampex-webhook-secret',RAMPEX_ENABLED:'true',RAMPEX_MODE:'live',SITE_URL:'https://getpurelabs.com',ADMIN_ORDERS_PASSWORD:'x'.repeat(40),CHECKOUT_RATE_LIMIT_SECRET:'fixture-secret-with-at-least-32-characters'};
 function response(){return{code:200,setHeader(){},status(n){this.code=n;return this;},json(b){this.body=b;return this;}};}
 function dbMock({balance={points:1000,credit_cents:5000},membership=null,existing=null,partner=null,existingReferral=null,paymentMethods=[method]}={}){
- const calls=[];return{calls,auth:{getUser:async()=>({data:{user}})},from(table){const value=table==='commerce_delivery_options'?require('../config/delivery-options.json'):table==='commerce_partner_codes'?(partner?{partner_id:partner.customer_id}:null):table==='commerce_partners'?partner:table==='commerce_referrals'?existingReferral:table==='commerce_payment_methods'?paymentMethods:table==='commerce_memberships'?(membership?[membership]:[]):table==='commerce_balance_accounts'?balance:table==='commerce_invoices'?existing:[];
+ const calls=[];return{calls,auth:{getUser:async()=>({data:{user}})},from(table){const value=table==='commerce_gateway_accounts'?paymentMethods.filter(m=>m.native_provider).map(m=>({method_id:m.id,provider:m.native_provider,rampex_provider:m.rampex_provider,mode:'live',account_tag:require('../lib/gateway-config').configuration(m.native_provider,env).account_tag,countries:m.countries})):table==='commerce_delivery_options'?require('../config/delivery-options.json'):table==='commerce_partner_codes'?(partner?{partner_id:partner.customer_id}:null):table==='commerce_partners'?partner:table==='commerce_referrals'?existingReferral:table==='commerce_payment_methods'?paymentMethods:table==='commerce_memberships'?(membership?[membership]:[]):table==='commerce_balance_accounts'?balance:table==='commerce_invoices'?existing:[];
   const q={select(){return q;},eq(){return q;},in(){return q;},ilike(){return q;},is(){return q;},lte(){return q;},gt(){return q;},order(){return q;},limit(){return q;},maybeSingle(){return q;},then(resolve,reject){return Promise.resolve({data:value}).then(resolve,reject);}};return q;},rpc:async(name,args)=>{calls.push({name,args});return{data:{id,status:'accepted'}};}};
 }
 const request=(b,headers={})=>({method:'POST',headers:{origin:env.SITE_URL,'content-type':'application/json',authorization:'Bearer fixture-auth-token-long-enough',...headers},body:b});
@@ -56,7 +56,7 @@ test('BLACKFRIDAY15 is normalized and cart, quote and persisted order have ident
  const saved=db.calls[0].args.p_data;assert.equal(db.calls[0].name,'commerce_place_checkout');
  assert.deepEqual(saved.pricing,quoted.body.pricing);assert.equal(saved.total_cents,quoted.body.total_cents);
  assert.equal(saved.request.checkout.coupon,'BLACKFRIDAY15');assert.deepEqual(saved.request.items.map(x=>x.qty),[2,1]);
- assert.equal(saved.checkout_version,'checkout-2026-11-v5');assert.equal(saved.earned_points,0);
+ assert.equal(saved.checkout_version,'checkout-2026-11-v6');assert.equal(saved.earned_points,0);
 });
 test('removing the explicit coupon restores regular price and invalidates the prior quote',async()=>{
  const b={...body,coupon:'BLACKFRIDAY15',items:[{...body.items[0],qty:2}]};
@@ -72,11 +72,11 @@ test('US standard shipping threshold uses discounted merchandise before account 
  }
 });
 test('coupon does not make express, international shipping, priority or protection free',async()=>{
- for(const [country,shipping,extras,expected] of [['US','standard',['protection'],500],['US','express',['protection'],3995],['US','next_day',['priority','protection'],8494],['CA','standard',[],3995],['GB','express',[],9995]]){
+ for(const [country,shipping,extras,expected] of [['US','standard',['protection'],500],['US','express',['protection'],3995],['US','next_day',['priority','protection'],8494],['CA','standard',[],3995],['CA','next_day',[],6995],['CA','next_day',['protection'],7495],['GB','express',[],9995]]){
   const r=await checkout.normalize({},user,{...body,coupon:'BLACKFRIDAY15',items:[{...body.items[0],qty:2}],address:{...body.address,country},delivery:{shipping,extras}},catalog);
   assert.equal(checkout.price(r,method,null,{points:0,credit_cents:0}).shipping_cents,expected);
  }
- for(const country of ['ZZ','RU','CA']){
+ for(const country of ['ZZ','RU','GB']){
   const r=await checkout.normalize({},user,{...body,address:{...body.address,country},delivery:{shipping:'next_day',extras:[]}},catalog);
   assert.throws(()=>checkout.price(r,method,null,{points:0,credit_cents:0}),/unavailable|not available/);
  }
@@ -102,7 +102,7 @@ test('modified totals, quantities, delivery, prices and old version quotes fail 
  const {res:q,db}=await call({...body,action:'quote'});
  const changes=[{body:{items:[{...body.items[0],qty:2}]}},{body:{coupon:'BLACKFRIDAY15'}},{body:{delivery:{shipping:'express',extras:[]}}},{body:{quote:'0'.repeat(64)}},{cat:[{...catalog[0],variants:[{size:'5mg',price:101}]}]}];
  for(const change of changes){const {res}=await call({...body,action:'place',quote:q.body.quote,...change.body},{db,cat:change.cat||catalog});assert.equal(res.code,409);}
- for(const version of ['checkout-2026-11-v1','checkout-2026-11-v2','checkout-2026-11-v3','checkout-2026-11-v4']){
+ for(const version of ['checkout-2026-11-v1','checkout-2026-11-v2','checkout-2026-11-v3','checkout-2026-11-v4','checkout-2026-11-v5']){
   const {res}=await call({...body,action:'place',quote:q.body.quote,checkout_version:version},{db});assert.equal(res.code,400);
  }
  assert.equal(db.calls.length,0);

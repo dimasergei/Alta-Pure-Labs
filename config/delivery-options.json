@@ -21,7 +21,7 @@
     "label": "UPS Next Day",
     "price_cents": 6995,
     "enabled": true,
-    "description": "Next-business-day service within eligible US destinations; cutoffs and availability depend on carrier."
+    "description": "Next-business-day service after dispatch to eligible US and Canadian destinations. Carrier coverage, order cutoffs and customs clearance can affect availability and timing."
   },
   {
     "id": "priority",

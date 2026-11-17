@@ -33,7 +33,7 @@ test('admin dashboard exposes Orders and Marketing while retaining internal fulf
 });
 
 test('admin dashboard uses responsive brand styling and visible keyboard focus', () => {
-  assert.match(html, /Plus\+Jakarta\+Sans/);
+  assert.match(css, /font-family:\s*"Archivo"/);
   assert.match(html, /admin-dashboard\.css/);
   assert.match(css, /:focus-visible/);
   assert.match(css, /@media\s*\(max-width:\s*650px\)/);
@@ -48,10 +48,10 @@ test('order filters independently support payment and fulfillment states', () =>
 });
 
 test('destructive supplier and batch operations remain behind server-side admin authentication', () => {
-  assert.match(supplierApi, /req\.headers\['x-admin-password'\]/);
+  assert.match(supplierApi, /await requireAdmin\(req, res\)/);
   assert.match(supplierApi, /req\.method === 'DELETE'/);
   assert.match(supplierApi, /referenced by a batch/i);
-  assert.match(batchApi, /req\.headers\['x-admin-password'\]/);
+  assert.match(batchApi, /await requireAdmin\(req, res\)/);
   assert.match(batchApi, /admin_delete_supplier_batch/);
 });
 
@@ -99,8 +99,8 @@ test('header utility controls are accessible icon buttons and navigation remains
   assert.match(css, /\.admin-icon-button:focus-visible/);
 });
 
-test('dashboard uses the homepage laboratory background and preserves light-surface contrast tokens', () => {
-  assert.match(css, /url\("\/assets\/hero-lab-pure\.webp"\)/);
-  assert.match(css, /--admin-ink:\s*#101817/);
-  assert.match(css, /\.admin-view-section \.order-toggle[\s\S]*?color:#111817/);
+test('dashboard preserves monochrome contrast on readable light work surfaces', () => {
+  assert.match(css, /--admin-ink:\s*#111/);
+  assert.match(css, /\.admin-view-section \.order-toggle[\s\S]*?color:#111/);
+  assert.match(css, /\.admin-view-section \.order,[\s\S]*?background:#fff/);
 });

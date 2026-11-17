@@ -5,14 +5,16 @@ const css=fs.readFileSync(path.join(root,'admin-ui-polish.css'),'utf8');
 test('both admin pages load shared design system after legacy styles',()=>{
   for(const page of ['admin-orders.html','admin-marketing.html']){
     const html=fs.readFileSync(path.join(root,page),'utf8');
-    const pos=html.indexOf('href="/admin-ui-polish.css"');
+    const pos=html.indexOf('href="/admin-ui-polish.css');
     assert.ok(pos>0,page+' must load polish stylesheet');
-    assert.ok(pos>html.indexOf('href="/admin-dashboard.css"'));
+    assert.ok(pos>html.indexOf('href="/admin-dashboard.css'));
     assert.ok(pos<html.indexOf('</head>'));
   }
 });
-test('admin design uses high contrast cobalt on white surfaces',()=>{
-  for(const color of ['#18407e','#132b51','#ffffff','#f5f7fb','#53647a'])assert.ok(css.includes(color)||css.includes(color==='#ffffff'?'#fff':color),color);
+test('admin design uses high contrast monochrome surfaces and Archivo typography',()=>{
+  for(const color of ['#111','#fff','#f5f5f5','#666'])assert.ok(css.includes(color),color);
+  assert.match(css,/font-family:"Archivo"/);
+  assert.doesNotMatch(css,/#18407e|#132b51|#4b218b/i);
   assert.match(css,/body \.admin-nav-link\.is-active/);
   assert.match(css,/body #login-view/);
   assert.match(css,/body #mk-login/);

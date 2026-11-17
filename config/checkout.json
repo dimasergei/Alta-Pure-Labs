@@ -1,5 +1,5 @@
 {
-  "version": "checkout-2026-11-v5",
+  "version": "checkout-2026-11-v6",
   "currency": "USD",
   "shipping_cents": 1495,
   "shipping_countries": [
@@ -259,5 +259,13 @@
     "coupon": "BLACKFRIDAY15",
     "coupon_discount_bps": 1500
   },
-  "free_shipping_threshold_cents": 15000
+  "free_shipping_threshold_cents": 15000,
+  "payments": {
+    "version": "pure-payments-2026-11-v1",
+    "card_provider": "rampex",
+    "card_route": "hosted",
+    "crypto_provider": "polygon_usdc",
+    "crypto_discount_bps": 500,
+    "discount_combination": "best_single_discount"
+  }
 }

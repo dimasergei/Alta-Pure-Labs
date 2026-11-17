@@ -18,9 +18,9 @@ function render(filename){
 test('admin routes load complete structural experience after all older styles',()=>{
   for(const f of ['admin-orders.html','admin-marketing.html']){
     const html=fs.readFileSync(path.join(root,f),'utf8');
-    assert.match(html,/admin-experience\.css\?v=1/);
-    assert.match(html,/admin-violet\.css\?v=20261116/);
-    assert.match(html,/admin-experience\.js\?v=1/);
+    assert.match(html,/admin-experience\.css\?v=[A-Za-z0-9-]+/);
+    assert.match(html,/admin-violet\.css\?v=[A-Za-z0-9-]+/);
+    assert.match(html,/admin-experience\.js\?v=[A-Za-z0-9-]+/);
     assert.ok(html.lastIndexOf('/admin-experience.css')>html.lastIndexOf('/admin-ui-polish.css'));
     assert.ok(html.lastIndexOf('/admin-violet.css')>html.lastIndexOf('/admin-experience.css'));
   }
@@ -70,5 +70,7 @@ test('new stylesheet replaces dark order console, keeps light form controls, sup
   assert.match(violet,/\.ap-workspace-sidebar/);
   assert.match(violet,/\.uc-order-row/);
   assert.match(violet,/\.uc-dialog/);
-  assert.match(violet,/#4b218b/i);
+  assert.match(violet,/--ap-admin-text:#111/);
+  assert.match(violet,/--ap-admin-surface:#fff/);
+  assert.doesNotMatch(violet,/#4b218b|#6330a5/i);
 });

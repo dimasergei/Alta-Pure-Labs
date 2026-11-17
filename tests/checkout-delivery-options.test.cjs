@@ -12,3 +12,27 @@ test('Cold Chain cannot be selected or charged at checkout',async()=>{
  assert.equal(available.some(option=>option.id==='cold_chain'),false);
  assert.deepEqual(delivery.selection({shipping:'standard',extras:['priority','protection']}).extras,['priority','protection']);
 });
+
+test('US and Canada share the next-day rate while unsupported destinations remain unavailable',()=>{
+ for(const country of ['US','CA']){
+  const quote=delivery.price({shipping:'next_day',extras:['protection']},true,delivery.defaults,country);
+  assert.equal(quote.shipping_cents,6995);
+  assert.equal(quote.extras_cents,500);
+  assert.equal(quote.total_cents,7495);
+  assert.equal(quote.rate_version,'shipping-2026-11-v2');
+  assert.deepEqual(quote.selection,{shipping:'next_day',extras:['protection']});
+  assert.equal(delivery.price({shipping:'next_day',extras:[]},true,delivery.defaults,country).total_cents,6995);
+ }
+ assert.throws(()=>delivery.price({shipping:'next_day',extras:[]},false,delivery.defaults,'GB'),/unavailable/);
+});
+
+test('protection is priced exactly as selected for US, Canadian and other supported deliveries',()=>{
+ for(const country of ['US','CA','GB']){
+  const base=delivery.price({shipping:'standard',extras:[]},false,delivery.defaults,country);
+  const protectedQuote=delivery.price({shipping:'standard',extras:['protection']},false,delivery.defaults,country);
+  assert.equal(protectedQuote.total_cents-base.total_cents,500);
+  assert.equal(base.extras_cents,0,'An explicit opt-out may never be re-added by pricing');
+ }
+ const disabled=delivery.defaults.map(option=>option.id==='protection'?{...option,enabled:false}:option);
+ assert.throws(()=>delivery.price({shipping:'standard',extras:['protection']},false,disabled,'CA'),/unavailable/);
+});

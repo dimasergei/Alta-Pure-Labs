@@ -1,5 +1,5 @@
 {
-  "version": "shipping-2026-11-v1",
+  "version": "shipping-2026-11-v2",
   "currency": "USD",
   "US": {
     "standard": 1495,
@@ -8,7 +8,8 @@
   },
   "CA": {
     "standard": 3995,
-    "express": 5995
+    "express": 5995,
+    "next_day": 6995
   },
   "OTHER": {
     "standard": 5995,

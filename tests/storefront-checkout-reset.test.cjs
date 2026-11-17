@@ -4,7 +4,7 @@ const {JSDOM,VirtualConsole}=require('jsdom');
 const {price}=require('../lib/direct-checkout');
 const config=require('../config/checkout.json'),delivery=require('../config/delivery-options.json'),zones=require('../config/shipping-zones.json');
 const bank={id:'22222222-2222-4222-8222-222222222222',kind:'bank_transfer',sale_scope:'goods',currency:'USD',label:'Same-Day Bank Payment',active:true};
-const card={id:'11111111-1111-4111-8111-111111111111',kind:'hosted_link',sale_scope:'goods',currency:'USD',label:'Card checkout',native_provider:null};
+const card={id:'11111111-1111-4111-8111-111111111111',kind:'hosted_link',sale_scope:'goods',currency:'USD',label:'Card',native_provider:'rampex',rampex_provider:'hosted',countries:['US','CA']};
 const user={email:'researcher@example.test',user_metadata:{full_name:'Fixture Researcher',alta_profile:{shipping:{name:'Fixture Researcher',line1:'123 Research Lane',city:'Miami',region:'FL',postal_code:'33101',country:'US',phone:'3055550157'}}}};
 const tick=()=>new Promise(resolve=>setTimeout(resolve,20));
 function fixture(surface,{legacyCoupon=false,balances={points:0,credit_cents:0}}={}){
@@ -23,7 +23,7 @@ function fixture(surface,{legacyCoupon=false,balances={points:0,credit_cents:0}}
   try{return {ok:true,json:async()=>quote(body)};}catch(error){return {ok:false,json:async()=>({error:error.message})};}
  };
  const auth={auth:{getSession:async()=>({data:{session:{access_token:'isolated-fixture-token'}}})}};
- w.DirectCheckout={checkout:async()=>{},api:async(_auth,body)=>{if(!body)return data;orderRequests.push(body);if(body.action==='quote')return {...quote(body),quote:'fixture-signed-quote'};if(body.action==='place')return {id:'33333333-3333-4333-8333-333333333333'};throw Error('Unexpected checkout action');}};
+ w.DirectCheckout={checkout:async()=>{},openHostedPayment:async()=>({paid:true}),api:async(_auth,body)=>{if(!body)return data;orderRequests.push(body);if(body.action==='quote')return {...quote(body),quote:'fixture-signed-quote'};if(body.action==='place')return {id:body.id};throw Error('Unexpected checkout action');}};
  if(legacyCoupon){w.localStorage.setItem('ap-checkout-coupon','BOGO');w.localStorage.setItem('ap-cart-coupon','BOGO');}
  w.eval(fs.readFileSync(surface==='cart'?'cart-reference.js':'checkout-reference.js','utf8'));
  return {dom,w,root:w.document.querySelector('main'),requests,orderRequests,auth,user};
@@ -67,18 +67,18 @@ for(const surface of ['cart','checkout'])test(surface+': regular purchased quant
   if(surface==='cart')assert.match(f.root.querySelector('[data-nlc-unlock-copy]').textContent,/Free standard US shipping included/);
  }finally{f.dom.window.close();}
 });
-test('checkout bank order quotes and places the same purchased quantity and confirmed coupon',async()=>{
+test('checkout Card order quotes and places the same purchased quantity and confirmed coupon',async()=>{
  const f=fixture('checkout');
  try{
   await f.w.DirectCheckout.checkout(f.root,f.auth,f.user);await tick();
   f.root.querySelector('[name=sidebar_coupon]').value='BLACKFRIDAY15';f.root.querySelector('[data-nlx-coupon]').click();await tick();
   f.root.querySelector('[data-nlx-next]').click();f.root.querySelector('[data-nlx-next]').click();await tick();
-  const bankChoice=f.root.querySelector('[name=payment_choice][value=bank]');bankChoice.checked=true;bankChoice.dispatchEvent(new f.w.Event('change',{bubbles:true}));await tick();
+  const cardChoice=f.root.querySelector('[name=payment_choice][value=card]');cardChoice.checked=true;cardChoice.dispatchEvent(new f.w.Event('change',{bubbles:true}));await tick();
   for(const name of ['ruo','responsibility']){const input=f.root.querySelector('[name='+name+']');input.checked=true;input.dispatchEvent(new f.w.Event('change',{bubbles:true}));}
   const place=f.root.querySelector('[data-nlx-place]');assert.equal(place.disabled,false);place.click();await tick();
   assert.equal(f.orderRequests.length,2);
   assert.equal(f.orderRequests[0].action,'quote');assert.equal(f.orderRequests[1].action,'place');
-  for(const body of f.orderRequests){assert.equal(body.items[0].qty,2);assert.equal(body.coupon,'BLACKFRIDAY15');assert.equal(body.kind,'goods');assert.equal(body.method_id,bank.id);assert.equal(body.checkout_version,config.version);assert.equal(body.plan,undefined);assert.equal(body.research_builder,undefined);}
+  for(const body of f.orderRequests){assert.equal(body.items[0].qty,2);assert.equal(body.coupon,'BLACKFRIDAY15');assert.equal(body.kind,'goods');assert.equal(body.method_id,card.id);assert.equal(body.checkout_version,config.version);assert.equal(body.plan,undefined);assert.equal(body.research_builder,undefined);}
   assert.equal(f.orderRequests[1].quote,'fixture-signed-quote');
  }finally{f.dom.window.close();}
 });

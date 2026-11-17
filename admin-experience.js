@@ -19,7 +19,7 @@
     left.setAttribute('aria-label','PURE secure business workspace');
     const logo=el('div','ap-auth-symbol');
     const img=document.createElement('img');
-    img.src='/favicon-bright-96.png';
+    img.src='/favicon-pure-96.png?v=20261117b';
     img.alt='';
     img.width=76;
     img.height=76;

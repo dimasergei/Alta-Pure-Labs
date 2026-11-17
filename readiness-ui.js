@@ -5,12 +5,49 @@
  const money=n=>new Intl.NumberFormat('en-US',{style:'currency',currency:'USD'}).format((n||0)/100);
  const empty=(title,text)=>`<div class="rd-empty"><span aria-hidden="true">◇</span><h3>${title}</h3><p>${text}</p><a class="ap-button" href="/shop">Start Shopping</a></div>`;
  function walletButtons(c={}){return `<div class="rd-wallets" aria-label="Express checkout">${[['apple_pay','Apple Pay'],['google_pay','Google Pay']].map(([key,label])=>c[key]?`<a class="rd-wallet" href="/checkout?method=${encodeURIComponent(c.card_method_id)}&wallet=${key}">${label}</a>`:`<button type="button" class="rd-wallet" disabled data-unavailable="true" aria-label="${label} — awaiting activation">${label}<small>Awaiting activation</small></button>`).join('')}</div>`;}
- function delivery(data){const options=data.delivery_options||[];return `<h3>Delivery speed</h3><p>Free standard US shipping on merchandise orders of $150 after discounts.</p><div class="rd-delivery-grid">${options.filter(o=>o.kind==='shipping').map(o=>`<label class="rd-delivery ${!o.enabled?'rd-unavailable':''}"><input type="radio" name="shipping_speed" value="${esc(o.id)}" ${o.id==='standard'?'checked':''} ${!o.enabled?'disabled data-unavailable="true"':''}><strong>${esc(o.label)}</strong><span data-rd-shipping-price="${esc(o.id)}">${money(o.price_cents)}</span><small>${esc(o.description)}</small>${!o.enabled?'<em>Not available yet</em>':''}</label>`).join('')}</div><div class="rd-delivery-extras">${options.filter(o=>o.kind==='extra').map(o=>`<label class="rd-extra ${!o.enabled?'rd-unavailable':''}"><input type="checkbox" name="delivery_extra" value="${esc(o.id)}" ${!o.enabled?'disabled data-unavailable="true"':''}><span><strong>${esc(o.label)}</strong><small>${esc(o.description)}</small>${!o.enabled?'<em>Not available yet</em>':''}</span><b>${money(o.price_cents)}</b></label>`).join('')}</div>`;}
+ const cartKey=items=>'ap-v2-cart-extras:'+JSON.stringify(items.map(({id,size,qty})=>({id,size,qty})));
+ const protectionKey='ap-checkout-protection';
+ function wantsProtection(items){
+  try{
+   const choice=sessionStorage.getItem(protectionKey);
+   if(choice==='true'||choice==='false')return choice==='true';
+   const prior=JSON.parse(sessionStorage.getItem(cartKey(items))||'null');
+   if(Array.isArray(prior)&&(prior.includes('protection')||(localStorage.getItem('ap-shipping-country')||'US')==='US')){
+    const selected=prior.includes('protection');sessionStorage.setItem(protectionKey,String(selected));return selected;
+   }
+  }catch{}
+  try{sessionStorage.setItem(protectionKey,'true');}catch{}
+  return true;
+ }
+ function delivery(data,cart=[]){
+  const options=data.delivery_options||[];
+  return `<h3>Delivery speed</h3><p>Free standard US shipping on merchandise orders of $150 after discounts.</p><div class="rd-delivery-grid">${options.filter(o=>o.kind==='shipping').map(o=>`<label class="rd-delivery ${!o.enabled?'rd-unavailable':''}"><input type="radio" name="shipping_speed" value="${esc(o.id)}" ${o.id==='standard'?'checked':''} ${!o.enabled?'disabled data-unavailable="true"':''}><strong>${esc(o.label)}</strong><span data-rd-shipping-price="${esc(o.id)}">${money(o.price_cents)}</span><small>${esc(o.description)}</small>${!o.enabled?'<em>Not available yet</em>':''}</label>`).join('')}</div><div class="rd-delivery-extras">${options.filter(o=>o.kind==='extra').map(o=>`<label class="rd-extra ${!o.enabled?'rd-unavailable':''}"><input type="checkbox" name="delivery_extra" value="${esc(o.id)}" ${o.id==='protection'&&o.enabled&&wantsProtection(cart)?'checked ':''}${!o.enabled?'disabled data-unavailable="true"':''}><span><strong>${esc(o.label)}</strong><small>${esc(o.description)}</small>${o.id==='protection'?'<a href="/shipping-protection.html">Shipping protection terms</a>':''}${!o.enabled?'<em>Not available yet</em>':''}</span><b>${money(o.price_cents)}</b></label>`).join('')}</div>`;
+ }
  function selection(form){return{shipping:form.elements.shipping_speed?.value||'standard',extras:[...form.querySelectorAll('[name=delivery_extra]:checked')].map(x=>x.value)};}
  function enhanceCheckout(form,aside,auth,cart,data){
-  const payment=form.querySelector('.dc-method')?.parentElement;if(payment&&!data.capabilities?.card&&!data.methods?.some(m=>['rampex','peptidepay'].includes(m.native_provider))){const el=document.createElement('div');el.className='rd-card-pending';el.innerHTML='<strong>Credit / debit card</strong><span>Awaiting processor activation</span>'+walletButtons(data.capabilities);payment.prepend(el);}
-  else if(payment){const w=document.createElement('div');w.innerHTML=walletButtons(data.capabilities);payment.prepend(w);w.querySelectorAll('a').forEach(a=>a.onclick=e=>{e.preventDefault();form.elements.method_id.value=data.capabilities.card_method_id;form.dispatchEvent(new Event('input',{bubbles:true}));});}
+  // Card wallets are offered by the hosted provider when eligible; no placeholder native buttons.
+
   if(!cart.length||!form.elements.line1)return;
+  const optionsById=Object.fromEntries((data.delivery_options||[]).map(option=>[option.id,option]));
+  const savedExtras=(()=>{try{return JSON.parse(sessionStorage.getItem(cartKey(cart))||'null');}catch{return null;}})();
+  for(const input of form.querySelectorAll('[name=delivery_extra]')){
+   input.checked=!!optionsById[input.value]?.enabled&&(input.value==='protection'?wantsProtection(cart):Array.isArray(savedExtras)&&savedExtras.includes(input.value));
+  }
+  function syncDelivery(quote){
+   const country=form.elements.country?.value||'US';
+   const fallback=Object.fromEntries((data.delivery_options||[]).filter(o=>o.kind==='shipping').map(o=>[o.id,o.price_cents]));
+   const rates=data.shipping_zones?.[country]||data.shipping_zones?.OTHER||(country==='US'?fallback:{});
+   for(const input of form.querySelectorAll('[name=shipping_speed]')){
+    const eligible=!!optionsById[input.value]?.enabled&&Number.isSafeInteger(rates[input.value]);
+    input.disabled=!eligible;if(!eligible)input.checked=false;
+    input.closest('.rd-delivery')?.classList.toggle('rd-unavailable',!eligible);
+    const price=form.querySelector('[data-rd-shipping-price="'+input.value+'"]');
+    if(price)price.textContent=!eligible?'Unavailable':input.value==='standard'&&country==='US'&&quote?.free_shipping_remaining_cents===0?'FREE':money(rates[input.value]);
+   }
+   if(!form.querySelector('[name=shipping_speed]:checked')){const standard=form.querySelector('[name=shipping_speed][value=standard]:not(:disabled)');if(standard)standard.checked=true;}
+   try{sessionStorage.setItem(cartKey(cart),JSON.stringify(selection(form).extras));}catch{}
+  }
+  syncDelivery();
   const estimate=aside.querySelector('.dc-totals'),input=form.elements.coupon,apply=form.querySelector('[data-dc-apply-coupon]'),remove=form.querySelector('[data-dc-remove-coupon]'),status=form.querySelector('[data-dc-coupon-status]');let timer,sequence=0;
   const keys=['ap-checkout-coupon','ap-cart-coupon'];
   const saved=(localStorage.getItem(keys[0])||localStorage.getItem(keys[1])||'').trim().toUpperCase();
@@ -29,10 +66,11 @@
     if(input)input.value=form.dataset.appliedCoupon;if(remove)remove.hidden=!form.dataset.appliedCoupon;
     if(status)status.textContent=form.dataset.appliedCoupon?'BLACKFRIDAY15 applied — 15% off merchandise.':action==='remove'?'Coupon removed. Regular prices restored.':'';
     const rows=[['Subtotal',q.subtotal_cents]];
-    if(q.discount_cents>0&&form.dataset.appliedCoupon)rows.push(['BLACKFRIDAY15 (15%)',-q.discount_cents]);
+    if(q.pricing?.coupon_discount_cents>0)rows.push(['BLACKFRIDAY15 (15%)',-q.pricing.coupon_discount_cents]);
+    if(q.pricing?.crypto_discount_cents>0)rows.push(['Crypto discount (5%)',-q.pricing.crypto_discount_cents]);
     rows.push(['Delivery & options',q.shipping_cents],['Estimated total',q.total_cents]);
     estimate.innerHTML=rows.map(([label,v])=>`<div class="dc-total-row"><span>${label}</span><strong>${money(v)}</strong></div>`).join('')+'<p class="dc-note">Existing points and store credit are applied when you review the final total.</p>';
-    const standard=form.querySelector('[data-rd-shipping-price="standard"]');if(standard){const option=(data.delivery_options||[]).find(o=>o.id==='standard');standard.textContent=(form.elements.country?.value||'US')==='US'&&q.free_shipping_remaining_cents===0?'FREE':money(option?.price_cents||0);}
+    syncDelivery(q);
    }catch(error){if(n===sequence&&status)status.textContent=error.message;}
    finally{if(n===sequence){form.dataset.couponPending='false';if(apply)apply.disabled=false;if(remove)remove.disabled=false;}}
   }
@@ -40,7 +78,16 @@
   apply?.addEventListener('click',()=>change(input.value.trim().toUpperCase(),'apply'));
   remove?.addEventListener('click',()=>change('','remove'));
   input?.addEventListener('keydown',event=>{if(event.key==='Enter'){event.preventDefault();apply?.click();}});
-  form.addEventListener('input',event=>{if(['method_id','shipping_speed','delivery_extra','country'].includes(event.target.name)){clearTimeout(timer);timer=setTimeout(()=>refresh(),180);}});
+  const onDeliveryChange=event=>{
+   if(!['method_id','shipping_speed','delivery_extra','country'].includes(event.target.name))return;
+   if(event.target.name==='delivery_extra'&&event.target.value==='protection'){
+    try{sessionStorage.setItem(protectionKey,String(event.target.checked));}catch{}
+   }
+   if(event.target.name==='country')localStorage.setItem('ap-shipping-country',event.target.value);
+   syncDelivery();clearTimeout(timer);timer=setTimeout(()=>refresh(),180);
+  };
+  form.addEventListener('input',onDeliveryChange);
+  form.addEventListener('change',onDeliveryChange);
   void refresh();
  }
  async function overview(root,auth,user){try{const [d,o]=await Promise.all([window.DirectCheckout.api(auth),window.DirectCheckout.api(auth,null,'orders')]);const paid=o.invoices.filter(order=>['paid','processing','shipped','delivered'].includes(order.status));

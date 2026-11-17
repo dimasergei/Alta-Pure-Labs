@@ -4,13 +4,13 @@ const path=require('path');
 const base=path.join(__dirname,'..');
 const delivery=require('../config/delivery-options.json'),config=require('../config/checkout.json'),zones=require('../config/shipping-zones.json');
 const billingData={terms:{conversion:require('../config/conversion.json')},balances:{points:0,credit_cents:0},delivery_options:delivery,shipping_zones:zones,
- config,methods:[{id:'11111111-1111-4111-8111-111111111111',kind:'hosted_link',native_provider:'rampex',label:'Card through Rampex'}],nmi:null};
+ config,methods:[{id:'11111111-1111-4111-8111-111111111111',kind:'hosted_link',native_provider:'rampex',rampex_provider:'hosted',countries:['US','CA'],label:'Card'}],nmi:null};
 const user={id:'22222222-2222-4222-8222-222222222222',email:'buyer@example.test',user_metadata:{full_name:'Sample Researcher',alta_profile:{shipping:{name:'Sample Researcher',line1:'123 Research Lane',city:'Miami',region:'FL',postal_code:'33101',country:'US',phone:'305-555-0157'}}}};
 const wait=()=>new Promise(resolve=>setTimeout(resolve,35));
 const source=fs.readFileSync(path.join(base,'checkout-reference.js'),'utf8');
 function fixture(ready=false,seedUnselected=false){
  const dom=new JSDOM('<main id="checkout"></main>',{url:'https://altapurelabs.com/checkout',runScripts:'outside-only'});
- const w=dom.window,orders=[],quotes=[];
+ const w=dom.window,orders=[],quotes=[],requests=[];
  w.HTMLElement.prototype.scrollIntoView=()=>{};
  Object.defineProperty(w.crypto,'randomUUID',{value:()=> '33333333-3333-4333-8333-333333333333',configurable:true});
  const data=JSON.parse(JSON.stringify(billingData));
@@ -31,7 +31,7 @@ function fixture(ready=false,seedUnselected=false){
    orders.push({...JSON.parse(opt.body),action:'native_pay'});
    return{ok:true,json:async()=>({state:'paid'})};
   }
-  const body=JSON.parse(opt.body);
+  const body=JSON.parse(opt.body);requests.push(body);
   const items=(w.AltaStore.cart||[]),subtotal=items.reduce((n,x)=>x.qty*10000+n,0);
   const shipping=zones[body.country]||zones.OTHER;
   const chosen=body.delivery;
@@ -46,7 +46,7 @@ function fixture(ready=false,seedUnselected=false){
  const auth={auth:{getSession:async()=>({data:{session:{access_token:'fixture-access-token'}}})}};
  if(seedUnselected)w.sessionStorage.setItem('ap-v2-cart-extras:'+JSON.stringify([{id:'fixture',size:'5mg',qty:2}]),'[]');
  w.eval(source);
- return{dom,w,root:w.document.getElementById('checkout'),data,orders,quotes,auth};
+ return{dom,w,root:w.document.getElementById('checkout'),data,orders,quotes,requests,auth};
 }
 test('three-step checkout shows preselected US protection, editable order summary and global country dropdown without new rewards',async()=>{
  const f=fixture();
@@ -67,29 +67,35 @@ test('three-step checkout shows preselected US protection, editable order summar
   assert.match(f.root.textContent,/Country \/ Region/);
  }finally{f.dom.window.close();}
 });
-test('customer-selected country updates authoritative quote; US-only next-day excluded for Canadian delivery; extra fees are opt-in',async()=>{
+test('Canadian delivery offers next-day service and keeps protection selected while priority is optional',async()=>{
  const f=fixture();
  try{
   await f.w.DirectCheckout.checkout(f.root,f.auth,user);await wait();
   const country=f.root.querySelector('select[name=country]');
   country.value='CA';country.dispatchEvent(new f.w.Event('change',{bubbles:true}));
   await new Promise(r=>setTimeout(r,290));
-  assert.equal(f.root.querySelector('[data-nlx-extra="protection"]'),null,'US-only shipping protection must not be offered for international destinations');
-  assert.equal(f.quotes.at(-1).total_cents,23995);
+  assert.equal(f.root.querySelector('[data-nlx-extra="protection"]').checked,true,'Protection remains selected for Canadian destinations');
+  assert.equal(f.quotes.at(-1).total_cents,24495);
   f.root.querySelector('[data-nlx-next]').click();await wait();
   assert.match(f.root.textContent,/Delivery speed/);
-  assert.equal(f.root.querySelector('input[name=delivery_speed][value=next_day]').disabled,true);
+  const nextDay=f.root.querySelector('input[name=delivery_speed][value=next_day]');
+  assert.equal(nextDay.disabled,false);
+  nextDay.checked=true;nextDay.dispatchEvent(new f.w.Event('change',{bubbles:true}));
+  await new Promise(r=>setTimeout(r,260));
+  assert.equal(f.quotes.at(-1).total_cents,27495);
+  assert.equal(f.requests.at(-1).delivery.shipping,'next_day');
+  assert.match(f.root.textContent,/after dispatch.*carrier coverage.*customs clearance/s);
   f.root.querySelector('[data-nlx-extra=priority]').checked=true;
   f.root.querySelector('[data-nlx-extra=priority]').dispatchEvent(new f.w.Event('change',{bubbles:true}));
   await new Promise(r=>setTimeout(r,260));
-  assert.equal(f.quotes.at(-1).total_cents,24994);
+  assert.equal(f.quotes.at(-1).total_cents,28494);
   assert.match(f.root.textContent,/Priority Processing/);
   f.root.querySelector('[data-nlx-next]').click();await wait();
-  assert.match(f.root.textContent,/EXPRESS CHECKOUT/);
-  assert.match(f.root.textContent,/OR PAY ANOTHER WAY/);
-  assert.match(f.root.textContent,/Card payments are not available until processor activation/);
+  assert.match(f.root.textContent,/Choose how to pay/);
+  assert.match(f.root.textContent,/provider displays its fees/);
+  assert.match(f.root.textContent,/SETUP PENDING/);
   assert.equal(f.root.querySelectorAll('.nlx-terms input[type=checkbox]').length,2);
-  assert.equal(f.root.querySelectorAll('.nlx-wallet-unavailable').length,2);
+  assert.equal(f.root.querySelectorAll('.nlx-wallet-unavailable').length,0);
   assert.ok([...f.root.querySelectorAll('.nlx-wallet-unavailable')].every(b=>b.disabled),'Wallet buttons cannot claim acceptance before onboarding');
  }finally{f.dom.window.close();}
 });
@@ -128,24 +134,24 @@ test('card and wallet displays stay disabled even with legacy NMI configuration'
   const boxes=f.root.querySelectorAll('.nlx-terms input[type=checkbox]');
   boxes.forEach(b=>{b.checked=true;b.dispatchEvent(new f.w.Event('change',{bubbles:true}));});
   await wait();
-  assert.equal(mounts,0,'No card processor should mount in the bank-only layout');
+  assert.equal(mounts,0,'Historical NMI configuration cannot mount in the new hosted layout');
   assert.ok([...f.root.querySelectorAll('.nlx-wallet-unavailable')].every(b=>b.disabled));
   assert.equal(f.root.querySelector('[data-nlx-place]').disabled,true);
   assert.equal(f.orders.filter(x=>x.action==='place').length,0);
  }finally{f.dom.window.close();}
 });
 
-test('a cart with previously unchecked protection defaults checked on entry to checkout, then remains user-uncheckable',async()=>{
+test('an existing explicit protection opt-out stays unchecked on checkout entry and can be re-enabled',async()=>{
  const f=fixture(false,true);
  try{
   await f.w.DirectCheckout.checkout(f.root,f.auth,user);await wait();
   const box=f.root.querySelector('[data-nlx-extra="protection"]');
   assert.ok(box,'Shipping Protection must be available for eligible US checkout');
-  assert.equal(box.checked,true,'Previously unchecked cart must default to checked at checkout');
-  assert.equal(f.quotes.at(-1).total_cents,20500);
-  box.checked=false;box.dispatchEvent(new f.w.Event('change',{bubbles:true}));
-  await new Promise(resolve=>setTimeout(resolve,250));
-  assert.equal(f.root.querySelector('[data-nlx-extra="protection"]').checked,false);
+  assert.equal(box.checked,false,'A previous checkout opt-out must remain unchecked');
   assert.equal(f.quotes.at(-1).total_cents,20000);
+  box.checked=true;box.dispatchEvent(new f.w.Event('change',{bubbles:true}));
+  await new Promise(resolve=>setTimeout(resolve,250));
+  assert.equal(f.root.querySelector('[data-nlx-extra="protection"]').checked,true);
+  assert.equal(f.quotes.at(-1).total_cents,20500);
  }finally{f.dom.window.close();}
 });

@@ -60,7 +60,7 @@ test('admin checkout overview cannot re-enable retired Stripe from a stale flag'
 test('overview page uses branded admin styling and never stores password',()=>{
  const html=fs.readFileSync(path.join(root,'admin-operations-overview.html'),'utf8');
  const js=fs.readFileSync(path.join(root,'admin-operations-overview.js'),'utf8');
- assert.match(html,/href="\/admin-dashboard\.css"/);
+ assert.match(html,/href="\/admin-dashboard\.css(?:\?v=[A-Za-z0-9-]+)?"/);
  assert.match(html,/type="password"/);
  assert.match(js,/x-admin-password/);
  assert.match(js,/\/api\/admin-suppliers\?overview=1/);

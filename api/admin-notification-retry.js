@@ -1,4 +1,4 @@
-const crypto = require('crypto');
+const { requireAdmin } = require('../lib/admin-auth');
 const { clients, checked } = require('../lib/backend');
 const { emailSender } = require('../lib/brand-display');
 const { buildStatusEmail } = require('../lib/customer-order-email');
@@ -10,12 +10,6 @@ const {
 
 const UUID_PATTERN =
   /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
-
-function passwordMatches(provided, expected) {
-  const a = crypto.createHash('sha256').update(String(provided)).digest();
-  const b = crypto.createHash('sha256').update(expected).digest();
-  return crypto.timingSafeEqual(a, b);
-}
 
 module.exports = async (req, res) => {
   res.setHeader('Cache-Control', 'no-store');
@@ -29,11 +23,7 @@ module.exports = async (req, res) => {
     });
   }
 
-  const providedPassword = req.headers['x-admin-password'];
-
-  if (!providedPassword || !passwordMatches(providedPassword, adminPassword)) {
-    return res.status(401).json({ error: 'Unauthorized.' });
-  }
+  if (!(await requireAdmin(req, res))) return;
 
   if (req.method !== 'POST') {
     res.setHeader('Allow', 'POST');

@@ -19,7 +19,8 @@ test('delivery extras are opt-in, disabled services are rejected, and only stand
  assert.equal(delivery.price({shipping:'express',extras:['priority','protection']},true).total_cents,4994);
  assert.equal(delivery.price({shipping:'standard',extras:['priority','protection']},false,delivery.defaults,'CA').total_cents,5494);
  assert.equal(delivery.price({shipping:'standard',extras:[]},false,delivery.defaults,'DE').total_cents,5995);
- assert.throws(()=>delivery.price({shipping:'next_day',extras:[]},false,delivery.defaults,'CA'),/unavailable/);
+ assert.equal(delivery.price({shipping:'next_day',extras:[]},false,delivery.defaults,'CA').total_cents,6995);
+ assert.throws(()=>delivery.price({shipping:'next_day',extras:[]},false,delivery.defaults,'GB'),/unavailable/);
  assert.throws(()=>delivery.price({shipping:'standard',extras:[]},false,delivery.defaults,'IR'),/available/);
 });
 test('Lotus client uses the fixed provider origin, exact decimal amounts and safe errors',async()=>{

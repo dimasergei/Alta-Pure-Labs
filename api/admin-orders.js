@@ -1,6 +1,5 @@
+const { requireAdmin } = require('../lib/admin-auth');
 const {
-  createHash,
-  timingSafeEqual,
   randomUUID
 } = require('node:crypto');
 
@@ -93,13 +92,7 @@ module.exports = async (req, res) => {
     });
   }
 
-  const providedPassword = req.headers['x-admin-password'];
-
-  if (!passwordMatches(providedPassword, adminPassword)) {
-    return res.status(401).json({
-      error: 'Unauthorized.'
-    });
-  }
+  if (!(await requireAdmin(req, res))) return;
 
   if (!['GET', 'PATCH'].includes(req.method)) {
     res.setHeader('Allow', 'GET, PATCH');
@@ -196,25 +189,6 @@ module.exports = async (req, res) => {
     });
   }
 };
-
-function passwordMatches(provided, expected) {
-  if (
-    typeof provided !== 'string' ||
-    provided.length > 4096
-  ) {
-    return false;
-  }
-
-  const providedHash = createHash('sha256')
-    .update(provided)
-    .digest();
-
-  const expectedHash = createHash('sha256')
-    .update(expected)
-    .digest();
-
-  return timingSafeEqual(providedHash, expectedHash);
-}
 
 function httpError(status, message) {
   const error = new Error(message);

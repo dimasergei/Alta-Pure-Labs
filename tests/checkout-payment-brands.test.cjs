@@ -1,19 +1,11 @@
 'use strict';
 const {test}=require('node:test'),assert=require('node:assert/strict'),fs=require('node:fs');
 const js=fs.readFileSync('checkout-reference.js','utf8');
-const css=fs.readFileSync('checkout-reference.css','utf8');
-test('Express wallets use transparent inline brand symbols without card logos',()=>{
- assert.match(js,/nlx-apple-symbol/);assert.match(js,/nlx-google-symbol/);
- const wallet=js.split("nlx-wallets\" data-nlx-wallets")[1]?.split("nlx-wallet-consent")[0]||'';
- assert.doesNotMatch(wallet,/nlx-wallet-card-logos/);
- assert.match(js,/google-g-clean\.svg/);assert.match(fs.readFileSync('assets/payment-brands/google-g-clean.svg','utf8'),/#4285f4/i);
+test('hosted checkout does not advertise unverified native wallet or bank brands',()=>{
+ for(const name of ['nlx-apple-symbol','nlx-google-symbol','chase-reference.png','bofa-reference.png','wf-reference.png','No Fees!'])assert.equal(js.includes(name),false);
+ assert.match(js,/Cards|cards/);assert.match(js,/digital wallets depend on your country, device and provider eligibility/);
 });
-test('Card and bank choices have distinct logos and phone and bank icons',()=>{
- for(const x of ['visa-blue.svg','amex-blue.svg','nlx-phone-symbol','nlx-bank-symbol','nlx-chase-mark','nlx-bofa-mark','nlx-wf-mark','Link a new bank account'])assert.ok(js.includes(x),x);
-});
-test('Payment UI remains nonfunctional for card and wallets',()=>{
- assert.match(js,/nlx-wallet-unavailable[^>]+ disabled/);
- assert.match(js,/Card number \*<input disabled/);
- assert.match(js,/selected==='bank'&&bank/);
- assert.match(css,/nlx-wallet-symbol/);
+test('new checkout offers two concise payment choices and does not collect raw card data',()=>{
+ assert.match(js,/\['card','crypto'\]/);assert.doesNotMatch(js,/Card number|Card code|CVC|Link a new bank account|ByteNFT/);
+ assert.match(js,/openHostedPayment/);assert.match(js,/SETUP PENDING/);
 });

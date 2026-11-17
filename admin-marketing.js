@@ -10,8 +10,9 @@
   const uid = () => (typeof crypto !== 'undefined' && crypto.randomUUID) ? crypto.randomUUID() : 'm-'+Date.now()+'-'+Math.random().toString(36).slice(2);
   const safeURL = value => { try {const u=new URL(value);return ['https:','http:'].includes(u.protocol)?u.href:'';}catch{return '';} };
   const original = {leads:[],messages:[],style:'Direct and professional. Ask whether the creator is open to a long-term collaboration; do not imply we reviewed content we have not seen. No unverified claims.'};
-  let data = read(), selected='',draftId='', password='', aiAvailable=false, loggedIn=false;
+  let data = read(), selected='',draftId='', aiAvailable=false, loggedIn=false;
   let revision=0,remoteReady=false,syncTimer=null,syncRunning=false,syncQueued=false;
+  let workspaceOpening=null,workspaceEpoch=0;
   let instagram={connected:false,credentials_configured:false},igMessages=[];
   let igMedia={};
   let igMediaStatus={};
@@ -84,28 +85,24 @@
       syncRunning=false;
     }
   }
-  function notice(message,error=false){const el=$('mk-alert');el.textContent=message||'';el.style.color=error?'#a93434':'#1c7a73';}
+  function notice(message,error=false){const el=$('mk-alert');el.textContent=message||'';el.style.color='#111111';el.style.fontWeight=error?'800':'600';}
   function elem(tag,text,cls){const e=document.createElement(tag);if(text!==undefined)e.textContent=String(text);if(cls)e.className=cls;return e;}
-  function accountPassword(){
-    try{return sessionStorage.getItem('altapure_admin_password')||'';}catch{return '';}
-  }
-  function setPassword(v){
-    try{if(v)sessionStorage.setItem('altapure_admin_password',v);else sessionStorage.removeItem('altapure_admin_password');}catch{}
-  }
   async function endpoint(body){
-    const opt={method:body?'POST':'GET',cache:'no-store',headers:{'x-admin-password':password,...(body?{'Content-Type':'application/json'}:{})}};
+    const opt={method:body?'POST':'GET',cache:'no-store',headers:body?{'Content-Type':'application/json'}:{}};
     if(body)opt.body=JSON.stringify(body);
-    const r=await fetch('/api/customer-config?marketing=admin',opt);
+    const r=await window.PureAdminAuth.fetch('/api/customer-config?marketing=admin',opt);
     const payload=await r.json().catch(()=>({error:'Unable to read server response.'}));
+    if(!window.PureAdminAuth.authenticated){showLogin('Sign in to continue.');throw Error('Sign in to continue.');}
     if(!r.ok)throw Error(payload.error||'Marketing endpoint unavailable.');
     return payload;
   }
   function showApp(){loggedIn=true;$('mk-login').hidden=true;$('mk-app').hidden=false;$('mk-style').value=data.style;render();notice('');}
-  function showLogin(message){loggedIn=false;remoteReady=false;password='';$('mk-app').hidden=true;$('mk-login').hidden=false;if(message){$('mk-login-error').hidden=false;$('mk-login-error').textContent=message;}}
-  async function login(value){
-    password=value;
+  function showLogin(message){loggedIn=false;remoteReady=false;clearTimeout(syncTimer);workspaceEpoch++;workspaceOpening=null;$('mk-app').hidden=true;$('mk-login').hidden=false;if(message){$('mk-login-error').hidden=false;$('mk-login-error').textContent=message;}}
+  async function loadWorkspace(){
+    const ticket=workspaceEpoch;
     try{
       const status=await endpoint();
+      if(ticket!==workspaceEpoch||!window.PureAdminAuth.authenticated)return;
       aiAvailable=status.ai_enabled===true;
       $('mk-ai-state').textContent=aiAvailable?'Available — draft review required':'Not configured — editable templates available';
       const cached=data;
@@ -118,7 +115,7 @@
       igMessages=Array.isArray(status.instagram_messages)?status.instagram_messages:[];
       remoteReady=true;
       try{localStorage.setItem(key,JSON.stringify(data));}catch{}
-      setPassword(value);$('mk-login-error').hidden=true;showApp();
+      $('mk-login-error').hidden=true;showApp();
       $('mk-sync-status').textContent='Connected to Supabase';
       $('mk-crm-state').textContent='Synced';
       const existingIds=new Set(data.leads.map(x=>x.id));
@@ -133,7 +130,13 @@
       }
       const result=new URLSearchParams(location.search).get('instagram');
       if(result){switchPanel('instagram');notice(result==='connected'?'Instagram connected. Inbox synchronization is ready.':'Instagram connection status: '+result.replaceAll('_',' '));history.replaceState(null,'',location.pathname);}
-    }catch(err){setPassword('');showLogin(err.message);}
+    }catch(err){showLogin(err.message);}
+  }
+
+  function login(){
+    if(workspaceOpening)return workspaceOpening;
+    const task=loadWorkspace().finally(()=>{if(workspaceOpening===task)workspaceOpening=null;});
+    workspaceOpening=task;return task;
   }
 
   function find(id){return data.leads.find(x=>x.id===id);}
@@ -158,7 +161,7 @@
       const name=elem('td'),strong=elem('span',lead.name||'Unnamed','mk-name'),handle=elem('small',lead.handle||lead.email||'—','mk-secondary');name.append(strong,handle);
       const platform=elem('td',lead.platform),followers=elem('td',fmt(lead.followers));
       const stageCell=elem('td'),pill=elem('span',lead.stage,'mk-stage-label');stageCell.append(pill);
-      const follow=elem('td',lead.followup||'—');if(lead.followup&&lead.followup<=today()&&lead.stage!=='Dormant')follow.style.color='#a93434';
+      const follow=elem('td',lead.followup||'—');if(lead.followup&&lead.followup<=today()&&lead.stage!=='Dormant'){follow.style.color='#111111';follow.style.fontWeight='800';follow.style.textDecoration='underline';}
       const actions=elem('td'),wrap=elem('div',undefined,'mk-actions');
       for(const [label,func] of [['Edit',()=>edit(lead.id)],['Draft',()=>draft(lead.id)]]){
         const b=elem('button',label);b.type='button';b.addEventListener('click',func);wrap.append(b);
@@ -416,8 +419,19 @@
     for(const panel of ['pipeline','conversations','instagram','insights','settings'])$('mk-panel-'+panel).hidden=panel!==name;
   }
 
-  $('mk-login-form').addEventListener('submit',e=>{e.preventDefault();const v=$('mk-password').value;$('mk-password').value='';login(v);});
-  $('mk-logout').addEventListener('click',()=>{setPassword('');showLogin('Logged out.');});
+  $('mk-login-form').addEventListener('submit',async e=>{
+    e.preventDefault();
+    const button=e.currentTarget.querySelector('button[type=submit]'),status=$('mk-login-status');
+    button.disabled=true;button.textContent=window.PureAdminAuth.pendingLink?'Signing in…':'Sending link…';$('mk-login-error').hidden=true;status.hidden=true;
+    try{if(window.PureAdminAuth.pendingLink){await window.PureAdminAuth.completeLink();await login();}else{const result=await window.PureAdminAuth.requestLink('marketing');status.textContent=result.message;status.hidden=false;}}
+    catch(err){$('mk-login-error').textContent=err.message;$('mk-login-error').hidden=false;}
+    finally{button.disabled=false;button.textContent=window.PureAdminAuth.pendingLink?'Continue to Marketing':'Send sign-in link';}
+  });
+  $('mk-logout').addEventListener('click',async()=>{
+    try{await window.PureAdminAuth.logout();showLogin('Logged out.');}
+    catch(err){notice(err.message,true);}
+  });
+  window.addEventListener('pure-admin-auth-change',event=>{if(!event.detail.authenticated)showLogin();else if(!loggedIn)login();});
   for(const b of document.querySelectorAll('.mk-subtab'))b.addEventListener('click',()=>switchPanel(b.dataset.panel));
   $('mk-add-button').addEventListener('click',()=>edit());
   $('mk-lead-form').addEventListener('submit',saveLead);
@@ -486,6 +500,7 @@
       $('mk-ig-reply').value='';await refreshInstagram();notice('Instagram confirmed the reply was sent.');
     }catch(err){notice(err.message,true);renderInstagram();}
   });
-  const existing=accountPassword();
-  if(existing)login(existing);
+  window.PureAdminAuth.ready().then(authenticated=>{if(authenticated)return login();}).catch(err=>showLogin(err.message)).finally(()=>{
+    $('mk-login-form').querySelector('button[type=submit]').textContent=window.PureAdminAuth.pendingLink?'Continue to Marketing':'Send sign-in link';
+  });
 })();

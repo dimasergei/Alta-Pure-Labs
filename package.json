@@ -8,8 +8,9 @@
     "test:account-dom": "node tests/account-experience-dom.cjs && node tests/storefront-navigation-dom.cjs && node tests/reference-ui-dom.cjs && node tests/conversion-dom.cjs"
   },
   "dependencies": {
-    "stripe": "18.5.0",
-    "@supabase/supabase-js": "2.119.0"
+    "@supabase/supabase-js": "2.119.0",
+    "ethers": "6.17.0",
+    "stripe": "18.5.0"
   },
   "devDependencies": {
     "jsdom": "26.1.0"

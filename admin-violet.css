@@ -1,273 +1,342 @@
-/* Admin-only color layer. Loaded after the structural admin experience. */
+/* PURE admin brand layer. Loaded after the structural admin experience.
+   Legacy token names are retained so operational panels share this palette. */
 :root {
-  --ap-admin-navy:#1d1034;
-  --ap-admin-navy2:#301752;
-  --ap-admin-cobalt:#4b218b;
-  --ap-admin-cyan:#c9a2f5;
-  --ap-admin-text:#211832;
-  --ap-admin-muted:#665c73;
-  --ap-admin-border:#e1d7ec;
+  --ap-admin-navy:#111;
+  --ap-admin-navy2:#222;
+  --ap-admin-cobalt:#111;
+  --ap-admin-cyan:#fff;
+  --ap-admin-text:#111;
+  --ap-admin-muted:#666;
+  --ap-admin-border:#dedede;
   --ap-admin-surface:#fff;
-  --ap-admin-bg:#f8f5fc;
-  --bg:#f8f5fc!important;
-  --panel-soft:#f4eefb!important;
-  --border:#e1d7ec!important;
-  --text:#211832!important;
-  --muted:#665c73!important;
-  --teal:#4b218b!important;
-  --teal-dark:#efe6fa!important;
-  --mk-bg:#f8f5fc;
-  --mk-green:#2a1746;
-  --mk-teal:#4b218b;
-  --mk-border:#e1d7ec;
-  --mk-muted:#665c73;
-  --ap-ink:#211832;
-  --ap-subtle:#665c73;
-  --ap-blue:#4b218b;
-  --ap-blue-hover:#6330a5;
-  --ap-line:#e1d7ec;
+  --ap-admin-bg:#f5f5f5;
+  --bg:#f5f5f5!important;
+  --panel:#fff!important;
+  --panel-soft:#f5f5f5!important;
+  --border:#dedede!important;
+  --text:#111!important;
+  --muted:#666!important;
+  --teal:#111!important;
+  --teal-dark:#f0f0f0!important;
+  --mk-bg:#f5f5f5;
+  --mk-green:#111;
+  --mk-teal:#111;
+  --mk-border:#dedede;
+  --mk-muted:#666;
+  --ap-ink:#111;
+  --ap-subtle:#666;
+  --ap-blue:#111;
+  --ap-blue-hover:#333;
+  --ap-line:#dedede;
 }
-html,html body,body.mk-body{background:#f8f5fc!important;color:#211832!important}
-body .admin-page{background:radial-gradient(ellipse at 82% -25%,#eee4fa 0,transparent 50%),#f8f5fc!important}
+html,html body,body.mk-body{background:#f5f5f5!important;color:#111!important}
+body .admin-page{background:#f5f5f5!important}
 body .ap-workspace .ap-workspace-sidebar{
-  background:linear-gradient(160deg,#211239 0%,#170e2b 72%,#29164b 100%)!important;
-  border-right-color:#422561!important;
+  background:#111!important;
+  color:#fff!important;
+  border-right-color:#333!important;
 }
 body .ap-workspace-sidebar .admin-brand-label,
-body .ap-workspace-sidebar .ap-sidebar-eyebrow{color:#c4a9e2!important}
-body .ap-workspace-sidebar .ap-primary-nav .admin-nav-link{color:#e1d1f1!important}
+body .ap-workspace-sidebar .ap-sidebar-eyebrow{color:#b8b8b8!important}
+body .ap-workspace-sidebar .ap-primary-nav .admin-nav-link{
+  color:#dedede!important;font-weight:800!important;
+  letter-spacing:.045em!important;text-transform:uppercase!important;
+}
 body .ap-workspace-sidebar .ap-primary-nav .admin-nav-link.is-active,
 body .ap-workspace-sidebar .ap-primary-nav .admin-nav-link[aria-current="page"]{
-  color:#2c164b!important;background:#ead8fa!important;border-color:#ead8fa!important;
-  box-shadow:0 2px 12px #ba80ee24!important;
+  color:#111!important;background:#fff!important;border-color:#fff!important;
+  box-shadow:none!important;
 }
-body .ap-workspace-sidebar .admin-icon-button,body .ap-workspace-sidebar .mk-quiet{color:#e9daf7!important}
-body .ap-workspace-sidebar .ap-sidebar-footer{color:#c0a8d8!important}
-body .ap-status-dot{background:#b978ec;box-shadow:0 0 0 4px #b978ec25}
-body .ap-workspace .ap-workspace-topbar{border-bottom-color:#e1d7ec}
-body .ap-breadcrumb,body .ap-workspace-context-sub{color:#73667e}
-body .ap-breadcrumb strong{color:#4b218b!important}
-body .ap-breadcrumb-divider{color:#a596b1}
-body .ap-workspace .ap-workspace-store-link{color:#4b218b!important;border-color:#dac9e9}
-body .ap-workspace .ap-workspace-store-link:hover{background:#f3ebfc}
-body .ap-sidebar-toggle{background:#f1e8fb;color:#4b218b;border-color:#dac9ed}
+body .ap-workspace-sidebar .admin-icon-button,body .ap-workspace-sidebar .mk-quiet{color:#fff!important}
+body .ap-workspace-sidebar .ap-sidebar-footer{color:#b8b8b8!important}
+body .ap-status-dot{background:#fff;box-shadow:none}
+body .ap-workspace .ap-workspace-topbar{border-bottom-color:#dedede}
+body .ap-breadcrumb,body .ap-workspace-context-sub{color:#555}
+body .ap-breadcrumb strong{color:#111!important}
+body .ap-breadcrumb-divider{color:#999}
+body .ap-workspace .ap-workspace-store-link{color:#111!important;border-color:#d0d0d0}
+body .ap-workspace .ap-workspace-store-link:hover{background:#f5f5f5}
+body .ap-sidebar-toggle{background:#f5f5f5;color:#111;border-color:#d0d0d0}
 body .ap-workspace .ap-page-intro h1,
 body .ap-workspace .ap-content-heading h2,
 body .ap-workspace .uc-header h2,
 body .uc-dialog h2,body .uc-dialog h3,body .uc-dialog h4,
 body .ap-workspace .mk-title h1,
-body .ap-workspace-marketing .mk-panel .mk-card h2{color:#211832!important}
+body .ap-workspace-marketing .mk-panel .mk-card h2{color:#111!important}
 body .ap-workspace .ap-section-eyebrow,
-body .ap-workspace .ap-content-kicker{color:#6935ad!important}
+body .ap-workspace .ap-content-kicker{color:#333!important}
 body .ap-workspace .ap-page-intro .subtitle,
 body .ap-workspace .ap-page-helper,
 body .ap-workspace-orders #orders-message,
-body .ap-workspace .ap-content-heading p{color:#665c73!important}
+body .ap-workspace .ap-content-heading p{color:#666!important}
 body .ap-workspace .ap-orders-console,
 body .ap-workspace-marketing .ap-marketing-sections,
 body .ap-workspace-marketing .ap-marketing-panel-container .mk-panel,
 body .ap-workspace-marketing .ap-metric,
 body .ap-workspace .uc-order-row,
-body .uc-dialog,body .fh-dialog{border-color:#e1d7ec!important;color:#211832!important}
+body .uc-dialog,body .fh-dialog{border-color:#dedede!important;color:#111!important}
 body .ap-workspace .ap-content-heading,
-body .ap-workspace-marketing .mk-panel .mk-toolbar{border-bottom-color:#ebe3f2!important}
+body .ap-workspace-marketing .mk-panel .mk-toolbar{border-bottom-color:#e5e5e5!important}
 body .ap-workspace .ap-safe-note,
 body .ap-workspace-marketing .mk-info.ap-system-notice{
-  background:#f5effc!important;border-color:#e5d7f4!important;color:#5a4c68!important;
+  background:#f5f5f5!important;border-color:#e5e5e5!important;color:#333!important;
 }
 body .ap-workspace #fulfillment-hub,
 body .ap-workspace .uc-order-row,
-body .ap-workspace-marketing .ap-marketing-panel-container .mk-panel{color:#211832!important}
+body .ap-workspace-marketing .ap-marketing-panel-container .mk-panel{color:#111!important}
 body .ap-workspace .uc-hint,body .ap-workspace .uc-message,
 body .ap-workspace .uc-order-identity small,body .ap-workspace .uc-order-identity span,
-body .ap-workspace .uc-order-total small,body .ap-workspace .uc-pager{color:#665c73!important}
+body .ap-workspace .uc-order-total small,body .ap-workspace .uc-pager{color:#666!important}
 body .ap-workspace .uc-search input,
 body .ap-workspace .uc-search select,
 body .uc-dialog .uc-input-field input,body .uc-dialog .uc-input-field select{
-  color:#211832!important;background:#fdfbff!important;border-color:#d8cae5!important;
+  color:#111!important;background:#fff!important;border-color:#ccc!important;
 }
 body .ap-workspace .uc-search{flex-wrap:wrap!important}
 body .ap-workspace .uc-search input{flex:1 1 270px!important;min-width:0!important}
 body .ap-workspace .uc-search select{flex:0 1 185px!important;min-width:155px!important}
-body .ap-workspace .uc-order-row:hover{background:#fbf8ff!important;border-color:#b997dd!important}
+body .ap-workspace .uc-order-row:hover{background:#fff!important;border-color:#999!important}
 body .ap-workspace .uc-order-identity strong,
 body .ap-workspace .uc-order-total strong,
 body .uc-dialog .uc-field,body .uc-dialog .uc-field strong,
 body .uc-dialog .uc-item,body .uc-dialog .uc-total,
-body .uc-dialog .uc-action-form{color:#211832!important}
+body .uc-dialog .uc-action-form{color:#111!important}
 body .ap-workspace .uc-order-row button:not(.uc-danger),
 body .ap-workspace .uc-order-row button.primary,
 body .uc-dialog button.primary,
 body .uc-dialog button:not(.uc-danger){
-  color:#4b218b!important;background:#f1e8fb!important;border-color:#d8c2ed!important;
+  color:#111!important;background:#f5f5f5!important;border-color:#d0d0d0!important;
 }
 body .ap-workspace .uc-order-row button.primary,
 body .uc-dialog button.primary{
-  color:#fff!important;background:#4b218b!important;border-color:#4b218b!important;
+  color:#fff!important;background:#111!important;border-color:#111!important;
 }
 body .ap-workspace .uc-order-row button.primary:hover,
-body .uc-dialog button.primary:hover{background:#6330a5!important;border-color:#6330a5!important}
+body .uc-dialog button.primary:hover{background:#333!important;border-color:#333!important}
 body .ap-workspace .uc-order-row button:not(.uc-danger):not(.primary):hover,
-body .uc-dialog button:not(.uc-danger):not(.primary):hover{background:#e8d8f7!important}
-body .ap-workspace .uc-empty{background:#fbf8ff!important;border-color:#d8c2ed!important;color:#665c73!important}
-body .uc-dialog,body .fh-dialog{box-shadow:0 25px 110px #2112394d!important}
-body .uc-dialog::backdrop,body .fh-dialog::backdrop{background:#160d2bb8!important}
+body .uc-dialog button:not(.uc-danger):not(.primary):hover{background:#e5e5e5!important}
+body .ap-workspace .uc-empty{background:#fff!important;border-color:#d0d0d0!important;color:#666!important}
+body .uc-dialog,body .fh-dialog{box-shadow:0 25px 110px #1111114d!important}
+body .uc-dialog::backdrop,body .fh-dialog::backdrop{background:#111111b8!important}
 body .uc-dialog .uc-info,body .uc-dialog .uc-total,
-body .uc-dialog .uc-item,body .uc-dialog .uc-action-form{border-color:#ebe3f2!important}
+body .uc-dialog .uc-item,body .uc-dialog .uc-action-form{border-color:#e5e5e5!important}
 body .uc-dialog .uc-field span,body .uc-dialog .uc-address,
 body .uc-dialog .uc-input-field,body .uc-dialog p,
-body .uc-dialog label,body .uc-dialog small{color:#665c73!important}
+body .uc-dialog label,body .uc-dialog small{color:#666!important}
 body .uc-dialog .uc-supplier{
-  margin-top:22px;padding:19px;border:1px solid #e1d1ef;border-radius:13px;
-  background:#faf7fe;color:#211832;
+  margin-top:22px;padding:19px;border:1px solid #d0d0d0;border-radius:13px;
+  background:#fff;color:#111;
 }
-body .uc-dialog .uc-supplier h3{margin:0 0 15px!important;color:#39205e!important}
+body .uc-dialog .uc-supplier h3{margin:0 0 15px!important;color:#111!important}
 body .uc-dialog .uc-supplier>.uc-field{margin:8px 0}
 body .uc-dialog .uc-allocation{
   display:grid;gap:8px;margin:12px 0;padding:13px 15px;
-  border:1px solid #e3d9ed;border-radius:10px;background:#fff;
+  border:1px solid #e5e5e5;border-radius:10px;background:#fff;
 }
-body .uc-dialog .uc-allocation .uc-field strong{color:#39205e!important}
-body .uc-dialog .uc-supplier .uc-action-form{border-top-color:#e5d9ef!important}
-body .ap-workspace-marketing .ap-metric::after{color:#d5c5e5}
+body .uc-dialog .uc-allocation .uc-field strong{color:#111!important}
+body .uc-dialog .uc-supplier .uc-action-form{border-top-color:#e5e5e5!important}
+body .ap-workspace-marketing .ap-metric::after{color:#d0d0d0}
 body .ap-workspace-marketing .ap-metric span,
-body .ap-workspace-marketing .ap-metric small{color:#6d5f7b!important}
-body .ap-workspace-marketing .ap-metric strong{color:#4b218b!important}
-body .ap-workspace-marketing .ap-marketing-sections .mk-subtab{color:#5a4b6b!important}
-body .ap-workspace-marketing .ap-marketing-sections .mk-subtab:hover{background:#f6effd!important;color:#4b218b!important}
+body .ap-workspace-marketing .ap-metric small{color:#555!important}
+body .ap-workspace-marketing .ap-metric strong{color:#111!important}
+body .ap-workspace-marketing .ap-marketing-sections .mk-subtab{color:#333!important}
+body .ap-workspace-marketing .ap-marketing-sections .mk-subtab:hover{background:#f5f5f5!important;color:#111!important}
 body .ap-workspace-marketing .ap-marketing-sections .mk-subtab.is-active{
-  background:#f0e5fb!important;color:#4b218b!important;border-color:#ddc9ef!important;
+  background:#111!important;color:#fff!important;border-color:#111!important;
 }
-body .ap-workspace-marketing .ap-marketing-sections .mk-subtab::before{background:#cbb7dd}
-body .ap-workspace-marketing .ap-marketing-sections .mk-subtab.is-active::before{background:#7b3cc4}
-body .ap-workspace-marketing .mk-table thead th{background:#f7f1fc!important;border-bottom-color:#e9dff2!important;color:#665c73!important}
+body .ap-workspace-marketing .ap-marketing-sections .mk-subtab::before{background:#b8b8b8}
+body .ap-workspace-marketing .ap-marketing-sections .mk-subtab.is-active::before{background:#fff}
+body .ap-workspace-marketing .mk-table thead th{background:#f5f5f5!important;border-bottom-color:#e5e5e5!important;color:#666!important}
 body .ap-workspace-marketing .mk-table tbody td,
-body .ap-workspace-marketing .mk-table .mk-secondary{color:#5d516b!important}
-body .ap-workspace-marketing .mk-table tbody tr:hover{background:#fcf9ff!important}
-body .ap-workspace-marketing .mk-table .mk-name{color:#432073!important}
+body .ap-workspace-marketing .mk-table .mk-secondary{color:#555!important}
+body .ap-workspace-marketing .mk-table tbody tr:hover{background:#fff!important}
+body .ap-workspace-marketing .mk-table .mk-name{color:#111!important}
 body .ap-workspace-marketing .mk-table .mk-actions button,
 body .ap-workspace-marketing .mk-table .mk-stage-label{
-  color:#4b218b!important;background:#f0e6fb!important;border-color:#dfcbf1!important;
+  color:#111!important;background:#e5e5e5!important;border-color:#d0d0d0!important;
 }
-body .ap-workspace-marketing .mk-bottom-tools{background:#fdfbff!important;border-top-color:#ebe3f2!important}
+body .ap-workspace-marketing .mk-bottom-tools{background:#fff!important;border-top-color:#e5e5e5!important}
 body .ap-workspace-marketing .mk-panel .mk-card,
-body .ap-workspace-marketing .mk-panel .mk-ig-timeline{border-color:#e6dbef!important}
-body .ap-workspace-marketing .mk-panel .mk-ig-timeline{background:#fbf8ff!important}
+body .ap-workspace-marketing .mk-panel .mk-ig-timeline{border-color:#e5e5e5!important}
+body .ap-workspace-marketing .mk-panel .mk-ig-timeline{background:#fff!important}
 body .ap-workspace-marketing input,body .ap-workspace-marketing select,
-body .ap-workspace-marketing textarea{color:#211832!important;border-color:#d8cae5!important}
+body .ap-workspace-marketing textarea{color:#111!important;border-color:#ccc!important}
 body .ap-auth-layout .ap-auth-visual{
-  background:radial-gradient(circle at 80% 20%,#6531a0 0,transparent 48%),linear-gradient(135deg,#130c25,#2d1853 70%,#1a102e)!important;
+  background:#111!important;
+  color:#fff!important;
 }
 body .ap-auth-layout .ap-auth-visual::after{
-  background-image:linear-gradient(#c99df322 1px,transparent 1px),linear-gradient(90deg,#c99df322 1px,transparent 1px);
+  background-image:none;
 }
-body .ap-auth-layout .ap-auth-overline{color:#d5b3f3!important}
+body .ap-auth-layout .ap-auth-overline{color:#ccc!important}
 body #login-view.ap-auth-layout .ap-auth-hero-copy,
-body #mk-login.ap-auth-layout .ap-auth-hero-copy{color:#d9c5ec!important}
-body .ap-auth-layout .ap-auth-symbol{background:#9f5cd51c!important;border-color:#c79cf454!important}
-body .ap-auth-layout .ap-auth-form-eyebrow{color:#673a9c!important}
+body #mk-login.ap-auth-layout .ap-auth-hero-copy{color:#dedede!important}
+body .ap-auth-layout .ap-auth-symbol{background:transparent!important;border-color:#555!important}
+body .ap-auth-layout .ap-auth-form-eyebrow{color:#333!important}
 body .ap-auth-layout .ap-auth-content .admin-login-brand strong,
 body #login-view.ap-auth-layout .ap-auth-content h2,
-body #mk-login.ap-auth-layout .ap-auth-content h1{color:#2a1746!important}
+body #mk-login.ap-auth-layout .ap-auth-content h1{color:#111!important}
 body .ap-auth-layout .ap-auth-content .admin-login-brand small,
 body #login-view.ap-auth-layout .ap-auth-content p,
 body #mk-login.ap-auth-layout .ap-auth-content p,
-body .ap-auth-layout .ap-auth-content label{color:#665c73!important}
-body .ap-auth-layout .ap-auth-content input{color:#211832!important;background:#fdfbff!important;border-color:#d8cae5!important}
-body .ap-auth-layout .ap-auth-content button[type=submit]{background:#4b218b!important;border-color:#4b218b!important}
-body .ap-auth-layout .ap-auth-content button[type=submit]:hover{background:#6330a5!important;border-color:#6330a5!important}
-body .ap-auth-layout .ap-auth-content a{color:#4b218b!important}
+body .ap-auth-layout .ap-auth-content label{color:#666!important}
+body .ap-auth-layout .ap-auth-content input{color:#111!important;background:#fff!important;border-color:#ccc!important}
+body .ap-auth-layout .ap-auth-content button[type=submit]{background:#111!important;border-color:#111!important}
+body .ap-auth-layout .ap-auth-content button[type=submit]:hover{background:#333!important;border-color:#333!important}
+body .ap-auth-layout .ap-auth-content a{color:#111!important}
 body button.primary,body .primary,
 body button.mk-button:not(.mk-outline),body .mk-button:not(.mk-outline){
-  background:#4b218b!important;color:#fff!important;border-color:#4b218b!important;
+  background:#111!important;color:#fff!important;border-color:#111!important;
 }
 body button.primary:hover:not(:disabled),body .mk-button:not(.mk-outline):hover:not(:disabled){
-  background:#6330a5!important;border-color:#6330a5!important;
+  background:#333!important;border-color:#333!important;
 }
 body .ghost,body .mk-button.mk-outline,body .mk-quiet{
-  background:#fff!important;color:#4b218b!important;border-color:#d8c2ed!important;
+  background:#fff!important;color:#111!important;border-color:#d0d0d0!important;
 }
 body .ghost:hover:not(:disabled),body .mk-button.mk-outline:hover:not(:disabled),body .mk-quiet:hover{
-  background:#f1e8fb!important;color:#4b218b!important;
+  background:#f5f5f5!important;color:#111!important;
 }
 body a:not(.admin-nav-link):not(.admin-brand),body .mk-bottom-tools button,
-body .mk-text-link{color:#4b218b!important}
+body .mk-text-link{color:#111!important}
 body input:focus,body select:focus,body textarea:focus{
-  border-color:#8d4fe5!important;outline:2px solid #8d4fe52e!important;
+  border-color:#111!important;outline:2px solid #111!important;
 }
-body .mk-info{background:#f5effc!important;color:#514264!important;border-color:#e5d7f4!important}
-body .mk-stage-track{background:#eee4f7!important}
-body .mk-stage-fill{background:#7134c8!important}
-body .mk-dialog{color:#211832!important;border-color:#dccbe9!important;box-shadow:0 24px 90px #21123938!important}
-body .mk-dialog::backdrop{background:#160d2bb8!important}
-body .mk-dialog label,body .mk-card label,body .mk-login label{color:#39255c!important}
-body .mk-ig-code{background:#f5effc!important;color:#39255c!important;border-color:#e1d7ec!important}
-body .mk-alert,body #mk-sync-status{color:#4b218b!important}
+body .mk-info{background:#f5f5f5!important;color:#333!important;border-color:#e5e5e5!important}
+body .mk-stage-track{background:#e5e5e5!important}
+body .mk-stage-fill{background:#333!important}
+body .mk-dialog{color:#111!important;border-color:#d0d0d0!important;box-shadow:0 24px 90px #11111138!important}
+body .mk-dialog::backdrop{background:#111111b8!important}
+body .mk-dialog label,body .mk-card label,body .mk-login label{color:#111!important}
+body .mk-ig-code{background:#f5f5f5!important;color:#111!important;border-color:#dedede!important}
+body .mk-alert,body #mk-sync-status{color:#111!important}
 body .admin-login-brand img.ap-brand-symbol,body .admin-brand img.ap-brand-symbol,
 body .ap-auth-layout .ap-auth-symbol img{filter:none!important}
-body .ap-workspace.ap-navigation-open .ap-nav-backdrop{background:#160d2bb8!important}
-body :focus-visible{outline-color:#8d4fe5!important}
+body .ap-workspace.ap-navigation-open .ap-nav-backdrop{background:#111111b8!important}
+body :focus-visible{outline:2px solid #111!important;outline-offset:3px!important}
+body .ap-workspace-sidebar :focus-visible{outline-color:#fff!important}
 
 /* The older polish sheet uses ID selectors on the plain login cards. Match those
    selectors here too; the split layout is only added after admin JS runs. */
 body #login-view,body #mk-login{
-  color:#211832!important;border-color:#e1d7ec!important;
-  box-shadow:0 20px 65px #3017521c!important;
+  color:#111!important;border-color:#dedede!important;
+  box-shadow:0 20px 65px #1111111c!important;
 }
 body .admin-login-brand strong,body .admin-brand-name,
-body #login-view h2,body #mk-login h1{color:#2a1746!important}
+body #login-view h2,body #mk-login h1{color:#111!important}
 body .admin-login-brand small,body .admin-brand-label,
-body #login-view p,body #mk-login p{color:#665c73!important}
+body #login-view p,body #mk-login p{color:#666!important}
 body #login-view input,body #mk-login input{
-  color:#211832!important;background:#fdfbff!important;border-color:#d8cae5!important;
+  color:#111!important;background:#fff!important;border-color:#ccc!important;
 }
 body #login-view button[type="submit"],body #mk-login button[type="submit"]{
-  background:#4b218b!important;color:#fff!important;border-color:#4b218b!important;
+  background:#111!important;color:#fff!important;border-color:#111!important;
 }
 body #login-view button[type="submit"]:hover,body #mk-login button[type="submit"]:hover{
-  background:#6330a5!important;border-color:#6330a5!important;
+  background:#333!important;border-color:#333!important;
 }
 /* Legacy order controls and status chips still appear inside the unified hub. */
 body .tab.active,body .order.open{
-  background:#f1e8fb!important;border-color:#cdaee9!important;color:#4b218b!important;
+  background:#f5f5f5!important;border-color:#b8b8b8!important;color:#111!important;
 }
-body .status-shipped{background:#efe7fb!important;color:#6330a5!important}
-body .bulkbar{background:#f5effc!important;border-color:#ddc9ef!important;color:#4b218b!important}
-body .ap-workspace .ap-content-kicker,body .mk-title .mk-eyebrow{color:#6935ad!important}
-body .ap-workspace .ap-content-heading .ap-content-kicker{color:#6935ad!important}
-body .ap-workspace .ap-content-heading h2,body .ap-workspace .uc-header h2{color:#211832!important}
+body .status-shipped{background:#e5e5e5!important;color:#333!important}
+body .bulkbar{background:#f5f5f5!important;border-color:#d0d0d0!important;color:#111!important}
+body .ap-workspace .ap-content-kicker,body .mk-title .mk-eyebrow{color:#333!important}
+body .ap-workspace .ap-content-heading .ap-content-kicker{color:#333!important}
+body .ap-workspace .ap-content-heading h2,body .ap-workspace .uc-header h2{color:#111!important}
 body .ap-workspace .uc-order-row button:hover:not(.uc-danger):not(.primary),
-body .uc-dialog button:hover:not(.uc-danger):not(.primary){background:#e8d8f7!important}
+body .uc-dialog button:hover:not(.uc-danger):not(.primary){background:#e5e5e5!important}
 body .ap-workspace .uc-order-row button.primary:hover,body .uc-dialog button.primary:hover{
-  background:#6330a5!important;border-color:#6330a5!important;
+  background:#333!important;border-color:#333!important;
 }
 body .ap-workspace-marketing .mk-panel .mk-toolbar input,
 body .ap-workspace-marketing .mk-panel .mk-toolbar select,
 body .ap-workspace-marketing .mk-panel .mk-card input,
 body .ap-workspace-marketing .mk-panel .mk-card select,
 body .ap-workspace-marketing .mk-panel .mk-card textarea{
-  background:#fdfbff!important;color:#211832!important;border-color:#d8cae5!important;
+  background:#fff!important;color:#111!important;border-color:#ccc!important;
 }
 body .ap-workspace-marketing .mk-table .mk-stage-label{
-  background:#f0e6fb!important;color:#4b218b!important;border-color:#dfcbf1!important;
+  background:#e5e5e5!important;color:#111!important;border-color:#d0d0d0!important;
 }
 body .ap-workspace-marketing .mk-panel .mk-ig-timeline{
-  background:#fbf8ff!important;border-color:#e6dbef!important;
+  background:#fff!important;border-color:#e5e5e5!important;
 }
-body .ap-workspace-marketing .ap-metric::after{color:#d5c5e5!important}
+body .ap-workspace-marketing .ap-metric::after{color:#d0d0d0!important}
 body .ap-workspace-marketing .mk-panel .mk-timeline,
-body .ap-workspace-marketing .mk-panel .mk-entry{border-color:#ebe3f2!important}
+body .ap-workspace-marketing .mk-panel .mk-entry{border-color:#e5e5e5!important}
 body .ap-workspace-marketing .mk-info.ap-system-notice{
-  background:#f5effc!important;border-color:#e5d7f4!important;color:#514264!important;
+  background:#f5f5f5!important;border-color:#e5e5e5!important;color:#333!important;
 }
 body .ap-workspace-marketing .mk-panel .mk-card{
-  background:#fff!important;border-color:#e6dbef!important;
+  background:#fff!important;border-color:#e5e5e5!important;
 }
-body .ap-workspace-marketing .mk-table tbody tr:hover{background:#fcf9ff!important}
-body .ap-workspace-marketing .mk-bottom-tools{background:#fdfbff!important;border-top-color:#ebe3f2!important}
+body .ap-workspace-marketing .mk-table tbody tr:hover{background:#fff!important}
+body .ap-workspace-marketing .mk-bottom-tools{background:#fff!important;border-top-color:#e5e5e5!important}
 body .ap-workspace-sidebar .ap-sidebar-brand,
-body .ap-workspace-sidebar .ap-sidebar-tools{border-color:#b58cd733!important}
-body .ap-workspace-sidebar .ap-sidebar-footer{color:#c0a8d8!important}
+body .ap-workspace-sidebar .ap-sidebar-tools{border-color:#99999933!important}
+body .ap-workspace-sidebar .ap-sidebar-footer{color:#b8b8b8!important}
+
+/* Match storefront action typography without uppercasing order or customer data. */
+body :is(button,.primary,.ghost,.mk-button,.mk-quiet,.mk-danger,.uc-portal,.ap-workspace-store-link){
+  font-family:"Archivo",Arial,sans-serif!important;
+  font-weight:800!important;font-style:normal!important;
+  letter-spacing:.045em!important;text-transform:uppercase!important;
+  text-shadow:none!important;
+}
+body :is(input,select,textarea){accent-color:#111}
+body .ap-workspace-sidebar .admin-brand-name{color:#fff!important}
+body .ap-workspace-sidebar :is(.admin-icon-button,.mk-quiet){
+  color:#fff!important;background:#222!important;border-color:#555!important;
+}
+body .ap-workspace-sidebar :is(.admin-icon-button,.mk-quiet):hover{
+  color:#fff!important;background:#333!important;border-color:#888!important;
+}
+body .ap-workspace-marketing .mk-table tbody tr:hover{background:#f5f5f5!important}
+body .ap-workspace-marketing .mk-table .mk-actions button{
+  color:#111!important;background:#fff!important;border-color:#ccc!important;
+}
+body .ap-workspace-marketing .mk-table .mk-actions button:hover{
+  background:#f0f0f0!important;border-color:#111!important;
+}
+body .filter-panel .tab.active,body .tab.active{
+  background:#111!important;color:#fff!important;border-color:#111!important;
+}
+body .order.open{background:#fff!important;border-color:#111!important;color:#111!important}
+
+/* Labels remain explicit; fill and border styles distinguish operational states. */
+body .admin-view-section :is(.status-paid,.status-delivered),
+body :is(.status-paid,.status-delivered){
+  color:#fff!important;background:#111!important;border:1px solid #111!important;
+}
+body .admin-view-section :is(.status-processing,.status-awaiting_supplier,.status-pending,.status-expired),
+body :is(.status-processing,.status-awaiting_supplier,.status-pending,.status-expired){
+  color:#111!important;background:#fff!important;border:1px dashed #888!important;
+}
+body .admin-view-section :is(.status-shipped,.status-partially_shipped),
+body :is(.status-shipped,.status-partially_shipped){
+  color:#111!important;background:#e5e5e5!important;border:1px solid #ccc!important;
+}
+body .admin-view-section :is(.status-canceled,.status-refunded,.status-partially_refunded,.status-failed),
+body :is(.status-canceled,.status-refunded,.status-partially_refunded,.status-failed){
+  color:#111!important;background:#fff!important;border:1px solid #111!important;font-weight:800!important;
+}
+body .ap-workspace-marketing .mk-panel .mk-status,body .mk-status{
+  background:#f0f0f0!important;color:#111!important;border:1px solid #ccc;
+}
+body .quick-cancel,body .uc-dialog .uc-danger,body .mk-danger,body .danger-action{
+  color:#111!important;background:#fff!important;border:1px solid #111!important;
+}
+body .quick-cancel:hover,body .uc-dialog .uc-danger:hover,body .mk-danger:hover{
+  color:#fff!important;background:#111!important;
+}
+body .ap-workspace :is(.notice.failed,.error),body .uc-message.failed,
+body .uc-dialog [role=status].failed,body .mk-error{
+  color:#111!important;font-weight:800!important;
+}
+body .admin-view-section :is(.list-tools,.pagination,.notice){color:#666!important}
+body .admin-view-section .notification-card.failed{border:1px solid #111!important}
+body .admin-view-section .notification-card.pending{border-style:dashed!important}
 @media(max-width:600px){
   body .ap-workspace .uc-search select{width:100%!important;max-width:none!important;flex:1 1 100%!important}
   body .uc-dialog .uc-supplier{padding:14px}

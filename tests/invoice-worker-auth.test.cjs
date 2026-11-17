@@ -27,3 +27,16 @@ test('a supplier outage does not stop the independent email queue',async()=>{
  assert.equal(response.code,503);assert.equal(response.body.accepted,1);
  assert.equal(response.body.supplier.status,'unavailable');assert.equal(mailCalls,1);
 });
+test('authenticated one-use job reconciles crypto before dispatch even when new wallet collection is disabled',async()=>{
+ const events=[],env={COMMERCE_NOTIFICATION_JOB_SECRET:secret,POLYGON_USDC_RECIPIENT:'0x1111111111111111111111111111111111111111',POLYGON_USDC_RPC_URL:'https://polygon-rpc.test',POLYGON_USDC_ENABLED:'false'};
+ let consumed=false;const db={rpc:async(name)=>{assert.equal(name,'commerce_consume_notification_job');events.push('auth');if(consumed)return{data:false};consumed=true;return{data:true};}};
+ const deps={env,db,cryptoReconcile:async(_db,options)=>{events.push('crypto');assert.equal(options.limit,4);assert.equal(options.timeBudgetMs,35000);return{processed:1,paid:1,pending:0};},notificationsDispatch:async()=>{events.push('mail');return{configured:true,attempted:1,accepted:1};}};
+ const anonymous=res();await handle({method:'POST',headers:{}},anonymous,new URLSearchParams({commerce:'worker'}),deps);assert.equal(anonymous.code,401);assert.deepEqual(events,[]);
+ const first=res(),req={method:'POST',headers:headers()};await handle(req,first,new URLSearchParams({commerce:'worker'}),deps);assert.equal(first.code,200);assert.deepEqual(events,['auth','crypto','mail']);assert.equal(first.body.crypto.paid,1);
+ const replay=res();await handle(req,replay,new URLSearchParams({commerce:'worker'}),deps);assert.equal(replay.code,409);assert.deepEqual(events,['auth','crypto','mail','auth']);
+});
+test('an unavailable chain does not starve notification work or leak RPC errors',async()=>{
+ const env={COMMERCE_NOTIFICATION_JOB_SECRET:secret,POLYGON_USDC_RECIPIENT:'0x1111111111111111111111111111111111111111',POLYGON_USDC_RPC_URL:'https://polygon-rpc.test'};
+ const response=res();let calls=0;await handle({method:'POST',headers:headers()},response,new URLSearchParams({commerce:'worker'}),{env,db:{rpc:async()=>({data:true})},cryptoReconcile:async()=>{throw Error('private RPC detail');},notificationsDispatch:async()=>{calls++;return{configured:true,accepted:1};}});
+ assert.equal(response.code,503);assert.equal(calls,1);assert.deepEqual(response.body.crypto,{status:'unavailable'});assert.ok(!JSON.stringify(response.body).includes('private RPC detail'));
+});

@@ -13,7 +13,21 @@
   return config=await r.json();
  };
  const cartKey=items=>'ap-v2-cart-extras:'+JSON.stringify(items.map(({id,size,qty})=>({id,size,qty})));
- function extras(items){const country=localStorage.getItem('ap-shipping-country')||'US';try{const v=JSON.parse(sessionStorage.getItem(cartKey(items))||'null');return Array.isArray(v)?v:country==='US'?['protection']:[];}catch{return country==='US'?['protection']:[];}}
+ const protectionKey='ap-checkout-protection';
+ function extras(items){
+  let prior=null,choice=null;
+  try{
+   prior=JSON.parse(sessionStorage.getItem(cartKey(items))||'null');choice=sessionStorage.getItem(protectionKey);
+   // Migrate an existing US checkout choice; international carts previously had no protection control.
+   if(choice!=='true'&&choice!=='false'&&Array.isArray(prior)&&(prior.includes('protection')||(localStorage.getItem('ap-shipping-country')||'US')==='US')){
+    choice=String(prior.includes('protection'));sessionStorage.setItem(protectionKey,choice);
+   }
+  }catch{}
+  if(choice!=='true'&&choice!=='false'){choice='true';try{sessionStorage.setItem(protectionKey,choice);}catch{}}
+  const selected=new Set(Array.isArray(prior)?prior.filter(id=>id!=='protection'):[]);
+  if(choice!=='false')selected.add('protection');
+  return [...selected];
+ }
  async function offer(root){
   if(!root?.isConnected)return;
   const items=window.AltaStore?.cart||[];
@@ -38,29 +52,25 @@
    +'<p class="nlc-delivery-est"><svg viewBox="0 0 24 24" width="17" height="17" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><path d="M3 6h11v11H3zM14 10h4l3 4v3h-7z"/><circle cx="7" cy="18" r="2"/><circle cx="18" cy="18" r="2"/></svg> <strong>Estimated delivery:</strong> <span data-nlc-estimate></span></p>'
    +'<div class="nlc-cart-totals" data-nlc-cart-totals><p role="status">Calculating your order total…</p></div>'
    +'<a class="nlc-proceed" href="/checkout">Proceed to Checkout</a>'
-   +'<div class="nlc-wallet-area"><div class="nlc-pay-divider"><span>OR PAY INSTANTLY</span> <strong data-nlc-instant-amount></strong></div><div class="nlc-wallet-row" data-nlc-wallets>'
-   +'<button type="button" disabled aria-label="Apple Pay pending activation"><span class="nlc-wallet-lockup"><img class="nlc-wallet-logo nlc-apple-mark" src="/assets/payment-brands/apple-mark-clean.svg" width="18" height="23" alt="" aria-hidden="true"><span class="nlc-apple-pay-word">Pay</span></span></button>'
-   +'<span class="nlc-wallet-or">or</span>'
-   +'<button type="button" disabled aria-label="Google Pay pending activation"><span class="nlc-wallet-lockup"><img class="nlc-wallet-logo nlc-google-mark" src="/assets/payment-brands/google-g-clean.svg" width="20" height="20" alt="" aria-hidden="true"><span class="nlc-google-pay-word">Pay</span></span></button></div>'
-   +'<p>By paying, you confirm you are 21+, buying for research use only, and accept the <a href="/research-use-policy.html">RUO Agreement</a> and <a href="/commercial-terms.html">Terms</a>.</p></div></div>';
+   +'<div class="nlc-wallet-area"><p>Choose Card or Crypto at checkout. Eligible digital wallets appear in the secure card provider checkout.</p>'
+   +'<p>Orders are for customers 21+ and research use only. Review the <a href="/research-use-policy.html">RUO Agreement</a> and <a href="/commercial-terms.html">Terms</a> before checkout.</p></div></div>';
   const track=root.querySelector('[data-nlc-cart-totals]'),input=root.querySelector('[name=nlc_coupon]'),apply=root.querySelector('[data-nlc-apply]'),remove=root.querySelector('[data-nlc-remove-coupon]'),couponStatus=root.querySelector('[data-nlc-coupon-status]');
   const redraw=async(candidate=appliedCoupon,action='refresh')=>{
    const id=++seq;
    apply.disabled=true;remove.disabled=true;
    couponStatus.textContent=action==='remove'?'Removing coupon…':candidate?'Checking coupon…':'';
-   root.querySelectorAll('[data-nlc-wallets] button').forEach(button=>button.disabled=true);
    try{
     const settings=await methods();
     if(!root.isConnected||id!==seq)return;
-    const method=settings.methods?.find(m=>m.kind!=='bank_transfer')||settings.methods?.[0];
     const country=localStorage.getItem('ap-shipping-country')||'US';
     const protection=(settings.delivery_options||[]).find(x=>x.id==='protection'&&x.enabled===true);
-    if(!protection||country!=='US')selected.delete('protection');
+    if(protection&&extras(window.AltaStore.cart||items).includes('protection'))selected.add('protection');
+    else selected.delete('protection');
     sessionStorage.setItem(cartKey(items),JSON.stringify([...selected]));
     const request=await fetch('/api/customer-config?checkout=cart',{method:'POST',cache:'no-store',
       headers:{'Content-Type':'application/json'},
       body:JSON.stringify({items:(window.AltaStore.cart||[]).map(({id,size,qty})=>({id,size,qty})),
-       method_id:method?.id||null,coupon:candidate,country,delivery:{shipping:'standard',extras:[...selected].sort()}})});
+       method_id:null,coupon:candidate,country,delivery:{shipping:'standard',extras:[...selected].sort()}})});
     const data=await request.json().catch(()=>null);
     if(id!==seq||!root.isConnected)return;
     if(!request.ok||!Number.isSafeInteger(data?.total_cents))throw Error(data?.error||'Could not calculate your order total.');
@@ -84,13 +94,7 @@
     const progress=root.querySelector('.nlc-progress');progress.hidden=country!=='US';progress.setAttribute('aria-valuemax',String(threshold/100));progress.setAttribute('aria-valuenow',String(Math.min(threshold,merchandise)/100));
     root.querySelector('.nlc-progress-fill').style.width=Math.min(100,merchandise/threshold*100)+'%';
     root.querySelector('.nlc-proceed').textContent='Proceed to Checkout ('+money(data.total_cents)+')';
-    root.querySelector('[data-nlc-instant-amount]').textContent=money(data.total_cents);
     hasQuote=true;
-    const wallet=settings.nmi?.ready===true&&settings.methods?.some(m=>m.id===settings.nmi.method_id&&m.native_provider==='nmi')?settings.nmi:null;
-    if(wallet)root.querySelectorAll('[data-nlc-wallets] button').forEach((button,index)=>{
-     const authorized=index===0?wallet.wallets?.apple===true:wallet.wallets?.google===true;
-     button.disabled=!authorized;if(authorized)button.onclick=()=>window.AltaCartNmi?.open?.();
-    });
    }catch(error){
     if(root.isConnected&&id===seq){couponStatus.textContent=error?.message||'Could not check this coupon.';if(!hasQuote)track.textContent='Your total could not be calculated. Please try again.';}
    }finally{if(root.isConnected&&id===seq){apply.disabled=false;remove.disabled=false;}}

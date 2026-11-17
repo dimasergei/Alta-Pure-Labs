@@ -18,7 +18,7 @@ function fixture(authorized=false){
  w.eval(source);
  return{dom,w,cart:dom.window.document.getElementById('cart'),requests};
 }
-test('cart has editable rows, product recommendations, coupon, protection, checkout and wallet positions',async()=>{
+test('cart has editable rows, recommendations, coupon, protection and one honest checkout action',async()=>{
  const f=fixture();try{
   await f.w.AltaCartNmi.offer(f.cart);await wait();
   assert.match(f.cart.textContent,/Research compound/);
@@ -28,13 +28,12 @@ test('cart has editable rows, product recommendations, coupon, protection, check
   assert.ok(f.cart.querySelector('[name=nlc_coupon]'));
   assert.equal(f.cart.querySelector('[name=nlc_protection]'),null,'No shipping protection checkbox or removal action');
   assert.ok(f.cart.querySelector('.nlc-protection-static'),'Shipping protection must appear as a fixed line item');
-  assert.match(f.cart.textContent,/OR PAY INSTANTLY\s*\$119\.95/);
+  assert.doesNotMatch(f.cart.textContent,/OR PAY INSTANTLY|Apple Pay|Google Pay/);
   assert.ok(f.cart.querySelector('[data-nlc-estimate]').textContent.includes('–'));
-  assert.match(f.cart.querySelector('[data-nlc-wallets]').textContent,/Pay/);
+  assert.match(f.cart.textContent,/Choose Card or Crypto at checkout/);
   assert.match(f.cart.textContent,/Shipping Protection/);
   assert.match(f.cart.textContent,/Proceed to Checkout/);
-  assert.equal(f.cart.querySelectorAll('[data-nlc-wallets] button').length,2);
-  assert.ok([...f.cart.querySelectorAll('[data-nlc-wallets] button')].every(x=>x.disabled));
+  assert.equal(f.cart.querySelectorAll('[data-nlc-wallets] button').length,0);
   assert.ok(f.cart.textContent.includes('$119.95'));
   assert.equal(f.requests.find(x=>String(x.url).includes('checkout=cart')).body.method_id,null);
   f.cart.querySelector('[name=nlc_coupon]').value='BLACKFRIDAY15';
@@ -42,10 +41,38 @@ test('cart has editable rows, product recommendations, coupon, protection, check
   assert.equal(f.w.localStorage.getItem('ap-checkout-coupon'),'BLACKFRIDAY15');
  }finally{f.dom.window.close();}
 });
-test('cart widget only enables actual wallet controls when a verified NMI account exists',async()=>{
+test('legacy NMI configuration cannot add a retired payment option to the new cart',async()=>{
  const f=fixture(true);try{
   await f.w.AltaCartNmi.offer(f.cart);await wait();
-  assert.ok([...f.cart.querySelectorAll('[data-nlc-wallets] button')].every(x=>!x.disabled));
+  assert.equal(f.cart.querySelector('[data-nlc-wallets]'),null);
+  assert.equal(f.requests.find(x=>String(x.url).includes('checkout=cart')).body.method_id,null);
+ }finally{f.dom.window.close();}
+});
+
+test('an already-open cart follows a checkout protection opt-out on its next quote',async()=>{
+ const f=fixture();try{
+  await f.w.AltaCartNmi.offer(f.cart);await wait();
+  assert.ok(f.cart.querySelector('.nlc-protection-static'));
+  f.w.sessionStorage.setItem('ap-checkout-protection','false');
+  f.cart.querySelector('[name=nlc_coupon]').value='BLACKFRIDAY15';
+  f.cart.querySelector('[data-nlc-apply]').click();await wait();
+  assert.deepEqual(f.requests.at(-1).body.delivery.extras,[]);
+  assert.equal(f.cart.querySelector('.nlc-protection-static'),null);
+  f.w.sessionStorage.setItem('ap-checkout-protection','true');
+  f.cart.querySelector('[data-nlc-remove-coupon]').click();await wait();
+  assert.deepEqual(f.requests.at(-1).body.delivery.extras,['protection']);
+  assert.ok(f.cart.querySelector('.nlc-protection-static'));
+ }finally{f.dom.window.close();}
+});
+
+test('an old international cart without a protection control receives the new default',async()=>{
+ const f=fixture();try{
+  f.w.localStorage.setItem('ap-shipping-country','CA');
+  f.w.sessionStorage.setItem('ap-v2-cart-extras:'+JSON.stringify([{id:'compound',size:'5mg',qty:2}]),'[]');
+  await f.w.AltaCartNmi.offer(f.cart);await wait();
+  assert.equal(f.requests.at(-1).body.country,'CA');
+  assert.deepEqual(f.requests.at(-1).body.delivery.extras,['protection']);
+  assert.ok(f.cart.querySelector('.nlc-protection-static'));
  }finally{f.dom.window.close();}
 });
 
