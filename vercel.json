@@ -140,6 +140,11 @@
       "permanent": true
     },
     {
+      "source": "/my-account/memberships",
+      "destination": "/account",
+      "permanent": true
+    },
+    {
       "source": "/my-account/subscriptions",
       "destination": "/account",
       "permanent": true
