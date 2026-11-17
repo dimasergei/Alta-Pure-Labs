@@ -356,6 +356,8 @@ body.ap-site {
   transform: translate3d(0,0,0);
   animation: pure-vial-float 7s ease-in-out infinite;
   will-change: transform;
+  /* Transparent image margins must not intercept a neighboring vial's link. */
+  pointer-events: none;
 }
 .ap-site .nl-hero .nl-vial img {
   display: block;
@@ -366,6 +368,7 @@ body.ap-site {
   border-radius: 0;
   mask-image: none;
   clip-path: url(#ap-vial-outline);
+  pointer-events: auto;
 }
 .ap-site .nl-hero .nl-vial-0 { left: calc(50% - min(41cqw, 66cqh)); animation-delay: -3.2s; z-index: 1; }
 .ap-site .nl-hero .nl-vial-1 { left: calc(50% - min(22cqw, 35.4cqh)); top: 52%; width: min(42%, 68cqh); animation-delay: -1.8s; }
