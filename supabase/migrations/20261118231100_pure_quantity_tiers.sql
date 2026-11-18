@@ -19,7 +19,7 @@ declare
   expected_delivery jsonb; usd_delivery jsonb; delivery_extras jsonb; shipping integer:=0; extras integer:=0;
   fee integer; period text:=request->>'billing_period';
   quantity_mode boolean:=coalesce(pricing->>'quantity_discount_version','')='pure-quantity-2026-11-v1';
-  tier_rate integer:=0; winner_rate integer:=0; quantity_discount integer:=0; line_quantity_discount integer:=0;
+  tier_rate integer:=0; winner_rate integer:=0; quantity_discount integer:=0; line_quantity_discount integer:=0; eligible_tier boolean:=false;
   usd_member_discount integer:=0; usd_coupon_discount integer:=0;
 begin
   version:=case when is_cad then 'checkout-interac-cad-2026-11-v2' else 'checkout-2026-11-v8' end;
@@ -164,11 +164,11 @@ begin
       winner_rate:=greatest(tier_rate,member_rate,coupon_rate);
       line_base:=round((amounts->>n)::numeric*winner_rate/10000)::integer;
       base_parts:=base_parts||to_jsonb(line_base);base_discount:=base_discount+line_base;
-      if tier_rate>member_rate and tier_rate>coupon_rate then quantity_discount:=quantity_discount+line_base;
+      if tier_rate>member_rate and tier_rate>coupon_rate then eligible_tier:=true;quantity_discount:=quantity_discount+line_base;
       elsif member_rate>coupon_rate then member_discount:=member_discount+line_base;
       else coupon_discount:=coupon_discount+line_base;end if;
     end loop;
-    if quantity_discount<=0 or pricing->'quantity_discount_cents' is distinct from to_jsonb(quantity_discount)
+    if not eligible_tier or pricing->'quantity_discount_cents' is distinct from to_jsonb(quantity_discount)
       or pricing->>'quantity_discount_version' is distinct from 'pure-quantity-2026-11-v1'
     then raise exception 'Invalid quantity savings' using errcode='22023';end if;
   else
