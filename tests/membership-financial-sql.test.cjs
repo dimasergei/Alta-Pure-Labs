@@ -98,6 +98,7 @@ test('PURE memberships execute verified fees and goods benefits atomically in di
   await db.query("insert into commerce_payment_methods(id,kind,provider_key,label,currency,payee,instructions,acceptance_reference,active,sale_scope) values($1,'interac','interac','Fixture Interac','CAD','Fixture business','Disposable fixture: receiving@example.test','Isolated receiver approval',true,'goods')",[ids.interac]);
   const historicalBefore=await load(historicalOrder);
   await db.exec(read(migration));
+  await db.exec(read('20261118231100_pure_quantity_tiers.sql'));
   for(const route of Object.keys(ids))methods[route]=(await db.query('select * from commerce_payment_methods where id=$1',[ids[route]])).rows[0];
 
   await t.test('migration preserves history, retired recurring guards, and inactive/old Stripe receiving routes',async()=>{
