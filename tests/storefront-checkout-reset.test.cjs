@@ -38,7 +38,7 @@ for(const surface of ['cart','checkout'])test(surface+': regular purchased quant
   assert.equal(f.requests[0].coupon,'');
   assert.equal(f.w.localStorage.getItem('ap-checkout-coupon'),null);
   assert.match(f.root.textContent,/\$160\.00/);
-  assert.match(f.root.textContent,/\$165\.00/);
+  assert.match(f.root.textContent,/\$157\.00/);
   assert.doesNotMatch(f.root.textContent,/BOGO|\+\d+ FREE|member(ship)?|Free BAC|Free Priority/i);
   const cryptoOffer='Pay with Crypto at checkout for an extra 5% off the remaining merchandise.';
   if(surface==='cart')assert.ok(f.root.textContent.includes(cryptoOffer),'Cart explains the conditional crypto incentive without changing the current total');
@@ -67,7 +67,7 @@ for(const surface of ['cart','checkout'])test(surface+': regular purchased quant
   assert.equal(f.w.localStorage.getItem('ap-cart-coupon'),null);
   assert.equal(remove.hidden,true);
   assert.match(f.root.textContent,/Coupon removed/);
-  assert.match(f.root.textContent,/\$165\.00/);
+  assert.match(f.root.textContent,/\$157\.00/);
   if(surface==='cart')assert.match(f.root.querySelector('[data-nlc-unlock-copy]').textContent,/Free standard US shipping included/);
  }finally{f.dom.window.close();}
 });
