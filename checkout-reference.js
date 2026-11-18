@@ -112,7 +112,7 @@
   }
   function syncCurrencyDisplays(){
    const rates=data.shipping_zones?.[shippingCountry()]||data.shipping_zones?.OTHER||{};
-   all('[name=delivery_speed]',form).forEach(input=>{const price=input.closest('.nlx-delivery-card')?.querySelector('.nlx-delivery-price');if(price)price.textContent=!Number.isSafeInteger(rates[input.value])?'Unavailable':input.value==='standard'&&shippingCountry()==='US'&&currentPreview?.free_shipping_remaining_cents===0?'FREE':deliveryDisplay(input.value,rates[input.value]);});
+   all('[name=delivery_speed]',form).forEach(input=>{const price=input.closest('.nlx-delivery-card')?.querySelector('.nlx-delivery-price');if(price)price.textContent=!Number.isSafeInteger(rates[input.value])?'Unavailable':input.value==='standard'&&['US','CA'].includes(shippingCountry())&&currentPreview?.free_shipping_remaining_cents===0?'FREE':deliveryDisplay(input.value,rates[input.value]);});
    all('[data-nlx-extra-price]',form).forEach(target=>target.textContent=extraDisplay(target.dataset.nlxExtraPrice));
    all('[data-nlx-cross-sell-price]',form).forEach(target=>target.textContent=usdDisplay(Number(target.dataset.nlxCrossSellPrice)));
    const shipping=view('[data-nlx-confirm-shipping-price]',form);if(shipping)shipping.textContent=currentMoney(currentPreview?.pricing?.delivery?.shipping_cents);
@@ -301,7 +301,7 @@
    const rates=data.shipping_zones||{};
    const country=shippingCountry();const map=rates[country]||rates.OTHER||{};
    const options=['standard','express','next_day'].map((id,i)=>{const x=optionsById[id];if(!x)return'';
-    const regularAmount=map[id],eligible=x.enabled&&Number.isSafeInteger(regularAmount);const amount=id==='standard'&&country==='US'&&currentPreview?.free_shipping_remaining_cents===0?0:regularAmount;
+    const regularAmount=map[id],eligible=x.enabled&&Number.isSafeInteger(regularAmount);const amount=id==='standard'&&['US','CA'].includes(country)&&currentPreview?.free_shipping_remaining_cents===0?0:regularAmount;
     return '<label class="nlx-delivery-card '+(state.shipping===id?'nlx-chosen':'')+(eligible?'':' nlx-disabled')+'"><input type="radio" name="delivery_speed" value="'+id+'" '+(state.shipping===id?'checked ':'')+(eligible?'':'disabled')+'><span class="nlx-delivery-desc"><strong>'+esc(x.label)+'</strong><small>'+esc(arrivalLabel(id))+'</small></span><span class="nlx-delivery-price">'+(eligible?deliveryDisplay(id,amount):'Unavailable')+'</span></label>';
    }).join('');
    const extra=(data.membership?.benefits?.priority_fulfillment?[]:['priority']).map(id=>{const x=optionsById[id];if(!x)return'';
