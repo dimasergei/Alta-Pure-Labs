@@ -111,3 +111,16 @@ test('cart display currency changes preserve the coupon and exact quote request 
   assert.match(root.querySelector('[data-nlc-coupon-status]').textContent,/BLACKFRIDAY15 applied/);
  }finally{await f.close();}
 });
+
+test('homepage free-shipping threshold follows display FX without changing the USD eligibility amount',async()=>{
+ const f=await fixture('/');
+ try{
+  const {w,d}=f,trust=d.querySelector('.nl-trust');
+  assert.match(trust.textContent,/Free shipping over \\$150/);
+  await w.AltaLocale.setCurrency('CAD');await settle();
+  assert.match(trust.textContent,/Free shipping over CA\\$210\\.00/);
+  assert.doesNotMatch(trust.textContent,/≈|US shipping/);
+  await w.AltaLocale.setCurrency('USD');await settle();
+  assert.match(trust.textContent,/Free shipping over \\$150/);
+ }finally{await f.close();}
+});
