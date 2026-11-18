@@ -18,6 +18,15 @@ body.ap-checkout-page .account-page{padding-top:36px;background:#f5f5f5}body.ap-
 .dc-clean-actions{margin-top:17px;display:flex;flex-wrap:wrap;align-items:center;gap:12px}
 .dc-clean-actions .ap-button{border-radius:100px;min-height:40px;font-size:12px}
 .dc-clean-actions .dc-cancel-feedback{flex-basis:100%;font-size:12px;color:#111}
+.dc-clean-order .dc-interac-invoice{flex:1 1 100%;min-width:0;padding-top:16px;border-top:1px solid #d4d4d4;color:#111}
+.dc-clean-order .dc-interac-invoice h3{margin:0 0 12px;font-size:18px}
+.dc-clean-order .dc-interac-invoice p{font-size:14px;line-height:1.6;margin:12px 0;overflow-wrap:anywhere}
+.dc-clean-order .dc-interac-invoice .dc-totals{max-width:520px;font-size:14px}
+.dc-clean-order .dc-interac-invoice .dc-total-row strong{white-space:nowrap}
+.dc-clean-order .dc-invoice-accept{display:flex;align-items:flex-start;gap:10px;min-height:44px;padding:12px 0;font-size:14px;line-height:1.6}
+.dc-clean-order .dc-invoice-accept input{width:18px;height:18px;flex:0 0 18px;margin:3px 0 0;accent-color:#111}
+.dc-clean-order .dc-interac-invoice .ap-button{min-height:44px;max-width:100%;white-space:normal;text-align:center;border-radius:4px;padding:13px 18px;font-size:13px}
+.dc-clean-order .dc-invoice-instructions{white-space:pre-wrap;overflow-wrap:anywhere;font:inherit;font-size:14px;line-height:1.6;background:#f5f5f5;border:1px solid #d4d4d4;border-radius:4px;padding:16px;max-width:100%;box-sizing:border-box}
 @media(max-width:600px){.dc-clean-order-head{flex-direction:column}.dc-clean-order-right{text-align:left}.dc-clean-order{padding:17px!important}}
 
 .dc-nmi-widget{margin:20px 0 12px;min-height:130px}.dc-payment-success{padding:22px;border-radius:12px;background:#f5f5f5;border:1px solid #d4d4d4}.dc-payment-success h3{color:#111}

@@ -3,8 +3,11 @@ const {test}=require('node:test');
 const assert=require('node:assert/strict');
 const fs=require('node:fs');
 const checkout=fs.readFileSync('checkout-reference.js','utf8');
-test('new payment layout exposes only Card and Crypto without unconfigured wallet buttons or fee claims',()=>{
- assert.match(checkout,/\['card','crypto'\]/);
+test('payment layout adds reviewed CAD Interac when configured without unconfigured wallet buttons or fee claims',()=>{
+ assert.match(checkout,/\['card','crypto',.*paymentKind\(m\)==='interac'.*\['interac'\]/);
+ assert.match(checkout,/Interac e-Transfer \(CAD\)/);
+ assert.match(checkout,/REQUEST CAD INVOICE/);
+ assert.match(checkout,/USD estimate; no money is due/);
  assert.doesNotMatch(checkout,/ByteNFT|Link a new bank account|Same-Day Bank Payment|No Fees!|nlx-wallet-unavailable|Card number \*/);
  assert.match(checkout,/provider displays its fees, conversion rate and final charge/);
  assert.match(checkout,/extra 5% on merchandise after any applied coupon/);

@@ -5,26 +5,28 @@ const checkout=require('../lib/direct-checkout'),config=require('../config/check
 const tick=()=>new Promise(resolve=>setTimeout(resolve,45));
 const card={id:'11111111-1111-4111-8111-111111111111',kind:'hosted_link',native_provider:'rampex',rampex_provider:'hosted',countries:['US','CA'],currency:'USD',version:2,sale_scope:'goods',label:'Card'};
 const cryptoMethod={...card,id:'22222222-2222-4222-8222-222222222222',native_provider:'polygon_usdc',rampex_provider:null,label:'Crypto'};
-function fixture({cryptoReady=false,payment={state:'unknown'},country='US',mobile=false,wallet=null}={}){
- const dom=new JSDOM('<main id="root"></main>',{url:'https://getpurelabs.test/checkout'+(wallet?'?wallet='+wallet:''),runScripts:'outside-only',virtualConsole:new VirtualConsole()}),w=dom.window;
+const interacMethod={id:'33333333-3333-4333-8333-333333333333',kind:'interac',provider_key:'interac',payment_kind:'interac',currency:'CAD',countries:['CA'],version:3,sale_scope:'goods',label:'Interac e-Transfer'};
+function fixture({cryptoReady=false,interacReady=false,payment={state:'unknown'},country='US',mobile=false,wallet=null,query='',balances={points:0,credit_cents:0},placeResult=null,finalQuotePatch=null}={}){
+ const dom=new JSDOM('<main id="root"></main>',{url:'https://getpurelabs.test/checkout'+(query|| (wallet?'?wallet='+wallet:'')),runScripts:'outside-only',virtualConsole:new VirtualConsole()}),w=dom.window;
  const media={matches:mobile,listeners:new Set(),addEventListener(_event,callback){this.listeners.add(callback);},removeEventListener(_event,callback){this.listeners.delete(callback);}};w.matchMedia=()=>media;
  Object.defineProperty(w,'crypto',{value:webcrypto});w.TextEncoder=TextEncoder;w.HTMLElement.prototype.scrollIntoView=()=>{};
- const cart=[{id:'compound',key:'compound:10mg',name:'Compound',size:'10mg',qty:2,price:100}],methods=cryptoReady?[card,cryptoMethod]:[card];
+ const cart=[{id:'compound',key:'compound:10mg',name:'Compound',size:'10mg',qty:2,price:100}],methods=[card,...(cryptoReady?[cryptoMethod]:[]),...(interacReady?[interacMethod]:[])];
  w.localStorage.setItem('pp-cart',JSON.stringify(cart));
- w.AltaStore={cart,catalog:[],product:()=>({}),image:()=>'/fixture.webp'};
- const data={config,delivery_options:delivery,shipping_zones:zones,methods,balances:{points:0,credit_cents:0},events:[]};
+ w.localStorage.setItem('ap-bulk-draft-v2',JSON.stringify(cart));
+ w.AltaStore={cart,catalog:[],product:()=>({}),image:()=>'/fixture.webp',normalizeLines:items=>items,read:(key,fallback)=>JSON.parse(w.localStorage.getItem(key)||JSON.stringify(fallback))};
+ const data={config,delivery_options:delivery,shipping_zones:zones,methods,balances,events:[]};
  const requests=[];
  const quote=body=>{
   const method=methods.find(m=>m.id===body.method_id)||{kind:'hosted_link',sale_scope:'goods'};
-  const record={kind:'goods',request:{items:body.items.map(item=>({...item,name:'Compound',unit_price_usd_cents:10000})),address:{country:body.country||body.address?.country||country},checkout:{coupon:body.coupon||'',points:0,credit_cents:0,delivery:body.delivery}}};
-  const priced=checkout.price(record,method,null,{points:0,credit_cents:0});
+  const record={kind:'goods',request:{items:body.items.map(item=>({...item,name:'Compound',unit_price_usd_cents:10000})),address:{country:body.country||body.address?.country||country},checkout:{coupon:body.coupon||'',points:body.points||0,credit_cents:body.credit_cents||0,delivery:body.delivery}}};
+  const priced=checkout.price(record,method,null,balances);
   return {...priced,quote:'fixture-verified-quote',free_shipping_threshold_cents:15000,free_shipping_remaining_cents:Math.max(0,15000-priced.subtotal_cents+priced.discount_cents)};
  };
  w.fetch=async(url,options={})=>{
   const body=options.body?JSON.parse(options.body):null;if(body)requests.push({url:String(url),body});
   if(String(url).includes('native=customer'))return{ok:true,json:async()=>payment};
-  if(body?.action==='place')return{ok:true,json:async()=>({id:body.id,status:'accepted'})};
-  if(body)return{ok:true,json:async()=>quote(body)};
+  if(body?.action==='place')return{ok:true,json:async()=>placeResult?placeResult(body,w):body.method_id===interacMethod.id?{id:body.id,status:'requested',request_only:true}:{id:body.id,status:'accepted'}};
+  if(body)return{ok:true,json:async()=>({...quote(body),...(body.action==='quote'?finalQuotePatch:null)})};
   return{ok:true,json:async()=>data};
  };
  const auth={auth:{getSession:async()=>({data:{session:{access_token:'isolated-dom-checkout-token'}}})}};
@@ -162,4 +164,99 @@ test('wallet preference uses hosted Card, removes crypto discount and never bypa
   assert.equal(f.requests.filter(r=>r.body.action==='pay').length,1);
   assert.equal('wallet' in f.requests.find(r=>r.body.action==='pay').body,false,'No undocumented wallet flag is sent to the provider');
  }finally{f.dom.window.close();}
+});
+
+test('Canadian Interac checkout preserves USD estimates and coupon, requests CAD review, and never starts a native payment',async()=>{
+ const f=fixture({country:'CA',interacReady:true,cryptoReady:true,balances:{points:500,credit_cents:1000}});
+ try{
+  await f.open();await f.paymentStep();
+  assert.deepEqual([...f.root.querySelectorAll('[name=payment_choice]')].map(input=>input.value),['card','crypto','interac']);
+  change(f,f.root.querySelector('[name=payment_choice][value=interac]'),true);await tick();
+  f.root.querySelector('[name=sidebar_coupon]').value='BLACKFRIDAY15';f.root.querySelector('[data-nlx-coupon]').click();await tick();
+  assert.match(f.root.querySelector('.nlx-summary-head h2').textContent,/USD/);
+  assert.match(f.root.querySelector('[data-nlx-totals]').textContent,/BLACKFRIDAY15 \(15%\).*Estimated total \(USD\)/);
+  assert.doesNotMatch(f.root.querySelector('[data-nlx-totals]').textContent,/Crypto discount|CA\$/);
+  assert.match(f.root.querySelector('[data-nlx-points]').textContent,/USD points and store credit cannot be applied/);
+  assert.equal(f.root.querySelector('[data-nlx-points] a'),null);
+  assert.match(f.root.querySelector('[data-nlx-payment-currency]').textContent,/USD estimate; no money is due/);
+  const place=f.root.querySelector('[data-nlx-place]');assert.equal(place.textContent,'REQUEST CAD INVOICE');assert.equal(place.disabled,true);
+  consent(f);place.click();place.click();await tick();await tick();
+  const placed=f.requests.find(r=>r.body.action==='place').body;
+  assert.equal(placed.method_id,interacMethod.id);assert.equal(placed.points,0);assert.equal(placed.credit_cents,0);assert.equal(placed.coupon,'BLACKFRIDAY15');
+  assert.equal(f.requests.filter(r=>r.body.action==='place').length,1);
+  assert.equal(f.requests.filter(r=>r.url.includes('native=customer')||r.body.action==='pay').length,0);
+  assert.match(f.root.textContent,/CAD invoice request is saved/);
+  assert.equal(f.w.localStorage.getItem('pp-cart'),null);
+  await assert.rejects(f.w.DirectCheckout.openHostedPayment(f.auth,placed.id,17000,'CAD',interacMethod),/Review and accept your final CAD invoice/);
+  assert.equal(f.requests.filter(r=>r.body.action==='pay').length,0);
+ }finally{f.dom.window.close();}
+});
+
+test('Interac is destination-restricted and switching back restores Card or Crypto totals and actions',async()=>{
+ for(const country of ['US','CA']){
+  const f=fixture({country,interacReady:true,cryptoReady:true});
+  try{
+   await f.open();await f.paymentStep();
+   const input=f.root.querySelector('[name=payment_choice][value=interac]');assert.equal(input.disabled,country!=='CA');
+   if(country==='CA'){
+    change(f,input,true);await tick();assert.equal(f.root.querySelector('[data-nlx-place]').textContent,'REQUEST CAD INVOICE');
+    change(f,f.root.querySelector('[name=payment_choice][value=crypto]'),true);await tick();
+    assert.match(f.root.querySelector('[data-nlx-totals]').textContent,/Crypto discount \(5%\)/);
+    assert.match(f.root.querySelector('[data-nlx-place]').textContent,/CONTINUE TO CRYPTO PAYMENT/);
+    assert.equal(f.root.querySelector('.nlx-summary-head h2').textContent,'Order Summary');
+    change(f,f.root.querySelector('[name=payment_choice][value=card]'),true);await tick();
+    assert.doesNotMatch(f.root.querySelector('[data-nlx-totals]').textContent,/Crypto discount|Estimated total \(USD\)/);
+    assert.match(f.root.querySelector('[data-nlx-place]').textContent,/CONTINUE TO CARD PAYMENT/);
+   }
+   assert.equal(f.requests.filter(r=>r.body.action==='place').length,0);
+  }finally{f.dom.window.close();}
+ }
+});
+
+test('Interac does not clear the cart or request payment after an unverified quote or saved-request response',async()=>{
+ for(const options of [{finalQuotePatch:{currency:'CAD'}},{placeResult:body=>({id:body.id,status:'accepted'})},{placeResult:()=>({id:'wrong-invoice',status:'requested',request_only:true})}]){
+  const f=fixture({country:'CA',interacReady:true,...options});
+  try{
+   await f.open();await f.paymentStep();change(f,f.root.querySelector('[name=payment_choice][value=interac]'),true);await tick();consent(f);
+   f.root.querySelector('[data-nlx-place]').click();await tick();await tick();
+   assert.notEqual(f.w.localStorage.getItem('pp-cart'),null);
+   assert.equal(f.requests.filter(r=>r.body.action==='pay').length,0);
+   if(options.finalQuotePatch)assert.equal(f.requests.filter(r=>r.body.action==='place').length,0);
+   else assert.ok(f.root.querySelector('a[href^="/account/purchases?id="]'));
+  }finally{f.dom.window.close();}
+ }
+});
+
+test('successful Interac request preserves a cart that changed while the request was saving',async()=>{
+ const f=fixture({country:'CA',interacReady:true,placeResult:(body,w)=>{w.AltaStore.cart[0].qty=3;w.localStorage.setItem('pp-cart',JSON.stringify(w.AltaStore.cart));return{id:body.id,status:'requested',request_only:true};}});
+ try{
+  await f.open();await f.paymentStep();change(f,f.root.querySelector('[name=payment_choice][value=interac]'),true);await tick();consent(f);
+  f.root.querySelector('[data-nlx-place]').click();await tick();await tick();
+  assert.equal(JSON.parse(f.w.localStorage.getItem('pp-cart'))[0].qty,3);
+  assert.equal(f.requests.filter(r=>r.body.action==='pay').length,0);
+ }finally{f.dom.window.close();}
+});
+
+test('balance and bulk checkout disable and reset USD redemptions for Interac and retain clear estimate labels',async()=>{
+ for(const mode of ['balance','bulk']){
+  const f=fixture({country:'CA',interacReady:true,query:'?'+mode+'=1',balances:{points:500,credit_cents:1000}});
+  try{
+   await f.open();const form=f.root.querySelector('form');form.querySelector('[data-step-next="0"]').click();form.querySelector('[data-step-next="1"]').click();
+   form.elements.points.value='200';form.elements.credit.value='5';
+   change(f,form.querySelector('[data-payment-kind=interac]'),true);
+   assert.equal(form.elements.points.value,'0');assert.equal(form.elements.credit.value,'0');assert.equal(form.elements.points.disabled,true);assert.equal(form.elements.credit.disabled,true);
+   assert.match(form.querySelector('[data-dc-balance-note]').textContent,/held in USD and cannot be applied/);
+   await new Promise(resolve=>setTimeout(resolve,230));
+   assert.match(f.root.querySelector('.dc-totals').textContent,/Estimated total \(USD\)/);
+   assert.match(f.root.querySelector('.dc-totals').textContent,/USD points and store credit cannot be applied/);
+   form.elements.research_use.checked=true;form.elements.consent.checked=true;await form.onsubmit({preventDefault(){}});
+   assert.match(f.root.querySelector('.dc-review-summary').textContent,/USD ESTIMATE · CAD INVOICE TO FOLLOW/);
+   assert.equal(form.elements.points.disabled,true);
+   const request=f.requests.find(r=>r.body.action==='quote').body;assert.equal(request.points,0);assert.equal(request.credit_cents,0);assert.equal(request.bulk_order,mode==='bulk');
+   assert.ok(f.requests.filter(r=>r.url.includes('checkout=cart')).every(r=>r.body.bulk_order===(mode==='bulk')));
+   const place=f.root.querySelector('.dc-summary button');assert.equal(place.textContent,'Request CAD invoice');await place.onclick();
+   assert.equal(f.requests.filter(r=>r.body.action==='place').length,1);assert.equal(f.requests.find(r=>r.body.action==='place').body.bulk_order,mode==='bulk');assert.equal(f.requests.filter(r=>r.body.action==='pay').length,0);
+   assert.equal(f.w.localStorage.getItem(mode==='bulk'?'ap-bulk-draft-v2':'pp-cart'),null);
+  }finally{f.dom.window.close();}
+ }
 });

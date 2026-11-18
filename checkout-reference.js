@@ -40,7 +40,7 @@
   if(!cart.length){root.replaceChildren(el('p','nlx-empty','Your cart is empty.'));return;}
   let data;
   try{data=await window.DirectCheckout.api(auth);}catch(err){root.replaceChildren(el('p','nlx-error',err.message));return;}
-  const paymentKind=m=>m?.native_provider==='rampex'&&m.rampex_provider==='hosted'?'card':m?.native_provider==='polygon_usdc'?'crypto':null;
+  const paymentKind=window.DirectCheckout.paymentKind;
   const paymentMethods=(data.methods||[]).filter(m=>paymentKind(m)&&m.active!==false);
   const preferred=paymentMethods.find(m=>m.id===(options.method||params.get('method')));
   const walletPreference=['apple','google'].includes(params.get('wallet'))?params.get('wallet'):null;
@@ -151,7 +151,7 @@
    counts.push(['Shipping',shipBase]);
    for(const x of fees)counts.push([x.label,x.amount_cents]);
    if(!p&&ships&&!fees.length)counts.push(['Shipping and add-ons',ships]);
-   counts.push(['Total',p?.total_cents??(subtotal-savings-cryptoSavings+ships)]);
+   counts.push([state.paymentKind==='interac'?'Estimated total (USD)':'Total',p?.total_cents??(subtotal-savings-cryptoSavings+ships)]);
    return counts;
   }
   function wireDisclosures(scope){
@@ -173,15 +173,16 @@
   }
   function renderSummary(){
    const items=snapshotCart();
+   view('.nlx-summary-head h2',detail).textContent=state.paymentKind==='interac'?'Order Estimate · USD':'Order Summary';
    view('[data-nlx-item-count]',detail).textContent=items.reduce((n,x)=>n+x.qty,0)+' items';
    view('[data-nlx-protection]',detail).innerHTML=isActive('protection')?'<div class="nlx-protection-body"><span class="nlx-shield">'+shieldIcon+'</span><div class="nlx-protection-copy"><strong><span class="nlx-protection-lock" aria-hidden="true"><svg viewBox="0 0 24 24"><rect x="5" y="10" width="14" height="11" rx="2"/><path d="M8 10V7a4 4 0 0 1 8 0v3"/></svg></span>Shipping Protection</strong><button type="button" class="nlx-disclosure-trigger" data-testid="protection-disclosure" data-nlx-info="protection" aria-controls="nlx-protection-detail" aria-expanded="false">Read more</button><div class="nlx-disclosure" id="nlx-protection-detail" data-testid="protection-disclosure-panel" data-nlx-panel hidden><p>'+esc(optionsById.protection.description||'Optional protection for eligible shipments.')+'</p><a href="/shipping-protection.html">Full shipping protection policy</a></div></div><span class="nlx-protection-price">'+usd(optionsById.protection.price_cents)+'</span><label class="nlx-mini-check"><input type="checkbox" data-nlx-extra="protection" '+(state.extras.has('protection')?'checked':'')+' aria-label="Shipping protection"></label></div>':'';
    view('[data-nlx-products]',detail).innerHTML='<div class="nlx-product-head"><span>PRODUCT</span><span>SUBTOTAL</span></div>'+items.map(x=>{
     const image=window.AltaStore?.image?.(window.AltaStore.product(x.id),x.size)||'';
     return '<div class="nlx-product"><button type="button" class="nlx-remove" data-nlx-remove="'+esc(x.key)+'" aria-label="Remove '+esc(x.name)+'">×</button><img src="'+esc(image)+'" alt=""><div class="nlx-product-name"><strong>'+esc(x.name)+'</strong><div class="nlx-size-line"><small>'+esc(x.size)+'</small>'+'</div><div class="nlx-qty"><button data-nlx-qty="-1" data-key="'+esc(x.key)+'" aria-label="Decrease quantity">−</button><span>'+x.qty+'</span><button data-nlx-qty="1" data-key="'+esc(x.key)+'" aria-label="Increase quantity">+</button></div></div><strong class="nlx-product-price">'+usd(Math.round(x.price*100)*x.qty)+'</strong></div>';
    }).join('');
-   view('[data-nlx-totals]',detail).innerHTML=currentPreview?moneyLines().map(([n,v])=>'<div class="'+(n==='Total'?'nlx-grand':'')+'"><span>'+esc(n)+'</span><strong>'+usd(v)+'</strong></div>').join(''):'<p role="status">Calculating your order total…</p>';
-   const balances=view('[data-nlx-points]',detail),hasBalance=(data.balances?.points||0)>0||(data.balances?.credit_cents||0)>0;balances.hidden=!hasBalance;balances.innerHTML=hasBalance?'<span>Available: '+Math.max(0,data.balances.points||0)+' points · '+usd(data.balances.credit_cents||0)+' store credit.</span><a href="/checkout?balance=1">Use existing balance →</a>':'';
-   view('[data-nlx-quote-note]',detail).textContent=(currentPreview?.pricing?.discount_source==='coupon_crypto'?'Your coupon is applied first, then an extra 5% Crypto discount on the remaining merchandise. ':'')+(currentPreview?.shipping_note||'');
+   view('[data-nlx-totals]',detail).innerHTML=currentPreview?moneyLines().map(([n,v])=>'<div class="'+(['Total','Estimated total (USD)'].includes(n)?'nlx-grand':'')+'"><span>'+esc(n)+'</span><strong>'+usd(v)+'</strong></div>').join(''):'<p role="status">Calculating your order total…</p>';
+   const balances=view('[data-nlx-points]',detail),hasBalance=(data.balances?.points||0)>0||(data.balances?.credit_cents||0)>0;balances.hidden=!hasBalance;balances.innerHTML=hasBalance?'<span>Available: '+Math.max(0,data.balances.points||0)+' points · '+usd(data.balances.credit_cents||0)+' store credit.</span>'+(state.paymentKind==='interac'?'<span>USD points and store credit cannot be applied to a reviewed CAD Interac invoice. Choose Card or Crypto to use these balances.</span>':'<a href="/checkout?balance=1">Use existing balance →</a>'):'';
+   view('[data-nlx-quote-note]',detail).textContent=(state.paymentKind==='interac'?'This is a USD estimate, not an amount to transfer. Review and accept your final CAD invoice in My Orders before sending Interac payment. ':currentPreview?.pricing?.discount_source==='coupon_crypto'?'Your coupon is applied first, then an extra 5% Crypto discount on the remaining merchandise. ':'')+(currentPreview?.shipping_note||'');
    view('[data-nlx-remove-coupon]',detail).hidden=!state.coupon;
    const coupon=view('[name=sidebar_coupon]',detail);if(document.activeElement!==coupon)coupon.value=state.coupon;
    wireDisclosures(detail);
@@ -282,25 +283,26 @@
    all('.nlx-payment-choice',form).forEach(row=>{const chosen=row.querySelector('[name=payment_choice]').value===state.paymentKind;row.querySelector('.nlx-payment-choice-body').hidden=!chosen;row.classList.toggle('nlx-selected',chosen);});
    button.disabled=!(method&&currentPreview&&!loadingPreview&&!onePayment&&!lastPlaced&&form.elements.ruo?.checked&&form.elements.responsibility?.checked);
    const walletName=state.wallet==='apple'?'APPLE PAY':state.wallet==='google'?'GOOGLE PAY':null;
-   button.textContent=(method?(state.paymentKind==='card'?'CONTINUE TO '+(walletName||'CARD PAYMENT'):'CONTINUE TO CRYPTO PAYMENT'):'PAYMENT UNAVAILABLE')+' · '+usd(currentPreview?.total_cents||0);
+   button.textContent=method&&state.paymentKind==='interac'?'REQUEST CAD INVOICE':(method?(state.paymentKind==='card'?'CONTINUE TO '+(walletName||'CARD PAYMENT'):'CONTINUE TO CRYPTO PAYMENT'):'PAYMENT UNAVAILABLE')+' · '+usd(currentPreview?.total_cents||0);
    const card=paymentMethods.find(m=>paymentKind(m)==='card'&&m.countries?.includes(shippingCountry()));
    all('[data-nlx-wallet]',form).forEach(control=>{control.disabled=!card||onePayment||!!lastPlaced;control.setAttribute('aria-pressed',String(state.paymentKind==='card'&&state.wallet===control.dataset.nlxWallet));});
-   const amount=view('[data-nlx-wallet-amount]',form);if(amount)amount.textContent=usd(currentPreview?.total_cents||0);
+   const amount=view('[data-nlx-wallet-amount]',form);if(amount)amount.textContent=state.paymentKind==='interac'?'Card payments in USD':usd(currentPreview?.total_cents||0);
+   const paymentNote=view('[data-nlx-payment-currency]',form);if(paymentNote)paymentNote.textContent=state.paymentKind==='interac'?'Interac is paid in CAD after invoice review. The order summary is a USD estimate; no money is due when you submit this request.':'Your order is priced in USD. Review your total and payment-provider terms before paying.';
    const walletNote=view('[data-nlx-wallet-note]',form);
    if(walletNote)walletNote.textContent=!card?'Digital wallet payments are unavailable for this destination.':state.paymentKind==='card'&&walletName?(walletName==='APPLE PAY'?'Apple Pay':'Google Pay')+' selected. Review your order and accept the terms below, then continue. Choose that wallet in the secure provider checkout if offered for your device.':'Choose a wallet, review your order and accept the terms, then continue. Apple Pay and Google Pay are offered by the secure provider when your device, country and transaction are eligible.';
   }
   function paymentLayout(){
-   const rows=['card','crypto'].map(key=>{
+   const rows=['card','crypto',...(paymentMethods.some(m=>paymentKind(m)==='interac')?['interac']:[])].map(key=>{
     const method=paymentMethods.find(m=>paymentKind(m)===key),available=method&&Array.isArray(method.countries)&&method.countries.includes(shippingCountry());
-    const description=key==='card'
+    const description=key==='interac'?'Request a reviewed CAD invoice. PURE will confirm the exchange rate, delivery, and final CAD total for you to accept before receiving transfer instructions. Payment stays pending until PURE verifies receipt in the bank account.':key==='card'
      ? 'Secure card-to-crypto checkout. The provider displays its fees, conversion rate and final charge before you pay. Available cards and digital wallets depend on your country, device and provider eligibility.'
      : method?'Pay USDC directly on Polygon from a compatible browser wallet. You need USDC and POL for gas. Review the exact amount, recipient and authorization before you sign; payment is confirmed on chain before fulfillment.'
      :'Direct USDC on Polygon is being configured. No wallet transfer is requested until the receiving address and on-chain payment confirmation are verified.';
-    return '<div class="nlx-payment-choice'+(!available?' nlx-payment-pending':'')+'"><label class="nlx-payment-option"><input type="radio" name="payment_choice" value="'+key+'" '+(state.paymentKind===key?'checked ':'')+(!available?'disabled ':'')+'><span>'+(key==='card'?'Card':'Crypto')+'</span><span class="nlx-payment-state">'+(available?(key==='crypto'?'EXTRA 5% OFF':'SECURE CHECKOUT'):method?'UNAVAILABLE FOR DESTINATION':'SETUP PENDING')+'</span></label><div class="nlx-payment-choice-body" '+(state.paymentKind===key?'':'hidden')+'><p>'+description+'</p>'+(key==='crypto'?'<small>Save an extra 5% on merchandise after any applied coupon. Shipping, tax and fees, including protection, are excluded.</small>':'')+'</div></div>';
+    return '<div class="nlx-payment-choice'+(!available?' nlx-payment-pending':'')+'"><label class="nlx-payment-option"><input type="radio" name="payment_choice" value="'+key+'" '+(state.paymentKind===key?'checked ':'')+(!available?'disabled ':'')+'><span>'+(key==='interac'?'Interac e-Transfer (CAD)':key==='card'?'Card':'Crypto')+'</span><span class="nlx-payment-state">'+(available?(key==='interac'?'INVOICE REVIEW':key==='crypto'?'EXTRA 5% OFF':'SECURE CHECKOUT'):method?'UNAVAILABLE FOR DESTINATION':'SETUP PENDING')+'</span></label><div class="nlx-payment-choice-body" '+(state.paymentKind===key?'':'hidden')+'><p>'+description+'</p>'+(key==='crypto'?'<small>Save an extra 5% on merchandise after any applied coupon. Shipping, tax and fees, including protection, are excluded.</small>':'')+'</div></div>';
    }).join('');
    return '<section class="nlx-payment"><h2>Choose how to pay</h2><div class="nlx-express-label"><strong>DIGITAL WALLET</strong><span data-nlx-wallet-amount>'+usd(currentPreview?.total_cents||0)+'</span></div>'
     +'<div class="nlx-wallets" data-nlx-wallets><button type="button" class="nlx-wallet-button nlx-apple-pay" data-nlx-wallet="apple" aria-label="Choose Apple Pay" aria-pressed="false"><span class="nlx-wallet-lockup"><img class="nlx-wallet-symbol nlx-apple-symbol" src="/assets/payment-brands/apple-mark-clean.svg" alt="" aria-hidden="true" width="20" height="24"><span class="nlx-wallet-wordmark">Pay</span></span></button><span class="nlx-or">or</span><button type="button" class="nlx-wallet-button nlx-google-pay" data-nlx-wallet="google" aria-label="Choose Google Pay" aria-pressed="false"><span class="nlx-wallet-lockup"><img class="nlx-wallet-symbol nlx-google-symbol" src="/assets/payment-brands/google-g-clean.svg" alt="" aria-hidden="true" width="22" height="22"><span class="nlx-wallet-wordmark">Pay</span></span></button></div>'
-    +'<p class="nlx-wallet-consent" data-nlx-wallet-note aria-live="polite"></p><div class="nlx-divider"><span>OR PAY ANOTHER WAY</span></div><p>Your order is priced in USD. Review your total and payment-provider terms before paying.</p><div class="nlx-payment-rows">'+rows+'</div>'
+    +'<p class="nlx-wallet-consent" data-nlx-wallet-note aria-live="polite"></p><div class="nlx-divider"><span>OR PAY ANOTHER WAY</span></div><p data-nlx-payment-currency>Your order is priced in USD. Review your total and payment-provider terms before paying.</p><div class="nlx-payment-rows">'+rows+'</div>'
     +'<div class="nlx-terms"><label><input type="checkbox" name="ruo" required><span>'+esc(terms1)+'</span></label><label><input type="checkbox" name="responsibility" required><span>'+esc(terms2)+'</span></label></div>'
     +'<div class="nlx-payment-controls"><div class="nlx-status" data-nlx-status role="status" aria-live="polite"></div><button type="button" class="nlx-primary" data-nlx-place disabled>CONTINUE TO PAYMENT</button></div>'+trustMarkup+'</section>';
   }
@@ -383,12 +385,15 @@
       const body={...draft(true),method_id:method.id,research_use:true,consent:true};
       note('Verifying your order total…');
       const q=await window.DirectCheckout.api(auth,{...body,action:'quote'});
-      if(!q?.quote||q.total_cents!==currentPreview.total_cents)throw Error('Your total changed. Review the updated order before continuing.');
+      if(!q?.quote||q.total_cents!==currentPreview.total_cents||q.currency!==currentPreview.currency||!!q.request_only!==!!currentPreview.request_only)throw Error('Your total changed. Review the updated order before continuing.');
+      if(state.paymentKind==='interac'&&(q.request_only!==true||q.payment_currency!=='CAD'||q.currency!=='USD'))throw Error('The CAD invoice request could not be verified. Review checkout again.');
       lastPlaced=body.id;note('Saving your order…');
       const result=await window.DirectCheckout.api(auth,{...body,action:'place',quote:q.quote});
       if(result?.id!==lastPlaced)throw Error('The saved order reference could not be verified.');
+      if(state.paymentKind==='interac'&&(result.status!=='requested'||result.request_only!==true))throw Error('The CAD invoice request needs review. Check your saved order before trying again.');
       let destination='/account/purchases?id='+encodeURIComponent(lastPlaced);
-      if(q.total_cents>0){
+      if(state.paymentKind==='interac')note('Your CAD invoice request is saved. Opening your order…');
+      else if(q.total_cents>0){
        note(state.paymentKind==='card'?'Opening secure card payment…':'Opening USDC wallet payment…');
        if(typeof window.DirectCheckout.openHostedPayment!=='function')throw Error('Open your saved order to continue payment.');
        const payment=await window.DirectCheckout.openHostedPayment(auth,lastPlaced,q.total_cents,q.currency,method,{country:(state.billingData||state.shippingData||formatAddress()).country});

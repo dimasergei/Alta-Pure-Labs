@@ -34,7 +34,7 @@ test('only ready hosted Card and configured Crypto are offered; historical Strip
  assert.deepEqual((await checkout.methods(db,env,'GB')).map(m=>m.id),[]);
  const {response}=await request(null,'checkout=public',false,db,{POLYGON_USDC_ENABLED:'false'});
  assert.equal(response.statusCode,200);assert.deepEqual(response.body.methods.map(m=>m.label),['Card']);
- assert.deepEqual(response.body.payment_options.map(m=>[m.key,m.status]),[['card','available'],['crypto','setup_pending']]);
+ assert.deepEqual(response.body.payment_options.map(m=>[m.key,m.status]),[['card','available'],['crypto','setup_pending'],['interac','setup_pending']]);
  assert.equal(response.body.capabilities.apple_pay,false);assert.equal(response.body.capabilities.google_pay,false);
  for(const old of [stripe,bank]){const {response,db}=await request({...body(old),action:'quote'});assert.equal(response.statusCode,409);assert.equal(db.calls.length,0);}
 });

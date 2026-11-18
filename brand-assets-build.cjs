@@ -27,6 +27,7 @@ for(const file of fs.readdirSync(out,{recursive:true}).filter(f=>f.endsWith('.ht
   html=html.replace(/<link\b[^>]*\brel=["'](?:(?:shortcut )?icon|apple-touch-icon)["'][^>]*>/gi,'');
   html=html.replace(/<meta\b[^>]*\bname=["'](?:theme-color|altapure-promo-end)["'][^>]*>/gi,'');
   if(path.basename(file).startsWith('admin-')){
+    html=html.replace(/src="\/(admin-fulfillment)\.js(?:\?[^"]*)?"/g,'src="/$1.js?v=20261118-interac"');
     html=html.replace(/<link\b[^>]*href=["']\/admin-violet\.css[^"']*["'][^>]*>/gi,'');
     html=html.replace(/href="\/(admin-dashboard|operations)\.css(?:\?[^"]*)?"/g,'href="/$1.css?v=20261117b"');
     html=html.replace('</head>','<link rel="stylesheet" href="/admin-violet.css?v=20261117b">'+iconLinks+'</head>');
@@ -47,6 +48,8 @@ for(const file of fs.readdirSync(out,{recursive:true}).filter(f=>f.endsWith('.ht
   html=html.replace('</head>','<link rel="stylesheet" href="/unified-palette.css?v=20261117-monochrome"></head>');
   html=html.replace('</head>','<link rel="stylesheet" href="/pure-layout.css?v=20261118"><link rel="stylesheet" href="/pure-bulk-layout.css?v=20261118"><link rel="stylesheet" href="/pure-coa.css?v=20261118"></head>');
   html=html.replace(/src="\/(workspace-v2|supplier-coas)\.js(?:\?[^"]*)?"/g,'src="/$1.js?v=20261118-coa"');
+  html=html.replace(/src="\/(checkout-reference|direct-checkout-client|payment-options-public|readiness-ui)\.js(?:\?[^"]*)?"/g,'src="/$1.js?v=20261118-interac"');
+  html=html.replace(/href="\/account-experience\.css(?:\?[^"]*)?"/g,'href="/account-experience.css?v=20261118-interac"');
   fs.writeFileSync(target,html);
   count++;
 }
