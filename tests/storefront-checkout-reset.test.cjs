@@ -68,7 +68,7 @@ for(const surface of ['cart','checkout'])test(surface+': regular purchased quant
   assert.equal(remove.hidden,true);
   assert.match(f.root.textContent,/Coupon removed/);
   assert.match(f.root.textContent,/\$157\.00/);
-  if(surface==='cart')assert.match(f.root.querySelector('[data-nlc-unlock-copy]').textContent,/Free standard US shipping included/);
+  if(surface==='cart')assert.match(f.root.querySelector('[data-nlc-unlock-copy]').textContent,/Free standard shipping included/);
  }finally{f.dom.window.close();}
 });
 test('checkout Card order quotes and places the same purchased quantity and confirmed coupon',async()=>{
