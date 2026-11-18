@@ -15,5 +15,21 @@
   m.panel.addEventListener('keydown',e=>{const links=[...m.panel.querySelectorAll('a')],i=links.indexOf(document.activeElement);if(i<0)return;let next;if(e.key==='ArrowDown')next=(i+1)%links.length;else if(e.key==='ArrowUp')next=(i+links.length-1)%links.length;else if(e.key==='Home')next=0;else if(e.key==='End')next=links.length-1;if(next!==undefined){e.preventDefault();links[next].focus();}});
  }
  document.addEventListener('pointerdown',e=>{for(const m of menus)if(!m.root.contains(e.target))close(m);});
- document.addEventListener('keydown',e=>{if(e.key!=='Escape')return;for(const m of menus){const focused=m.root.contains(document.activeElement);close(m);if(focused){e.preventDefault();m.suppressFocus=true;m.trigger.focus();m.suppressFocus=false;}}});
+ document.addEventListener('keydown',e=>{
+  if(e.key!=='Escape'||e.defaultPrevented||document.querySelector('dialog[open]'))return;
+  const opened=menus.filter(m=>!m.panel.hidden),focused=opened.find(m=>m.root.contains(document.activeElement));
+  if(opened.length){
+   for(const m of opened)close(m);
+   e.preventDefault();
+   if(focused){focused.suppressFocus=true;focused.trigger.focus();focused.suppressFocus=false;}
+   return;
+  }
+  const nav=document.querySelector('#ap-nav.ap-open');
+  if(nav){
+   nav.classList.remove('ap-open');
+   const toggle=document.querySelector('[data-action="menu"][aria-controls="ap-nav"]');
+   if(toggle){toggle.setAttribute('aria-expanded','false');toggle.focus();}
+   e.preventDefault();
+  }
+ });
 })();
