@@ -19,7 +19,7 @@ test('US and Canada share the next-day rate while unsupported destinations remai
   assert.equal(quote.shipping_cents,6995);
   assert.equal(quote.extras_cents,500);
   assert.equal(quote.total_cents,7495);
-  assert.equal(quote.rate_version,'shipping-2026-11-v2');
+  assert.equal(quote.rate_version,'shipping-2026-11-v3');
   assert.deepEqual(quote.selection,{shipping:'next_day',extras:['protection']});
   assert.equal(delivery.price({shipping:'next_day',extras:[]},true,delivery.defaults,country).total_cents,6995);
  }
@@ -35,4 +35,13 @@ test('protection is priced exactly as selected for US, Canadian and other suppor
  }
  const disabled=delivery.defaults.map(option=>option.id==='protection'?{...option,enabled:false}:option);
  assert.throws(()=>delivery.price({shipping:'standard',extras:['protection']},false,disabled,'CA'),/unavailable/);
+});
+
+test('US and Canada both qualify for free standard shipping at the same USD threshold',()=>{
+ for(const country of ['US','CA']){
+  assert.equal(delivery.price({shipping:'standard',extras:[]},true,delivery.defaults,country).shipping_cents,0);
+  assert.equal(delivery.price({shipping:'standard',extras:[]},false,delivery.defaults,country).shipping_cents,country==='US'?1495:3995);
+  assert.equal(delivery.price({shipping:'express',extras:[]},true,delivery.defaults,country).shipping_cents,country==='US'?3495:5995);
+ }
+ assert.equal(delivery.price({shipping:'standard',extras:[]},true,delivery.defaults,'GB').shipping_cents,5995);
 });
