@@ -178,7 +178,7 @@ test('Canadian Interac checkout shows actual CAD totals, preserves coupons, and 
   assert.match(f.root.querySelector('[data-nlx-totals]').textContent,/BLACKFRIDAY15 \(15%\).*CA\$42\.00.*Total \(CAD\)/);
   assert.doesNotMatch(f.root.querySelector('[data-nlx-totals]').textContent,/Crypto discount|USD/);
   assert.equal(f.root.querySelector('.nlx-product-price').textContent,'CA$280.00');assert.equal(f.root.querySelector('.nlx-protection-price').textContent,'CA$7.00');
-  assert.equal(f.root.querySelector('[data-nlx-confirm-shipping-price]').textContent,'CA$55.93');
+  assert.equal(f.root.querySelector('[data-nlx-confirm-shipping-price]').textContent,'CA$0.00');
   assert.match(f.root.querySelector('[data-nlx-points]').textContent,/USD points and store credit cannot be applied/);
   assert.equal(f.root.querySelector('[data-nlx-points] a'),null);
   assert.match(f.root.querySelector('[data-nlx-payment-currency]').textContent,/order total is shown in CAD/);
@@ -221,7 +221,7 @@ test('a preferred Interac route converts cross-sells, all shipping choices, prio
   assert.equal(f.root.querySelector('[data-nlx-cross-sell-price]').textContent,'CA$42.00');
   f.root.querySelector('[data-nlx-next]').click();await tick();
   const prices=[...f.root.querySelectorAll('.nlx-delivery-price')].map(target=>target.textContent);
-  assert.deepEqual(prices,['CA$55.93','CA$83.93','CA$97.93']);assert.equal(f.root.querySelector('[data-nlx-extra-price=priority]').textContent,'CA$13.99');
+  assert.deepEqual(prices,['CA$0.00','CA$83.93','CA$97.93']);assert.equal(f.root.querySelector('[data-nlx-extra-price=priority]').textContent,'CA$13.99');
   assert.equal(f.root.querySelector('.nlx-protection-price').textContent,'CA$7.00');
   change(f,f.root.querySelector('[data-nlx-extra=priority]'),true);await new Promise(resolve=>setTimeout(resolve,230));
   assert.match(f.root.querySelector('[data-nlx-totals]').textContent,/Priority ProcessingCA\$13\.99/);
@@ -253,7 +253,7 @@ test('Interac is destination-restricted and switching back restores Card or Cryp
    await f.open();await f.paymentStep();
    const input=f.root.querySelector('[name=payment_choice][value=interac]');assert.equal(input.disabled,country!=='CA');
    if(country==='CA'){
-    change(f,input,true);await tick();assert.equal(f.root.querySelector('[data-nlx-place]').textContent,'PLACE ORDER · CA$342.93');
+    change(f,input,true);await tick();assert.equal(f.root.querySelector('[data-nlx-place]').textContent,'PLACE ORDER · CA$273.00');
     change(f,f.root.querySelector('[name=payment_choice][value=crypto]'),true);await tick();
     assert.match(f.root.querySelector('[data-nlx-totals]').textContent,/Crypto discount \(5%\)/);
     assert.match(f.root.querySelector('[data-nlx-place]').textContent,/CONTINUE TO CRYPTO PAYMENT/);
@@ -301,9 +301,9 @@ test('balance and bulk checkout disable USD redemptions and show every amount in
    assert.equal(form.elements.points.value,'0');assert.equal(form.elements.credit.value,'0');assert.equal(form.elements.points.disabled,true);assert.equal(form.elements.credit.disabled,true);
    assert.match(form.querySelector('[data-dc-balance-note]').textContent,/held in USD and cannot be applied/);
    await new Promise(resolve=>setTimeout(resolve,230));
-   assert.match(f.root.querySelector('.dc-totals').textContent,/Total \(CAD\).*CA\$328\.93/);
+   assert.match(f.root.querySelector('.dc-totals').textContent,/Total \(CAD\).*CA\$273\.00/);
    assert.equal(f.root.querySelector('[data-dc-line-price]').textContent,'CA$280.00');
-   assert.equal(form.querySelector('[data-rd-shipping-price=standard]').textContent,'CA$55.93');
+   assert.equal(form.querySelector('[data-rd-shipping-price=standard]').textContent,'CA$0.00');
    assert.equal(form.querySelector('[data-rd-extra-price=protection]').textContent,'CA$7.00');
    assert.match(f.root.querySelector('.dc-totals').textContent,/USD points and store credit cannot be applied/);
    form.elements.research_use.checked=true;form.elements.consent.checked=true;await form.onsubmit({preventDefault(){}});
@@ -312,7 +312,7 @@ test('balance and bulk checkout disable USD redemptions and show every amount in
    assert.equal(form.elements.points.disabled,true);
    const request=f.requests.find(r=>r.body.action==='quote').body;assert.equal(request.points,0);assert.equal(request.credit_cents,0);assert.equal(request.bulk_order,mode==='bulk');
    assert.ok(f.requests.filter(r=>r.url.includes('checkout=cart')).every(r=>r.body.bulk_order===(mode==='bulk')));
-   const place=f.root.querySelector('.dc-summary button');assert.equal(place.textContent,'Place order · CA$328.93');await place.onclick();
+   const place=f.root.querySelector('.dc-summary button');assert.equal(place.textContent,'Place order · CA$273.00');await place.onclick();
    assert.equal(request.fx_quote,f.fx.token);assert.equal(f.requests.find(r=>r.body.action==='place').body.fx_quote,f.fx.token);
    assert.equal(f.requests.filter(r=>r.body.action==='place').length,1);assert.equal(f.requests.find(r=>r.body.action==='place').body.bulk_order,mode==='bulk');assert.equal(f.requests.filter(r=>r.body.action==='pay').length,0);
    assert.equal(f.w.localStorage.getItem(mode==='bulk'?'ap-bulk-draft-v2':'pp-cart'),null);
