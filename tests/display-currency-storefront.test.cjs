@@ -116,11 +116,11 @@ test('homepage free-shipping threshold follows display FX without changing the U
  const f=await fixture('/');
  try{
   const {w,d}=f,trust=d.querySelector('.nl-trust');
-  assert.match(trust.textContent,/Free shipping over \\$150/);
+  assert.match(trust.textContent,/Free shipping over \$150/);
   await w.AltaLocale.setCurrency('CAD');await settle();
-  assert.match(trust.textContent,/Free shipping over CA\\$210\\.00/);
+  assert.match(trust.textContent,/Free shipping over CA\$210\.00/);
   assert.doesNotMatch(trust.textContent,/≈|US shipping/);
   await w.AltaLocale.setCurrency('USD');await settle();
-  assert.match(trust.textContent,/Free shipping over \\$150/);
+  assert.match(trust.textContent,/Free shipping over \$150/);
  }finally{await f.close();}
 });
