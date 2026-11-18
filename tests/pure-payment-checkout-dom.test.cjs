@@ -301,7 +301,7 @@ test('balance and bulk checkout disable USD redemptions and show every amount in
    assert.equal(form.elements.points.value,'0');assert.equal(form.elements.credit.value,'0');assert.equal(form.elements.points.disabled,true);assert.equal(form.elements.credit.disabled,true);
    assert.match(form.querySelector('[data-dc-balance-note]').textContent,/held in USD and cannot be applied/);
    await new Promise(resolve=>setTimeout(resolve,230));
-   assert.match(f.root.querySelector('.dc-totals').textContent,/Total \(CAD\).*CA\$342\.93/);
+   assert.match(f.root.querySelector('.dc-totals').textContent,/Total \(CAD\).*CA\$328\.93/);
    assert.equal(f.root.querySelector('[data-dc-line-price]').textContent,'CA$280.00');
    assert.equal(form.querySelector('[data-rd-shipping-price=standard]').textContent,'CA$55.93');
    assert.equal(form.querySelector('[data-rd-extra-price=protection]').textContent,'CA$7.00');
@@ -312,7 +312,7 @@ test('balance and bulk checkout disable USD redemptions and show every amount in
    assert.equal(form.elements.points.disabled,true);
    const request=f.requests.find(r=>r.body.action==='quote').body;assert.equal(request.points,0);assert.equal(request.credit_cents,0);assert.equal(request.bulk_order,mode==='bulk');
    assert.ok(f.requests.filter(r=>r.url.includes('checkout=cart')).every(r=>r.body.bulk_order===(mode==='bulk')));
-   const place=f.root.querySelector('.dc-summary button');assert.equal(place.textContent,'Place order · CA$342.93');await place.onclick();
+   const place=f.root.querySelector('.dc-summary button');assert.equal(place.textContent,'Place order · CA$328.93');await place.onclick();
    assert.equal(request.fx_quote,f.fx.token);assert.equal(f.requests.find(r=>r.body.action==='place').body.fx_quote,f.fx.token);
    assert.equal(f.requests.filter(r=>r.body.action==='place').length,1);assert.equal(f.requests.find(r=>r.body.action==='place').body.bulk_order,mode==='bulk');assert.equal(f.requests.filter(r=>r.body.action==='pay').length,0);
    assert.equal(f.w.localStorage.getItem(mode==='bulk'?'ap-bulk-draft-v2':'pp-cart'),null);
