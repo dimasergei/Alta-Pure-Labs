@@ -1,0 +1,40 @@
+{
+  "version": "display-currencies-2026-11-v1",
+  "base": "USD",
+  "verified_on": "2026-11-18",
+  "rate_source": "https://www.ecb.europa.eu/stats/policy_and_exchange_rates/euro_reference_exchange_rates/html/index.en.html",
+  "country_sources": [
+    "https://www.ecb.europa.eu/euro/intro/html/index.en.html",
+    "https://github.com/unicode-org/cldr-json/tree/main/cldr-json/cldr-core/supplemental"
+  ],
+  "supported_currencies": [
+    "USD", "CAD", "EUR", "GBP", "AUD", "BRL", "CHF", "CNY", "CZK", "DKK",
+    "HKD", "HUF", "IDR", "ILS", "INR", "ISK", "JPY", "KRW", "MXN", "MYR",
+    "NOK", "NZD", "PHP", "PLN", "RON", "SEK", "SGD", "THB", "TRY", "ZAR"
+  ],
+  "country_codes": "AC AD AE AF AG AI AL AM AO AQ AR AS AT AU AW AX AZ BA BB BD BE BF BG BH BI BJ BL BM BN BO BQ BR BS BT BV BW BY BZ CA CC CD CF CG CH CI CK CL CM CN CO CP CQ CR CU CV CW CX CY CZ DE DG DJ DK DM DO DZ EA EC EE EG EH ER ES ET FI FJ FK FM FO FR GA GB GD GE GF GG GH GI GL GM GN GP GQ GR GS GT GU GW GY HK HM HN HR HT HU IC ID IE IL IM IN IO IQ IR IS IT JE JM JO JP KE KG KH KI KM KN KP KR KW KY KZ LA LB LC LI LK LR LS LT LU LV LY MA MC MD ME MF MG MH MK ML MM MN MO MP MQ MR MS MT MU MV MW MX MY MZ NA NC NE NF NG NI NL NO NP NR NU NZ OM PA PE PF PG PH PK PL PM PN PR PS PT PW PY QA RE RO RS RU RW SA SB SC SD SE SG SH SI SJ SK SL SM SN SO SR SS ST SV SX SY SZ TA TC TD TF TG TH TJ TK TL TM TN TO TR TT TV TW TZ UA UG UM US UY UZ VA VC VE VG VI VN VU WF WS XK YE YT ZA ZM ZW",
+  "country_currencies": {
+    "AD": "EUR", "AS": "USD", "AT": "EUR", "AU": "AUD", "AX": "EUR",
+    "BE": "EUR", "BG": "EUR", "BL": "EUR", "BQ": "USD", "BR": "BRL",
+    "BV": "NOK", "CA": "CAD", "CC": "AUD", "CH": "CHF", "CK": "NZD",
+    "CN": "CNY", "CX": "AUD", "CY": "EUR", "CZ": "CZK", "DE": "EUR",
+    "DG": "USD", "DK": "DKK", "EA": "EUR", "EC": "USD", "EE": "EUR",
+    "ES": "EUR", "FI": "EUR", "FM": "USD", "FO": "DKK", "FR": "EUR",
+    "GB": "GBP", "GF": "EUR", "GG": "GBP", "GL": "DKK", "GP": "EUR",
+    "GR": "EUR", "GS": "GBP", "GU": "USD", "HK": "HKD", "HM": "AUD",
+    "HR": "EUR", "HU": "HUF", "IC": "EUR", "ID": "IDR", "IE": "EUR",
+    "IL": "ILS", "IM": "GBP", "IN": "INR", "IO": "USD", "IS": "ISK",
+    "IT": "EUR", "JE": "GBP", "JP": "JPY", "KI": "AUD", "KR": "KRW",
+    "LI": "CHF", "LT": "EUR", "LU": "EUR", "LV": "EUR",
+    "MC": "EUR", "ME": "EUR", "MF": "EUR", "MH": "USD", "MP": "USD",
+    "MQ": "EUR", "MT": "EUR", "MX": "MXN", "MY": "MYR", "NF": "AUD",
+    "NL": "EUR", "NO": "NOK", "NR": "AUD", "NU": "NZD", "NZ": "NZD",
+    "PH": "PHP", "PL": "PLN", "PM": "EUR", "PN": "NZD", "PR": "USD",
+    "PS": "ILS", "PT": "EUR", "PW": "USD", "RE": "EUR", "RO": "RON",
+    "SE": "SEK", "SG": "SGD", "SI": "EUR", "SJ": "NOK", "SK": "EUR",
+    "SM": "EUR", "SV": "USD", "TA": "GBP", "TC": "USD", "TF": "EUR",
+    "TH": "THB", "TK": "NZD", "TL": "USD", "TR": "TRY", "TV": "AUD",
+    "UM": "USD", "US": "USD", "VA": "EUR", "VG": "USD", "VI": "USD",
+    "XK": "EUR", "YT": "EUR", "ZA": "ZAR"
+  }
+}

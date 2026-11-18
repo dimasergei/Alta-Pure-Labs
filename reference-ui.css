@@ -444,7 +444,7 @@ body.ap-site{font-family:Archivo,Arial,sans-serif;background:#fff;color:#111111}
 
 /* Bulk card price and quantity controls */
 .nl-bulk-prices{display:flex;justify-content:center;align-items:baseline;flex-wrap:wrap;gap:3px;margin:8px 0;text-align:center}
-.nl-bulk-prices strong{font-size:19px}.nl-bulk-prices span,.nl-bulk-prices small,.nl-bulk-prices del{font-size:11px;color:#666666}
+.nl-bulk-prices strong{font-size:19px}.nl-bulk-prices>span,.nl-bulk-prices small,.nl-bulk-prices del{font-size:11px;color:#666666}
 .nl-bulk-product-foot{display:block;padding-top:8px}
 .nl-bulk-product-foot .nl-bulk-quantity-controls{display:flex;gap:7px}
 .nl-bulk-product-foot .nl-bulk-plus-ten{background:#111111;color:#fff;border:0;font-weight:800}
@@ -641,6 +641,18 @@ body.ap-site{font-family:Archivo,Arial,sans-serif;background:#fff;color:#111111}
   letter-spacing: -.02em;
   text-align: right;
   white-space: nowrap;
+}
+
+/* Local-currency amounts get their own line so longer values keep product names readable. */
+html[data-display-currency]:not([data-display-currency="USD"]) body.ap-site :is(.nl-featured,.nl-shop) .nl-featured-meta {
+  grid-template-columns: minmax(0,1fr);
+  gap: 5px;
+}
+html[data-display-currency]:not([data-display-currency="USD"]) body.ap-site :is(.nl-featured,.nl-shop) .nl-featured-price {
+  max-width: 100%;
+  text-align: left;
+  white-space: normal;
+  overflow-wrap: anywhere;
 }
 
 /* The retained bulk-order feature uses actual catalog prices in its example. */

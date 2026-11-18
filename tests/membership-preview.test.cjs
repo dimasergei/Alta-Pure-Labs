@@ -25,6 +25,8 @@ test('site generation removes retired account redirects and restores authenticat
  const temp=fs.mkdtempSync(path.join(os.tmpdir(),'pure-membership-routing-'));
  try{
   for(const file of ['site-build.cjs','products.js','account.html','account.js'])fs.copyFileSync(path.join(root,file),path.join(temp,file));
+  fs.mkdirSync(path.join(temp,'config'),{recursive:true});
+  fs.copyFileSync(path.join(root,'config','display-currencies.json'),path.join(temp,'config','display-currencies.json'));
   const run=spawnSync(process.execPath,['site-build.cjs'],{cwd:temp,encoding:'utf8'});assert.equal(run.status,0,run.stderr);
   const account=fs.readFileSync(path.join(temp,'account.js'),'utf8');
   assert.doesNotMatch(account,/\['\/account\/membership','\/account\/subscriptions'\]\.includes\(p\)\)return go\('\/account'\)/);

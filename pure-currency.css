@@ -1,0 +1,62 @@
+/* Display estimates inherit PURE's existing price hierarchy; canonical amounts
+   remain in data-usd-cents and financial checkout totals are not selected here. */
+html:root body .pure-price,
+html:root body .pure-price>.pure-price-value{
+  font:inherit!important;
+  line-height:inherit!important;
+  letter-spacing:inherit!important;
+  color:inherit!important;
+  white-space:normal;
+  overflow-wrap:anywhere;
+}
+html:root body .pure-price{
+  display:inline-block;
+  max-width:100%;
+  min-width:0;
+  vertical-align:baseline;
+}
+html:root body .pure-price>.pure-price-value{display:inline}
+html:root body .pure-price>.pure-price-base{
+  display:block;
+  font-family:inherit!important;
+  font-size:12px!important;
+  font-weight:500!important;
+  line-height:1.45!important;
+  letter-spacing:normal!important;
+  color:inherit!important;
+  opacity:.76;
+  white-space:normal;
+}
+html:root body .pure-price-compact>.pure-price-base{display:inline;margin-inline-start:6px}
+html:root body .pure-currency-code{font:inherit;letter-spacing:inherit;color:inherit}
+.pure-currency-note{font-size:12px;line-height:1.5;overflow-wrap:anywhere}
+.pure-currency-control{min-width:0;margin:8px 4px 2px;padding:13px 0 3px;border-top:1px solid #e5e5e5;color:#111}
+.ap-header-popover .pure-currency-control label{display:block;margin:0 0 7px;font-family:inherit;font-size:13px;font-weight:700;line-height:1.4;letter-spacing:0;text-transform:none;color:#111}
+.ap-header-popover .pure-currency-control select{
+  display:block;
+  box-sizing:border-box;
+  width:100%;
+  max-width:100%;
+  min-width:0;
+  min-height:44px;
+  padding:9px 26px 9px 10px;
+  border:1px solid #111;
+  border-radius:6px;
+  background:#fff;
+  color:#111;
+  font-family:inherit;
+  font-size:14px;
+  font-weight:600;
+  line-height:1.4;
+  letter-spacing:0;
+  text-transform:none;
+  cursor:pointer;
+}
+.ap-header-popover .pure-currency-control select:focus-visible{outline:2px solid #111;outline-offset:3px}
+.ap-header-popover .pure-currency-control option{background:#fff;color:#111}
+.ap-header-popover .pure-currency-status{margin:8px 0 0;font-family:inherit;font-size:12px;font-weight:400;line-height:1.5;letter-spacing:0;text-transform:none;color:#555;white-space:normal;overflow-wrap:anywhere}
+@media(max-width:1190px){
+  .pure-currency-control{margin:8px 5px 2px;padding-top:14px}
+  .ap-header-popover .pure-currency-control label{font-size:14px}
+  .ap-header-popover .pure-currency-control select{font-size:16px}
+}

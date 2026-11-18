@@ -4,6 +4,8 @@ const assert = require('node:assert/strict');
 const fs = require('node:fs');
 const {JSDOM} = require('jsdom');
 const source = fs.readFileSync('membership-experience.js','utf8');
+const localeSource = fs.readFileSync('locale.js','utf8');
+const displayLocaleResponse = require('./display-locale-fixture.cjs');
 const config = () => ({
   memberships_enabled:true,
   membership_shipping_label:'Free US 2-Day Express shipping',
@@ -13,8 +15,12 @@ const config = () => ({
     elite:{monthly_cents:9999,annual_cents:95990,points_per_dollar:10,discount_bps:1000,free_shipping:true,early_access:true,priority_fulfillment:true,monthly_credit_cents:5000,free_bac_water_3ml:true}
   }
 });
-function setup(path='/memberships',data=config()) {
+function setup(path='/memberships',data=config(),withLocale=false) {
   const dom = new JSDOM('<main id="ap-main"></main>',{url:'https://pure.example'+path,runScripts:'outside-only'});
+  if(withLocale){
+    dom.window.fetch=async url=>{const response=displayLocaleResponse(url);assert.ok(response,'Only display locale requests are expected');return response;};
+    dom.window.eval(localeSource);
+  }
   dom.window.AltaConversionConfig = data;
   dom.window.eval(source);
   dom.window.document.dispatchEvent(new dom.window.Event('DOMContentLoaded'));
@@ -40,10 +46,10 @@ test('benefits are sourced from configuration, with credit qualification disclos
   const dom = setup(),d = dom.window.document;
   const white = d.querySelector('.mx-card-white'),black = d.querySelector('.mx-card-black');
   assert.match(white.textContent,/5% off eligible merchandise/);
-  assert.match(white.textContent,/5 points per eligible \$1 spent/);
+  assert.match(white.textContent,/5 points per eligible US\$1 spent/);
   assert.match(white.textContent,/Free US 2-Day Express shipping/);
   assert.doesNotMatch(white.textContent,/monthly credit|BAC Water/);
-  assert.match(black.textContent,/\$50 monthly credit after a qualifying \$150\+ order/);
+  assert.match(black.textContent,/US\$50 monthly credit after a qualifying US\$150\+ order/);
   assert.doesNotMatch(black.textContent,/Issued once per UTC calendar month|threshold uses eligible merchandise|before points or store credit/);
   const creditTerms=black.querySelector('.mx-benefit-footnote');
   assert.equal(creditTerms.textContent,'†');
@@ -84,4 +90,30 @@ test('configuration labels are escaped before rendering',() => {
   assert.equal(d.querySelectorAll('.mx-features img').length,0);
   assert.match(d.querySelector('.mx-card-white').textContent,/<img src=x/);
   dom.window.close();
+});
+
+test('currency changes preserve annual selection and keep credit and points benefits in contractual USD',async()=>{
+  const data=config(),original=JSON.stringify(data),dom=setup('/memberships',data,true),w=dom.window,d=w.document;
+  try{
+    d.querySelector('[data-mx-period="annual"]').click();
+    const annual=d.querySelector('[data-mx-period="annual"]'),white=d.querySelector('.mx-card-white'),black=d.querySelector('.mx-card-black'),footnote=black.querySelector('.mx-benefit-footnote');
+    assert.equal(d.activeElement,annual);
+    await w.AltaLocale.setCurrency('CAD');
+    assert.equal(d.querySelector('[data-mx-period="annual"]'),annual);assert.equal(d.activeElement,annual);assert.equal(annual.getAttribute('aria-pressed'),'true');
+    assert.equal(d.querySelector('.mx-card-white'),white);assert.equal(d.querySelector('.mx-card-black'),black);
+    assert.equal(white.querySelector('.mx-price [data-usd-cents]').dataset.usdCents,'19190');
+    assert.equal(black.querySelector('.mx-price [data-usd-cents]').dataset.usdCents,'95990');
+    assert.match(white.querySelector('.mx-price').textContent,/259\.07/);assert.match(black.querySelector('.mx-price').textContent,/1,295\.87/);
+    assert.match(white.querySelector('.mx-price-period').textContent,/CAD \/ year/);
+    assert.equal(black.querySelector('.mx-choose').getAttribute('href'),'/checkout?plan=elite&period=annual');
+    assert.match(white.querySelector('.mx-features').textContent,/5 points per eligible US\$1/);
+    assert.match(black.querySelector('.mx-features').textContent,/US\$50 monthly credit after a qualifying US\$150\+ order/);
+    assert.equal(black.querySelector('.mx-features [data-usd-cents]'),null);
+    assert.equal(black.querySelector('.mx-benefit-footnote'),footnote);assert.equal(footnote.getAttribute('href'),'/membership-terms.html#pure-black-credit');
+    assert.equal(footnote.getAttribute('aria-label'),'Read the PURE BLACK monthly credit terms');
+    assert.match(black.querySelector('.mx-billing-note').textContent,/One payment/);assert.match(d.querySelector('.mx-terms').textContent,/No automatic renewal/);
+    await w.AltaLocale.setCurrency('USD');
+    assert.equal(d.querySelector('[data-mx-period="annual"]'),annual);assert.match(white.querySelector('.mx-price').textContent,/191\.90/);assert.match(white.querySelector('.mx-price-period').textContent,/USD \/ year/);
+    assert.equal(JSON.stringify(data),original);
+  }finally{dom.window.close();}
 });

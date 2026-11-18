@@ -42,7 +42,7 @@ dom.window.close();
    const mobileNav=document.getElementById('ap-nav'),toggle=document.querySelector('[data-action="menu"]'),moreTrigger=document.querySelector('[aria-controls="ap-more-menu"]'),panel=document.getElementById('ap-more-menu');
    toggle.click();assert.ok(mobileNav.classList.contains('ap-open'));assert.equal(toggle.getAttribute('aria-expanded'),'true');
    moreTrigger.focus();moreTrigger.dispatchEvent(new window.KeyboardEvent('keydown',{key:'ArrowUp',bubbles:true,cancelable:true}));
-   assert.equal(document.activeElement,panel.querySelector('a:last-child'));assert.equal(panel.hidden,false);
+   assert.equal(document.activeElement,[...panel.querySelectorAll('a')].at(-1));assert.equal(panel.hidden,false);
    const first=new window.KeyboardEvent('keydown',{key:'Escape',bubbles:true,cancelable:true});document.activeElement.dispatchEvent(first);
    assert.equal(panel.hidden,true,file+': first Escape closes the submenu');
    assert.equal(document.activeElement,moreTrigger,file+': first Escape returns to More');

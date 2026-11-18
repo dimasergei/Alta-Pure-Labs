@@ -32,7 +32,7 @@ test('active BLACK account discloses credit qualification, BAC gift and priority
   const card=env.root.querySelector('.cv-member-black');
   assert.match(card.textContent,/PURE BLACK/);
   assert.match(card.textContent,/10%/);
-  assert.match(card.textContent,/\$50 monthly credit after a qualifying \$150\+ order/);
+  assert.match(card.textContent,/US\$50 monthly credit after a qualifying US\$150\+ order/);
   assert.doesNotMatch(card.textContent,/Issued once per UTC calendar month|before points or store credit/);
   const creditTerms=card.querySelector('.mx-benefit-footnote');assert.ok(creditTerms);
   assert.equal(creditTerms.getAttribute('href'),'/membership-terms.html#pure-black-credit');

@@ -40,6 +40,12 @@
 .nlc-cart-totals .nlc-subtotal{border-top:1px solid #e5e5e5;margin-top:3px;padding-top:6px;font-weight:800;color:#111;font-size:12px}
 .nlc-cart-totals .nlc-subtotal strong{font-size:14px}
 .nlc-proceed{display:block;border-radius:28px;background:#111!important;color:white!important;text-decoration:none;text-align:center;font-size:12px;font-weight:800;padding:12px;margin:5px 0 9px}
+.nlc-cart-checkout .nlc-display-note{margin:6px 0;color:#666;font-size:12px;line-height:1.45}
+html[data-display-currency]:not([data-display-currency="USD"]) .nlc-line{grid-template-columns:61px minmax(0,1fr);row-gap:8px}
+html[data-display-currency]:not([data-display-currency="USD"]) .nlc-line>img{grid-column:1;grid-row:1 / span 2}
+html[data-display-currency]:not([data-display-currency="USD"]) .nlc-name{grid-column:2;grid-row:1;min-width:0}
+html[data-display-currency]:not([data-display-currency="USD"]) .nlc-price{grid-column:2;grid-row:2;display:flex;align-items:center;justify-content:space-between;gap:12px;text-align:left;min-width:0}
+html[data-display-currency]:not([data-display-currency="USD"]) .nlc-price strong{min-width:0;overflow-wrap:anywhere}
 .nlc-wallet-area{padding-top:5px;text-align:center;border-top:1px solid #e5e5e5}
 .nlc-wallet-area>small{color:#666;display:block;font-size:10px;letter-spacing:.1em;margin-bottom:11px}
 .nlc-wallet-row{display:flex;align-items:center;gap:7px}

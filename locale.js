@@ -1,5 +1,5 @@
 (function () {
-  const currencies = ["USD", "CAD", "EUR", "GBP", "AUD"];
+  let currencies = ["USD", "CAD", "EUR", "GBP", "AUD"];
   const languages = ["en", "fr", "es"];
   const locales = { en: "en-US", fr: "fr-CA", es: "es-ES" };
   const translations = {
@@ -242,65 +242,201 @@
 };
   const read = (key, fallback) => { try { return localStorage.getItem(key) || fallback; } catch { return fallback; } };
   const write = (key, value) => { try { localStorage.setItem(key, value); } catch {} };
-  let currency = currencies.includes(read("ap-currency","USD")) ? read("ap-currency","USD") : "USD";
-  let language = languages.includes(read("ap-language","en")) ? read("ap-language","en") : "en";
-  let rates = { USD:1 }, ratesLoaded = false;
-  const listeners = new Set();
+  const escape = value => String(value ?? "").replace(/[&<>"']/g, character => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[character]));
+  const currencyPattern = /^[A-Z]{3}$/;
+  const storedCurrency = read("ap-currency", "");
+  // The old implementation did not persist its default USD. A saved value is a
+  // prior preference; an explicit Automatic choice is tracked separately now.
+  let preference = read("ap-currency-mode", "") === "auto" ? "auto" : currencyPattern.test(storedCurrency) ? "manual" : "auto";
+  let currency = preference === "manual" ? storedCurrency : "USD";
+  let suggestedCurrency = "USD", detectedCountry = null;
+  let language = languages.includes(read("ap-language", "en")) ? read("ap-language", "en") : "en";
+  let rateData = null, rateRequest = null, loadingRates = false, expiryTimer = 0;
+  const listeners = new Set(), boundControls = new WeakSet(), controlOptions = new WeakMap();
   const t = (key, fallback) => extendedTranslations[language]?.[key] || translations[language][key] || translations.en[key] || fallback || key;
-  const notify = () => listeners.forEach((listener) => listener());
-  const status = () => {
-    const node = document.querySelector("#currency-status");
-    if (!node) return;
-    node.textContent = currency === "USD" ? t("pricesUSD","Catalog prices in USD") : ratesLoaded ? t("estimateNote","Converted estimate · based on USD prices") : t("rateUnavailable","Live rates unavailable · showing USD");
+  const displayCopy = {
+    en:{automatic:"Automatic",label:"Display currency",base:"Base price",usd:"Catalog prices in USD.",estimate:"Approximate {code} equivalents · base prices in USD.",loading:"Loading {code} estimates · showing USD.",unavailable:"{code} estimates unavailable · showing USD.",dated:"ECB rates dated {date}.",cached:"Last verified ECB rates dated {date}.",saved:"saved preference"},
+    fr:{automatic:"Automatique",label:"Devise d’affichage",base:"Prix de base",usd:"Prix du catalogue en USD.",estimate:"Équivalents approximatifs en {code} · prix de base en USD.",loading:"Chargement des estimations en {code} · affichage en USD.",unavailable:"Estimations en {code} indisponibles · affichage en USD.",dated:"Taux BCE du {date}.",cached:"Derniers taux BCE vérifiés du {date}.",saved:"préférence enregistrée"},
+    es:{automatic:"Automática",label:"Moneda de visualización",base:"Precio base",usd:"Precios del catálogo en USD.",estimate:"Equivalentes aproximados en {code} · precios base en USD.",loading:"Cargando estimaciones en {code} · mostrando USD.",unavailable:"Estimaciones en {code} no disponibles · mostrando USD.",dated:"Tipos del BCE del {date}.",cached:"Últimos tipos verificados del BCE del {date}.",saved:"preferencia guardada"}
+  };
+  const copy = (key, values={}) => (displayCopy[language][key] || displayCopy.en[key]).replace(/\{(\w+)\}/g, (_, name) => String(values[name] ?? ""));
+  const validRates = () => rateData && rateData.expires > Date.now() && rateData.fetched <= Date.now()+60000 && Date.now()-rateData.fetched <= 86400000 && Math.floor(Date.now()/86400000)-Math.floor(Date.parse(rateData.date+"T00:00:00Z")/86400000)<=7;
+  const effectiveCurrency = () => currency === "USD" || !validRates() || !Number.isFinite(rateData.rates[currency]) || rateData.rates[currency] <= 0 ? "USD" : currency;
+  const noteText = () => currency === "USD" ? copy("usd") : effectiveCurrency() !== "USD" ? copy("estimate",{code:currency}) : copy(loadingRates?"loading":"unavailable",{code:currency});
+  const statusText = () => {
+    let text=noteText();
+    if(effectiveCurrency()!=="USD"){
+      const date=new Intl.DateTimeFormat(locales[language],{dateStyle:"medium",timeZone:"UTC"}).format(new Date(rateData.date+"T12:00:00Z"));
+      text+=" "+copy(rateData.status==="stale"?"cached":"dated",{date});
+    }
+    return text;
+  };
+  function codes(value){
+    if(!Array.isArray(value)||value.length<1||value.length>200||!value.includes("USD")||value.some(code=>typeof code!=="string"||!currencyPattern.test(code)))return null;
+    return [...new Set(value)];
+  }
+  const initialCodes=codes(Array.from(document.querySelector('[data-currency-select],#currency-select')?.options||[]).map(option=>option.value).filter(code=>currencyPattern.test(code)));
+  if(initialCodes)currencies=initialCodes;
+  function validateRates(data){
+    if(data?.version!=="display-fx-v1"||data.base!=="USD"||data.provider!=="frankfurter-ecb-v2"||data.source!=="European Central Bank"||!["fresh","stale"].includes(data.status))return null;
+    const supported=codes(data.supported_currencies),now=Date.now(),fetched=Date.parse(data.fetched_at),expires=Date.parse(data.expires_at);
+    if(!supported||!Number.isFinite(fetched)||!Number.isFinite(expires)||fetched>now+60000||now-fetched>86400000||expires<=now||expires>fetched+86400000)return null;
+    if(typeof data.rate_date!=="string"||!/^\d{4}-\d{2}-\d{2}$/.test(data.rate_date))return null;
+    const observed=Date.parse(data.rate_date+"T00:00:00Z"),day=86400000;
+    if(!Number.isFinite(observed)||new Date(observed).toISOString().slice(0,10)!==data.rate_date||observed>now||Math.floor(now/day)-Math.floor(observed/day)>7)return null;
+    if(!data.rates||typeof data.rates!=="object"||Array.isArray(data.rates)||data.rates.USD!==1)return null;
+    const rates={};
+    for(const code of supported){const rate=data.rates[code];if(!Number.isFinite(rate)||rate<=0||rate>1000000)return null;rates[code]=rate;}
+    return {rates,supported,date:data.rate_date,fetched,expires,status:data.status};
+  }
+  function formatValue(usdCents, code, {showCode=true,trimWhole=false}={}){
+    const amount=usdCents*(code==="USD"?1:rateData.rates[code])/100;
+    const options={style:"currency",currency:code,currencyDisplay:showCode?"code":"symbol"};
+    if(code==="USD"&&trimWhole&&usdCents%100===0){options.minimumFractionDigits=0;options.maximumFractionDigits=0;}
+    return new Intl.NumberFormat(locales[language],options).format(amount).replace(/[\u00a0\u202f]/g," ");
+  }
+  function priceParts(cents, options={}){
+    const code=effectiveCurrency(),base=formatValue(cents,"USD"),local=code!=="USD";
+    return {code,base,local,value:(local?"≈ ":"")+formatValue(cents,code,options)};
+  }
+  function price(usdCents, options={}){
+    if(!Number.isSafeInteger(usdCents))return "—";
+    const showCode=options.showCode!==false,showBase=options.showBase===true,compact=options.compact===true,trimWhole=options.trimWhole===true;
+    const parts=priceParts(usdCents,{showCode,trimWhole});
+    const classes="pure-price"+(compact?" pure-price-compact":"")+(options.className?" "+String(options.className):"");
+    const title=parts.local?copy("base")+": "+parts.base:"";
+    return '<span class="'+escape(classes)+'" data-usd-cents="'+usdCents+'" data-price-code="'+showCode+'" data-price-base="'+showBase+'" data-price-trim-whole="'+trimWhole+'"'+(title?' title="'+escape(title)+'" aria-label="'+escape(parts.value+"; "+title)+'"':'')+'><span class="pure-price-value">'+escape(parts.value)+'</span>'+(showBase&&parts.local?'<small class="pure-price-base">'+escape(parts.base)+'</small>':'')+'</span>';
+  }
+  const currencyCode = () => '<span class="pure-currency-code" data-display-currency="code">'+escape(effectiveCurrency())+'</span>';
+  const estimateNote = () => '<span class="pure-currency-note" data-display-currency="note">'+escape(noteText())+'</span>';
+  const priceSelector = '[data-usd-cents],[data-display-currency="code"],[data-display-currency="note"]';
+  function updatePrice(node){
+    if(node.hasAttribute("data-usd-cents")){
+      const raw=node.getAttribute("data-usd-cents"),cents=/^-?\d+$/.test(raw||"")?Number(raw):NaN;
+      if(!Number.isSafeInteger(cents))return;
+      const parts=priceParts(cents,{showCode:node.dataset.priceCode!=="false",trimWhole:node.dataset.priceTrimWhole==="true"});
+      const content='<span class="pure-price-value">'+escape(parts.value)+'</span>'+(node.dataset.priceBase==="true"&&parts.local?'<small class="pure-price-base">'+escape(parts.base)+'</small>':'');
+      if(node.innerHTML!==content)node.innerHTML=content;
+      const title=parts.local?copy("base")+": "+parts.base:"";
+      if(title){if(node.title!==title)node.title=title;const label=parts.value+"; "+title;if(node.getAttribute("aria-label")!==label)node.setAttribute("aria-label",label);}
+      else{node.removeAttribute("title");node.removeAttribute("aria-label");}
+    }else{
+      const text=node.dataset.displayCurrency==="code"?effectiveCurrency():noteText();
+      if(node.textContent!==text)node.textContent=text;
+    }
+  }
+  function refreshPrices(root=document){
+    if(!document?.documentElement)return;
+    document.documentElement.dataset.displayCurrency=effectiveCurrency();
+    if(root?.nodeType===1&&root.matches(priceSelector))updatePrice(root);
+    root?.querySelectorAll?.(priceSelector).forEach(updatePrice);
+  }
+  function updateControls(){
+    const automatic=copy("automatic")+" ("+suggestedCurrency+")";
+    let names;try{names=new Intl.DisplayNames([locales[language]],{type:"currency"});}catch{}
+    const available=currencies.includes(currency)?currencies:[...currencies,currency];
+    const options='<option value="auto">'+escape(automatic)+'</option>'+available.map(code=>'<option value="'+code+'"'+(!currencies.includes(code)?' disabled':'')+'>'+escape(code+" · "+(names?.of(code)||code)+(!currencies.includes(code)?" ("+copy("saved")+")":""))+'</option>').join("");
+    document.querySelectorAll('[data-currency-select],#currency-select').forEach(select=>{
+      if(controlOptions.get(select)!==options){select.innerHTML=options;controlOptions.set(select,options);}
+      select.value=preference==="auto"?"auto":currency;
+      if(!boundControls.has(select)){select.addEventListener("change",event=>setCurrency(event.target.value));boundControls.add(select);}
+    });
+    document.querySelectorAll('[data-currency-control-label]').forEach(node=>{const text=copy("label");if(node.textContent!==text)node.textContent=text;});
+    document.querySelectorAll('[data-currency-status],#currency-status:not([data-display-currency])').forEach(node=>{const text=statusText();if(node.textContent!==text)node.textContent=text;});
+  }
+  const notify = reason => {
+    updateControls();refreshPrices();
+    const event={reason,currency,effectiveCurrency:effectiveCurrency(),preference,language};
+    for(const listener of listeners)listener(event);
   };
   const apply = () => {
-    document.documentElement.lang = language;
-    document.querySelectorAll("[data-i18n]").forEach((node) => { node.textContent = t(node.dataset.i18n,node.textContent); });
-    document.querySelectorAll("[data-i18n-placeholder]").forEach((node) => { node.placeholder = t(node.dataset.i18nPlaceholder,node.placeholder); });
-    document.querySelectorAll("[data-i18n-aria]").forEach((node) => node.setAttribute("aria-label",t(node.dataset.i18nAria,node.getAttribute("aria-label"))));
-    const faqLink = document.querySelector('.top-links a[href="#faq-section"]');
-    if (faqLink) faqLink.textContent = t("faq", "FAQ");
-    const submitLabel = document.querySelector("#checkout-form button[type=submit]");
-    if (submitLabel && submitLabel.firstChild) {
-      const defaultLabel = submitLabel.dataset.defaultLabel || submitLabel.firstChild.textContent.trim();
-      submitLabel.dataset.defaultLabel = defaultLabel;
-      submitLabel.firstChild.textContent = (language === "en" ? defaultLabel : t("placeRequest", "Place request")) + " ";
-    }
-    const lang = document.querySelector("#language-select"), curr = document.querySelector("#currency-select");
-    if (lang) lang.value = language;
-    if (curr) curr.value = currency;
-    status();
+    document.documentElement.lang=language;
+    document.querySelectorAll("[data-i18n]").forEach(node=>{node.textContent=t(node.dataset.i18n,node.textContent);});
+    document.querySelectorAll("[data-i18n-placeholder]").forEach(node=>{node.placeholder=t(node.dataset.i18nPlaceholder,node.placeholder);});
+    document.querySelectorAll("[data-i18n-aria]").forEach(node=>node.setAttribute("aria-label",t(node.dataset.i18nAria,node.getAttribute("aria-label"))));
+    const faqLink=document.querySelector('.top-links a[href="#faq-section"]');if(faqLink)faqLink.textContent=t("faq","FAQ");
+    const submitLabel=document.querySelector('#checkout-form button[type="submit"]');
+    if(submitLabel&&submitLabel.firstChild){const defaultLabel=submitLabel.dataset.defaultLabel||submitLabel.firstChild.textContent.trim();submitLabel.dataset.defaultLabel=defaultLabel;submitLabel.firstChild.textContent=(language==="en"?defaultLabel:t("placeRequest","Place request"))+" ";}
+    const lang=document.querySelector("#language-select");if(lang)lang.value=language;
+    updateControls();refreshPrices();
   };
-  const loadRates = async () => {
-    if (ratesLoaded) return true;
-    try {
-      const response = await fetch("https://api.frankfurter.dev/v1/latest?base=USD&symbols=CAD,EUR,GBP,AUD",{cache:"no-store"});
-      if (!response.ok) throw new Error("Rate request failed");
-      const data = await response.json();
-      for (const code of currencies.filter((item) => item !== "USD")) if (!Number.isFinite(data.rates?.[code])) throw new Error("Incomplete rate response");
-      rates = {USD:1,...data.rates}; ratesLoaded = true; return true;
-    } catch { rates = {USD:1}; return false; }
-  };
-  const formatMoney = (amount) => {
-    const code = ratesLoaded && rates[currency] ? currency : "USD";
-    return new Intl.NumberFormat(locales[language],{style:"currency",currency:code,maximumFractionDigits:2}).format(amount*rates[code]);
-  };
-  const setCurrency = async (next) => {
-    if (!currencies.includes(next)) return;
-    if (next !== "USD" && !(await loadRates())) { currency="USD"; write("ap-currency",currency); apply(); notify(); return; }
-    currency=next; write("ap-currency",currency); apply(); notify();
-  };
-  const setLanguage = (next) => { if (!languages.includes(next)) return; language=next; write("ap-language",language); apply(); notify(); };
-  window.AltaLocale = {t,formatMoney,onChange:(listener)=>listeners.add(listener),setCurrency,setLanguage,get currency(){return currency;},get language(){return language;}};
-  const currencySelect=document.querySelector("#currency-select"), languageSelect=document.querySelector("#language-select");
-  if(currencySelect){currencySelect.value=currency;currencySelect.addEventListener("change",(event)=>setCurrency(event.target.value));}
-  if(languageSelect){languageSelect.value=language;languageSelect.addEventListener("change",(event)=>setLanguage(event.target.value));}
-  apply();
-  if (currency !== "USD") {
-    loadRates().then((loaded) => {
-      if (!loaded) { currency = "USD"; write("ap-currency", currency); }
-      apply();
-      notify();
-    });
+  async function fetchJSON(url,cache="no-store"){
+    const controller=typeof AbortController==="function"?new AbortController():null;
+    const timeout=setTimeout(()=>controller?.abort(),8000);
+    try{const response=await fetch(url,{cache,credentials:"omit",...(controller?{signal:controller.signal}:{})});if(!response.ok)throw Error("Display information unavailable");return await response.json();}
+    finally{clearTimeout(timeout);}
   }
+  function scheduleExpiry(){
+    clearTimeout(expiryTimer);expiryTimer=0;
+    if(!rateData)return;
+    expiryTimer=setTimeout(()=>{notify("rates");if(currency!=="USD")loadRates(true);},Math.max(1,rateData.expires-Date.now()+1));
+  }
+  function loadRates(force=false){
+    if(rateRequest)return rateRequest;
+    if(!force&&validRates())return Promise.resolve(true);
+    loadingRates=true;updateControls();refreshPrices();
+    rateRequest=(async()=>{
+      try{
+        const data=await fetchJSON('/api/customer-config?display_locale=rates','default');
+        const validated=validateRates(data);if(!validated)throw Error("Rates unavailable");
+        rateData=validated;currencies=validated.supported;scheduleExpiry();return true;
+      }catch{
+        if(!validRates()){rateData=null;clearTimeout(expiryTimer);expiryTimer=0;}
+        return false;
+      }finally{loadingRates=false;rateRequest=null;notify("rates");}
+    })();
+    return rateRequest;
+  }
+  async function setCurrency(next){
+    if(next!=="auto"&&!currencies.includes(next))return;
+    preference=next==="auto"?"auto":"manual";
+    currency=preference==="auto"?suggestedCurrency:next;
+    write("ap-currency-mode",preference);write("ap-currency",currency);
+    notify("currency");
+    if(currency!=="USD")await loadRates();
+  }
+  const setLanguage=next=>{if(!languages.includes(next))return;language=next;write("ap-language",language);apply();notify("language");};
+  async function loadCountry(){
+    try{
+      const data=await fetchJSON('/api/customer-config?display_locale=country'),supported=codes(data?.supported_currencies);
+      if(data?.version!=="display-locale-v1"||data.base!=="USD"||!supported)throw Error("Country suggestion unavailable");
+      detectedCountry=typeof data.country==="string"&&/^[A-Z]{2}$/.test(data.country)?data.country:null;
+      suggestedCurrency=supported.includes(data.suggested_currency)?data.suggested_currency:"USD";
+      currencies=supported;
+      if(preference==="auto")currency=suggestedCurrency;
+      notify("currency");
+      if(currency!=="USD")await loadRates();
+    }catch{updateControls();refreshPrices();}
+  }
+  const formatMoney=usdDollars=>{
+    const cents=Number(usdDollars)*100;if(!Number.isFinite(cents))return "—";
+    const code=effectiveCurrency();
+    return (code!=="USD"?"≈ ":"")+formatValue(cents,code,{showCode:code!=="USD"});
+  };
+  window.AltaLocale={t,formatMoney,price,currencyCode,estimateNote,refreshPrices,setCurrency,setLanguage,
+    currencyLabel:effectiveCurrency,onChange:listener=>{if(typeof listener!=="function")return()=>{};listeners.add(listener);return()=>listeners.delete(listener);},
+    get currency(){return currency;},get effectiveCurrency(){return effectiveCurrency();},get language(){return language;},get preference(){return preference;},get country(){return detectedCountry;},get supportedCurrencies(){return currencies.slice();}};
+  const languageSelect=document.querySelector("#language-select");if(languageSelect)languageSelect.addEventListener("change",event=>setLanguage(event.target.value));
+  apply();
+  if(typeof MutationObserver==="function"&&document.body){
+    new MutationObserver(records=>{
+      let controls=false;
+      for(const record of records){
+        if(record.type==="attributes"){updatePrice(record.target);continue;}
+        for(const node of record.addedNodes){
+          if(node.nodeType!==1)continue;
+          refreshPrices(node);
+          if(node.matches?.('[data-currency-select],#currency-select,[data-currency-status]')||node.querySelector?.('[data-currency-select],#currency-select,[data-currency-status]'))controls=true;
+        }
+      }
+      if(controls)updateControls();
+    }).observe(document.body,{childList:true,subtree:true,attributes:true,attributeFilter:["data-usd-cents","data-price-code","data-price-base","data-price-trim-whole"]});
+  }
+  document.addEventListener("visibilitychange",()=>{if(document.visibilityState==="visible"&&currency!=="USD"&&!validRates()){notify("rates");loadRates(true);}});
+  window.addEventListener("storage",event=>{
+    if(!["ap-currency","ap-currency-mode"].includes(event.key))return;
+    const saved=read("ap-currency","");preference=read("ap-currency-mode","")==="auto"?"auto":currencyPattern.test(saved)?"manual":"auto";currency=preference==="auto"?suggestedCurrency:saved;
+    notify("currency");if(currency!=="USD")loadRates();
+  });
+  window.AltaLocale.ready=Promise.all([loadCountry(),currency!=="USD"?loadRates():Promise.resolve(false)]);
 })();

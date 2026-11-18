@@ -39,6 +39,7 @@
 .nl-builder-categories button[aria-pressed=true]{background:#111;color:#fff;border-color:#111}
 .nl-builder-categories button:hover:not([aria-pressed=true]){border-color:#888;color:#111}
 .nl-builder-layout .ap-result-count{font-size:12px;line-height:1.5;color:#666;margin:0 0 15px}
+.nl-builder-currency-note{font-size:12px;line-height:1.5;color:#666;margin:0 0 16px}
 .nl-builder-layout .ap-builder-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:15px}
 .nl-builder-product{min-width:0;border:1px solid #e1e1e1;border-radius:13px;overflow:hidden;background:#fff;box-shadow:none}
 .nl-builder-product .ap-product-image{position:relative;display:block;aspect-ratio:4/5;background:#f1f1f1;margin:0;border-radius:0;overflow:hidden}

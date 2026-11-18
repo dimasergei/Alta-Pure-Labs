@@ -37,6 +37,8 @@ test('repeatable public build publishes restored program routes and assets while
  const retiredArtwork=['assets/products/legacy.webp','assets/brand-label.webp','assets/research-vials.webp','assets/hero-lab.webp','assets/capsules.webp'];
  try{
   for(const name of fs.readdirSync(root)){const src=path.join(root,name);if(fs.statSync(src).isFile()&&/\.(js|cjs|html|css|json)$/.test(name))fs.copyFileSync(src,path.join(tmp,name));}
+  fs.mkdirSync(path.join(tmp,'config'),{recursive:true});
+  fs.copyFileSync(path.join(root,'config','display-currencies.json'),path.join(tmp,'config','display-currencies.json'));
   fs.mkdirSync(path.join(tmp,'data'),{recursive:true});
   for(const name of ['verified-coas.json','storefront-programs.json','coa-demo-samples.json'])if(fs.existsSync(path.join(root,'data',name)))fs.copyFileSync(path.join(root,'data',name),path.join(tmp,'data',name));
   fs.cpSync(path.join(root,'assets','fonts'),path.join(tmp,'assets','fonts'),{recursive:true});

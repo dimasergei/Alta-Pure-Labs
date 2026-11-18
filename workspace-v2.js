@@ -4,6 +4,7 @@
  const A=window.AltaStore;if(!A)return;
  let contactPage,partnerPage;
  const {$,$$,esc,t,money,product,image,heading}=A;
+ const priceMarkup=(value,options={})=>A.priceMarkup?A.priceMarkup(value,options):esc(money(value));
  const bulkKey='ap-bulk-draft-v2';
  let bulk=A.normalizeLines(A.read(bulkKey,[])).filter(x=>!/\bneedles?\b/i.test(product(x.id)?.name||''));
  let bulkQuery='',bulkGroup='All',initialized=false;
@@ -28,7 +29,7 @@
  function bulkUpdateCard(id,size){
   const card=$$('[data-bulk-product]').find(x=>x.dataset.bulkProduct===id);if(!card)return;
   const p=product(id),v=p?.variants.find(x=>x.size===size),qty=bulk.find(x=>x.id===id&&x.size===size)?.qty||0;
-  const unit=card.querySelector('[data-bulk-unit]');if(unit&&v)unit.textContent=money(v.price);
+  const unit=card.querySelector('[data-bulk-unit]');if(unit&&v)unit.innerHTML=priceMarkup(v.price);
   card.dataset.selected=String(qty>0);
   card.querySelectorAll('[data-bulk-id][data-bulk-size]').forEach(input=>{if(input.dataset.bulkSize===size)input.value=qty;});
   card.querySelectorAll('[data-action="bulk-qty"][data-size]').forEach(button=>{if(button.dataset.size===size)button.disabled=Number(button.dataset.delta)<0?qty<=0:qty>=100;});
@@ -43,7 +44,7 @@
     <a class="nl-bulk-image" href="/product/${encodeURIComponent(p.id)}?size=${encodeURIComponent(v.size)}"><img src="${esc(image(p,v.size))}" alt="${esc(p.name+' '+v.size)}" loading="lazy"></a>
     <div class="nl-bulk-product-body"><span class="ap-eyebrow">${esc(p.group)}</span><h3><a href="/product/${encodeURIComponent(p.id)}?size=${encodeURIComponent(v.size)}">${esc(p.name)}</a></h3>
     <div class="nl-bulk-sizes" role="group" aria-label="Choose a strength for ${esc(p.name)}">${p.variants.map(x=>`<button type="button" data-action="bulk-size" data-id="${esc(p.id)}" data-size="${esc(x.size)}" aria-pressed="${x.size===v.size}">${esc(x.size)}</button>`).join('')}</div>
-    <div class="nl-bulk-prices"><strong data-bulk-unit>${esc(money(v.price))}</strong><span>/unit</span></div>
+    <div class="nl-bulk-prices"><strong data-bulk-unit>${priceMarkup(v.price)}</strong><span>/unit</span></div>
     <div class="nl-bulk-product-foot"><div class="nl-bulk-quantity-controls">${quantityControls(p.id,v.size,qty,p.name,true)}</div></div></div></article>`;
   }).join('')||empty('No matching products','Try a different name or category.');
  }
@@ -60,13 +61,13 @@
   const selection=ids.length?ids.map(id=>{
    const p=product(id),lines=bulk.filter(x=>x.id===id),count=lines.reduce((n,x)=>n+x.qty,0);
    return `<section class="nl-bulk-menu-product"><header class="nl-bulk-menu-product-head"><img src="${esc(image(p,lines[0].size))}" alt=""><span><strong>${esc(p.name)}</strong><small>${count} units</small></span></header>
-    ${lines.map(x=>`<div class="nl-bulk-menu-line"><div class="nl-bulk-menu-controls"><span class="nl-bulk-menu-variant">${esc(x.size)} · ${esc(money(x.price))}/unit</span><div class="nl-bulk-quantity-controls">${quantityControls(x.id,x.size,x.qty,x.name)}</div></div><div class="nl-bulk-menu-line-price"><strong>${esc(money(x.price*x.qty))}</strong></div></div>`).join('')}</section>`;
+    ${lines.map(x=>`<div class="nl-bulk-menu-line"><div class="nl-bulk-menu-controls"><span class="nl-bulk-menu-variant">${esc(x.size)} · ${priceMarkup(x.price)}/unit</span><div class="nl-bulk-quantity-controls">${quantityControls(x.id,x.size,x.qty,x.name)}</div></div><div class="nl-bulk-menu-line-price"><strong>${priceMarkup(x.price*x.qty)}</strong></div></div>`).join('')}</section>`;
   }).join(''):'<div class="nl-bulk-menu-empty">Select product quantities for your order.</div>';
   root.innerHTML=`<div class="nl-bulk-summary-heading"><span class="ap-eyebrow">YOUR ORDER</span><h2>Your selections</h2><span class="nl-bulk-total-units">${units} units</span></div>
    ${units?'':'<button type="button" class="ap-button nl-bulk-add-products" data-action="bulk-add-products">ADD PRODUCTS</button>'}
    <div class="nl-bulk-summary-scroll" aria-label="Selected products">${selection}</div>
-   <div class="nl-bulk-totals"><div class="nl-bulk-estimate-total"><span>Merchandise subtotal</span><strong>${esc(money(subtotal))}</strong></div></div>
-   <button class="ap-button" data-action="bulk-checkout" ${units?'':'disabled'}>Checkout · ${esc(money(subtotal))}</button>
+   <div class="nl-bulk-totals"><div class="nl-bulk-estimate-total"><span>Merchandise subtotal</span><strong>${priceMarkup(subtotal)}</strong></div></div>
+   <button class="ap-button" data-action="bulk-checkout" ${units?'':'disabled'}>Checkout · ${priceMarkup(subtotal)}</button>
    <p class="ap-fine nl-bulk-checkout-note">Shipping, coupons and eligible extra 5% Crypto savings are calculated at checkout. Your regular cart is kept for later.</p>`;
  }
  function render(path,root){

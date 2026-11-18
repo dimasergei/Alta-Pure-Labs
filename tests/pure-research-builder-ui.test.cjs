@@ -5,6 +5,8 @@ const fs = require('node:fs');
 const {JSDOM} = require('jsdom');
 const builderSource = fs.readFileSync('research-builder-client.js','utf8');
 const checkoutSource = fs.readFileSync('research-checkout-client.js','utf8');
+const localeSource = fs.readFileSync('locale.js','utf8');
+const displayLocaleResponse = require('./display-locale-fixture.cjs');
 const pricing = require('../lib/research-builder-pricing');
 const catalog = Array.from({length:5},(_,index) => ({id:'compound-'+index,name:'Compound '+index,category:'injectables',group:index%2 ? 'Category B' : 'Category A',variants:[{size:'5 mg',price:100.03 + index},{size:'10 mg',price:180.02 + index}]})).concat({id:'bac-3',name:'BAC Water',category:'supplies',group:'Supplies',variants:[{size:'3 mL',price:14.95}]});
 const items = catalog.slice(0,4).map(product => ({id:product.id,size:product.variants[0].size,qty:1}));
@@ -12,15 +14,17 @@ const settle = () => new Promise(resolve => setTimeout(resolve,0));
 function quote(body) {
   return pricing.quote(body.items,catalog,{mode:body.mode});
 }
-function setup({draft,respond} = {}) {
+function setup({draft,respond,withLocale=false} = {}) {
   const dom = new JSDOM('<main id="root"></main>',{url:'https://pure.example/fixture',runScripts:'outside-only'}),w = dom.window,calls = [],added = [],navigated = [];
   if (draft) w.localStorage.setItem('ap-research-builder-v2',JSON.stringify(draft));
   w.fetch = async (url,options) => {
+    const display=displayLocaleResponse(url);if(display)return display;
     const body = options?.body ? JSON.parse(options.body) : null;calls.push({url,body,options:{...options,headers:{...options?.headers}}});
     if (respond) {const result = await respond(body,calls);if (result) return result;}
     return {ok:true,json:async () => body ? quote(body) : {catalog,subscription_available:false,one_time_available:true}};
   };
   w.AltaStore = {catalog,product:id=>catalog.find(item=>item.id===id),image:()=>'/assets/fixture.webp',addItems:lines=>added.push(JSON.parse(JSON.stringify(lines)))};
+  if (withLocale) w.eval(localeSource);
   w.eval(builderSource);w.eval(checkoutSource);
   return {dom,w,root:w.document.getElementById('root'),calls,added,navigated,options:{navigate:href=>navigated.push(href)}};
 }
@@ -156,4 +160,38 @@ test('an expired optional session falls back to public pricing without claiming 
   assert.doesNotMatch(env.root.querySelector('.nl-price-total').textContent,/member savings applied/);
   assert.equal(env.root.querySelector('[data-rb-checkout]').disabled,false);
   env.dom.window.close();
+});
+
+test('currency updates keep builder selections, focus, filters and canonical quote cents intact',async()=>{
+  const env=setup({draft:{mode:'one_time',lines:items},withLocale:true}),{w,root,calls}=env;
+  try{
+    await w.PureResearchBuilder.mount(root,env.options);
+    root.querySelector('[data-rb-id="compound-0"][data-rb-size="10 mg"]').click();await settle();
+    root.querySelector('[data-rb-group="Category A"]').click();
+    const search=root.querySelector('#ap-builder-query');search.value='Compound';search.dispatchEvent(new w.Event('input'));search.focus();
+    const hero=root.querySelector('.nl-builder-hero'),selectedSize=root.querySelector('[data-rb-id="compound-0"][data-rb-size="10 mg"]');
+    const draft=w.localStorage.getItem('ap-research-builder-v2'),quoteCount=calls.filter(call=>call.body).length;
+    const total=root.querySelector('.nl-price-total strong'),amount=total.querySelector('[data-usd-cents]');
+    assert.equal(amount.dataset.usdCents,'48611');
+    await w.AltaLocale.setCurrency('CAD');
+    assert.equal(root.querySelector('.nl-builder-hero'),hero);assert.equal(root.querySelector('#ap-builder-query'),search);
+    assert.equal(w.document.activeElement,search);assert.equal(search.value,'Compound');
+    assert.equal(root.querySelector('[data-rb-group="Category A"]').getAttribute('aria-pressed'),'true');
+    assert.equal(root.querySelector('[data-rb-id="compound-0"][data-rb-size="10 mg"]'),selectedSize);assert.equal(selectedSize.getAttribute('aria-pressed'),'true');
+    assert.equal(root.querySelector('.nl-price-total strong'),total);assert.equal(amount.dataset.usdCents,'48611');
+    assert.match(amount.textContent,/656\.25/);assert.match(total.querySelector('small').textContent,/CAD/);
+    assert.match(root.querySelector('[data-rb-product="compound-0"] .ap-product-price').textContent,/243\.03/);
+    assert.equal(w.localStorage.getItem('ap-research-builder-v2'),draft);assert.equal(calls.filter(call=>call.body).length,quoteCount);
+    assert.equal(root.querySelector('[data-rb-checkout]').disabled,false);
+    root.querySelector('[data-rb-mode="subscription"]').click();await settle();
+    const expected=pricing.quote(JSON.parse(draft).lines,catalog,{mode:'subscription'}),monthly=root.querySelector('.nl-price-total strong');
+    assert.equal(monthly.querySelector('[data-usd-cents]').dataset.usdCents,String(expected.total_cents));
+    assert.equal(root.querySelector('.nl-builder-savings [data-usd-cents]').dataset.usdCents,String(expected.discount_cents));
+    assert.match(monthly.querySelector('small').textContent,/CAD \/ month/);
+    const monthlyCount=calls.filter(call=>call.body).length,monthlyDraft=w.localStorage.getItem('ap-research-builder-v2');
+    await w.AltaLocale.setCurrency('USD');
+    assert.equal(root.querySelector('.nl-price-total strong'),monthly);assert.match(monthly.textContent,/291\.68/);assert.match(monthly.querySelector('small').textContent,/USD \/ month/);
+    assert.equal(w.localStorage.getItem('ap-research-builder-v2'),monthlyDraft);assert.equal(calls.filter(call=>call.body).length,monthlyCount);
+    assert.equal(root.querySelector('[data-rb-checkout]'),null);assert.equal(env.added.length,0);
+  }finally{env.dom.window.close();}
 });

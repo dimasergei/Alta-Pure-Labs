@@ -162,7 +162,7 @@ html:root body.ap-site .nl-bulk-prices strong {
   font-size: 19px;
   line-height: 1.3;
 }
-html:root body.ap-site .nl-bulk-prices span { font-size: 13px; }
+html:root body.ap-site .nl-bulk-prices>span { font-size: 13px; }
 html:root body.ap-site .nl-bulk-product-foot {
   display: block;
   margin-top: 10px;

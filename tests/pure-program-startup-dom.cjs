@@ -8,6 +8,7 @@ const path = require('node:path');
 const {JSDOM,ResourceLoader,VirtualConsole} = require('jsdom');
 const pricing = require('../lib/research-builder-pricing');
 const catalog = require('../lib/catalog.json');
+const displayLocaleResponse = require('./display-locale-fixture.cjs');
 const output = path.resolve(process.env.PURE_PROGRAM_BUILD_DIR || 'public-build');
 const items = pricing.catalog(catalog).slice(0,4).map(product => ({id:product.id,size:product.variants[0].size,qty:1}));
 const titles = {'/memberships':'PURE Memberships | PURE','/research-builder':'AUTO-STACK™ | PURE','/research-checkout':'AUTO-STACK™ Review | PURE'};
@@ -51,6 +52,7 @@ function setup(route,{earlyCoa=false,holdCatalog=false}={}) {
       window.fetch=async(value,options={})=>{
         const url = new URL(value,window.location.href),body = options.body?JSON.parse(options.body):null;
         calls.push({url:url.pathname+url.search,body});
+        const display=displayLocaleResponse(url.href);if(display)return display;
         if(url.pathname==='/data/verified-coas.json')return coa.promise;
         if(url.pathname==='/api/customer-config'&&url.searchParams.get('research_builder')==='1') {
           if(body)return response(pricing.quote(body.items,catalog,{mode:body.mode}));
@@ -94,7 +96,7 @@ function healthy(env) {
 async function refresh(env) {
   env.coa.resolve(response([]));await tick();await tick();
   env.w.AltaLocale.setLanguage('fr');await tick();
-  await env.w.AltaLocale.setCurrency('USD');await tick();
+  await env.w.AltaLocale.setCurrency('CAD');await tick();
   // Exercise the normalized aliases through the same shared render entry point.
   env.w.AltaWorkspace.render(env.base+'.html/',env.d.querySelector('#ap-main'));
 }
@@ -161,8 +163,15 @@ for(const [route,earlyCoa] of [['/research-checkout',false],['/research-checkout
   const env=await start(route,{earlyCoa});
   try {
     await until(()=>env.d.querySelector('.rc-layout'),'quoted research review');
+    const root=env.d.querySelector('main#ap-main'),shell=root.querySelector(':scope > .rc-public-page > .rc-public-shell');
+    assert.ok(shell,'the direct public review gets its own centered page shell');
+    for(const selector of ['.rc-back','.rc-heading','.rc-layout'])assert.ok(shell.querySelector(':scope > '+selector),selector+' stays within the review shell');
+    const header=env.d.querySelector('body > .ap-header'),footer=env.d.querySelector('body > .ap-footer');
+    assert.ok(header);assert.ok(footer);
     const review=env.d.querySelector('.rc-layout');
     await refresh(env);
+    assert.equal(root.querySelector('.rc-public-shell'),shell);
+    assert.equal(env.d.querySelector('body > .ap-header'),header);assert.equal(env.d.querySelector('body > .ap-footer'),footer);
     assert.equal(env.d.querySelector('.rc-layout'),review);
     assert.equal(env.d.querySelectorAll('.rc-line').length,4);
     assert.equal(env.d.querySelector('.rc-pay').disabled,true);

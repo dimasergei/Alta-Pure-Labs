@@ -15,12 +15,12 @@
   const qty=Number(input.value),unit=Number(group.dataset.unitPrice);
   if(!Number.isInteger(qty)||qty<1||qty>100)return;
   const total=qty*unit;
-  const format=n=>window.AltaLocale?.formatMoney?window.AltaLocale.formatMoney(n):new Intl.NumberFormat('en-US',{style:'currency',currency:'USD'}).format(n);
+  const format=n=>window.AltaLocale?.price?window.AltaLocale.price(Math.round(n*100),{compact:true}):new Intl.NumberFormat('en-US',{style:'currency',currency:'USD'}).format(n);
   for(const button of group.querySelectorAll('[data-bundle-quantity]'))button.setAttribute('aria-pressed',String(Number(button.dataset.bundleQuantity)===qty));
   const estimate=document.querySelector('[data-bundle-estimate]');
-  if(estimate)estimate.textContent=format(total)+' for '+qty+' unit'+(qty===1?'':'s');
+  if(estimate)estimate.innerHTML=format(total)+' for '+qty+' unit'+(qty===1?'':'s');
   const mobile=document.querySelector('[data-mobile-total]');
-  if(mobile)mobile.textContent=format(total)+' estimated total';
+  if(mobile)mobile.innerHTML=format(total)+' estimated total';
  }
  document.addEventListener('click',event=>{
   const bundle=event.target.closest('[data-bundle-quantity]');

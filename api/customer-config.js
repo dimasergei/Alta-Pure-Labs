@@ -2,6 +2,7 @@
 module.exports=async(req,res)=>{
  res.setHeader('Cache-Control','no-store');res.setHeader('X-Content-Type-Options','nosniff');
  const url=new URL(req.url||'/api/customer-config','https://account.internal');
+ if(url.searchParams.has('display_locale'))return require('../lib/display-locale').handle(req,res,url.searchParams);
  if(url.searchParams.has('admin_auth'))return require('../lib/admin-auth').handle(req,res);
  if(url.searchParams.has('inventory'))return require('../lib/standalone-inventory').handle(req,res);
  if(url.searchParams.has('research_builder'))return require('../lib/research-builder-handler')(req,res);

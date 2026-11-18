@@ -1,6 +1,7 @@
 (()=>{
  'use strict';
- const money=n=>new Intl.NumberFormat('en-US',{style:'currency',currency:'USD'}).format((Number(n)||0)/100);
+ const usdMoney=n=>new Intl.NumberFormat('en-US',{style:'currency',currency:'USD'}).format((Number(n)||0)/100);
+ const money=n=>window.AltaLocale?.price?window.AltaLocale.price(n,{compact:true}):usdMoney(n);
  const html=v=>String(v??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
  const couponKeys=['ap-checkout-coupon','ap-cart-coupon'];
  const saveCoupon=value=>couponKeys.forEach(key=>value?localStorage.setItem(key,value):localStorage.removeItem(key));
@@ -36,7 +37,7 @@
   const picks=catalog.filter(p=>!items.some(x=>x.id===p.id)&&p.variants?.length).slice(0,5);
   let appliedCoupon=storedCoupon(),hasQuote=false;
   root.innerHTML='<div class="nlc-scrollable-items cart__body" data-testid="cart-product-scroll">'
-   +'<div class="nlc-unlock"><p data-nlc-unlock-copy>Free standard US shipping on orders of <strong>$150</strong> after discounts.</p><div class="nlc-progress" role="progressbar" aria-label="Free standard US shipping progress" aria-valuemin="0" aria-valuemax="150" aria-valuenow="0"><span class="nlc-progress-fill" style="width:0%"></span></div></div>'
+   +'<div class="nlc-unlock"><p data-nlc-unlock-copy>Free standard US shipping on orders of <strong>US$150</strong> after discounts.</p><div class="nlc-progress" role="progressbar" aria-label="Free standard US shipping progress" aria-valuemin="0" aria-valuemax="150" aria-valuenow="0"><span class="nlc-progress-fill" style="width:0%"></span></div></div>'
    +'<section class="nlc-cart-lines">'+items.map(x=>
     '<div class="nlc-line"><img src="'+html(window.AltaStore.image(window.AltaStore.product(x.id),x.size))+'" alt="">'
     +'<div class="nlc-name"><div class="nlc-product-title"><strong>'+html(x.name)+'</strong><span class="nlc-size">– '+html(x.size)+'</span></div>'
@@ -51,6 +52,7 @@
    +'</div><div class="nlc-cart-checkout cart__checkout" data-testid="cart-fixed-footer"><details class="nlc-coupon"'+(appliedCoupon?' open':'')+'><summary>Coupon code</summary><p>Use <strong>BLACKFRIDAY15</strong> for 15% off merchandise. Pay with Crypto at checkout for an extra 5% off the remaining merchandise.</p><div><input type="text" name="nlc_coupon" aria-label="Coupon code" placeholder="BLACKFRIDAY15" maxlength="40" value="'+html(appliedCoupon)+'"><button type="button" data-nlc-apply>APPLY</button><button type="button" data-nlc-remove-coupon hidden>REMOVE</button></div><p data-nlc-coupon-status role="status" aria-live="polite"></p></details>'
    +'<p class="nlc-delivery-est"><svg viewBox="0 0 24 24" width="17" height="17" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><path d="M3 6h11v11H3zM14 10h4l3 4v3h-7z"/><circle cx="7" cy="18" r="2"/><circle cx="18" cy="18" r="2"/></svg> <strong>Estimated delivery:</strong> <span data-nlc-estimate></span></p>'
    +'<div class="nlc-cart-totals" data-nlc-cart-totals><p role="status">Calculating your order total…</p></div>'
+   +'<p class="nlc-display-note">Converted prices are estimates. Checkout confirms your total and payment currency.</p>'
    +'<a class="nlc-proceed" href="/checkout">Proceed to Checkout</a>'
    +'<div class="nlc-wallet-area"><div class="nlc-pay-divider"><span>OR PAY WITH</span> <strong data-nlc-instant-amount></strong></div><div class="nlc-wallet-row" data-nlc-wallets>'
    +'<a class="nlc-wallet-link" data-nlc-wallet="apple" role="link" aria-disabled="true" aria-label="Continue with Apple Pay"><span class="nlc-wallet-lockup"><img class="nlc-wallet-logo nlc-apple-mark" src="/assets/payment-brands/apple-mark-clean.svg" width="18" height="23" alt="" aria-hidden="true"><span class="nlc-apple-pay-word">Pay</span></span></a><span class="nlc-wallet-or">or</span>'
@@ -97,8 +99,8 @@
     unlockText.innerHTML=country!=='US'?'Free standard shipping is available for US orders of <strong>'+money(threshold)+'</strong> after discounts.':remaining?'Add <strong>'+money(remaining)+'</strong> more for <strong>free standard US shipping</strong>.':'<strong>Free standard US shipping included.</strong>';
     const progress=root.querySelector('.nlc-progress');progress.hidden=country!=='US';progress.setAttribute('aria-valuemax',String(threshold/100));progress.setAttribute('aria-valuenow',String(Math.min(threshold,merchandise)/100));
     root.querySelector('.nlc-progress-fill').style.width=Math.min(100,merchandise/threshold*100)+'%';
-    root.querySelector('.nlc-proceed').textContent='Proceed to Checkout ('+money(data.total_cents)+')';
-    root.querySelector('[data-nlc-instant-amount]').textContent=money(data.total_cents);
+    root.querySelector('.nlc-proceed').innerHTML='Proceed to Checkout ('+money(data.total_cents)+')';
+    root.querySelector('[data-nlc-instant-amount]').textContent=usdMoney(data.total_cents)+' USD';
     const hostedCard=(settings.methods||[]).find(method=>method.native_provider==='rampex'&&method.rampex_provider==='hosted'&&method.active!==false&&method.countries?.includes(country));
     root.querySelector('[data-nlc-wallet-note]').textContent=hostedCard?'Review delivery and your total first. Apple Pay or Google Pay can be selected in the secure provider checkout when eligible.':'Digital wallet payments are unavailable for this destination. Choose an available method at checkout.';
     if(hostedCard)root.querySelectorAll('[data-nlc-wallet]').forEach(link=>{link.href='/checkout?wallet='+link.dataset.nlcWallet;link.setAttribute('aria-disabled','false');link.removeAttribute('tabindex');});

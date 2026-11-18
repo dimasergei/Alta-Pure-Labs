@@ -40,7 +40,7 @@ test('homepage keeps the announcement, five-vial hero and product links without 
   assert.equal([...hero.querySelector('h1').childNodes].map(n=>n.nodeName==='BR'?'\n':n.textContent).join(''),'CUTTING EDGE\nPURITY');
   assert.equal(hero.querySelector('.nl-hero-description').textContent,'Research compounds, product documentation, and straightforward ordering for laboratories and research teams.');
   assert.deepEqual([...hero.querySelectorAll('.ap-actions a')].map(a=>[a.textContent,a.getAttribute('href')]),[['SHOP NOW','/shop']]);
-  assert.deepEqual([...hero.querySelectorAll('.nl-trust>div>span')].map(n=>n.textContent),['99%+ Purity','Free shipping over $150','Lab Tested']);
+  assert.deepEqual([...hero.querySelectorAll('.nl-trust>div>span')].map(n=>n.textContent),['99%+ Purity','Free US shipping over US$150','Lab Tested']);
   assert.equal(hero.querySelectorAll('.nl-trust-check').length,3);
   assert.equal(hero.querySelectorAll('.nl-vial').length,5);
   const featured=[...d.querySelectorAll('#nl-featured .ap-product-card')];

@@ -27,9 +27,10 @@
 .mx-description{font-size:13px;line-height:1.6;color:#666;min-height:42px;margin:0 0 25px;max-width:270px}
 .mx-card-black .mx-description{color:#bbb}
 .mx-price{display:flex;align-items:baseline;flex-wrap:wrap;gap:6px;font-size:38px;font-weight:850;letter-spacing:-.045em;line-height:1.1;color:inherit;min-height:43px}
-.mx-price span{font-size:11px;letter-spacing:0;font-weight:500;color:#666;white-space:nowrap}
-.mx-card-black .mx-price span{color:#bcbcbc}
+.mx-price>.mx-price-period{font-size:11px;letter-spacing:0;font-weight:500;color:#666;white-space:nowrap}
+.mx-card-black .mx-price>.mx-price-period{color:#bcbcbc}
 .mx-billing-note{font-size:12px;color:#666;line-height:1.5;min-height:18px;margin:8px 0 20px}
+.mx-currency-note{margin:-10px 0 22px;color:#666;font-size:12px;line-height:1.5;text-align:center}
 .mx-card-black .mx-billing-note{color:#bcbcbc}
 .mx-choose{display:flex;align-items:center;justify-content:space-between;gap:12px;min-height:46px;padding:13px 16px;border:1px solid #111;border-radius:100px;background:#111;color:#fff;text-decoration:none;font:inherit;font-size:11px;font-weight:800;text-transform:uppercase;letter-spacing:.035em;line-height:1.3;cursor:pointer}
 .mx-choose span{font-size:17px;line-height:1}
@@ -67,11 +68,11 @@
 .mx-faq details p{margin:0 35px 20px 0;color:#666;font-size:13px;line-height:1.7}
 .mx-membership-embedded{padding-top:42px;padding-bottom:44px}
 .mx-membership-embedded .mx-intro h2{font-size:clamp(34px,3.9vw,52px)}
-@media(max-width:1000px){.mx-membership-page{padding-left:22px;padding-right:22px}.mx-grid{grid-template-columns:repeat(3,minmax(0,1fr));gap:12px}.mx-card{padding:22px 17px}.mx-price{font-size:32px}.mx-price span{display:block;width:100%}.mx-card-top{margin-bottom:23px}.mx-description{min-height:62px}.mx-features li{font-size:12px}.mx-intro{gap:28px}.mx-choose{padding:12px;font-size:10px}.mx-faq{gap:36px}}
-@media(max-width:700px){.mx-membership-page{padding:32px 18px 44px}.mx-intro{grid-template-columns:1fr;gap:21px;margin-bottom:26px}.mx-intro h1,.mx-intro h2{font-size:43px}.mx-intro-copy{max-width:480px}.mx-intro-copy p{font-size:14px;margin-bottom:15px}.mx-grid{grid-template-columns:1fr;max-width:460px;margin:0 auto;gap:16px}.mx-card{padding:24px}.mx-card-top{margin-bottom:22px}.mx-card h3{font-size:30px}.mx-description{min-height:0;max-width:none;margin-bottom:20px}.mx-price{font-size:39px;gap:9px}.mx-price span{width:auto;display:inline}.mx-choose{min-height:47px;padding:13px 17px;font-size:11px}.mx-features li{font-size:13px}.mx-features li small{font-size:12px}.mx-faq{grid-template-columns:1fr;gap:25px;margin-top:35px;padding-top:28px}.mx-faq h2{margin-top:9px;margin-bottom:19px;font-size:31px}.mx-faq h2 br{display:none}.mx-faq summary{padding:17px 0}.mx-terms{font-size:12px;max-width:460px;text-align:left}.mx-billing{margin-bottom:20px}.mx-billing button{padding:10px 19px}.mx-intro-detail{font-size:10px}}
+@media(max-width:1000px){.mx-membership-page{padding-left:22px;padding-right:22px}.mx-grid{grid-template-columns:repeat(3,minmax(0,1fr));gap:12px}.mx-card{padding:22px 17px}.mx-price{font-size:32px}.mx-price>.mx-price-period{display:block;width:100%}.mx-card-top{margin-bottom:23px}.mx-description{min-height:62px}.mx-features li{font-size:12px}.mx-intro{gap:28px}.mx-choose{padding:12px;font-size:10px}.mx-faq{gap:36px}}
+@media(max-width:700px){.mx-membership-page{padding:32px 18px 44px}.mx-intro{grid-template-columns:1fr;gap:21px;margin-bottom:26px}.mx-intro h1,.mx-intro h2{font-size:43px}.mx-intro-copy{max-width:480px}.mx-intro-copy p{font-size:14px;margin-bottom:15px}.mx-grid{grid-template-columns:1fr;max-width:460px;margin:0 auto;gap:16px}.mx-card{padding:24px}.mx-card-top{margin-bottom:22px}.mx-card h3{font-size:30px}.mx-description{min-height:0;max-width:none;margin-bottom:20px}.mx-price{font-size:39px;gap:9px}.mx-price>.mx-price-period{width:auto;display:inline}.mx-choose{min-height:47px;padding:13px 17px;font-size:11px}.mx-features li{font-size:13px}.mx-features li small{font-size:12px}.mx-faq{grid-template-columns:1fr;gap:25px;margin-top:35px;padding-top:28px}.mx-faq h2{margin-top:9px;margin-bottom:19px;font-size:31px}.mx-faq h2 br{display:none}.mx-faq summary{padding:17px 0}.mx-terms{font-size:12px;max-width:460px;text-align:left}.mx-billing{margin-bottom:20px}.mx-billing button{padding:10px 19px}.mx-intro-detail{font-size:10px}}
 @media(prefers-reduced-motion:reduce){.mx-membership-page *,.mx-comparison *{scroll-behavior:auto!important;transition:none!important;animation:none!important}}
 /* Keep captions and actions readable through the shared legacy style layers. */
-.mx-intro-detail,.mx-tier-label,.mx-tier-index,.mx-billing button span,.mx-price span,.mx-billing-note,.mx-choose,.mx-features li small,.mx-terms{font-size:12px}
-@media(max-width:1000px){.mx-choose,.mx-tier-label,.mx-price span{font-size:12px}}
+.mx-intro-detail,.mx-tier-label,.mx-tier-index,.mx-billing button span,.mx-price>.mx-price-period,.mx-billing-note,.mx-choose,.mx-features li small,.mx-terms{font-size:12px}
+@media(max-width:1000px){.mx-choose,.mx-tier-label,.mx-price>.mx-price-period{font-size:12px}}
 @media(max-width:700px){.mx-description,.mx-features li,.mx-faq details p,.mx-intro-copy p{font-size:14px}.mx-features li small,.mx-terms{font-size:13px}.mx-choose{font-size:12px;min-height:48px}.mx-current-note{font-size:14px}.mx-intro-detail{font-size:12px}.mx-billing button{font-size:14px}}
 @media(max-width:360px){.mx-intro h1,.mx-intro h2{font-size:38px}}

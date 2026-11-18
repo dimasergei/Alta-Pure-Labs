@@ -8,7 +8,7 @@ fs.copyFileSync(theme,path.join(out,theme));
 fs.copyFileSync('pure-brand.css',path.join(out,'pure-brand.css'));
 fs.copyFileSync('mobile-parity.css',path.join(out,'mobile-parity.css'));
 fs.copyFileSync('unified-palette.css',path.join(out,'unified-palette.css'));
-for(const file of ['pure-layout.css','pure-bulk-layout.css','pure-coa.css'])fs.copyFileSync(file,path.join(out,file));
+for(const file of ['pure-layout.css','pure-bulk-layout.css','pure-coa.css','pure-currency.css'])fs.copyFileSync(file,path.join(out,file));
 for(const [source,target] of [['pure-icon.svg','favicon.svg'],['pure-icon.svg','favicon-pure.svg'],['pure-icon-16.png','favicon-pure-16.png'],['pure-icon-32.png','favicon-pure-32.png'],['pure-icon-48.png','favicon-48.png'],['pure-icon-96.png','favicon-pure-96.png'],['pure-icon.ico','favicon.ico'],['pure-icon.ico','favicon-pure-20261117.ico'],['pure-icon.ico','favicon-pure-20261117b.ico'],['altapure-purple-20261116.ico','favicon-purple-20261116.ico'],['altapure-google-favicon-96.png','favicon-google-96.png'],['altapure-glossy-favicon-96.png','favicon-glossy-96.png'],['altapure-glossy-20261116.ico','favicon-glossy-20261116.ico'],['altapure-transparent-favicon-96.png','favicon-transparent-96.png'],['altapure-transparent-20261116.ico','favicon-transparent-20261116.ico'],['altapure-solid-purple-96.png','favicon-solid-purple-96.png'],['altapure-solid-purple-20261116.ico','favicon-solid-purple-20261116.ico'],['altapure-neon-favicon-96.png','favicon-neon-96.png'],['altapure-neon-20261116.ico','favicon-neon-20261116.ico'],['altapure-bright-favicon-96.png','favicon-bright-96.png'],['altapure-bright-20261116.ico','favicon-bright-20261116.ico'],['pure-icon-180.png','apple-touch-icon.png'],['pure-icon-96.png','brand-logo.png']])fs.copyFileSync(path.join(process.cwd(),'assets',source),path.join(out,target));
 // Self-host authentic payment marks from the reviewed assets directory.
 fs.mkdirSync(path.join(out,'assets','payment-brands'),{recursive:true});
@@ -51,6 +51,9 @@ for(const file of fs.readdirSync(out,{recursive:true}).filter(f=>f.endsWith('.ht
   html=html.replace(/src="\/(checkout-reference|direct-checkout-client|payment-options-public|readiness-ui|locale)\.js(?:\?[^"]*)?"/g,'src="/$1.js?v=20261118-cad-checkout"');
   html=html.replace(/src="\/(account|workspace-v2|readiness-ui)\.js(?:\?[^"]*)?"/g,'src="/$1.js?v=20261118-autostack"');
   html=html.replace(/href="\/account-experience\.css(?:\?[^"]*)?"/g,'href="/account-experience.css?v=20261118-interac"');
+  // Keep the display layer and its opt-in price markup on the same release.
+  html=html.replace(/src="\/(locale|storefront-v2|workspace-v2|reference-ui|cart-reference|membership-experience|research-builder-client|research-checkout-client)\.js(?:\?[^"]*)?"/g,'src="/$1.js?v=20261118-local-currency"');
+  html=html.replace(/href="\/(pure-currency|pure-bulk-layout|reference-ui|cart-reference|membership-experience|research-builder-parity|research-checkout)\.css(?:\?[^"]*)?"/g,'href="/$1.css?v=20261118-local-currency"');
   fs.writeFileSync(target,html);
   count++;
 }
