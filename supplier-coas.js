@@ -45,9 +45,9 @@
    container.replaceChildren();
    const grid=el('div',undefined,'ap-panel-grid ap-supplier-coa-grid');
    for(const r of records){
-    const card=el('article',undefined,'ap-coa-card');card.append(el('span','COA REPORT','ap-pill'),el('h2',r.product+' · '+r.size));
-    const dl=el('dl');for(const [label,value]of [['Laboratory',r.lab_name],['Certificate publisher',r.publisher],['Reported lot',r.lot],['Report / analysis date',r.report_date],['Report ID',r.report_id]])if(value)dl.append(el('dt',label),el('dd',value));card.append(dl);
-    const actions=el('div',undefined,'ap-actions'),button=el('button','View COA','ap-button ap-button-small');button.type='button';button.onclick=()=>viewReport(r,button);actions.append(button,link(r.document_type==='images'?r.source_library_url:r.document_url,r.document_type==='images'?'Original report ↗':'Original PDF ↗'));if(safeUrl(r.verification_url))actions.append(link(r.verification_url,'Certificate verification ↗'));card.append(actions);grid.append(card);
+    const card=el('article',undefined,'ap-coa-card'),head=el('header',undefined,'pure-coa-card-head'),body=el('div',undefined,'pure-coa-card-body');head.append(el('span','COA REPORT','ap-pill'),el('h2',r.product+' · '+r.size));card.append(head,body);
+    const dl=el('dl');for(const [label,value]of [['Laboratory',r.lab_name],['Certificate publisher',r.publisher],['Reported lot',r.lot],['Report / analysis date',r.report_date],['Report ID',r.report_id]])if(value)dl.append(el('dt',label),el('dd',value));body.append(dl);
+    const actions=el('div',undefined,'ap-actions'),button=el('button','View COA','ap-button ap-button-small');button.type='button';button.onclick=()=>viewReport(r,button);actions.append(button,link(r.document_type==='images'?r.source_library_url:r.document_url,r.document_type==='images'?'Original report ↗':'Original PDF ↗'));if(safeUrl(r.verification_url))actions.append(link(r.verification_url,'Certificate verification ↗'));body.append(actions);grid.append(card);
    }
    if(!records.length)grid.append(el('p','No COA report matches these filters. Try another selection or request the exact product, strength and lot.','ap-panel'));
    container.append(grid);

@@ -1,0 +1,217 @@
+/* PURE's document library: monochrome surfaces, clear hierarchy, original reports. */
+html:root body.ap-site .pure-coa-page {
+  background: #f5f5f5;
+}
+html:root body.ap-site .pure-coa-page .ap-coa-hero {
+  position: relative;
+  overflow: hidden;
+  background: #111;
+  color: #fff;
+}
+html:root body.ap-site .pure-coa-page .ap-coa-hero-inner {
+  grid-template-columns: minmax(0, 1fr) 280px;
+  gap: 44px;
+  padding-block: 44px 70px;
+}
+.pure-coa-hero-copy { max-width: 760px; }
+html:root body.ap-site .pure-coa-hero-copy .ap-eyebrow {
+  display: inline-block;
+  padding: 7px 11px;
+  border: 1px solid #ffffff40;
+  border-radius: 6px;
+  color: #e5e5e5;
+  font-size: 12px;
+  letter-spacing: .09em;
+}
+html:root body.ap-site .pure-coa-hero-copy h1 {
+  max-width: 20ch;
+  margin: 17px 0 14px;
+  color: #fff;
+  font-size: clamp(36px, 4.2vw, 58px);
+  line-height: 1.06;
+  letter-spacing: -.04em;
+  text-wrap: balance;
+}
+html:root body.ap-site .pure-coa-hero-copy p {
+  max-width: 640px;
+  margin: 0;
+  color: #ccc;
+  font-size: 16px;
+  line-height: 1.6;
+}
+.pure-coa-hero-art {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-direction: column;
+  gap: 8px;
+  color: #fff;
+  opacity: .18;
+  pointer-events: none;
+}
+.pure-coa-hero-art svg { width: 200px; height: 200px; }
+.pure-coa-hero-art .pure-wordmark { width: 180px; height: 42px; }
+html:root body.ap-site .pure-coa-page .ap-coa-library {
+  position: relative;
+  margin-top: -28px;
+  padding-top: 0;
+}
+html:root body.ap-site .pure-coa-page .ap-coa-search-panel {
+  padding: 22px 24px;
+  border: 1px solid #dedede;
+  border-radius: 18px;
+  background: #fff;
+  box-shadow: 0 8px 28px #00000009;
+}
+html:root body.ap-site .pure-coa-page .ap-coa-search-label {
+  margin-bottom: 10px;
+  font-size: 17px;
+}
+html:root body.ap-site .pure-coa-page #ap-coa-query {
+  background: #f7f7f7;
+  border-color: #d4d4d4;
+}
+html:root body.ap-site .pure-coa-page .ap-coa-controls {
+  margin-top: 16px;
+  gap: 14px;
+}
+html:root body.ap-site .pure-coa-page .ap-coa-controls label {
+  font-size: 13px;
+  min-width: 0;
+}
+html:root body.ap-site .pure-coa-page .ap-coa-results-heading {
+  margin: 26px 0 20px;
+}
+html:root body.ap-site .pure-coa-page .ap-coa-results-heading p { font-size: 15px; }
+html:root body.ap-site .pure-coa-page .ap-coa-results-heading a { font-size: 13px; }
+html:root body.ap-site .pure-coa-page .ap-supplier-coa-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 22px;
+  align-items: stretch;
+}
+html:root body.ap-site .pure-coa-page .ap-coa-card {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  overflow: hidden;
+  padding: 0;
+  border: 1px solid #dedede;
+  border-radius: 18px;
+  background: #fff;
+  box-shadow: 0 3px 12px #00000004;
+}
+html:root body.ap-site .pure-coa-page .pure-coa-card-head {
+  min-width: 0;
+  padding: 20px 22px;
+  border: 0;
+  background: #161616;
+  color: #fff;
+}
+html:root body.ap-site .pure-coa-card-head .ap-pill {
+  padding: 0;
+  border: 0;
+  border-radius: 0;
+  background: transparent;
+  color: #bfbfbf;
+  font-size: 11px;
+  letter-spacing: .11em;
+}
+html:root body.ap-site .pure-coa-card-head h2 {
+  margin: 12px 0 0;
+  color: #fff;
+  font-size: 22px;
+  line-height: 1.25;
+  overflow-wrap: anywhere;
+}
+.pure-coa-card-body {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  min-width: 0;
+  padding: 20px 22px 22px;
+}
+html:root body.ap-site .pure-coa-card-body dl {
+  grid-template-columns: minmax(0, .85fr) minmax(0, 1.15fr);
+  gap: 13px 18px;
+  margin: 0 0 22px;
+  font-size: 13px;
+  line-height: 1.5;
+}
+html:root body.ap-site .pure-coa-card-body dt {
+  color: #666;
+  font-size: 13px;
+  line-height: 1.5;
+  text-transform: none;
+  letter-spacing: 0;
+}
+html:root body.ap-site .pure-coa-card-body dd {
+  min-width: 0;
+  margin: 0;
+  font-weight: 600;
+  overflow-wrap: anywhere;
+}
+html:root body.ap-site .pure-coa-card-body .ap-actions {
+  display: flex;
+  align-items: center;
+  justify-content: flex-start;
+  gap: 14px 18px;
+  margin-top: auto;
+  padding-top: 18px;
+  border-top: 1px solid #e8e8e8;
+}
+html:root body.ap-site .pure-coa-card-body .ap-actions .ap-button {
+  flex: 0 0 100%;
+  min-height: 46px;
+  font-size: 13px;
+}
+html:root body.ap-site .pure-coa-card-body .ap-text-link {
+  font-size: 13px;
+  overflow-wrap: anywhere;
+}
+html:root body.ap-site .pure-coa-card-body .nl-coa-copy {
+  min-height: 28px;
+  margin: 4px 0 0 6px;
+  padding: 5px 8px;
+  font-size: 11px;
+}
+html:root body.ap-site .pure-coa-page .ap-coa-missing {
+  background: #fff;
+  font-size: 14px;
+}
+html:root body.ap-site .pure-coa-page #ap-supplier-references > .ap-fine {
+  max-width: 850px;
+  margin-top: 24px;
+  padding-left: 16px;
+  border-left: 2px solid #111;
+  color: #555;
+  font-size: 14px;
+  line-height: 1.65;
+}
+.pure-coa-page :is(button,a,input,select):focus-visible {
+  outline: 2px solid #111;
+  outline-offset: 3px;
+}
+@media (max-width: 1100px) {
+  html:root body.ap-site .pure-coa-page .ap-supplier-coa-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  html:root body.ap-site .pure-coa-page .ap-coa-hero-inner { grid-template-columns: minmax(0, 1fr) 180px; gap: 20px; }
+  .pure-coa-hero-art svg { width: 160px; height: 160px; }
+  .pure-coa-hero-art .pure-wordmark { width: 140px; height: 33px; }
+}
+@media (max-width: 767px) {
+  html:root body.ap-site .pure-coa-page .ap-coa-hero-inner { grid-template-columns: minmax(0, 1fr); padding-block: 32px 52px; }
+  html:root body.ap-site .pure-coa-hero-copy h1 { max-width: 21ch; font-size: clamp(34px, 6vw, 44px); }
+  html:root body.ap-site .pure-coa-hero-copy p { font-size: 15px; }
+  .pure-coa-hero-art { display: none; }
+  html:root body.ap-site .pure-coa-page .ap-coa-library { margin-top: -22px; }
+  html:root body.ap-site .pure-coa-page .ap-coa-search-panel { padding: 20px; border-radius: 14px; }
+  html:root body.ap-site .pure-coa-page .ap-supplier-coa-grid { grid-template-columns: minmax(0, 1fr); gap: 18px; }
+  html:root body.ap-site .pure-coa-page .ap-coa-controls { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 14px 12px; }
+  html:root body.ap-site .pure-coa-page .ap-coa-controls > label:first-child { grid-column: 1 / -1; }
+  html:root body.ap-site .pure-coa-page #ap-coa-reset { grid-column: 1 / -1; min-height: 42px; }
+  html:root body.ap-site .pure-coa-page .ap-coa-controls select { font-size: 16px; }
+  html:root body.ap-site .pure-coa-page .ap-coa-results-heading { gap: 8px; margin: 22px 0 18px; }
+  html:root body.ap-site .pure-coa-page .pure-coa-card-head { padding: 20px; }
+  .pure-coa-card-body { padding: 20px; }
+  html:root body.ap-site .pure-coa-card-body dl { grid-template-columns: minmax(0, .85fr) minmax(0, 1.15fr); }
+}
