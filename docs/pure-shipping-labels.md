@@ -36,7 +36,7 @@ Carrier/country-specific customs requirements can extend beyond the fields in th
 
 ## Postage billing
 
-An explicitly confirmed live label purchase incurs postage charges through the connected Shippo account and its configured payment method. Shippo handles collection on its billing schedule. The dashboard shows the label's selected postage and transaction reference; this is a purchase record, not proof that a Shippo billing invoice has been settled. Carrier adjustments, separate label fees, taxes, refunds, and account invoice balances are not inferred from that rate.
+An explicitly confirmed live label purchase incurs postage charges. For Shippo's carrier accounts, Shippo collects charges from the saved payment method according to the account's billing threshold. An operator's own connected carrier account may bill postage directly. The dashboard shows the selected postage and transaction reference; this purchase record does not establish invoice settlement. Carrier adjustments, separate label fees, taxes, refunds, and account balances are not inferred from the rate.
 
 Shippo's documented standard API does not expose an operation to manually settle an outstanding account invoice or change its payment method. The Shipping section therefore includes **Manage Shippo billing** as an explicit exception, opening <https://apps.goshippo.com/settings/account/billing>. Routine rate comparison, label purchase, viewing, printing, downloads, and uncertain-purchase recovery stay in PURE. There is no dashboard control that pretends to pay an invoice, and no hosted billing page is embedded or automated.
 

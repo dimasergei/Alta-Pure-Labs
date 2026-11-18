@@ -24,7 +24,7 @@
     panel.id = 'psl-' + row.source + '-' + row.id; open.setAttribute('aria-controls', panel.id); open.setAttribute('aria-expanded', 'false');
     section.append(open, panel); host.append(section);
     const billing = el('aside', undefined, 'psl-billing');
-    billing.append(el('h4', 'Postage billing'), el('p', 'Live labels are billed through your saved Shippo payment method. Label purchase records appear here; billing invoices, payment status, and payment method changes remain in Shippo.', 'uc-hint'));
+    billing.append(el('h4', 'Postage billing'), el('p', 'Buy postage here using your Shippo or connected carrier billing setup. Your own carrier may bill postage directly. Label purchase records appear here; Shippo invoices, billing payment status, and payment method changes are managed in Shippo.', 'uc-hint'));
     link(billing, 'Manage Shippo billing', 'https://apps.goshippo.com/settings/account/billing').title = 'Opens Shippo billing in a new tab';
     section.append(billing);
     const identity = { id: row.id, source: row.source };
@@ -102,7 +102,7 @@
       const expiresAt = Date.parse(label.expires_at), expired = Number.isFinite(expiresAt) && expiresAt <= Date.now();
       const blocked = purchaseBlock(state), canPurchase = !blocked && !expired;
       const disabledText = expired ? 'Quote expired — get new rates' : state.payment_confirmed !== true ? 'Payment required to buy label' : state.eligible !== true ? 'Order not ready for label' : 'Label purchases disabled';
-      box.append(el('h4', 'Compare shipping rates'), el('p', expired ? 'This quote has expired. Get fresh rates before purchasing a label.' : blocked || (state.test_mode ? 'TEST MODE · Labels are not valid for shipping and no live postage is purchased.' : 'The selected postage is charged to your connected Shippo account only after you confirm. Your Shippo plan may bill separate label fees.'), 'uc-hint'));
+      box.append(el('h4', 'Compare shipping rates'), el('p', expired ? 'This quote has expired. Get fresh rates before purchasing a label.' : blocked || (state.test_mode ? 'TEST MODE · Labels are not valid for shipping and no live postage is purchased.' : 'The selected postage incurs a charge only after you confirm. Billing follows your Shippo or connected carrier account; separate label fees may apply.'), 'uc-hint'));
       if (Number.isFinite(expiresAt)) box.append(el('p', 'Quote expires ' + new Date(expiresAt).toLocaleString(), 'psl-quote-expiry'));
       const addresses = el('div', undefined, 'psl-route');
       for (const [title, address] of [['Ship from', label.sender], ['Ship to', label.recipient]]) {
@@ -174,7 +174,7 @@
       } else if (state.test_mode) {
         notice('TEST MODE · These labels are for integration testing and cannot be used to ship an order.');
       } else {
-        notice(state.purchase_enabled === false ? 'LIVE MODE · Live label purchases are disabled in the shipping configuration. You can still review rates.' : 'LIVE MODE · Review rates before confirming a purchase. Confirmed labels are charged through Shippo.');
+        notice(state.purchase_enabled === false ? 'LIVE MODE · Live label purchases are disabled in the shipping configuration. You can still review rates.' : 'LIVE MODE · Review rates before confirming a purchase. Confirmed labels incur postage charges.');
       }
       const labels = (state.labels || []).filter(x => x.status !== 'quoted');
       for (const label of labels) showLabel(label, state);
