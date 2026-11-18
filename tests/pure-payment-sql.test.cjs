@@ -65,6 +65,7 @@ test('isolated PostgreSQL enforces current stacked discounts and cents while pre
   const v7Before=(await db.query('select pricing,total_cents from commerce_invoices where id=$1',[savedV7.id])).rows[0];
   await db.exec(read('20261118070801_pure_interac_cad_checkout.sql'));
   await db.exec(read('20261118180549_pure_membership_checkout.sql'));
+  await db.exec(read('20261118231100_pure_quantity_tiers.sql'));
   assert.deepEqual((await db.query('select pricing,total_cents from commerce_invoices where id=$1',[savedV7.id])).rows[0],v7Before);
   assert.deepEqual((await db.query('select pricing,total_cents from commerce_invoices where id=$1',[savedV6.id])).rows[0],{pricing:savedV6.pricing,total_cents:savedV6.total_cents});
   for(const method of [hosted,payer])for(const country of ['US','CA'])for(const coupon of ['','BLACKFRIDAY15'])for(const cents of [1,9,19,21,1999,3001,9999]){
@@ -72,8 +73,8 @@ test('isolated PostgreSQL enforces current stacked discounts and cents while pre
    await validate(payload);
    assert.equal(payload.discount_cents,payload.pricing.lines.reduce((sum,line)=>sum+line.discount_cents,0));
    assert.equal(payload.pricing.coupon_discount_cents,coupon?Math.round(payload.subtotal_cents*.15):0);
-   assert.equal(payload.pricing.crypto_discount_cents,method===payer?Math.round((payload.subtotal_cents-payload.pricing.coupon_discount_cents)*.05):0);
-   assert.equal(payload.discount_cents,payload.pricing.coupon_discount_cents+payload.pricing.crypto_discount_cents);
+   assert.equal(payload.pricing.crypto_discount_cents,method===payer?Math.round((payload.subtotal_cents-payload.pricing.coupon_discount_cents-(payload.pricing.quantity_discount_cents||0))*.05):0);
+   assert.equal(payload.discount_cents,payload.pricing.coupon_discount_cents+(payload.pricing.quantity_discount_cents||0)+payload.pricing.crypto_discount_cents);
   }
   for(const qty of [1,10,25,50])await validate(await make({method:payer,coupon:'BLACKFRIDAY15',qty,bulk:true}));
   for(const [cents,coupons,crypto] of [[10,[2,1],[0,1]],[100,[15,15],[5,4]]]){
@@ -93,7 +94,7 @@ test('isolated PostgreSQL enforces current stacked discounts and cents while pre
   for(const change of [p=>p.discount_cents=1400,p=>p.pricing.crypto_discount_cents=350,p=>p.pricing.discount_source='coupon',p=>p.pricing.lines[0].discount_bps=2000,p=>{p.pricing.lines[0].coupon_discount_cents--;p.pricing.lines[1].coupon_discount_cents++;},p=>{p.pricing.lines[0].crypto_discount_cents--;p.pricing.lines[1].crypto_discount_cents++;}]){
    const altered=structuredClone(stacked);change(altered);await assert.rejects(validate(altered));
   }
-  for(const [credit,discount,total,suppressed] of [[500,350,8144,false],[8644,0,350,true],[8994,0,0,true]]){
+  for(const [credit,discount,total,suppressed] of [[500,540,7954,false],[8644,200,150,true],[8794,200,0,true]]){
    const balanceOrder=await make({method:payer,credit});await validate(balanceOrder);
    assert.equal(balanceOrder.discount_cents,discount);assert.equal(balanceOrder.total_cents,total);
    assert.equal(balanceOrder.pricing.crypto_discount_suppressed_for_balance,suppressed);
