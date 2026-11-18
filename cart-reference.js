@@ -37,7 +37,7 @@
   const picks=catalog.filter(p=>!items.some(x=>x.id===p.id)&&p.variants?.length).slice(0,5);
   let appliedCoupon=storedCoupon(),hasQuote=false;
   root.innerHTML='<div class="nlc-scrollable-items cart__body" data-testid="cart-product-scroll">'
-   +'<div class="nlc-unlock"><p data-nlc-unlock-copy>Free standard US shipping on orders of <strong>US$150</strong> after discounts.</p><div class="nlc-progress" role="progressbar" aria-label="Free standard US shipping progress" aria-valuemin="0" aria-valuemax="150" aria-valuenow="0"><span class="nlc-progress-fill" style="width:0%"></span></div></div>'
+   +'<div class="nlc-unlock"><p data-nlc-unlock-copy>Free shipping over <strong>$150</strong> after discounts.</p><div class="nlc-progress" role="progressbar" aria-label="Free shipping progress" aria-valuemin="0" aria-valuemax="150" aria-valuenow="0"><span class="nlc-progress-fill" style="width:0%"></span></div></div>'
    +'<section class="nlc-cart-lines">'+items.map(x=>
     '<div class="nlc-line"><img src="'+html(window.AltaStore.image(window.AltaStore.product(x.id),x.size))+'" alt="">'
     +'<div class="nlc-name"><div class="nlc-product-title"><strong>'+html(x.name)+'</strong><span class="nlc-size">– '+html(x.size)+'</span></div>'
@@ -88,6 +88,7 @@
     const nodes=[['Subtotal',data.subtotal_cents]];
     const discount=appliedCoupon?data.pricing?.coupon_discount_cents||0:0;
     if(discount>0)nodes.push(['BLACKFRIDAY15 (15%)',-discount]);
+     if(data.pricing?.quantity_discount_cents>0)nodes.push(['Quantity savings',-data.pricing.quantity_discount_cents]);
     nodes.push(['Shipping',shipping]);
     for(const feature of features)nodes.push([feature.label,feature.amount_cents]);
     if(data.tax_cents>0)nodes.push(['Tax',data.tax_cents]);
@@ -96,8 +97,8 @@
     const merchandise=Math.max(0,data.subtotal_cents-data.discount_cents);
     const remaining=Number.isSafeInteger(data.free_shipping_remaining_cents)?data.free_shipping_remaining_cents:Math.max(0,threshold-merchandise);
     const unlockText=root.querySelector('[data-nlc-unlock-copy]');
-    unlockText.innerHTML=country!=='US'?'Free standard shipping is available for US orders of <strong>'+money(threshold)+'</strong> after discounts.':remaining?'Add <strong>'+money(remaining)+'</strong> more for <strong>free standard US shipping</strong>.':'<strong>Free standard US shipping included.</strong>';
-    const progress=root.querySelector('.nlc-progress');progress.hidden=country!=='US';progress.setAttribute('aria-valuemax',String(threshold/100));progress.setAttribute('aria-valuenow',String(Math.min(threshold,merchandise)/100));
+    unlockText.innerHTML=!['US','CA'].includes(country)?'Free standard shipping is available for US and Canadian orders of <strong>'+money(threshold)+'</strong> after discounts.':remaining?'Add <strong>'+money(remaining)+'</strong> more for <strong>free standard shipping</strong>.':'<strong>Free standard shipping included.</strong>';
+    const progress=root.querySelector('.nlc-progress');progress.hidden=!['US','CA'].includes(country);progress.setAttribute('aria-valuemax',String(threshold/100));progress.setAttribute('aria-valuenow',String(Math.min(threshold,merchandise)/100));
     root.querySelector('.nlc-progress-fill').style.width=Math.min(100,merchandise/threshold*100)+'%';
     root.querySelector('.nlc-proceed').innerHTML='Proceed to Checkout ('+money(data.total_cents)+')';
     root.querySelector('[data-nlc-instant-amount]').textContent=usdMoney(data.total_cents)+' USD';
