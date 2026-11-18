@@ -502,3 +502,8 @@ body #mk-alert:empty{
   min-height:0!important;
   margin:0!important;
 }
+
+/* Inventory navigation only; the standalone worksheet owns its page styling. */
+body .ap-primary-nav [data-ap-icon="inventory"]::before{
+ mask-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cg fill='none' stroke='black' stroke-width='1.9' stroke-linecap='round' stroke-linejoin='round'%3E%3Crect x='3' y='5' width='18' height='16' rx='2'/%3E%3Cpath d='M3 10h18M8 3v4M16 3v4M8 14h2M14 14h2M8 17h2'/%3E%3C/g%3E%3C/svg%3E");
+}

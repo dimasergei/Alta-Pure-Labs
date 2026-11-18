@@ -52,8 +52,9 @@ test('database rejects illegal transitions without reporting success',async()=>{
  const r=await changeReportStatus(x.db,{report_id:id,action:'reject',reason:'Previously verified report cannot be rejected'});
  assert.equal(r.ok,false);assert.equal(r.reason,'REVIEW_TRANSITION_DENIED');
 });
-test('admin UI exposes withdrawal and rejection but no self-verification button',()=>{
+test('standalone stock UI does not expose quality-review or verification mutations',()=>{
  const html=fs.readFileSync(path.join(__dirname,'../admin-inventory.html'),'utf8');
- assert.match(html,/coa-review-form/);assert.match(html,/Withdraw report/);
- assert.doesNotMatch(html,/Approve as verified/);
+ const js=fs.readFileSync(path.join(__dirname,'../admin-inventory.js'),'utf8');
+ assert.doesNotMatch(html,/coa-review-form|Withdraw report|Approve as verified/);
+ assert.doesNotMatch(js,/review_coa_reject|review_coa_withdraw/);
 });

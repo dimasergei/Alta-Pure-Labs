@@ -21,7 +21,7 @@ let workspace=fs.readFileSync('workspace-v2.js','utf8');
 workspace=workspace.replace("'Request received by our email service. Reference: '+result.reference+'. The team will review it; no purchase or enrollment was created.'","'Request saved. Reference: '+result.reference+'. Team notification: '+(result.notification||'queued')+'. View account responses under My account → Requests. No purchase or enrollment was created.'");
 fs.writeFileSync('workspace-v2.js',workspace);
 // Extend navigation to the real operations inbox without modifying order workflows.
-for(const file of ['admin-inventory.html','admin-operations-overview.html']){let html=fs.readFileSync(file,'utf8');if(!html.includes('href="/admin-operations.html"'))html=html.replace('</main>','<p><a href="/admin-operations.html">Requests & operating readiness →</a></p></main>');fs.writeFileSync(file,html);}
+for(const file of ['admin-operations-overview.html']){let html=fs.readFileSync(file,'utf8');if(!html.includes('href="/admin-operations.html"'))html=html.replace('</main>','<p><a href="/admin-operations.html">Requests & operating readiness →</a></p></main>');fs.writeFileSync(file,html);}
 fs.rmSync(out,{recursive:true,force:true});fs.mkdirSync(out,{recursive:true});
 const retiredFiles=new Set(['research-builder.html','memberships.html','offers.html','research-checkout.html','membership-experience.js','membership-experience.css','research-builder-parity.css','research-checkout-client.js','research-checkout.css']);
 for(const entry of fs.readdirSync(root,{withFileTypes:true}))if(entry.isFile()&&!retiredFiles.has(entry.name)&&/\.(html|css|js)$/.test(entry.name))fs.copyFileSync(entry.name,path.join(out,entry.name));

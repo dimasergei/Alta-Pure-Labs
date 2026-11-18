@@ -43,9 +43,10 @@ test('intake cannot mark supplier document verified or approved',async()=>{
  assert.equal(writes[0].status,'pending');assert.equal(writes[0].publication_approved,false);
  assert.equal(writes[0].reviewer,null);
 });
-test('public verified registry remains separate from pending intake',()=>{
+test('public verified registry remains separate and standalone stock has no supplier intake',()=>{
  assert.deepEqual(JSON.parse(fs.readFileSync(path.join(root,'data/verified-coas.json'),'utf8')),[]);
  const html=fs.readFileSync(path.join(root,'admin-inventory.html'),'utf8');
- assert.match(html,/pending, unpublished reference only/);
- assert.match(html,/id="coa-intake-form"/);
+ const js=fs.readFileSync(path.join(root,'admin-inventory.js'),'utf8');
+ assert.doesNotMatch(html,/id="coa-intake-form"|Supplier COA reference intake/);
+ assert.doesNotMatch(js,/intake_supplier_coa_reference/);
 });

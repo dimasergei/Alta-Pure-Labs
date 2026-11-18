@@ -1,56 +1,65 @@
-<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="robots" content="noindex,nofollow"><meta name="referrer" content="no-referrer"><title>Inventory & Quality — PURE</title><link rel="stylesheet" href="/admin-dashboard.css?v=20261117b"><style>
-:root{--bg:#f5f5f5;--panel:#ffffff;--border:#dedede;--text:#111111;--muted:#666666;--teal:#111111}
-body{margin:0;background:var(--bg);color:var(--text);font:14px/1.5 "Archivo",Arial,sans-serif}
-main{max-width:1160px;margin:auto;padding:clamp(20px,5vw,60px)}h1{font-size:clamp(30px,4vw,48px)}
-a{color:var(--teal)}.muted{color:var(--muted)}form{display:flex;flex-wrap:wrap;gap:12px;align-items:end;margin:25px 0}
-label{display:grid;gap:8px;min-width:min(100%,300px)}input{padding:13px;background:white;border:0;border-radius:5px}
-button{padding:13px 20px;background:var(--teal);color:#ffffff;border:0;border-radius:5px;font-weight:700;cursor:pointer}
-button:disabled{opacity:.5}.table-wrap{overflow-x:auto;background:var(--panel);border:1px solid var(--border);margin:20px 0}
-table{width:100%;border-collapse:collapse;text-align:left;min-width:660px}
-th,td{padding:13px 15px;border-bottom:1px solid var(--border)}th{color:var(--muted);font-size:12px}
-.notice{padding:18px;background:var(--panel);border:1px solid var(--border)}
-</style></head><body><main>
-<p class="muted">PURE · INTERNAL QUALITY</p><h1>Inventory &amp; quality</h1>
-<p class="muted">Internal inventory and laboratory report metadata. Authorized admins may save one supplier lot into quarantine and record pending COA references, or reject/withdraw reports. This console cannot verify certificates, release inventory, authorize sales, or ship products.</p>
-<p><a href="/admin-orders.html">Orders / Batches / Notifications</a> · <a href="/admin-operations-overview.html">Operations overview</a></p>
-<form id="inventory-form"><label>Admin password<input id="inventory-password" type="password" autocomplete="off" minlength="32" required></label><button type="submit">Load records</button></form>
-<p id="inventory-status" role="status" aria-live="polite">Enter your admin password to view inventory records.</p>
-<section class="notice" aria-labelledby="intake-title"><h2 id="intake-title">Supplier inventory intake preview</h2>
-<p class="muted">Paste exactly one supplier lot JSON record. Preview first, then explicitly save it to quarantine. Saving never releases or publishes inventory.</p>
-<form id="intake-form" style="display:block"><label style="display:grid;max-width:850px">Inventory JSON
-<textarea id="intake-json" rows="7" maxlength="32768" style="width:100%;padding:14px;font:13px/1.5 monospace" placeholder='[{"supplier_id":"...","sku_key":"...","lot_number":"...","fulfillment_site":"...","on_hand":0,"supplier_evidence_reference":"...","composition_confirmed":true,"strength_confirmed":true}]'></textarea></label>
-<label>Admin password<input id="intake-password" type="password" autocomplete="off" required minlength="32"></label>
-<button type="submit">Validate only</button>
-<label style="display:flex;gap:8px;align-items:center;max-width:680px"><input id="intake-confirm" type="checkbox">I confirm this supplier record is accurate and understand it will be saved in quarantine, not offered for sale.</label>
-<button id="intake-save" type="button">Save one lot to quarantine</button></form>
-<p id="intake-status" role="status" aria-live="polite"></p><div id="intake-results"></div></section>
-<section class="notice" aria-labelledby="coa-intake-title">
-<h2 id="coa-intake-title">Supplier COA reference intake</h2>
-<p class="muted">Record a supplier's actual HTTPS report link against an existing lot. This stores a <strong>pending, unpublished reference only</strong>. No file is copied, no laboratory results are verified, and no product is released.</p>
-<form id="coa-intake-form" style="display:grid;max-width:760px;gap:12px">
-<label>Inventory lot UUID<input id="coa-lot-id" type="text" required maxlength="36" placeholder="Existing inventory lot UUID"></label>
-<label>Supplier report ID<input id="coa-report-id" type="text" required maxlength="120"></label>
-<label>Laboratory name (as stated by source)<input id="coa-lab-name" type="text" required maxlength="180"></label>
-<label>Source report HTTPS URL<input id="coa-source-url" type="url" required maxlength="450" placeholder="https://supplier.example/report.pdf"></label>
-<label>Admin password<input id="coa-admin-password" type="password" required autocomplete="off" minlength="32"></label>
-<button type="submit">Record pending reference</button>
-</form><p id="coa-intake-status" role="status" aria-live="polite"></p>
-</section>
-<section class="notice" aria-labelledby="coa-review-title">
-<h2 id="coa-review-title">Quality document rejection &amp; withdrawal</h2>
-<p class="muted">Revoke publication eligibility for an existing report. Rejection is for pending reports; withdrawal is for pending or previously verified reports. Each action receives a unique audit reference; the shared admin password does not identify an individual reviewer. This action does not release inventory or approve a document. Verification and publication require independent evidence review.</p>
-<form id="coa-review-form" style="display:grid;max-width:760px;gap:12px">
-<label>Quality report UUID<input id="coa-review-id" required maxlength="36"></label>
-<label>Action<select id="coa-review-action" required><option value="reject">Reject pending report</option><option value="withdraw">Withdraw report</option></select></label>
-<label>Reason (at least 12 characters)<textarea id="coa-review-reason" required minlength="12" maxlength="500" rows="3"></textarea></label>
-<label>Admin password<input id="coa-review-password" type="password" required minlength="32" autocomplete="off"></label>
-<label style="display:flex;align-items:center;gap:8px"><input id="coa-review-confirm" type="checkbox" required>I understand this will revoke publication eligibility.</label>
-<button type="submit">Confirm report status change</button>
-</form><p id="coa-review-status" role="status" aria-live="polite"></p>
-</section>
-<section id="inventory-content" hidden>
-<h2>Inventory lots</h2><div class="table-wrap"><table><thead><tr><th>SKU</th><th>Lot</th><th>Site</th><th>Status</th><th>On hand</th><th>Reserved</th><th>Damaged</th></tr></thead><tbody id="inventory-lots"></tbody></table></div>
-<h2>Quality reports</h2><div class="table-wrap"><table><thead><tr><th>Report</th><th>Laboratory</th><th>Status</th><th>Publication</th></tr></thead><tbody id="inventory-reports"></tbody></table></div>
-<p class="notice">Inventory is not an authorization to sell. Lot release, COA publication and shipping eligibility require separate documented review. Only the latest 100 records per section are shown.</p>
-</section>
-</main><script src="/admin-inventory.js" defer></script></body></html>
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="robots" content="noindex,nofollow"><meta name="referrer" content="no-referrer">
+  <title>Inventory — PURE Admin</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/admin-dashboard.css?v=20261117c"><link rel="stylesheet" href="/admin-experience.css?v=20261117b"><link rel="stylesheet" href="/admin-violet.css?v=20261117b"><link rel="stylesheet" href="/admin-inventory.css?v=20261117-inventory1">
+  <link rel="icon" type="image/svg+xml" href="/favicon-pure.svg?v=20261117b"><meta name="theme-color" content="#ffffff">
+</head>
+<body class="iv-body">
+<main class="admin-page"><div class="shell">
+  <section id="iv-login" class="iv-login" aria-labelledby="iv-login-heading">
+    <div class="admin-login-brand"><img src="/favicon-pure-96.png?v=20261117b" alt="" width="38" height="38"><span><strong class="pure-wordmark">PURE</strong><small>ADMIN</small></span></div>
+    <p class="iv-eyebrow">YOUR WORKSPACE</p><h1 id="iv-login-heading">Inventory access</h1>
+    <p id="iv-login-description" class="iv-muted">Sign in to manage your stock. Use the same password as the rest of your admin dashboard.</p>
+    <form id="iv-login-form" class="admin-password-form iv-form">
+      <label for="iv-password"><span data-admin-password-label>Admin password</span><input id="iv-password" name="password" data-admin-password type="password" autocomplete="current-password" maxlength="256" required aria-describedby="iv-password-hint"></label>
+      <label for="iv-password-confirm" data-admin-confirm-field hidden>Confirm new password<input id="iv-password-confirm" data-admin-password-confirm type="password" autocomplete="new-password" maxlength="256" disabled></label>
+      <p id="iv-password-hint" class="iv-muted" data-admin-password-hint hidden></p>
+      <button class="iv-button iv-primary" type="submit" disabled>Checking session…</button><button class="iv-button" data-admin-request-setup type="button" disabled>Set up / reset password</button>
+    </form>
+    <p id="iv-login-status" role="status" hidden></p><p id="iv-login-error" class="iv-error" role="alert" hidden></p>
+  </section>
+  <section id="iv-app" class="ap-workspace ap-workspace-inventory" hidden>
+    <aside id="iv-sidebar" class="admin-brandbar ap-workspace-sidebar" aria-label="PURE administration navigation">
+      <div class="admin-header-left ap-sidebar-brand"><a class="admin-brand" href="/" aria-label="PURE storefront"><img class="ap-brand-symbol" src="/favicon-pure-96.png?v=20261117b" alt="" width="34" height="34"><span class="admin-brand-copy"><span class="admin-brand-name pure-wordmark">PURE</span><span class="admin-brand-label">ADMIN</span></span></a></div>
+      <p class="ap-sidebar-eyebrow">WORKSPACE</p>
+      <nav class="admin-nav ap-primary-nav" aria-label="Admin sections"><a class="admin-nav-link" data-ap-icon="orders" href="/admin-orders.html">Orders</a><a class="admin-nav-link" data-ap-icon="marketing" href="/admin-marketing.html">Marketing</a><a class="admin-nav-link is-active" data-ap-icon="inventory" href="/admin-inventory.html" aria-current="page">Inventory</a></nav>
+      <div class="admin-utilities ap-sidebar-tools"><button id="iv-logout" class="iv-logout" type="button">Log out</button></div><div class="ap-sidebar-footer"><span class="ap-status-dot" aria-hidden="true"></span><span>PRIVATE ADMIN ACCESS</span></div>
+    </aside>
+    <div class="ap-workspace-body">
+      <div class="ap-workspace-topbar"><div class="ap-breadcrumb"><span>ADMINISTRATION</span><span class="ap-breadcrumb-divider">/</span><strong>INVENTORY</strong></div><button id="iv-nav-toggle" class="iv-nav-toggle" type="button" aria-label="Open admin navigation" aria-expanded="false" aria-controls="iv-sidebar">☰</button><div id="iv-save-status" class="iv-save-status" role="status" aria-live="polite"><span class="iv-save-dot" aria-hidden="true"></span><span id="iv-save-text">Connecting…</span></div></div>
+      <header class="iv-title"><div><p class="iv-eyebrow">YOUR STOCK, AT A GLANCE</p><h1>Inventory</h1><p class="iv-muted">A simple place to keep your stock counts up to date.</p></div><div class="iv-header-actions"><button id="iv-export" class="iv-button" type="button" disabled>Export CSV</button><button id="iv-import" class="iv-button" type="button" disabled>Import CSV</button><button id="iv-add" class="iv-button iv-primary" type="button" disabled><span aria-hidden="true">+</span> Add item</button></div></header>
+      <div id="iv-notice" class="iv-notice" role="status" aria-live="polite" hidden><span id="iv-notice-text"></span><button id="iv-retry" class="iv-text-button" type="button" hidden>Retry</button></div>
+      <div class="iv-stats" aria-label="Inventory snapshot"><article><span>Tracked items</span><strong id="iv-stat-total">—</strong><small>Active stock rows</small></article><article><span>Low stock</span><strong id="iv-stat-low">—</strong><small>At or below your minimum</small></article><article><span>Out of stock</span><strong id="iv-stat-out">—</strong><small>Counted at zero</small></article><article><span>Not counted</span><strong id="iv-stat-unknown">—</strong><small>Awaiting a first count</small></article></div>
+      <div class="iv-panel">
+        <div class="iv-panel-heading"><div class="iv-tabs" role="tablist" aria-label="Inventory views"><button id="iv-stock-tab" class="iv-tab is-active" role="tab" aria-selected="true" aria-controls="iv-stock-panel" type="button">Stock list</button><button id="iv-activity-tab" class="iv-tab" role="tab" aria-selected="false" aria-controls="iv-activity-panel" tabindex="-1" type="button">Activity</button></div><button id="iv-refresh" class="iv-text-button" type="button" disabled><span aria-hidden="true">↻</span> Refresh</button></div>
+        <section id="iv-stock-panel" role="tabpanel" aria-labelledby="iv-stock-tab">
+          <div class="iv-toolbar"><label class="iv-search"><span class="iv-sr">Search inventory</span><span aria-hidden="true" class="iv-search-symbol">⌕</span><input id="iv-search" type="search" placeholder="Search product, SKU or location…" autocomplete="off"></label><label><span class="iv-sr">Filter stock status</span><select id="iv-filter-status"><option value="active">All active items</option><option value="low">Low stock</option><option value="out">Out of stock</option><option value="unknown">Not counted</option><option value="in">In stock</option><option value="archived">Archived</option></select></label><label><span class="iv-sr">Filter unit</span><select id="iv-filter-unit"><option value="">All units</option><option value="vial">Vials</option><option value="pen">Pens</option><option value="bottle">Bottles</option><option value="pack">Packs</option><option value="unit">Units</option></select></label><label><span class="iv-sr">Sort inventory</span><select id="iv-sort"><option value="name">Product A–Z</option><option value="quantity">Quantity: low to high</option><option value="recent">Recently updated</option><option value="sku">SKU A–Z</option></select></label></div>
+          <div class="iv-table-wrap" tabindex="0" role="region" aria-label="Stock table"><table class="iv-table"><thead><tr><th scope="col">Product / strength</th><th scope="col">SKU</th><th scope="col" class="iv-number">Quantity</th><th scope="col">Unit</th><th scope="col" class="iv-number">Minimum</th><th scope="col">Location</th><th scope="col">Status</th><th scope="col">Actions</th></tr></thead><tbody id="iv-items"><tr><td colspan="8" class="iv-empty">Loading your inventory…</td></tr></tbody></table></div>
+          <footer class="iv-table-footer"><span id="iv-record-count">Loading…</span><div class="iv-pagination"><button id="iv-prev" class="iv-page-button" type="button" disabled aria-label="Previous inventory page">←</button><span id="iv-page-label">Page 1</span><button id="iv-next" class="iv-page-button" type="button" disabled aria-label="Next inventory page">→</button></div></footer>
+        </section>
+        <section id="iv-activity-panel" role="tabpanel" aria-labelledby="iv-activity-tab" hidden><div class="iv-activity-intro"><p>Every saved count and item change, in one place.</p></div><div class="iv-table-wrap" tabindex="0" role="region" aria-label="Inventory activity"><table class="iv-table iv-activity-table"><thead><tr><th scope="col">Date</th><th scope="col">Item</th><th scope="col">Change</th><th scope="col">Count</th><th scope="col">Note</th></tr></thead><tbody id="iv-events"><tr><td colspan="5" class="iv-empty">Open Activity to see your history.</td></tr></tbody></table></div><footer class="iv-table-footer"><span id="iv-activity-count">Your inventory history</span><div class="iv-pagination"><button id="iv-activity-prev" class="iv-page-button" type="button" disabled aria-label="Previous activity page">←</button><span id="iv-activity-page">Page 1</span><button id="iv-activity-next" class="iv-page-button" type="button" disabled aria-label="Next activity page">→</button></div></footer></section>
+      </div>
+      <p class="iv-footnote">Click a quantity to record a count. Stock in and stock out record the amount added or removed.</p>
+    </div>
+    <button id="iv-nav-backdrop" class="iv-nav-backdrop" type="button" aria-label="Close admin navigation" hidden></button>
+  </section>
+</div></main>
+<dialog id="iv-editor" class="iv-dialog" aria-labelledby="iv-editor-title"><form id="iv-item-form" class="iv-form">
+  <header class="iv-dialog-head"><div><p class="iv-eyebrow">STOCK ITEM</p><h2 id="iv-editor-title">Add item</h2></div><button class="iv-close" type="button" data-close="iv-editor" aria-label="Close item editor">×</button></header>
+  <div class="iv-form-grid"><label class="iv-wide">Product name<input id="iv-name" name="product_name" required maxlength="160" placeholder="Product name" autocomplete="off"></label><label>Strength <span class="iv-optional">optional</span><input id="iv-strength" name="strength" maxlength="80" placeholder="e.g. 10 mg" autocomplete="off"></label><label>SKU<input id="iv-sku" name="sku" required maxlength="64" pattern="[A-Za-z0-9][A-Za-z0-9._-]{0,63}" placeholder="e.g. RETA-10-V" autocomplete="off" aria-describedby="iv-sku-help"></label><p id="iv-sku-help" class="iv-field-help iv-wide">A unique code for this item and strength. Use letters, numbers, dots, dashes or underscores.</p><label>Unit<select id="iv-unit" name="unit"><option value="vial">Vial</option><option value="pen">Pen</option><option value="bottle">Bottle</option><option value="pack">Pack</option><option value="unit">Unit</option></select></label><label>Low-stock minimum<input id="iv-minimum" name="minimum" type="number" min="0" max="2147483647" step="1" value="0" required></label><label id="iv-opening-field" class="iv-wide">Opening quantity <span class="iv-optional">optional</span><input id="iv-opening" name="quantity" type="number" min="0" max="2147483647" step="1" placeholder="Leave blank until counted"><span class="iv-field-help">Blank means not counted. Enter 0 when you have confirmed there is none.</span><span id="iv-unit-help" class="iv-field-help">Count individual vials. A box of 10 adds 10.</span></label></div>
+  <details id="iv-item-details" class="iv-details"><summary>Additional details</summary><div class="iv-form-grid"><label class="iv-wide">Location<input id="iv-location" name="location" maxlength="120" placeholder="e.g. Shelf A, box 2"></label><label>Cost per unit <span class="iv-optional">optional</span><input id="iv-cost" name="unit_cost" type="number" min="0" max="9999999999.99" step="0.01" placeholder="0.00"></label><label>Currency<select id="iv-currency" name="currency"><option value="USD">USD</option><option value="CAD">CAD</option></select></label><label class="iv-wide">Notes<textarea id="iv-notes" name="notes" maxlength="2000" rows="3" placeholder="Anything useful to remember about this item"></textarea></label></div></details>
+  <div id="iv-editor-error" class="iv-form-error" role="alert" hidden></div><button id="iv-editor-reload" class="iv-text-button" type="button" hidden>Load latest and keep my edits</button><footer class="iv-dialog-actions"><button class="iv-button" type="button" data-close="iv-editor">Cancel</button><button id="iv-editor-save" class="iv-button iv-primary" type="submit">Add item</button></footer>
+</form></dialog>
+<dialog id="iv-adjuster" class="iv-dialog iv-dialog-small" aria-labelledby="iv-adjust-title"><form id="iv-adjust-form" class="iv-form">
+  <header class="iv-dialog-head"><div><p class="iv-eyebrow">UPDATE STOCK</p><h2 id="iv-adjust-title">Record a count</h2></div><button class="iv-close" type="button" data-close="iv-adjuster" aria-label="Close stock update">×</button></header><p id="iv-adjust-item" class="iv-adjust-item"></p><div class="iv-adjust-current"><span>Current quantity</span><strong id="iv-current-quantity">—</strong></div><label>Action<select id="iv-adjust-mode"><option value="set">Record a count</option><option value="add">Stock in</option><option value="remove">Stock out</option></select></label><label><span id="iv-adjust-quantity-label">New quantity</span><input id="iv-adjust-quantity" type="number" min="0" max="2147483647" step="1" required inputmode="numeric"></label><p id="iv-adjust-preview" class="iv-field-help" aria-live="polite"></p><p id="iv-adjust-unit-help" class="iv-field-help"></p><label>Note<input id="iv-adjust-reason" maxlength="500" required placeholder="e.g. Counted today, new stock, sample removed"></label><div id="iv-adjust-error" class="iv-form-error" role="alert" hidden></div><button id="iv-adjust-reload" class="iv-text-button" type="button" hidden>Load latest count</button><footer class="iv-dialog-actions"><button class="iv-button" type="button" data-close="iv-adjuster">Cancel</button><button id="iv-adjust-save" class="iv-button iv-primary" type="submit">Save count</button></footer>
+</form></dialog>
+<dialog id="iv-importer" class="iv-dialog iv-dialog-wide" aria-labelledby="iv-import-title"><form id="iv-import-form" class="iv-form">
+  <header class="iv-dialog-head"><div><p class="iv-eyebrow">ADD MULTIPLE ITEMS</p><h2 id="iv-import-title">Import CSV</h2></div><button class="iv-close" type="button" data-close="iv-importer" aria-label="Close CSV import">×</button></header><p class="iv-muted">Use the template to add up to 500 new items. Review the rows before saving. Existing SKUs stay as they are.</p><div class="iv-import-select"><label>CSV file<input id="iv-csv-file" type="file" accept=".csv,text/csv" required></label><button id="iv-template" class="iv-text-button" type="button">Download blank template ↓</button></div><p class="iv-field-help">Required columns: sku and product_name. Leave quantity blank for items not yet counted.</p><div id="iv-import-error" class="iv-form-error" role="alert" hidden></div><div id="iv-import-preview" hidden><div class="iv-import-summary"><strong id="iv-import-summary"></strong><span id="iv-import-preview-caption"></span></div><div class="iv-table-wrap" tabindex="0" role="region" aria-label="CSV import preview"><table class="iv-table"><thead><tr><th scope="col">Product / strength</th><th scope="col">SKU</th><th scope="col">Quantity</th><th scope="col">Unit</th><th scope="col">Minimum</th></tr></thead><tbody id="iv-import-rows"></tbody></table></div></div><footer class="iv-dialog-actions"><button class="iv-button" type="button" data-close="iv-importer">Cancel</button><button id="iv-preview-button" class="iv-button iv-primary" type="submit">Review import</button><button id="iv-import-save" class="iv-button iv-primary" type="button" hidden>Add items</button></footer>
+</form></dialog>
+<noscript><p class="iv-noscript">Enable JavaScript to open Inventory.</p></noscript><script src="/admin-auth.js?v=20261117-inventory1" defer></script><script src="/admin-inventory.js?v=20261117-inventory1" defer></script>
+</body>
+</html>

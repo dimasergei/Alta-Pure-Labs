@@ -3,7 +3,7 @@
   const endpoint = '/api/customer-config?admin_auth=session';
   const legacyKey = 'altapure_admin_password';
   const syncKey = 'pure_admin_session_change';
-  const workspacePaths = new Set(['/admin-orders.html', '/admin-marketing.html']);
+  const workspacePaths = new Set(['/admin-orders.html', '/admin-marketing.html', '/admin-inventory.html']);
   let authenticated = false, csrf = '', expiresAt = '', readyPromise, pendingProof = '', generation = 0, initializing = false, authenticating = false;
   let passwordConfigured = null, linkError = '';
 
@@ -82,7 +82,7 @@
     return readyPromise;
   }
   async function requestSetup(returnTo) {
-    const result = await request({ action: 'request_setup', return_to: returnTo === 'marketing' ? 'marketing' : 'orders' });
+    const result = await request({ action: 'request_setup', return_to: ['marketing', 'inventory'].includes(returnTo) ? returnTo : 'orders' });
     pendingProof = ''; linkError = '';
     return result;
   }

@@ -31,17 +31,19 @@ test('read model returns only restricted lot/report metadata and never sales app
  assert.equal(JSON.stringify(result).includes('storage_object_key'),false);
  assert.equal(JSON.stringify(result).includes('customer_email'),false);
 });
-test('inventory UI is read-only, uses existing dark theme and clears credentials',()=>{
+test('standalone inventory uses shared auth without storefront or supplier integration',()=>{
  const html=fs.readFileSync(path.join(root,'admin-inventory.html'),'utf8');
  const js=fs.readFileSync(path.join(root,'admin-inventory.js'),'utf8');
- assert.match(html,/admin-dashboard\.css/);
- assert.match(html,/This console cannot verify certificates, release inventory, authorize sales, or ship products/);
- assert.match(js,/\/api\/admin-suppliers\?inventory=1/);
- assert.match(js,/password\.value=''/);
+ assert.match(html,/src=["']\/admin-auth\.js/);
+ assert.match(js,/PureAdminAuth/);
+ assert.match(js,/\/api\/customer-config\?inventory/);
+ assert.doesNotMatch(js,/\/api\/(?:admin-suppliers|admin-orders|checkout)\b|\/api\/customer-config\?(?:commerce|checkout|lotus|partner)/);
+ assert.doesNotMatch(html,/src=["'][^"']*(?:products|cart|checkout)[^"']*["']/);
+ assert.doesNotMatch(js,/x-admin-password/);
  assert.doesNotMatch(js,/localStorage|sessionStorage|innerHTML\s*=/);
 });
 
-test('inventory intake preview is authenticated and cannot write inventory',async()=>{
+test('legacy supplier intake remains authenticated and disconnected from standalone inventory',async()=>{
  const previous=process.env.ADMIN_ORDERS_PASSWORD;
  process.env.ADMIN_ORDERS_PASSWORD='fixture-admin-password-that-is-long-enough-123';
  try{
@@ -56,6 +58,6 @@ test('inventory intake preview is authenticated and cannot write inventory',asyn
  assert.match(source,/preview_inventory_import/);
  assert.match(source,/normalizeInventoryIntake/);
  assert.match(source,/inventoryIntake\(inventoryDb\(\), body\.rows, commit\)/);
- assert.match(ui,/Nothing saved/);
+ assert.doesNotMatch(ui,/preview_inventory_import|commit_inventory_intake|inventoryIntake/);
  assert.doesNotMatch(ui,/localStorage|sessionStorage|innerHTML\s*=/);
 });
