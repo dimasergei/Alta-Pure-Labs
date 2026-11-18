@@ -1,7 +1,7 @@
 'use strict';
 const fs=require('node:fs');
 for(const [file,note] of [
- ['shipping-policy.html','<strong>US standard shipping:</strong> Standard UPS delivery is US$14.95, or free when the merchandise total after any coupon is at least US$150. Redeeming existing points or store credit does not change that eligibility. Express and international rates are displayed at checkout. Fulfillment is arranged after confirmed payment.'],
+ ['shipping-policy.html','<strong>U.S. and Canadian standard shipping:</strong> Free for eligible merchandise of US$150 or more after discounts, before points or store credit. Under the threshold, standard shipping is US$14.95 in the United States and US$39.95 in Canada. CAD Interac displays the corresponding converted amount. Express and other international rates are displayed at checkout. Fulfillment is arranged after confirmed payment.'],
  ['refund-policy.html','<strong>Product orders:</strong> Refund requests and payment reconciliation follow the published checkout and product-return terms. Applicable statutory rights are not limited.']
 ]){
  let html=fs.readFileSync(file,'utf8');
