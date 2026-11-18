@@ -182,17 +182,131 @@
       if (state.quote_eligible !== true) { if (state.quote_reason || state.reason) notice(state.quote_reason || state.reason); return; }
       if (!state.configured || labels.some(x => x.test === state.test_mode && ['created', 'purchasing', 'review'].includes(x.status))) return;
       if (state.eligible !== true) notice(purchaseBlock(state));
-      const draft = state.draft || {}, draftSender = draft.sender || state.sender || {}, draftParcel = draft.parcel || {}, draftCustoms = draft.customs || {};
+      let preferences = state.shipping_preferences || { version: 0, sender: null, package_defaults: null };
+      const draft = state.draft || {}, draftSender = draft.sender || state.current_quote?.sender || preferences.sender || state.sender || {};
+      const draftParcel = draft.parcel || state.current_quote?.parcel || {}, draftCustoms = draft.customs || {};
+      const defaultPackage = state.is_bulk ? {} : preferences.package_defaults || {};
+      const initialPackage = { ...defaultPackage, ...draftParcel };
+      const values = controls => Object.fromEntries(Object.entries(controls).map(([key, input]) => [key, input.value.trim()]));
       const form = el('form', undefined, 'psl-form'); form.append(el('h4', 'Recipient'), el('p', addressText(state.recipient), 'psl-address'), el('p', 'Need a correction? Save the shipping address in the order first, then reopen this panel.', 'uc-hint'));
       form.append(el('p', 'Customer’s delivery selection: ' + state.shipping_service, 'uc-hint'));
-      const senderGroup = el('fieldset'); senderGroup.append(el('legend', 'Ship from / return address')); const sender = {};
-      for (const [key, title, required] of [['name', 'Sender name', true], ['company', 'Company', false], ['street1', 'Street address', true], ['street2', 'Address line 2', false], ['city', 'City', true], ['state', 'State / province', true], ['zip', 'Postal code', true], ['country', 'Country code (US, CA, etc.)', true], ['phone', 'Sender phone', true], ['email', 'Sender email', true]]) sender[key] = field(senderGroup, title, draftSender[key] || '', required, key === 'email' ? 'email' : 'text');
-      sender.country.maxLength = 2; form.append(senderGroup);
-      const parcelGroup = el('fieldset'); parcelGroup.append(el('legend', 'Packed parcel')); const packed = {};
-      for (const [key, title] of [['length', 'Length'], ['width', 'Width'], ['height', 'Height'], ['weight', 'Packed weight']]) packed[key] = field(parcelGroup, title, draftParcel[key] || '', true, 'number');
+      const preferenceStatus = el('div', undefined, 'psl-preference-status'); preferenceStatus.hidden = true;
+      const preferenceMessage = el('p'), latestDefaults = el('div', undefined, 'psl-latest-defaults');
+      const refreshDefaults = el('button', 'Refresh saved defaults', 'ghost'); refreshDefaults.type = 'button'; refreshDefaults.hidden = true;
+      preferenceStatus.append(preferenceMessage, latestDefaults, refreshDefaults); form.append(preferenceStatus);
+      const senderGroup = el('fieldset', undefined, 'psl-sender-group'); senderGroup.append(el('legend', 'Ship-from / return address')); const sender = {};
+      const senderSummary = el('div', undefined, 'psl-preference-summary'), senderEditor = el('div', undefined, 'psl-preference-fields');
+      const senderCaption = el('strong'), senderAddress = el('p', undefined, 'psl-address'), senderContact = el('p', undefined, 'uc-hint');
+      const editSender = el('button', 'Edit return address', 'ghost'); editSender.type = 'button';
+      senderSummary.append(senderCaption, senderAddress, senderContact, editSender);
+      for (const [key, title, required] of [['name', 'Sender name', true], ['company', 'Company', false], ['street1', 'Street address', true], ['street2', 'Address line 2', false], ['city', 'City', true], ['state', 'State / province', true], ['zip', 'Postal code', true], ['country', 'Country code (US, CA, etc.)', true], ['phone', 'Sender phone', true], ['email', 'Sender email', true]]) sender[key] = field(senderEditor, title, draftSender[key] || '', required, key === 'email' ? 'email' : 'text');
+      sender.country.maxLength = 2; sender.country.pattern = '[A-Za-z]{2}';
+      const senderActions = el('div', undefined, 'psl-preference-actions');
+      const saveSender = el('button', 'Save PURE return address', 'ghost'), useSender = el('button', 'Use this return address', 'ghost'), applySender = el('button', 'Use saved return address', 'ghost');
+      for (const button of [saveSender, useSender, applySender]) button.type = 'button';
+      senderActions.append(saveSender, useSender, applySender); senderEditor.append(senderActions, el('p', 'Save once to use this ship-from and return address on future PURE orders. Update it here when your shipping location changes.', 'uc-hint psl-preference-help'));
+      senderGroup.append(senderSummary, senderEditor); form.append(senderGroup);
+      let senderCollapsed = Boolean(preferences.sender);
+      function sameSender(a, b) { return Boolean(b) && Object.keys(sender).every(key => String(a[key] || '').trim().toUpperCase() === String(b[key] || '').trim().toUpperCase()); }
+      function updateSenderSummary() {
+        const current = values(sender);
+        senderCaption.textContent = sameSender(current, preferences.sender) ? 'Saved PURE ship-from / return address' : 'Ship-from / return address for this order';
+        senderAddress.textContent = addressText(current);
+        senderContact.textContent = [current.phone, current.email].filter(Boolean).join(' · ');
+        senderSummary.hidden = !senderCollapsed; senderEditor.hidden = senderCollapsed;
+        applySender.hidden = !preferences.sender;
+      }
+      const parcelGroup = el('fieldset', undefined, 'psl-package-group'); parcelGroup.append(el('legend', 'Package & packed weight')); const packed = {};
+      const packageSummary = el('div', undefined, 'psl-preference-summary'), packageEditor = el('div', undefined, 'psl-preference-fields');
+      const packageCaption = el('strong'), packageSize = el('p', undefined, 'psl-package-size'), customPackage = el('button', 'Use custom package', 'ghost'); customPackage.type = 'button';
+      packageSummary.append(packageCaption, packageSize, customPackage);
+      if (state.is_bulk) parcelGroup.append(el('p', 'Bulk order: choose a package that fits this shipment. Saved dimensions are available when appropriate; they are not applied automatically.', 'uc-hint psl-preference-help'));
+      for (const [key, title] of [['length', 'Length'], ['width', 'Width'], ['height', 'Height']]) packed[key] = field(packageEditor, title, initialPackage[key] || '', true, 'number');
       const metric = draftSender.country?.trim().toUpperCase() === 'CA';
-      packed.distance_unit = select(parcelGroup, 'Dimension unit', [['in', 'Inches'], ['cm', 'Centimetres']], draftParcel.distance_unit || (metric ? 'cm' : 'in'));
-      packed.mass_unit = select(parcelGroup, 'Weight unit', [['lb', 'Pounds'], ['oz', 'Ounces'], ['g', 'Grams'], ['kg', 'Kilograms']], draftParcel.mass_unit || (metric ? 'g' : 'lb')); form.append(parcelGroup);
+      packed.distance_unit = select(packageEditor, 'Dimension unit', [['in', 'Inches'], ['cm', 'Centimetres']], initialPackage.distance_unit || (metric ? 'cm' : 'in'));
+      const packageActions = el('div', undefined, 'psl-preference-actions'), savePackage = el('button', 'Save default package', 'ghost'), applyPackage = el('button', 'Use saved package', 'ghost');
+      savePackage.type = applyPackage.type = 'button'; packageActions.append(savePackage, applyPackage); packageEditor.append(packageActions);
+      parcelGroup.append(packageSummary, packageEditor);
+      const weightGroup = el('div', undefined, 'psl-weight-controls');
+      // Weight belongs to this order's actual packed parcel, never to a default box.
+      packed.weight = field(weightGroup, 'Packed weight', draftParcel.weight || '', true, 'number');
+      packed.mass_unit = select(weightGroup, 'Weight unit', [['lb', 'Pounds'], ['oz', 'Ounces'], ['g', 'Grams'], ['kg', 'Kilograms']], initialPackage.mass_unit || (metric ? 'g' : 'lb'));
+      parcelGroup.append(weightGroup, el('p', 'Confirm the actual packed weight for this order. Saving a default package saves dimensions and units only.', 'uc-hint psl-preference-help')); form.append(parcelGroup);
+      const packageValues = () => Object.fromEntries(['length', 'width', 'height', 'distance_unit', 'mass_unit'].map(key => [key, packed[key].value.trim()]));
+      const samePackage = saved => Boolean(saved) && Object.entries(packageValues()).every(([key, value]) => String(saved[key] || '') === value);
+      let packageCollapsed = samePackage(preferences.package_defaults);
+      const packageText = box => box ? `${box.length} × ${box.width} × ${box.height} ${box.distance_unit}` : 'No default package saved.';
+      function updatePackageSummary() {
+        packageCaption.textContent = samePackage(preferences.package_defaults) ? 'Saved default package' : 'Package for this order';
+        packageSize.textContent = packageText(packageValues());
+        packageSummary.hidden = !packageCollapsed; packageEditor.hidden = packageCollapsed;
+        applyPackage.hidden = !preferences.package_defaults;
+      }
+      const validateControls = controls => Object.values(controls).every(input => input.reportValidity());
+      let preferencesBusy = false;
+      function preferenceNotice(message, bad = false) {
+        preferenceStatus.hidden = false; preferenceStatus.classList.toggle('psl-error', bad);
+        preferenceMessage.textContent = message; preferenceMessage.setAttribute('role', bad ? 'alert' : 'status');
+        latestDefaults.replaceChildren(); refreshDefaults.hidden = !bad;
+      }
+      async function savePreference(scope, data) {
+        if (preferencesBusy) return;
+        preferencesBusy = true; saveSender.disabled = savePackage.disabled = refreshDefaults.disabled = true;
+        try {
+          const result = await send({ action: 'shipping_preferences_save', scope, version: preferences.version, ...data });
+          preferences = result.preferences;
+          if (scope === 'sender' && sameSender(values(sender), preferences.sender)) senderCollapsed = true;
+          if (scope === 'package' && samePackage(preferences.package_defaults)) packageCollapsed = true;
+          updateSenderSummary(); updatePackageSummary();
+          preferenceNotice(scope === 'sender' ? 'PURE return address saved for future orders. Existing quotes and labels keep their recorded address.' : 'Default package saved for future regular orders. Packed weight remains specific to each order.');
+        } catch (error) {
+          preferenceNotice((error.message || 'The shipping defaults could not be saved.') + ' Your entered shipment details are unchanged. Refresh saved defaults and review them before saving again.', true);
+        } finally { preferencesBusy = false; saveSender.disabled = savePackage.disabled = refreshDefaults.disabled = false; }
+      }
+      saveSender.addEventListener('click', () => {
+        sender.country.value = sender.country.value.trim().toUpperCase(); updateCustoms();
+        if (validateControls(sender)) savePreference('sender', { sender: values(sender) });
+      });
+      useSender.addEventListener('click', () => { if (validateControls(sender)) { senderCollapsed = true; updateSenderSummary(); updateCustoms(); } });
+      editSender.addEventListener('click', () => { senderCollapsed = false; updateSenderSummary(); });
+      applySender.addEventListener('click', () => {
+        if (!preferences.sender) return;
+        for (const [key, control] of Object.entries(sender)) control.value = preferences.sender[key] || '';
+        senderCollapsed = true; updateSenderSummary(); updateCustoms();
+      });
+      savePackage.addEventListener('click', () => {
+        const controls = Object.fromEntries(['length', 'width', 'height', 'distance_unit', 'mass_unit'].map(key => [key, packed[key]]));
+        if (validateControls(controls)) savePreference('package', { package_defaults: packageValues() });
+      });
+      customPackage.addEventListener('click', () => { packageCollapsed = false; updatePackageSummary(); });
+      let previousMassUnit = packed.mass_unit.value;
+      function updateMassUnit() {
+        if (packed.mass_unit.value !== previousMassUnit) {
+          packed.weight.value = '';
+          for (const item of customItems) item.net_weight.value = '';
+          certified.checked = false; previousMassUnit = packed.mass_unit.value;
+          preferenceNotice('Weight unit changed. Enter the packed weight and any customs net weights in the selected unit.');
+        }
+        updatePackageSummary();
+      }
+      applyPackage.addEventListener('click', () => {
+        if (!preferences.package_defaults) return;
+        for (const key of ['length', 'width', 'height', 'distance_unit', 'mass_unit']) packed[key].value = preferences.package_defaults[key] || '';
+        packageCollapsed = true; updateMassUnit(); updatePackageSummary();
+      });
+      packed.mass_unit.addEventListener('change', updateMassUnit);
+      refreshDefaults.addEventListener('click', async () => {
+        if (preferencesBusy) return;
+        preferencesBusy = true; refreshDefaults.disabled = saveSender.disabled = savePackage.disabled = true;
+        try {
+          const result = await api('/api/admin-orders?view=shipping-preferences');
+          preferences = result.preferences; updateSenderSummary(); updatePackageSummary();
+          preferenceNotice('Saved defaults refreshed. Your current shipment entries are unchanged. Review these latest defaults before saving again.');
+          latestDefaults.append(el('strong', 'Latest saved return address'), el('p', preferences.sender ? addressText(preferences.sender) : 'No return address saved.', 'psl-address'), el('strong', 'Latest default package'), el('p', packageText(preferences.package_defaults)));
+        } catch (error) { preferenceNotice(error.message || 'Saved shipping defaults are unavailable. Please retry.', true); }
+        finally { preferencesBusy = false; refreshDefaults.disabled = saveSender.disabled = savePackage.disabled = false; }
+      });
+      const customsNotice = el('p', undefined, 'psl-customs-notice'); form.append(customsNotice);
       const customsGroup = el('fieldset', undefined, 'psl-customs'); customsGroup.append(el('legend', 'International customs declaration'));
       customsGroup.append(el('p', 'Use the actual goods, manufacturing origins, tariff codes, total item values, and total net weights. Weight uses the parcel unit selected above.', 'uc-hint'));
       const customItems = [];
@@ -212,12 +326,20 @@
         const country = sender.country.value.trim().toUpperCase(), recipientCountry = String(state.recipient.country || '').trim().toUpperCase();
         const international = country.length === 2 && country !== recipientCountry;
         customsGroup.hidden = !international; customsGroup.disabled = !international;
+        sender.state.required = ['CA', 'US'].includes(country);
+        customsNotice.textContent = country.length !== 2 ? 'Enter the ship-from country to check customs requirements.' : international ? 'International shipment · Complete the customs declaration below.' : country === 'CA' ? 'Canadian domestic shipment · No customs declaration is required.' : 'Domestic shipment · No customs declaration is required.';
         filing.closest('label').hidden = country !== 'US'; filing.disabled = country !== 'US'; filing.required = country === 'US' && international;
         caFiling.closest('label').hidden = country !== 'CA'; caFiling.disabled = country !== 'CA'; caNumber.closest('label').hidden = country !== 'CA'; caNumber.disabled = country !== 'CA';
       }
-      sender.country.addEventListener('input', updateCustoms); updateCustoms();
+      sender.country.addEventListener('input', updateCustoms);
+      for (const control of Object.values(sender)) control.addEventListener('input', updateSenderSummary);
+      for (const control of Object.values(packed)) control.addEventListener('input', updatePackageSummary);
+      senderEditor.addEventListener('invalid', () => { senderCollapsed = false; updateSenderSummary(); }, true);
+      packageEditor.addEventListener('invalid', () => { packageCollapsed = false; updatePackageSummary(); }, true);
+      updateCustoms();
+      if (!Object.values(sender).every(input => input.checkValidity())) senderCollapsed = false;
+      updateSenderSummary(); updatePackageSummary();
       const quote = el('button', 'Get shipping rates'); quote.type = 'submit'; form.append(quote);
-      const values = controls => Object.fromEntries(Object.entries(controls).map(([key, input]) => [key, input.value.trim()]));
       form.addEventListener('submit', event => {
         event.preventDefault(); if (!form.reportValidity()) return;
         perform(quote, async () => {

@@ -86,7 +86,7 @@ test('legacy label quotes can choose a missing service but still require a compl
   const order = { id: randomUUID(), payment_status: 'paid', fulfillment_status: 'unfulfilled', customer_name: 'Fixture Recipient', customer_email: 'fixture@example.test', shipping_name: '', tracking_number: '',
     shipping_address: { line1: '100 Example Street', city: 'Example City', state: 'CA', postal_code: '90000', country: 'US' },
     store_order_items: [{ product_name: 'Fixture merchandise', variant_size: '10mg', quantity: 1 }] };
-  const db = { from(table) { const q = { select() { return q; }, eq() { return q; }, neq() { return q; }, in() { return q; }, order() { return q; }, limit() { return q; }, async maybeSingle() { return { data: order }; }, then(resolve) { return Promise.resolve({ data: table === 'admin_shipping_labels' ? [] : order }).then(resolve); } }; return q; } };
+  const db = { from(table) { const q = { select() { return q; }, eq() { return q; }, neq() { return q; }, in() { return q; }, order() { return q; }, limit() { return q; }, async maybeSingle() { return { data: table === 'admin_shipping_preferences' ? null : order }; }, then(resolve) { return Promise.resolve({ data: table === 'admin_shipping_labels' ? [] : order }).then(resolve); } }; return q; } };
   let state = await shipping.state(db, { id: order.id, source: 'store' }, { env });
   assert.equal(state.eligible, true); assert.equal(state.quote_eligible, true); assert.equal(state.payment_confirmed, true); assert.match(state.shipping_service, /Not recorded/);
   order.shipping_address.line1 = '';
@@ -139,7 +139,7 @@ test('existing test labels can be refreshed read-only after switching production
   assert.equal(result.label.test, true); assert.equal(result.label.status, 'created');
 });
 
-function quoteFixture(source = 'commerce', overrides = {}) {
+function quoteFixture(source = 'commerce', overrides = {}, preferences = []) {
   const destination = { name: 'Fixture Recipient', line1: '100 Example Street', city: 'Toronto', region: 'ON', postal_code: 'M5H 2N2', country: 'CA' };
   const order = source === 'commerce'
     ? { id: randomUUID(), kind: 'goods', status: 'accepted', version: 2, customer_name: 'Fixture Recipient', customer_email: 'recipient@example.test', tracking_number: '', currency: 'CAD',
@@ -151,7 +151,7 @@ function quoteFixture(source = 'commerce', overrides = {}) {
     from(table) {
       let filters = [], count = Infinity, inserted;
       const rows = () => {
-        const values = table === 'admin_shipping_labels' ? labels : ['commerce_invoices', 'store_orders'].includes(table) ? [order] : [];
+        const values = table === 'admin_shipping_labels' ? labels : table === 'admin_shipping_preferences' ? preferences : ['commerce_invoices', 'store_orders'].includes(table) ? [order] : [];
         return values.filter(row => filters.every(matches => matches(row))).slice(0, count);
       };
       const q = {
@@ -338,4 +338,75 @@ test('latest current-mode quote remains usable even behind many other-mode previ
   assert.equal(state.quote_eligible, true);
   assert.equal(state.labels.length, 1);
   assert.equal(h.calls.length, 1);
+});
+
+function savedPreferences() {
+  return [{ id: true, version: 3, updated_at: '2026-11-18T02:00:00Z',
+    sender: { name: 'PURE', company: '', street1: '300 Saved Example Road', street2: '', city: 'Ottawa', state: 'ON', zip: 'K1P 1J1', country: 'CA', phone: '+16135550100', email: 'sender@example.test' },
+    package_defaults: { length: '18', width: '12', height: '6', distance_unit: 'cm', mass_unit: 'g' } }];
+}
+
+test('saved preferences initialize multiple new regular orders without inheriting packed weight', async () => {
+  const preferences = savedPreferences();
+  for (const source of ['commerce', 'store']) {
+    const h = quoteFixture(source, {}, preferences);
+    const result = await shipping.state(h.db, h.input, h.options);
+    assert.equal(result.is_bulk, false);
+    assert.equal(result.shipping_preferences.version, 3);
+    assert.deepEqual(result.draft.sender, preferences[0].sender);
+    assert.deepEqual(result.draft.parcel, preferences[0].package_defaults);
+    assert.equal(Object.hasOwn(result.draft.parcel, 'weight'), false);
+    assert.throws(() => shipping.parcel(result.draft.parcel), /packed weight/);
+    assert.equal(result.draft.customs, null);
+    assert.equal(h.calls.length, 0);
+    assert.equal(result.payment_confirmed, false);
+    assert.equal(result.eligible, false, 'saved preferences do not make an unpaid order purchasable');
+  }
+});
+
+test('bulk orders receive the saved sender but require an explicit package choice', async () => {
+  const preferences = savedPreferences(), h = quoteFixture('commerce', {}, preferences);
+  h.order.request_data.bulk_order = true;
+  const before = await shipping.state(h.db, h.input, h.options);
+  assert.equal(before.is_bulk, true);
+  assert.deepEqual(before.draft.sender, preferences[0].sender);
+  assert.equal(before.draft.parcel, null);
+  assert.deepEqual(before.shipping_preferences.package_defaults, preferences[0].package_defaults, 'the UI can offer an explicit Use saved package action');
+  await shipping.handleAction(h.db, h.input, h.options);
+  const after = await shipping.state(h.db, h.input, h.options);
+  assert.deepEqual(after.draft.parcel, h.input.parcel, 'an explicit same-order bulk parcel is retained');
+});
+
+test('changing saved preferences never replaces an existing order draft, quote or purchased-label snapshot', async () => {
+  const preferences = savedPreferences(), h = quoteFixture('commerce', { status: 'paid' }, preferences);
+  await shipping.handleAction(h.db, h.input, h.options);
+  const stored = JSON.parse(JSON.stringify(h.labels[0]));
+  preferences[0].sender.street1 = '400 Updated Example Road';
+  preferences[0].package_defaults.length = '25';
+  preferences[0].version++;
+  let result = await shipping.state(h.db, h.input, h.options);
+  assert.deepEqual(result.draft.sender, stored.sender);
+  assert.deepEqual(result.draft.parcel, stored.parcel);
+  assert.deepEqual(result.current_quote.sender, stored.sender);
+  assert.deepEqual(result.current_quote.parcel, stored.parcel);
+  assert.equal(result.shipping_preferences.sender.street1, '400 Updated Example Road');
+  assert.deepEqual(h.labels[0], stored, 'reading new preferences cannot edit a saved provider quote');
+  Object.assign(h.labels[0], { status: 'created', selected_rate: rate, provider_status: 'SUCCESS', label_url: 'https://labels.example.test/snapshot.pdf' });
+  result = await shipping.state(h.db, h.input, h.options);
+  assert.deepEqual(result.labels[0].sender, stored.sender);
+  assert.deepEqual(result.labels[0].parcel, stored.parcel);
+  assert.equal(result.quote_eligible, false, 'saved defaults do not clear the duplicate label guard');
+});
+
+test('saved Canadian sender keeps domestic customs optional and requires customs for international quotes', async () => {
+  const preferences = savedPreferences(), h = quoteFixture('commerce', {}, preferences);
+  const initial = await shipping.state(h.db, h.input, h.options);
+  await shipping.handleAction(h.db, { ...h.input, sender: initial.draft.sender, customs: null }, h.options);
+  const request = JSON.parse(h.calls[0].request.body);
+  assert.equal(request.customs_declaration, undefined);
+  h.order.request_data.address.country = 'US';
+  h.order.request_data.address.region = 'NY';
+  h.order.request_data.address.postal_code = '10001';
+  await assert.rejects(shipping.handleAction(h.db, { ...h.input, sender: initial.draft.sender, customs: null }, h.options), /certify the customs declaration/);
+  assert.equal(h.calls.length, 1, 'missing international customs fails before contacting a carrier');
 });

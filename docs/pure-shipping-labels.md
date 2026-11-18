@@ -17,12 +17,26 @@ Never paste tokens into order notes, source code, support messages, or browser s
 
 The account must have billing and the intended carrier accounts configured. A test token creates sample labels, clearly marked as invalid postage. The live mode and purchase switch enable the existing owner-confirmed purchase step; simply enabling them does not buy a label. The admin panel states the active mode and whether purchases are enabled. Existing labels refresh with their original test/live credential even after the active mode changes.
 
-The operator enters the actual sender/return address, packed dimensions, and packed weight. Recipient information is loaded from the saved order and cannot be substituted in a label request. Address corrections must first be saved through the existing audited order editor. A previous sender for the same order is offered when available; Canada and metric parcel units are offered by default; no street address or package weight is invented.
+Recipient information is loaded from the saved order and cannot be substituted in a label request. Address corrections must first be saved through the existing audited order editor. The sender must be the actual shipping origin. When orders are packed at the owner's Canadian home and returns go there, that address can be saved as PURE's ship-from/return profile. It can later be replaced with the actual warehouse or business address. Saving PURE preferences does not change Shippo's account address book or billing address.
+
+## Saved PURE shipping profile
+
+Save the actual sender name, address, phone, and email once from the Shipping workspace. **Save PURE return address** validates only the sender fields, so parcel weight and customs information are not prerequisites. Canada, PURE, and `support@getpurelabs.com` are initial suggestions; no street address, phone number, or package measurements are seeded.
+
+Save the dimensions and units of the usual package separately. These defaults initialize new regular orders. Bulk orders require an explicit package choice because their contents may need different packaging. The saved package never contains a packed weight: enter the actual weight of each fully packed order, including packaging. Different package dimensions can be entered for one order without changing the default.
+
+The profile and package are shared across admin sessions and devices. They are stored in the private `admin_shipping_preferences` singleton, accessible only through the authenticated admin API and the server database role. They are not included in public site files or browser local storage. The address is still supplied to the carrier and may appear on the shipping label as its return address.
+
+Saving either section preserves the other section. Version checking prevents one session from silently overwriting changes made in another. If a conflict occurs, **Refresh saved defaults** loads the current saved settings without replacing the current form inputs; review the newer values before applying them or saving again. Saving or refreshing defaults never requests carrier rates or purchases postage.
+
+An existing order's saved shipment draft takes precedence over global defaults. Existing quotes and purchased labels retain their original sender and parcel snapshots. **Use saved address/package** explicitly applies a newer default to the current form; changed shipment fields invalidate the displayed rates and require fresh rates.
+
+Customs visibility is determined from the actual sender and saved recipient country codes, normalized for case and whitespace. Domestic shipments hide and disable customs fields. International shipments show the declaration and relevant export fields; descriptions, origin, values, tariff codes, and certification still need accurate shipment-specific information.
 
 ## Workflow
 
 1. Open the order and choose **Get rates & manage labels**.
-2. Review the recipient and requested delivery selection. Enter sender and packed parcel details.
+2. Review the recipient, requested delivery selection, saved ship-from/return address, and package dimensions. Enter the actual packed weight. Save the profile and usual package once if this is the initial setup; edit the current parcel when its packaging differs.
 3. For an international parcel, enter accurate customs descriptions, quantities, total item values, total net weights, countries of manufacture, tariff codes, signer, and applicable export references. Quantities come from physical fulfillment items, including recorded gifts.
 4. Select **Get shipping rates**. No postage is purchased at this step. Filter by carrier and sort by price within each currency or estimated transit time. Estimates are not delivery guarantees.
 5. Review the sender, recipient, parcel, carrier messages, service, currency, and postage amount. An unpaid order shows **Payment required to buy label**. After payment is confirmed, use **Refresh shipping details** and obtain a fresh quote. For an eligible paid order, select one rate, check the review confirmation, then explicitly confirm the displayed purchase amount.
@@ -60,9 +74,9 @@ Refund unused postage in Shippo. **Check label status** reflects refund pending,
 
 ## Release and verification
 
-Apply `20261117221540_pure_admin_shipping_labels.sql` before releasing its API. The migration is transactional and changes no existing order data. It creates private attempt storage, claim/result RPCs, immutable provider identity, and live purchase guards.
+Apply `20261117221540_pure_admin_shipping_labels.sql` before releasing its API. The migration is transactional and changes no existing order data. It creates private attempt storage, claim/result RPCs, immutable provider identity, and live purchase guards. Apply `20261118013456_pure_shipping_preferences.sql` before releasing saved-profile support; it adds an empty private singleton and a service-only, version-checked save function without changing orders or label snapshots.
 
-Focused tests cover authenticated order access, selected amount confirmation, JSON request handling, domestic/international form validation, unknown transport outcomes, duplicate clicks, stale order snapshots, unpaid/canceled/refunded orders, service-role privileges, optional tracking, monotonic status and refund sequences, and test/live isolation. They also exercise unpaid rate previews with real SQL purchase rejection, paid transitions requiring new quotes, retained label history, filtering/sorting, restored drafts, authenticated inline/download PDF responses, document-host restrictions, bounded downloads, and GET-only purchase recovery. The automated unit/DOM/SQL tests use fixtures and mocked provider calls; they do not purchase live postage or settle invoices.
+Focused tests cover authenticated order access, selected amount confirmation, JSON request handling, domestic/international form validation, unknown transport outcomes, duplicate clicks, stale order snapshots, unpaid/canceled/refunded orders, service-role privileges, optional tracking, monotonic status and refund sequences, and test/live isolation. They also exercise unpaid rate previews with real SQL purchase rejection, paid transitions requiring new quotes, retained label history, filtering/sorting, restored drafts, authenticated inline/download PDF responses, document-host restrictions, bounded downloads, and GET-only purchase recovery. Saved-profile tests cover private reads, CSRF-protected saves, atomic partial updates, version conflicts, explicit package application, per-order weight, bulk defaults, and preserved quote/label snapshots. The automated unit/DOM/SQL tests use fixtures and mocked provider calls; they do not purchase live postage or settle invoices.
 
 ### Optional provider verification without purchasing postage
 

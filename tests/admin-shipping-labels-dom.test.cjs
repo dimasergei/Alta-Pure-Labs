@@ -22,6 +22,10 @@ function harness(t, options = {}) {
   const { window } = dom, host = window.document.getElementById('host');
   const calls = [], confirmations = [], opened = [];
   const availableRates = clone(options.rates || rates);
+  const mountedOrderId = options.orderId || orderId;
+  const preferenceStore = options.preferenceStore || { preferences: clone(options.state?.shipping_preferences || { version: 0, sender: null, package_defaults: null, updated_at: null }) };
+  let storageAccesses = 0;
+  if (options.forbidStorage) for (const name of ['localStorage', 'sessionStorage']) Object.defineProperty(window, name, { get() { storageAccesses++; throw new Error('Private shipping details must not use browser storage.'); } });
   const state = {
     configured: true, test_mode: false, quote_eligible: true, quote_reason: null, eligible: true, purchase_enabled: true, payment_confirmed: true, reason: null, sender: clone(sender), recipient: clone(recipient),
     currency: 'USD', shipping_service: 'Standard UPS (US)', items: [{ description: 'Synthetic research item', quantity: 2 }], labels: [],
@@ -38,16 +42,23 @@ function harness(t, options = {}) {
     calls.push({ url, method, headers: init.headers, body });
     if (method === 'GET') {
       const parsed = new URL(url, window.location.href);
+      if (parsed.searchParams.get('view') === 'shipping-preferences') return { preferences: clone(preferenceStore.preferences) };
       assert.equal(parsed.searchParams.get('view'), 'shipping-label');
-      assert.equal(parsed.searchParams.get('id'), orderId);
+      assert.equal(parsed.searchParams.get('id'), mountedOrderId);
       assert.equal(parsed.searchParams.get('source'), 'commerce');
       if (purchaseStarted && options.afterPurchaseRead) return options.afterPurchaseRead(state);
-      return clone(state);
+      return { ...clone(state), shipping_preferences: clone(preferenceStore.preferences) };
     }
     assert.equal(method, 'PATCH');
     assert.equal(init.headers?.['Content-Type'], 'application/json', 'shipping mutations must pass the API JSON gate');
-    assert.equal(body.id, orderId);
+    assert.equal(body.id, mountedOrderId);
     assert.equal(body.source, 'commerce');
+    if (body.action === 'shipping_preferences_save') {
+      if (body.version !== preferenceStore.preferences.version) throw Object.assign(new Error('Saved shipping preferences changed. Refresh the current defaults before saving.'), { status: 409 });
+      const key = body.scope === 'sender' ? 'sender' : 'package_defaults';
+      preferenceStore.preferences = { ...preferenceStore.preferences, [key]: clone(body[key]), version: preferenceStore.preferences.version + 1, updated_at: new Date().toISOString() };
+      return { preferences: clone(preferenceStore.preferences) };
+    }
     if (body.action === 'shipping_label_quote') {
       quoted = { id: labelId, status: 'quoted', test: state.test_mode, sender: clone(body.sender), recipient: clone(state.recipient), parcel: clone(body.parcel), rates: clone(availableRates), expires_at: new Date(Date.now() + 15 * 60 * 1000).toISOString() };
       state.current_quote = clone(quoted);
@@ -70,8 +81,8 @@ function harness(t, options = {}) {
     throw new Error('Unexpected shipping mutation: ' + body.action);
   };
   window.eval(source);
-  window.PureShippingLabels.mount({ host, row: { id: orderId, source: 'commerce', kind: 'goods' }, api });
-  return { window, host, calls, confirmations, controls, state, opened };
+  window.PureShippingLabels.mount({ host, row: { id: mountedOrderId, source: 'commerce', kind: 'goods' }, api });
+  return { window, host, calls, confirmations, controls, state, opened, preferenceStore, storageAccesses: () => storageAccesses };
 }
 
 function field(h, label, scope = h.host) {
@@ -223,7 +234,7 @@ test('international quotes require customs details and disable irrelevant countr
 test('live postage requires a selected rate, checked review, and explicit amount confirmation', async t => {
   const h = harness(t); await open(h); await quote(h);
   const form = h.host.querySelector('.psl-rates');
-  assert.match(h.host.textContent, /charged to your connected Shippo account/);
+  assert.match(h.host.textContent, /postage incurs a charge only after you confirm/);
   submit(h, form); await tick(); assert.equal(h.confirmations.length, 0);
   chooseRate(h);
   assert.match(form.querySelector('button').textContent, /12\.50.*USD/);
@@ -249,7 +260,7 @@ test('test mode is clearly labeled before confirmation and after generation', as
   await open(h); assert.match(h.host.textContent, /TEST MODE.*cannot be used to ship/s);
   await quote(h);
   assert.match(h.host.textContent, /no live postage is purchased/);
-  assert.doesNotMatch(h.host.textContent, /charged to your connected Shippo account/);
+  assert.doesNotMatch(h.host.textContent, /postage incurs a charge only after you confirm/);
   chooseRate(h); approve(h);
   assert.equal(h.host.querySelector('.psl-rates button').textContent, 'Generate test label');
   submit(h, h.host.querySelector('.psl-rates')); await tick();
@@ -474,4 +485,176 @@ test('an expired saved quote cannot be purchased by a forced form submission', a
   buy.disabled = false; submit(h, form); await tick();
   assert.equal(h.confirmations.length, 0);
   assert.equal(h.calls.filter(call => call.body).length, 0);
+});
+
+test('first use leaves personal ship-from fields and package values blank until entered', async t => {
+  const h = harness(t, { state: { sender: { name: 'PURE', country: 'CA', email: 'support@getpurelabs.com' } } });
+  await open(h);
+  assert.equal(h.host.querySelector('.psl-sender-group .psl-preference-fields').hidden, false);
+  for (const title of ['Street address', 'Address line 2', 'City', 'State / province', 'Postal code', 'Sender phone', 'Length', 'Width', 'Height', 'Packed weight']) assert.equal(field(h, title).value, '');
+  assert.equal(field(h, 'Sender name').value, 'PURE');
+  button(h, 'Save PURE return address').click(); await tick();
+  button(h, 'Save default package').click(); await tick();
+  assert.equal(h.calls.filter(call => call.body).length, 0);
+});
+
+test('return address and default package save independently of packed weight and customs', async t => {
+  const h = harness(t, { state: { recipient: { ...recipient, country: 'CA', state: 'ON', zip: 'M5V 1A1' } } });
+  await open(h);
+  assert.equal(h.host.querySelector('.psl-form').checkValidity(), false);
+  button(h, 'Save PURE return address').click(); await tick();
+  let saved = h.calls.filter(call => call.body);
+  assert.equal(saved.length, 1); assert.equal(saved[0].body.action, 'shipping_preferences_save');
+  assert.equal(saved[0].body.scope, 'sender'); assert.equal(saved[0].body.version, 0);
+  assert.deepEqual(saved[0].body.sender, sender);
+  assert.equal(saved[0].body.package_defaults, undefined);
+  assert.equal(h.host.querySelector('.psl-sender-group .psl-preference-fields').hidden, true);
+  assert.equal(field(h, 'Packed weight').value, '');
+  button(h, 'Edit return address').click(); field(h, 'Sender name').value = '';
+  for (const [title, value] of [['Length', '6'], ['Width', '4'], ['Height', '2']]) field(h, title).value = value;
+  field(h, 'Accurate customs description').value = 'Unsaved accurate description';
+  button(h, 'Save default package').click(); await tick();
+  saved = h.calls.filter(call => call.body);
+  assert.equal(saved.length, 2); assert.equal(saved[1].body.scope, 'package'); assert.equal(saved[1].body.version, 1);
+  assert.deepEqual(saved[1].body.package_defaults, { length: '6', width: '4', height: '2', distance_unit: 'in', mass_unit: 'lb' });
+  assert.equal(Object.hasOwn(saved[1].body.package_defaults, 'weight'), false);
+  assert.equal(saved[1].body.sender, undefined);
+  assert.equal(field(h, 'Sender name').value, '', 'package save does not reset incomplete sender edits');
+  assert.equal(field(h, 'Accurate customs description').value, 'Unsaved accurate description');
+  assert.equal(field(h, 'Packed weight').value, '');
+  assert.equal(h.confirmations.length, 0);
+  assert.equal(saved.some(call => call.body.action === 'shipping_label_quote' || call.body.action === 'shipping_label_buy'), false);
+});
+
+test('saved private defaults are reused across new orders while each new packed weight stays blank', async t => {
+  const store = { preferences: { version: 0, sender: null, package_defaults: null, updated_at: null } };
+  const first = harness(t, { preferenceStore: store, forbidStorage: true }); await open(first);
+  fillParcel(first);
+  field(first, 'Packed weight').value = '7.25';
+  button(first, 'Save PURE return address').click(); await tick();
+  button(first, 'Save default package').click(); await tick();
+  assert.equal(field(first, 'Packed weight').value, '7.25', 'saving defaults preserves this order’s entered weight');
+  assert.equal(store.preferences.version, 2);
+  assert.equal(Object.hasOwn(store.preferences.package_defaults, 'weight'), false);
+  const next = harness(t, { preferenceStore: store, orderId: '30000000-0000-4000-8000-000000000001', forbidStorage: true }); await open(next);
+  assert.equal(field(next, 'Street address').value, sender.street1);
+  assert.equal(field(next, 'Length').value, '6'); assert.equal(field(next, 'Width').value, '4'); assert.equal(field(next, 'Height').value, '2');
+  assert.equal(field(next, 'Packed weight').value, '');
+  assert.equal(next.host.querySelector('.psl-sender-group .psl-preference-fields').hidden, true);
+  assert.equal(next.host.querySelector('.psl-package-group .psl-preference-fields').hidden, true);
+  assert.equal(next.host.querySelector('.psl-weight-controls').hidden, false);
+  assert.equal(first.storageAccesses(), 0); assert.equal(next.storageAccesses(), 0);
+  assert.equal(next.calls.filter(call => call.body).length, 0, 'reading defaults never creates a quote or label');
+});
+
+test('bulk orders use a saved package only after an explicit choice', async t => {
+  const packageDefaults = { length: '20', width: '15', height: '10', distance_unit: 'cm', mass_unit: 'g' };
+  const h = harness(t, { state: { is_bulk: true, shipping_preferences: { version: 3, sender, package_defaults: packageDefaults } } });
+  await open(h);
+  for (const title of ['Length', 'Width', 'Height', 'Packed weight']) assert.equal(field(h, title).value, '');
+  assert.match(h.host.textContent, /Bulk order: choose a package that fits/);
+  assert.equal(h.host.querySelector('.psl-package-group .psl-preference-fields').hidden, false);
+  button(h, 'Use saved package').click();
+  assert.equal(field(h, 'Length').value, '20'); assert.equal(field(h, 'Width').value, '15'); assert.equal(field(h, 'Height').value, '10');
+  assert.equal(field(h, 'Dimension unit').value, 'cm'); assert.equal(field(h, 'Weight unit').value, 'g');
+  assert.equal(field(h, 'Packed weight').value, '');
+  button(h, 'Use custom package').click();
+  assert.equal(h.host.querySelector('.psl-package-group .psl-preference-fields').hidden, false);
+  assert.equal(field(h, 'Length').value, '20', 'custom editing keeps the chosen package as a starting point');
+  assert.equal(h.calls.filter(call => call.body).length, 0);
+});
+
+test('editing or applying the saved return country updates Canadian domestic and international customs', async t => {
+  const canadianSender = { ...sender, country: 'CA', state: 'ON', zip: 'M5V 1A1' };
+  const h = harness(t, { state: { recipient: { ...recipient, country: ' ca ', state: 'ON', zip: 'M5V 1A1' }, shipping_preferences: { version: 1, sender: canadianSender, package_defaults: null } } });
+  await open(h);
+  const customs = h.host.querySelector('.psl-customs');
+  assert.equal(customs.hidden, true); assert.equal(customs.disabled, true);
+  assert.match(h.host.querySelector('.psl-customs-notice').textContent, /Canadian domestic shipment/);
+  button(h, 'Edit return address').click();
+  setValue(h, field(h, 'Country code (US, CA, etc.)'), 'us');
+  assert.equal(customs.hidden, false); assert.equal(customs.disabled, false);
+  assert.match(h.host.querySelector('.psl-customs-notice').textContent, /International shipment/);
+  assert.equal(field(h, 'US export filing reference or applicable exemption').required, true);
+  button(h, 'Use saved return address').click();
+  assert.equal(field(h, 'Country code (US, CA, etc.)').value, 'CA');
+  assert.equal(customs.hidden, true); assert.equal(customs.disabled, true);
+  assert.equal(field(h, 'US export filing reference or applicable exemption').disabled, true);
+  for (const input of customs.querySelectorAll('[required]')) assert.equal(input.willValidate, false);
+  assert.equal(h.calls.filter(call => call.body).length, 0);
+});
+
+test('a stale preference save preserves newer global settings and entered data until an explicit reviewed retry', async t => {
+  const originalPackage = { length: '6', width: '4', height: '2', distance_unit: 'in', mass_unit: 'lb' };
+  const store = { preferences: { version: 7, sender: clone(sender), package_defaults: originalPackage } };
+  const h = harness(t, { preferenceStore: store }); await open(h);
+  button(h, 'Edit return address').click();
+  field(h, 'Street address').value = 'Current unsaved fixture street';
+  field(h, 'Packed weight').value = '3.75';
+  store.preferences = { version: 8, sender: { ...sender, street1: 'Newer global fixture street' }, package_defaults: { ...originalPackage, height: '5' } };
+  button(h, 'Save PURE return address').click(); await tick();
+  assert.equal(store.preferences.version, 8); assert.equal(store.preferences.sender.street1, 'Newer global fixture street');
+  assert.equal(field(h, 'Street address').value, 'Current unsaved fixture street');
+  assert.equal(field(h, 'Packed weight').value, '3.75');
+  assert.match(h.host.querySelector('.psl-preference-status [role=alert]').textContent, /preferences changed/);
+  assert.equal(h.calls.filter(call => call.body).length, 1);
+  button(h, 'Refresh saved defaults').click(); await tick();
+  assert.match(h.host.querySelector('.psl-latest-defaults').textContent, /Newer global fixture street/);
+  assert.equal(field(h, 'Street address').value, 'Current unsaved fixture street');
+  assert.equal(field(h, 'Packed weight').value, '3.75');
+  assert.equal(field(h, 'Height').value, '2', 'refreshing global defaults does not overwrite this order’s package entries');
+  assert.equal(h.calls.filter(call => call.body).length, 1, 'conflict refresh never retries the save');
+  button(h, 'Save PURE return address').click(); await tick();
+  assert.equal(h.calls.filter(call => call.body).at(-1).body.version, 8);
+  assert.equal(store.preferences.version, 9); assert.equal(store.preferences.sender.street1, 'Current unsaved fixture street');
+  assert.equal(store.preferences.package_defaults.height, '5', 'sender-only save preserves the newer package default');
+});
+
+test('current-order drafts and retained quote addresses take priority over changed global defaults', async t => {
+  const currentParcel = { length: '9', width: '7', height: '3', distance_unit: 'in', mass_unit: 'lb', weight: '2.5' };
+  const h = harness(t, { state: {
+    shipping_preferences: { version: 4, sender: { ...sender, street1: 'Future warehouse fixture street' }, package_defaults: { length: '20', width: '15', height: '10', distance_unit: 'cm', mass_unit: 'g' } },
+    draft: { sender, parcel: currentParcel, customs: null },
+    current_quote: { id: labelId, status: 'quoted', test: false, sender, recipient, parcel: currentParcel, rates, expires_at: new Date(Date.now() + 60000).toISOString() }
+  } });
+  await open(h);
+  assert.ok(h.host.querySelector('.psl-quote').textContent.includes(sender.street1));
+  assert.ok(!h.host.querySelector('.psl-quote').textContent.includes('Future warehouse fixture street'));
+  button(h, 'Edit parcel or sender').click();
+  assert.equal(h.host.querySelector('.psl-rates'), null, 'editing removes stale rate purchase controls');
+  assert.equal(field(h, 'Street address').value, sender.street1);
+  assert.equal(field(h, 'Length').value, '9'); assert.equal(field(h, 'Packed weight').value, '2.5');
+  assert.equal(field(h, 'Weight unit').value, 'lb');
+});
+
+test('applying a saved package with a different mass unit requires new actual weights', async t => {
+  const h = harness(t, { state: {
+    recipient: { ...recipient, country: 'CA', state: 'ON', zip: 'M5V 1A1' },
+    shipping_preferences: { version: 1, sender, package_defaults: { length: '20', width: '15', height: '10', distance_unit: 'cm', mass_unit: 'g' } },
+    draft: { sender, parcel: { length: '6', width: '4', height: '2', distance_unit: 'in', mass_unit: 'lb', weight: '2' }, customs: { items: [{ net_weight: '1' }] } }
+  } });
+  await open(h);
+  assert.equal(field(h, 'Packed weight').value, '2'); assert.equal(field(h, 'Total net weight for this line').value, '1');
+  button(h, 'Use saved package').click();
+  assert.equal(field(h, 'Weight unit').value, 'g');
+  assert.equal(field(h, 'Packed weight').value, ''); assert.equal(field(h, 'Total net weight for this line').value, '');
+  assert.match(h.host.querySelector('.psl-preference-status').textContent, /Weight unit changed/);
+  assert.equal(h.calls.filter(call => call.body).length, 0);
+});
+
+test('an incomplete legacy sender draft stays editable even when a complete saved profile exists', async t => {
+  const h = harness(t, { state: {
+    shipping_preferences: { version: 1, sender, package_defaults: null },
+    draft: { sender: { ...sender, phone: '', email: '' }, parcel: { length: '6', width: '4', height: '2', distance_unit: 'in', mass_unit: 'lb', weight: '1' } }
+  } });
+  await open(h);
+  assert.equal(h.host.querySelector('.psl-sender-group .psl-preference-fields').hidden, false);
+  assert.equal(field(h, 'Sender phone').value, ''); assert.equal(field(h, 'Sender email').value, '');
+  submit(h, h.host.querySelector('.psl-form')); await tick();
+  assert.equal(h.calls.filter(call => call.body).length, 0);
+  button(h, 'Use saved return address').click();
+  assert.equal(field(h, 'Sender phone').value, sender.phone); assert.equal(field(h, 'Sender email').value, sender.email);
+  assert.equal(h.host.querySelector('.psl-sender-group .psl-preference-fields').hidden, true);
+  submit(h, h.host.querySelector('.psl-form')); await tick();
+  assert.equal(h.calls.filter(call => call.body?.action === 'shipping_label_quote').length, 1);
 });

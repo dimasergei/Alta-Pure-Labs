@@ -111,6 +111,12 @@ module.exports = async (req, res) => {
         'https://admin.internal'
       ).searchParams;
 
+      if (params.get('view') === 'shipping-preferences') {
+        const { readPreferences } = require('../lib/admin-shipping-preferences');
+        res.setHeader('Cache-Control', 'private, no-store, max-age=0');
+        return res.status(200).json({ preferences: await readPreferences(db) });
+      }
+
       if (params.get('view') === 'shipping-label') {
         const { state } = require('../lib/admin-shipping-labels');
         return res.status(200).json(await state(db, { id: params.get('id'), source: params.get('source') }));
@@ -154,6 +160,13 @@ module.exports = async (req, res) => {
     }
 
     const body = await parseJson(req);
+
+    if (body.action === 'shipping_preferences_save') {
+      const { savePreferences } = require('../lib/admin-shipping-preferences');
+      const { db } = clients();
+      res.setHeader('Cache-Control', 'private, no-store, max-age=0');
+      return res.status(200).json({ preferences: await savePreferences(db, body) });
+    }
 
     if (typeof body.action === 'string' && body.action.startsWith('shipping_label_')) {
       const { handleAction } = require('../lib/admin-shipping-labels');
