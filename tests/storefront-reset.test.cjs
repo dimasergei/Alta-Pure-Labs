@@ -212,7 +212,7 @@ test('bulk ordering grows and clears its summary while preserving exact prices, 
   assert.equal(d.querySelector('[data-action="bulk-checkout"]').disabled,true);
   assert.equal(JSON.stringify(w.AltaStore.cart),regularCart,'bulk selections never replace the existing regular cart');
   assert.equal(w.localStorage.getItem('pp-cart'),storedCart,'the saved regular cart remains intact');
-  assert.doesNotMatch(d.querySelector('#ap-main').textContent,/BOGO|membership|research builder|10 units minimum|50%|60%|free 2-day|express delivery/i);
+  assert.doesNotMatch(d.querySelector('#ap-main').textContent,/BOGO|membership|research builder|auto-stack|10 units minimum|50%|60%|free 2-day|express delivery/i);
  }finally{await f.close();}
 });
 

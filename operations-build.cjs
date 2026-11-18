@@ -39,8 +39,8 @@ const shell=fs.readFileSync('storefront-v2.html','utf8').replace('</head>','<lin
 function page(html,url,title,description,main,structured){html=html.replace(/<title>[\s\S]*?<\/title>/,'<title>'+esc(title)+'</title>');html=html.replace(/<meta name="description"[^>]*>/,'<meta name="description" content="'+esc(description)+'">');html=html.replace('</head>','<link rel="canonical" href="'+esc(base+url)+'"><meta property="og:title" content="'+esc(title)+'"><meta property="og:description" content="'+esc(description)+'"><meta property="og:url" content="'+esc(base+url)+'"><meta property="og:type" content="website">'+(structured?'<script type="application/ld+json">'+JSON.stringify(structured).replace(/</g,'\\u003c')+'</script>':'')+'</head>');if(main)html=html.replace(/<main id="ap-main">[\s\S]*?<\/main>/,'<main id="ap-main">'+main+'</main>');return html;}
 const routes={
  '/memberships':['PURE Memberships','Explore PURE WHITE and PURE BLACK prepaid memberships, with account benefits and clear terms.'],
- '/research-builder':['Research Builder','Choose four different compounds, compare strengths and build a one-time research set.'],
- '/research-checkout':['Review Your Research Set','Review your saved research selections before checkout.'],
+ '/research-builder':['AUTO-STACK™','Choose four different compounds, compare strengths and build a one-time Auto-Stack™ set.'],
+ '/research-checkout':['AUTO-STACK™ Review','Review your saved Auto-Stack™ selections before checkout.'],
  '/shop':['Research Catalog','Browse all PURE research products and exact product-size variants.'],
  '/bulk-orders':['Bulk Requests','Build exact product quantities and submit a bulk quote inquiry.'],
  '/rewards':['Rewards and Credit','Find the account workspaces for issued rewards and store credit.'],

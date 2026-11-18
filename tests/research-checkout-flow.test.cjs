@@ -20,7 +20,8 @@ function setup({draft={mode:'one_time',lines},respond,session,addError}={}){
 test('missing, malformed and duplicate drafts stay on the review page with recovery guidance and no network or cart changes',async()=>{
  for(const draft of [null,'{broken',{}, {lines:lines.slice(0,3)}, {lines:[lines[0],lines[0],lines[2],lines[3]]}]){
   const env=setup({draft});try{await env.render();
-   assert.match(env.root.textContent,/Choose four different compounds/);assert.ok(env.root.querySelector('a[href="/research-builder?mode=one_time"]'));
+   assert.match(env.root.textContent,/Choose four different compounds in AUTO-STACK™/);assert.ok(env.root.querySelector('a[href="/research-builder?mode=one_time"]'));
+   assert.equal(env.w.document.title,'AUTO-STACK™ Review | PURE');
    assert.equal(env.root.querySelector('[data-rc-checkout]'),null);assert.equal(env.requests.length,0);assert.equal(env.navigated.length,0);
    assert.deepEqual(JSON.parse(env.w.localStorage.getItem('pp-cart')),existingCart);
   }finally{env.dom.window.close();}
@@ -30,6 +31,13 @@ test('missing, malformed and duplicate drafts stay on the review page with recov
 test('review submits only normalized selections for server pricing and adds a one-time set without replacing the existing cart',async()=>{
  const draft={mode:'one_time',lines:lines.map(item=>({...item,qty:99,unit_price_usd_cents:1}))},env=setup({draft});
  try{await env.render({email:'research@example.test'});
+  assert.equal(env.w.document.title,'AUTO-STACK™ Review | PURE');
+  assert.equal(env.root.querySelector('.rc-heading h1').textContent,'REVIEW YOUR AUTO-STACK™');
+  assert.equal(env.root.querySelector('.rc-heading h1 sup').textContent,'™');
+  assert.equal(env.root.querySelector('.rc-summary h2').textContent,'Your AUTO-STACK™');
+  assert.equal(env.root.querySelector('.rc-back').getAttribute('href'),'/research-builder?mode=one_time');
+  assert.match(env.root.querySelector('.rc-back').textContent,/Back to AUTO-STACK™/);
+  assert.doesNotMatch(env.root.textContent,/Research Builder/);
   assert.deepEqual(env.requests.map(call=>call.body),[{action:'quote',items:lines,mode:'one_time'}]);
   assert.equal(env.requests[0].url,'/api/customer-config?research_builder=1');assert.equal(env.requests[0].options.cache,'no-store');
   assert.equal(env.root.querySelectorAll('.rc-line').length,4);assert.match(env.root.querySelector('.rc-due').textContent,/\$280\.00\s*USD/);
@@ -83,8 +91,14 @@ test('monthly review clearly remains a preview with no order, payment, subscript
  const env=setup({draft:{mode:'subscription',lines}});try{await env.render();
   assert.equal(env.requests.length,1);assert.equal(env.requests[0].body.action,'quote');assert.equal(env.requests[0].body.mode,'subscription');
   assert.match(env.root.querySelector('.rc-due').textContent,/\$168\.00\s*USD \/ month/);
+  const terms=env.root.querySelector('.rc-terms').textContent;
+  assert.match(terms,/Monthly until canceled/);assert.match(terms,/no minimum deliveries/);
+  assert.match(terms,/Edit future selections anytime/);assert.match(terms,/without waiting for a first shipment/);
+  assert.match(terms,/Cancel anytime/);assert.match(terms,/Cancellation stops future renewals/);
+  assert.doesNotMatch(terms,/Three deliveries|third delivery|after the first delivery/);
   assert.match(env.root.querySelector('.rc-unavailable').textContent,/does not create a subscription, collect payment or schedule a delivery/);
   assert.equal(env.root.querySelector('[data-rc-checkout]'),null);assert.equal(env.root.querySelector('form'),null);assert.equal(env.root.querySelector('.rc-pay').disabled,true);
+  env.root.querySelector('.rc-pay').click();assert.equal(env.requests.length,1,'unavailable monthly enrollment never submits another request');
   assert.ok(env.root.querySelector('a[href="/research-builder?mode=one_time"]'));assert.equal(env.navigated.length,0);assert.equal(env.added.length,0);
   assert.deepEqual(JSON.parse(env.w.localStorage.getItem('pp-cart')),existingCart);
  }finally{env.dom.window.close();}

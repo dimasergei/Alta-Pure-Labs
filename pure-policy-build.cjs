@@ -113,7 +113,7 @@ module.exports = function buildPolicyLayout(outputDirectory) {
     for (const style of styles) document.head.append(document.importNode(style, true));
     const policyStyle = document.createElement('link');
     policyStyle.rel = 'stylesheet';
-    policyStyle.href = '/pure-policy.css?v=20261118';
+    policyStyle.href = '/pure-policy.css?v=20261118-autostack';
     document.head.append(policyStyle);
     document.body.className = 'ap-site pure-policy-page';
     document.body.replaceChildren();

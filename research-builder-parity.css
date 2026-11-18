@@ -1,9 +1,12 @@
-/* Research Builder follows the monochrome PURE storefront. Every selector is builder-scoped. */
-.nl-builder-hero{background:#111;color:#fff;margin:0;padding:46px 0 40px}
+/* AUTO-STACK follows the monochrome PURE storefront. Every selector is builder-scoped. */
+.nl-builder-hero{background:#111;color:#fff;margin:0;padding:38px 0 34px}
 .nl-builder-hero>.ap-container,.nl-builder-benefits.ap-container,.nl-builder-layout.ap-container{width:min(1272px,100%);margin-left:auto;margin-right:auto;padding-left:28px;padding-right:28px}
 .nl-builder-hero .nl-capsule{display:inline-flex;gap:8px;align-items:center;padding:0;border:0;background:none;color:#bcbcbc;font-size:10px;font-weight:800;letter-spacing:.13em;line-height:1.5}
 .nl-builder-hero .nl-capsule:before{content:'';display:inline-block;flex:none;width:6px;height:6px;border-radius:50%;background:#fff}
 .nl-builder-hero h1{color:#fff;font-size:clamp(38px,5vw,64px);font-weight:900;line-height:.99;letter-spacing:-.055em;margin:19px 0 20px;text-transform:uppercase}
+.nl-builder-hero h1.nl-autostack-title{max-width:100%;font-size:clamp(36px,8.2vw,96px);line-height:1;letter-spacing:-.065em;margin:16px 0 18px}
+.nl-autostack-name{white-space:nowrap}
+.nl-autostack-name sup{position:relative;top:.2em;margin-left:.12em;font-size:clamp(8px,.24em,24px);line-height:1;vertical-align:top;font-weight:700;letter-spacing:0}
 .nl-builder-hero p{max-width:640px;margin:0;color:#c1c1c1;font-size:15px;line-height:1.7}
 .nl-builder-hero p strong{font-weight:700;color:#fff}
 .nl-builder-mode{display:flex;flex-wrap:wrap;gap:6px;width:max-content;max-width:100%;margin-top:24px;padding:5px;border:1px solid #4c4c4c;border-radius:100px;background:#1c1c1c}

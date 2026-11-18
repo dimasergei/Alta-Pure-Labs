@@ -49,6 +49,7 @@ for(const file of fs.readdirSync(out,{recursive:true}).filter(f=>f.endsWith('.ht
   html=html.replace('</head>','<link rel="stylesheet" href="/pure-layout.css?v=20261118"><link rel="stylesheet" href="/pure-bulk-layout.css?v=20261118"><link rel="stylesheet" href="/pure-coa.css?v=20261118"></head>');
   html=html.replace(/src="\/(workspace-v2|supplier-coas)\.js(?:\?[^"]*)?"/g,'src="/$1.js?v=20261118-coa"');
   html=html.replace(/src="\/(checkout-reference|direct-checkout-client|payment-options-public|readiness-ui|locale)\.js(?:\?[^"]*)?"/g,'src="/$1.js?v=20261118-cad-checkout"');
+  html=html.replace(/src="\/(account|workspace-v2|readiness-ui)\.js(?:\?[^"]*)?"/g,'src="/$1.js?v=20261118-autostack"');
   html=html.replace(/href="\/account-experience\.css(?:\?[^"]*)?"/g,'href="/account-experience.css?v=20261118-interac"');
   fs.writeFileSync(target,html);
   count++;

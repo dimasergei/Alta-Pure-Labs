@@ -33,7 +33,11 @@ test('active BLACK account discloses credit qualification, BAC gift and priority
   assert.match(card.textContent,/PURE BLACK/);
   assert.match(card.textContent,/10%/);
   assert.match(card.textContent,/\$50 monthly credit after a qualifying \$150\+ order/);
-  assert.match(card.textContent,/before points or store credit/);
+  assert.doesNotMatch(card.textContent,/Issued once per UTC calendar month|before points or store credit/);
+  const creditTerms=card.querySelector('.mx-benefit-footnote');assert.ok(creditTerms);
+  assert.equal(creditTerms.getAttribute('href'),'/membership-terms.html#pure-black-credit');
+  assert.equal(creditTerms.getAttribute('aria-label'),'Read the PURE BLACK monthly credit terms');
+  assert.equal(creditTerms.textContent,'†');
   assert.match(card.textContent,/BAC Water 3mL with each eligible product order/);
   assert.match(card.textContent,/Priority order fulfillment/);
   env.dom.window.close();
@@ -87,8 +91,13 @@ test('account API failures do not fabricate tier or subscription state',async()=
 test('empty research account distinguishes one-time sets and unavailable monthly enrollment',async()=>{
   const env=setup({subscriptions:[],subscription_available:false,one_time_available:true});
   await env.w.ConversionUI.subscriptions(env.root,auth);
-  assert.match(env.root.textContent,/No paid Research Builder plan is linked to your account/);
+  assert.equal(env.root.querySelector('.cv-research-heading h2').textContent,'AUTO-STACK™');
+  assert.match(env.root.querySelector('.cv-research-heading a').textContent,/Open Auto-Stack™/);
+  assert.match(env.root.textContent,/No paid Auto-Stack™ plan is linked to your account/);
   assert.match(env.root.textContent,/Automatic monthly billing is not connected yet/);
+  assert.match(env.root.querySelector('.cv-program-note').textContent,/planned monthly subscription continues until canceled/);
+  assert.match(env.root.querySelector('.cv-program-note').textContent,/no minimum deliveries/);
+  assert.match(env.root.querySelector('.cv-program-note').textContent,/Edit future selections or cancel anytime/);
   assert.equal(env.root.querySelector('.cv-research-plan'),null);
   assert.ok(env.root.querySelector('a[href="/research-builder"]'));
   assert.equal(env.calls[0].url,'/api/customer-config?research_builder=1&scope=mine');
@@ -99,7 +108,9 @@ test('research plan and cycle history come from account records, without unsuppo
   const env=setup({subscriptions:[{id:'fixture-plan',status:'active',monthly_cents:24000,paid_cycles:2,minimum_paid_cycles:3,first_delivery_shipped_at:'2026-01-02T00:00:00Z',next_billing_at:'2026-03-01T00:00:00Z',lines:[{id:'fixture',name:'<script>unsafe</script>',size:'5 mg',qty:1}],actions:[],research_subscription_cycles:[{cycle_number:1,amount_cents:24000,status:'shipped',paid_at:'2026-01-01T00:00:00Z',shipped_at:'2026-01-02T00:00:00Z',tracking_number:'TRACK-123'},{cycle_number:2,amount_cents:24000,status:'paid',paid_at:'2026-02-01T00:00:00Z'}]}]});
   await env.w.ConversionUI.subscriptions(env.root,auth);
   assert.match(env.root.textContent,/\$240\.00/);
-  assert.match(env.root.textContent,/2 of 3 initial cycles/);
+  assert.equal(env.root.querySelector('.cv-research-details dd').textContent,'2','history shows paid cycles without presenting a legacy minimum as a current requirement');
+  assert.doesNotMatch(env.root.textContent,/initial cycles|third delivery|follow the first shipment/);
+  assert.match(env.root.querySelector('.cv-plan-support').textContent,/changes to future selections or cancellation/);
   assert.match(env.root.textContent,/TRACK-123/);
   assert.equal(env.root.querySelectorAll('.cv-cycle-history li').length,2);
   assert.equal(env.root.querySelector('script'),null);

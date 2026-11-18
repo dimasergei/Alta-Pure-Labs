@@ -1,4 +1,4 @@
-/* The Research Builder review shares the PURE checkout's monochrome treatment. */
+/* The AUTO-STACK review shares the PURE checkout's monochrome treatment. */
 .ap-research-checkout-page .account-page{background:#f7f7f7;padding:35px 24px 65px}
 .ap-research-checkout-page .account-shell{max-width:1240px;margin:0 auto}
 .ap-research-checkout-page .account-card{padding:0;background:none;border:0;box-shadow:none}
@@ -62,3 +62,7 @@
 .rc-kicker,.rc-count,.rc-number,.rc-line-copy small,.rc-line-price del,.rc-due small,.rc-pay,.rc-secondary,.rc-small,.rc-account{font-size:12px}
 @media(max-width:850px){.rc-intro,.rc-line-copy strong,.rc-line-copy small,.rc-inclusions,.rc-terms ol,.rc-terms p,.rc-summary .rc-row,.rc-unavailable,.rc-unavailable strong,.rc-small,.rc-account{font-size:14px}.rc-line-price{font-size:14px}.rc-line-price del{font-size:12px}.rc-pay,.rc-secondary{font-size:12px;min-height:48px}}
 @media(max-width:480px){.ap-research-checkout-page .account-card .rc-heading h1{font-size:37px}.rc-number{width:27px;height:27px;font-size:12px}.rc-line{gap:9px}}
+.rc-heading h1.rc-autostack-title,.ap-research-checkout-page .account-card .rc-heading h1.rc-autostack-title{max-width:100%;font-size:clamp(32px,6vw,64px);line-height:1;letter-spacing:-.06em}
+.rc-title-prefix{display:block;margin-bottom:.55em;font-size:14px;font-weight:800;line-height:1.3;letter-spacing:.08em}
+.rc-autostack-name{white-space:nowrap}
+.rc-autostack-name sup{position:relative;top:.2em;margin-left:.12em;font-size:clamp(8px,.24em,24px);line-height:1;vertical-align:top;font-weight:700;letter-spacing:0}

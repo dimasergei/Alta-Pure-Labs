@@ -44,7 +44,12 @@ test('benefits are sourced from configuration, with credit qualification disclos
   assert.match(white.textContent,/Free US 2-Day Express shipping/);
   assert.doesNotMatch(white.textContent,/monthly credit|BAC Water/);
   assert.match(black.textContent,/\$50 monthly credit after a qualifying \$150\+ order/);
-  assert.match(black.textContent,/before points or store credit/);
+  assert.doesNotMatch(black.textContent,/Issued once per UTC calendar month|threshold uses eligible merchandise|before points or store credit/);
+  const creditTerms=black.querySelector('.mx-benefit-footnote');
+  assert.equal(creditTerms.textContent,'†');
+  assert.equal(creditTerms.getAttribute('href'),'/membership-terms.html#pure-black-credit');
+  assert.equal(creditTerms.getAttribute('aria-label'),'Read the PURE BLACK monthly credit terms');
+  assert.equal(white.querySelector('.mx-benefit-footnote'),null);
   assert.match(black.textContent,/BAC Water 3mL with each eligible product order/);
   dom.window.close();
 });

@@ -36,6 +36,8 @@ test('public builder catalog contains only injectable selections and public vari
  const result=await request({method:'GET'});
  assert.equal(result.code,200);assert.deepEqual(result.body.catalog,catalog);
  assert.equal(result.body.one_time_available,true);assert.equal(result.body.subscription_available,false);
+ assert.equal(result.body.terms.version,'research-builder-2026-11-v3');assert.equal(result.body.terms.minimum_paid_cycles,0);
+ assert.equal(result.body.terms.cancel_after_paid_cycles,0);assert.equal(result.body.terms.change_after_first_shipment,false);
  assert.equal(result.body.terms.automatic_renewal,false);assert.equal(result.headers['Cache-Control'],'no-store');assert.equal(result.headers.Vary,'Authorization');
 });
 
@@ -59,7 +61,7 @@ test('member savings and explicit coupon compete on one-time sets; monthly terms
  }
  const preview=builder.quote(items,source,{mode:'subscription',membership:{plan:'elite'},coupon:'BLACKFRIDAY15'});
  assert.equal(preview.total_cents,18008);assert.equal(preview.discount_cents,12002);assert.equal(preview.monthly_cents,preview.total_cents);
- assert.equal(preview.minimum_paid_cycles,3);assert.equal(preview.shipping_cents,0);assert.equal(preview.shipping_confirmed,false);
+ assert.equal(preview.minimum_paid_cycles,0);assert.equal(preview.shipping_cents,0);assert.equal(preview.shipping_confirmed,false);
  assert.equal(preview.bundled_item.id,'gift-bac-3');assert.equal(preview.subscription_available,false);assert.equal(preview.terms.automatic_renewal,false);
  assert.ok(preview.lines.every(line=>line.discount_reason==='research_subscription_preview'));
 });
@@ -105,6 +107,17 @@ test('automatic enrollment and all mutation actions remain unavailable without a
  const preview=await request({body:{action:'quote',items,mode:'subscription'}});assert.equal(preview.code,200);assert.equal(preview.body.subscription_available,false);
 });
 
+test('monthly quote API publishes flexible v3 terms without accepting client activation flags or stale minimums',async()=>{
+ const result=await request({body:{action:'quote',items,mode:'subscription',minimum_paid_cycles:3,
+  automatic_renewal:true,subscription_available:true,terms:{version:'research-builder-2026-11-v2',minimum_paid_cycles:3,cancel_after_paid_cycles:3,change_after_first_shipment:true}}});
+ assert.equal(result.code,200);assert.equal(result.body.minimum_paid_cycles,0);
+ assert.equal(result.body.terms.version,'research-builder-2026-11-v3');assert.equal(result.body.terms.minimum_paid_cycles,0);
+ assert.equal(result.body.terms.cancel_after_paid_cycles,0);assert.equal(result.body.terms.change_after_first_shipment,false);
+ assert.equal(result.body.terms.automatic_renewal,false);assert.equal(result.body.subscription_available,false);
+ assert.equal(result.body.total_cents,18008);assert.equal(result.body.terms.discount_bps,4000);
+ assert.match(result.body.reason,/does not create a subscription or charge/);
+});
+
 test('builder quote endpoint enforces origin, JSON, size, method and catalog validation',async()=>{
  for(const [options,status] of [[{headers:{origin:'https://untrusted.example'}},403],[{headers:{'content-type':'text/plain'}},415],
   [{body:'{invalid-json'},400],[{body:[]},400],[{body:{action:'quote',items:items.slice(0,3)}},400],[{body:{action:'quote',items,padding:'x'.repeat(33000)}},413]])assert.equal((await request(options)).code,status);
@@ -115,9 +128,10 @@ test('historical subscription reads require a verified account and remain scoped
  for(const scope of ['mine','admin'])assert.equal((await request({method:'GET',query:{scope}})).code,401);
  const denied=database({user:{id:customer,email_confirmed_at:null}});
  assert.equal((await request({method:'GET',query:{scope:'mine'},headers:{authorization:'Bearer '+token},db:denied.db})).code,401);assert.equal(denied.calls.length,1);
- const subscriptions=[{id:'owned-subscription',customer_id:customer,status:'canceled',research_subscription_cycles:[]},{id:'other-subscription',customer_id:'someone-else',status:'active'}];
+ const subscriptions=[{id:'owned-subscription',customer_id:customer,status:'canceled',minimum_paid_cycles:3,paid_cycles:2,research_subscription_cycles:[]},{id:'other-subscription',customer_id:'someone-else',status:'active'}];
  const fixture=database({subscriptions}),result=await request({method:'GET',query:{scope:'mine'},headers:{authorization:'Bearer '+token},db:fixture.db});
  assert.equal(result.code,200);assert.deepEqual(result.body.subscriptions.map(item=>item.id),['owned-subscription']);assert.deepEqual(result.body.subscriptions[0].actions,[]);
  assert.equal(result.body.subscriptions[0].currency,'USD');assert.equal(result.body.subscription_available,false);
+ assert.equal(result.body.subscriptions[0].minimum_paid_cycles,3);assert.equal(result.body.subscriptions[0].paid_cycles,2);
  assert.ok(fixture.calls.find(call=>call.table==='research_subscriptions').filters.some(filter=>filter[1]==='customer_id'&&filter[2]===customer));
 });

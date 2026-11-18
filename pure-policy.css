@@ -56,6 +56,7 @@ html:root body.pure-policy-page .pure-policy-content h1 {
 
 html:root body.pure-policy-page .pure-policy-content h2 {
   margin: 32px 0 10px;
+  scroll-margin-top: 132px;
   color: #111;
   font-size: 23px;
   font-weight: 800;

@@ -16,7 +16,7 @@
     if (plan.free_shipping) rows.push({text:plan.shipping_label || config.membership_shipping_label || 'Free US shipping on eligible orders'});
     if (plan.early_access) rows.push({text:'Early access to eligible new releases'});
     if (plan.priority_fulfillment) rows.push({text:'Priority order fulfillment'});
-    if (plan.monthly_credit_cents > 0) rows.push({text:`${money(plan.monthly_credit_cents).replace('.00','')} monthly credit after a qualifying $150+ order`, detail:'Issued once per UTC calendar month for a future order. The threshold uses eligible merchandise after discounts, before points or store credit.'});
+    if (plan.monthly_credit_cents > 0) rows.push({text:`${money(plan.monthly_credit_cents).replace('.00','')} monthly credit after a qualifying $150+ order`, creditTerms:true});
     if (plan.free_bac_water_3ml) rows.push({text:'BAC Water 3mL with each eligible product order'});
     if (id === 'member') {
       rows.push({text:'Order history and shipment tracking'});
@@ -49,7 +49,7 @@
         <div class="mx-price">${free ? 'Free' : Number.isSafeInteger(price) ? money(price) : '—'}${free ? '' : `<span>USD / ${period === 'annual' ? 'year' : 'month'}</span>`}</div>
         <p class="mx-billing-note">${free ? 'No membership fee.' : recurring ? `Renews ${period === 'annual' ? 'annually' : 'monthly'} until canceled.` : `One payment. ${period === 'annual' ? 'One year' : 'One month'} of benefits.`}</p>
         ${action}
-        <ul class="mx-features">${benefits(config,id).map(row => `<li${row.strong ? ' class="mx-feature-emphasis"' : ''}><span class="mx-check" aria-hidden="true">✓</span><span>${esc(row.text)}${row.detail ? `<small>${esc(row.detail)}</small>` : ''}</span></li>`).join('')}</ul>
+        <ul class="mx-features">${benefits(config,id).map(row => `<li${row.strong ? ' class="mx-feature-emphasis"' : ''}><span class="mx-check" aria-hidden="true">✓</span><span>${esc(row.text)}${row.creditTerms ? '<a class="mx-benefit-footnote" href="/membership-terms.html#pure-black-credit" aria-label="Read the PURE BLACK monthly credit terms"><span aria-hidden="true">†</span></a>' : ''}</span></li>`).join('')}</ul>
       </article>`;
     }).join('')}</div>`;
   }

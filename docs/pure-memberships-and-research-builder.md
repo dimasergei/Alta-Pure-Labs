@@ -1,4 +1,4 @@
-# PURE memberships and Research Builder
+# PURE memberships and Auto-Stack™
 
 ## Public experience
 
@@ -29,13 +29,39 @@ The monthly credit threshold uses merchandise after discounts and before redempt
 - BLACK gift and priority handling use the paid order's stored entitlement and the generic manual fulfillment queue. No supplier dispatch is added.
 - A refunded qualifying goods order reverses its US$50 reward when sufficient credit remains. If the reward has already been spent, `platinum_credit_reconciliation_required` records the need for manual reconciliation. The original monthly grant key remains reserved to prevent duplicate awards.
 
-## Research Builder
+## Auto-Stack™
+
+Auto-Stack™ is the customer-facing brand. The existing `/research-builder` and `/research-checkout` URLs, API parameters, schema names, contract versions, and saved-selection keys remain unchanged.
 
 One-time mode accepts four distinct injectable compounds, one unit each, with current catalog prices and eligible ordinary checkout benefits. It adds those selections to the existing cart without discarding unrelated items.
 
-The monthly mode is a **non-purchasable preview** of the recovered 40% offer, three-paid-cycle minimum, BAC Water inclusion, and US express shipping. No existing integration has a verified recurring mandate/renewal path. The UI does not create a subscription, collect a recurring consent, schedule deliveries, or apply the subscription discount to a one-time order. Historical subscription records remain readable; renewal and mutation guards stay closed.
+The monthly mode is a **non-purchasable preview** of the 40% offer, BAC Water inclusion, and US express shipping. The proposed monthly subscription continues until canceled, with no minimum deliveries. Customers can edit future selections anytime without waiting for the first shipment, and cancel anytime to stop future renewals. The monthly selector displays **40% off** while the availability notice continues to explain that enrollment is unavailable.
+
+Auto-Stack™ terms `research-builder-2026-11-v3` set `minimum_paid_cycles` and `cancel_after_paid_cycles` to `0`, and `change_after_first_shipment` to `false`. No existing integration has a verified recurring mandate/renewal path, so `automatic_renewal` and `subscription_available` remain `false`. The UI does not create a subscription, collect a recurring consent, schedule deliveries, or apply the subscription discount to a one-time order. Historical subscription records remain readable with their paid-cycle count, recorded dates, and delivery history; the UI does not turn their stored legacy minimum into a new purchase requirement. Renewal and mutation guards stay closed, and account cards direct existing customers to support for changes or cancellation.
 
 Connecting real recurring billing requires a separately verified processor capability, explicit recurring consent and cancellation rules, idempotent renewal receipts, failed-payment handling, and subscription lifecycle tests. Changing a config boolean alone cannot enable it.
+
+The original subscription migration, `supabase/migrations/20261115090000_research_subscriptions.sql`, still defaults `minimum_paid_cycles` to `3` and constrains it to `3`; its provider field permits only `null` or `nmi`. No schema change is part of the v3 preview update. Before actual enrollment is enabled, add a forward migration for the revised terms and verified provider while preserving historical records. Implement accepted recurring consent, cycle-to-order mapping, editable snapshots for future orders, cancellation of future renewals, and idempotent activation from verified payments. The new public terms fields alone do not implement subscription edits, cancellation, or automatic charges.
+
+## Requested renewal model and connection blocker
+
+The requested recurring model is explicit, but **is not activated by this release**:
+
+| Offering | Required renewal behavior |
+| --- | --- |
+| Auto-Stack™ | Renew monthly until canceled; no minimum deliveries; changes apply to future unpaid orders |
+| PURE WHITE / PURE BLACK monthly | Renew every calendar month until canceled |
+| PURE WHITE / PURE BLACK annual | Renew every calendar year until canceled |
+
+Already-paid membership terms must not be enrolled automatically. A new recurring enrollment needs the customer's agreement to the amount or pricing rule, interval, and future charges. Cancellation stops future charges while retaining the current paid membership period and already-paid Auto-Stack™ order.
+
+On November 18, 2026, the live configuration had Rampex hosted card payments, Polygon USDC, manual CAD Interac e-Transfer, and manual US bank transfers. No NMI or PayerURL account or environment configuration was present. There were no Auto-Stack™ subscription records. These are point-in-time observations, not a runtime capability check.
+
+Rampex's [creator-tools article](https://rampex.io/insights/creator-tools-payment-gateway) advertises subscription billing. Its published [API documentation](https://rampex.io/api-docs), [FAQ](https://rampex.io/faq), [MCP documentation](https://rampex.io/mcp), public dashboard/settings code, and [official WooCommerce plugin](https://wordpress.org/plugins/rampex-io-payment-gateway/) did not expose a recurring mandate, reusable merchant payment token, off-session charge operation, or subscription update/cancel interface in this review. The current API operations and site adapters create individual payment sessions. This does not rule out a private Rampex capability; it leaves that capability unverified.
+
+The external dependency is Rampex's actual recurring integration contract and confirmation that the merchant account is enabled for it: hosted consent/setup, mandate identifiers, monthly and annual schedules, variable future Auto-Stack™ amounts, update/cancel operations, idempotency, authenticated lifecycle events, failure handling, and a supported verification procedure. Scheduled payment links or reminders are not automatic collection. Do not enable availability flags or remove the unavailable-billing notice based on the marketing claim alone.
+
+Once that contract is available, implement each renewal as one immutable billing period linked to one paid order and verified provider transaction. Duplicate events must not repeat fulfillment, credits, points, or membership coverage. Membership renewals need a narrow path that permits successive periods for the same subscription while preserving ordinary prepaid duplicate-purchase guards. Auto-Stack™ edits need a versioned future selection and price, with paid orders kept unchanged; cancellation and payment races need reconciliation. Test month-end and leap-year periods, failed payments, duplicate/out-of-order events, future-selection changes, cancellation, and refund isolation before enabling enrollment.
 
 ## Database and deployment
 

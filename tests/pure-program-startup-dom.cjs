@@ -10,7 +10,7 @@ const pricing = require('../lib/research-builder-pricing');
 const catalog = require('../lib/catalog.json');
 const output = path.resolve(process.env.PURE_PROGRAM_BUILD_DIR || 'public-build');
 const items = pricing.catalog(catalog).slice(0,4).map(product => ({id:product.id,size:product.variants[0].size,qty:1}));
-const titles = {'/memberships':'PURE Memberships | PURE','/research-builder':'Research Builder | PURE','/research-checkout':'Research Builder Review | PURE'};
+const titles = {'/memberships':'PURE Memberships | PURE','/research-builder':'AUTO-STACK™ | PURE','/research-checkout':'AUTO-STACK™ Review | PURE'};
 const tick = () => new Promise(resolve => setTimeout(resolve,0));
 const deferred = () => {let resolve;const promise = new Promise(done => {resolve = done;});return {promise,resolve};};
 const response = data => ({ok:true,status:200,json:async () => data});

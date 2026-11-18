@@ -11,6 +11,7 @@ test('generated account navigation includes membership and research plans with t
   const dom=new JSDOM(context.output),d=dom.window.document;
   assert.equal(d.querySelectorAll('a[href="/account/membership"]').length,1);
   assert.equal(d.querySelectorAll('a[href="/account/subscriptions"]').length,1);
+  assert.equal(d.querySelector('a[href="/account/subscriptions"]').textContent,'Auto-Stack™');
   assert.equal(d.querySelector('a[aria-current="page"]').getAttribute('href'),route);
   assert.equal(d.querySelectorAll('#logout').length,1);
   dom.window.close();

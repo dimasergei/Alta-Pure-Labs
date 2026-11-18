@@ -23,7 +23,7 @@ test('production build creates the actual unified site and account integration w
   assert.match(account,/<link rel="stylesheet" href="\/cart-reference\.css">/);
   assert.match(account,/<script src="\/cart-reference\.js"><\/script>/);
   assert.ok(account.indexOf('src="/cart-reference.js"')<account.indexOf('src="/account.js"'),'Shared cart loads before account and checkout routes render');
-  const accountJs=fs.readFileSync(path.join(temp,'account.js'),'utf8');assert.match(accountJs,/AltaWorkspace.renderAccountPanel/);assert.doesNotMatch(accountJs,/No membership, subscription, points, store-credit, or partner actions are enabled in this phase/);assert.match(accountJs,/'\/account\/membership':'Membership'/);assert.match(accountJs,/'\/account\/subscriptions':'Research plans'/);assert.doesNotMatch(accountJs,/\['\/account\/membership','\/account\/subscriptions'\]\.includes\(p\)\)return go\('\/account'\)/);
+  const accountJs=fs.readFileSync(path.join(temp,'account.js'),'utf8');assert.match(accountJs,/AltaWorkspace.renderAccountPanel/);assert.doesNotMatch(accountJs,/No membership, subscription, points, store-credit, or partner actions are enabled in this phase/);assert.match(accountJs,/'\/account\/membership':'Membership'/);assert.match(accountJs,/'\/account\/subscriptions':'AUTO-STACK™'/);assert.doesNotMatch(accountJs,/\['\/account\/membership','\/account\/subscriptions'\]\.includes\(p\)\)return go\('\/account'\)/);
   assert.equal(fs.readFileSync(path.join(temp,'products.js'),'utf8'),source);
   run=spawnSync(process.execPath,['site-build.cjs'],{cwd:temp,encoding:'utf8'});assert.equal(run.status,0,run.stderr);
   assert.equal((fs.readFileSync(path.join(temp,'account.html'),'utf8').match(/id="ap-search-dialog"/g)||[]).length,1);
