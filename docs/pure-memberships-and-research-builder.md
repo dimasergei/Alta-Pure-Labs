@@ -45,7 +45,7 @@ The migration preserves the exact installed v7 USD / v1 CAD goods contracts so t
 
 ## Verification
 
-- `npm run build`: generated routes, assets, policy styling, checkout and storefront regressions.
+- `npm run build`: generated routes, assets, policy styling, checkout and storefront regressions, plus actual published-script startup tests for early/delayed COA responses, locale refreshes, and preserved program selections. Dedicated program clients own their DOM; the shared workspace renderer must preserve it.
 - `npm run test:account-dom`: account, shared navigation, checkout, catalog, and partner interactions.
 - `node tests/pure-customer-pages-audit.cjs`: every published customer page's resources, local destinations, navigation, titles, viewport metadata, IDs, and paid tier names.
 - `npm test`: server and DOM behavior, including membership fees, provider guards, account states, builder routing, and admin scope controls.

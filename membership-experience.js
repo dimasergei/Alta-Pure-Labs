@@ -93,7 +93,7 @@
 
   window.PureMemberships = {displayName, benefits, billingMode, renderCards, mount, page, terms, paidTerm};
   function boot() {
-    const path = location.pathname.replace(/\.html$/,'').replace(/\/$/,'') || '/';
+    const path = location.pathname.replace(/\/+$/,'').replace(/\.html$/,'') || '/';
     const fullPage = path === '/memberships', homePage = path === '/' || path === '/index';
     const config = window.AltaConversionConfig, main = document.getElementById('ap-main');
     if ((!fullPage && !homePage) || !config?.plans || !main) return;
@@ -102,7 +102,7 @@
       if (root && !root.querySelector('.mx-membership-page')) page(root,config,!fullPage);
     };
     render();
-    if (fullPage) document.title = 'Memberships | PURE';
+    if (fullPage) document.title = 'PURE Memberships | PURE';
     if (homePage) new MutationObserver(render).observe(main,{childList:true,subtree:true});
   }
   if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded',boot,{once:true});
