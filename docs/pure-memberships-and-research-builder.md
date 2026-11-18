@@ -39,7 +39,7 @@ Connecting real recurring billing requires a separately verified processor capab
 
 ## Database and deployment
 
-`20261118173524_pure_membership_checkout.sql` adds the order membership reference and priority flag, validates v8 USD / v2 CAD checkout independently, and opens only the supported prepaid paths. Public mutation RPCs remain restricted to `service_role`; helpers and preserved legacy functions are private.
+`20261118180549_pure_membership_checkout.sql` adds the order membership reference and priority flag, validates v8 USD / v2 CAD checkout independently, and opens only the supported prepaid paths. Public mutation RPCs remain restricted to `service_role`; helpers and preserved legacy functions are private.
 
 The migration preserves the exact installed v7 USD / v1 CAD goods contracts so the current deployment can continue during rollout and a code rollback. It aborts if those installed function definitions no longer contain the expected contract versions. Existing orders, balances, subscription history, and fulfillment assignments are retained. Approved active payment methods expand from products to products plus prepaid memberships; receiving destinations and provider activation are unchanged.
 

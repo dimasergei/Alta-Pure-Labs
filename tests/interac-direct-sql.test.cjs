@@ -56,7 +56,7 @@ test('isolated PostgreSQL creates accepted CAD Interac orders, preserves USD led
   });
 
   await fixture.polygon(db);
-  await db.exec(read('20261118173524_pure_membership_checkout.sql'));
+  await db.exec(read('20261118180549_pure_membership_checkout.sql'));
   method=(await db.query('select * from commerce_payment_methods where id=$1',[methodId])).rows[0];
 
   await t.test('SQL independently matches per-unit CAD conversion, coupon allocation and each selected delivery component',async()=>{

@@ -9,7 +9,7 @@ const {PGlite}=require(process.env.PGLITE_MODULE||'@electric-sql/pglite');
 const checkout=require('../lib/direct-checkout'),config=require('../config/checkout.json');
 const delivery=require('../lib/delivery-options'),polygon=require('../lib/polygon-usdc');
 const read=name=>fs.readFileSync(path.join(__dirname,'../supabase/migrations',name),'utf8');
-const migration='20261118173524_pure_membership_checkout.sql';
+const migration='20261118180549_pure_membership_checkout.sql';
 const recipient='0x'+'a'.repeat(40),payer='0x'+'b'.repeat(40);
 const polygonTag=polygon.configuration({POLYGON_USDC_RECIPIENT:recipient}).account_tag;
 const hash=()=> '0x'+randomBytes(32).toString('hex');
