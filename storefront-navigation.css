@@ -37,3 +37,9 @@
 
 @media(min-width:1191px){.ap-header-compact .ap-nav>a,.ap-header-compact .ap-nav-more{font-size:12px}.ap-header-compact .ap-nav{gap:clamp(10px,1.1vw,18px)}}
 @media(max-width:1190px){.ap-header-compact .ap-nav>a,.ap-nav-more{font-size:14px;min-height:48px}.ap-header-popover a{font-size:14px;min-height:44px}}
+
+/* Compact navigation must begin at its scroll origin, including at high zoom. */
+@media(max-width:1190px){
+ .ap-header-compact .ap-nav{justify-content:flex-start}
+ .ap-header-compact .ap-nav>*{flex:0 0 auto}
+}
