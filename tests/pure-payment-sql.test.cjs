@@ -66,6 +66,7 @@ test('isolated PostgreSQL enforces current stacked discounts and cents while pre
   await db.exec(read('20261118070801_pure_interac_cad_checkout.sql'));
   await db.exec(read('20261118180549_pure_membership_checkout.sql'));
   await db.exec(read('20261118231100_pure_quantity_tiers.sql'));
+  await db.exec(read('20261118235500_pure_canadian_free_standard_shipping.sql'));
   assert.deepEqual((await db.query('select pricing,total_cents from commerce_invoices where id=$1',[savedV7.id])).rows[0],v7Before);
   assert.deepEqual((await db.query('select pricing,total_cents from commerce_invoices where id=$1',[savedV6.id])).rows[0],{pricing:savedV6.pricing,total_cents:savedV6.total_cents});
   for(const method of [hosted,payer])for(const country of ['US','CA'])for(const coupon of ['','BLACKFRIDAY15'])for(const cents of [1,9,19,21,1999,3001,9999]){
