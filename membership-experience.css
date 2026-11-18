@@ -36,8 +36,11 @@
 .mx-choose:hover{background:#333;border-color:#333;color:#fff}
 .mx-choose-secondary{background:transparent;color:#111;border-color:#c8c8c8}
 .mx-choose-secondary:hover{background:#e8e8e8;border-color:#aaa;color:#111}
+/* Tier-specific foregrounds outrank the shared .ap-site a inheritance rule. */
+.mx-card-white .mx-choose{color:#fff}
 .mx-card-black .mx-choose{color:#111;background:#fff;border-color:#fff}
 .mx-card-black .mx-choose:hover{background:#e4e4e4;border-color:#e4e4e4}
+.mx-card-black .mx-choose:focus-visible{outline-color:#fff!important}
 .mx-choose:disabled{cursor:not-allowed;opacity:.55}
 .mx-current-note{min-height:46px;margin:0;display:flex;align-items:center;font-size:12px;font-weight:700;line-height:1.5}
 .mx-features{margin:23px 0 0;padding:20px 0 0;border-top:1px solid #ddd;list-style:none;display:grid;gap:12px}

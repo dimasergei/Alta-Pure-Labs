@@ -126,3 +126,12 @@ html:root body.ap-site .nlx-checkout-root .nlx-billing-other :is(input, select) 
   html:root body.ap-site #ap-cart-content { overflow-y: auto; }
   html:root body.ap-site .nlc-scrollable-items { flex: 0 0 auto; overflow: visible; }
 }
+/* Very short viewports need the full scroll area, including at high browser zoom. */
+@media (max-height: 420px) {
+  html:root:has(body.ap-site) { scroll-padding-top: 12px; scroll-padding-bottom: 12px; }
+  html:root body.ap-site .ap-announcement,
+  html:root body.ap-site .ap-header.ap-header-compact {
+    position: relative !important;
+    top: auto !important;
+  }
+}

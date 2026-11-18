@@ -4,6 +4,9 @@ const patch=(file,fn)=>{const path='public-build/'+file;fs.writeFileSync(path,fn
 const replace=(s,from,to)=>{if(!s.includes(from))throw Error('Account integration anchor missing: '+from.slice(0,100));return s.replace(from,to);};
 patch('account.html',s=>replace(s,'<script src="/account.js">','<script src="/account-experience.js"></script><script src="/account.js">').replace('</head>','<link rel="stylesheet" href="/account-experience.css"></head>'));
 patch('account.js',s=>{
+ for(const signature of ["function login(error=''){","function signup(error=''){","function reset(recoveryMode){"]){
+  s=replace(s,signature,signature+"document.body.classList.remove('ap-checkout-page');document.body.classList.add('ap-auth-page');");
+ }
  const start=s.indexOf('function accountNav(active)'),end=s.indexOf('async function overview()',start);
  if(start<0||end<0)throw Error('Account navigation missing');
  s=s.slice(0,start)+`function accountNav(active){const current=active.startsWith('/account/orders')||active==='/account/tracking'?'/account/purchases':active;const items=[['Overview','/account'],['Orders','/account/purchases'],['Membership','/account/membership'],['Research plans','/account/subscriptions'],['Points','/account/points'],['Store Credit','/account/store-credit'],['Profile','/account/profile'],['Partner','/account/partner'],['Support','/account/requests']];return '<nav class="account-nav" aria-label="Account sections">'+items.map(([label,url])=>'<a href="'+url+'"'+(current===url?' aria-current="page"':'')+'>'+label+'</a>').join('')+'<button type="button" id="logout" class="account-nav-logout">Log out</button></nav>';}

@@ -28,7 +28,7 @@ test('site generation removes retired account redirects and restores authenticat
   const account=fs.readFileSync(path.join(temp,'account.js'),'utf8');
   assert.doesNotMatch(account,/\['\/account\/membership','\/account\/subscriptions'\]\.includes\(p\)\)return go\('\/account'\)/);
   assert.doesNotMatch(account,/p==='\/research-builder'[^;]*return go\('\/shop'\)/);
-  assert.match(account,/\['\/account\/points','\/account\/store-credit','\/account\/partner','\/account\/membership','\/account\/subscriptions'\]\.includes\(p\)\)\{if\(!user\)return go\('\/account\/login'\);return placeholder\(p\)/);
+  assert.match(account,/\['\/account\/points','\/account\/store-credit','\/account\/partner','\/account\/membership','\/account\/subscriptions'\]\.includes\(p\)\)\{if\(!user\)return go\('\/account\/login\?returnTo='\+encodeURIComponent\(p\+location\.search\)\);return placeholder\(p\)/);
   assert.match(account,/window\.AltaWorkspace\.renderAccountPanel\(path,document\.getElementById\('ap-account-panel'\),auth,user\)/);
  }finally{fs.rmSync(temp,{recursive:true,force:true});}
 });
