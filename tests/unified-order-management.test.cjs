@@ -55,7 +55,7 @@ test('unified detail exposes guarded payment controls and true supplier readines
  const req={method:'GET',headers:{'x-admin-password':password}},params=new URLSearchParams({view:'detail',id});
  let code,payload;const res={setHeader(){},status(n){code=n;return this},json(x){payload=x;return x}};
  await handle(req,res,params,{db,env});assert.equal(code,200);assert.equal(payload.manual_payment_allowed,true);assert.deepEqual(payload.payment_method,{id:methodId,kind:'bank_transfer',label:'US wire',currency:'USD'});assert.equal(payload.supplier_enabled,true);
- assert.deepEqual(payload.fulfillment_provider,{name:'99Purity Peptides',route:'manual',automatic_submission:false});
+ assert.deepEqual(payload.fulfillment_provider,{route:'manual',automatic_submission:false});
  assert.equal(JSON.stringify(payload).includes(env.LOTUS_PARTNER_API_KEY),false);
  values.commerce_supplier_settings.enabled=false;await handle(req,res,params,{db,env});assert.equal(payload.supplier_enabled,false);
  values.commerce_supplier_settings.enabled=true;await handle(req,res,params,{db,env:{...env,LOTUS_PARTNER_API_KEY:''}});assert.equal(payload.supplier_enabled,false);

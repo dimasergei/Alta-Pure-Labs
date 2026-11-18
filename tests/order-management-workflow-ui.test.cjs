@@ -37,10 +37,10 @@ test('separately opened payment forms use independent receipt identifiers',async
  await ctx.w.AltaFulfillment.manage(fixture().row);f=ctx.form('Confirm received bank payment');field(f,'bank_reference','BANK-SECOND');f.querySelector('[type=checkbox]').checked=true;await submit(f);
  assert.notEqual(ctx.writes()[0].receipt_id,ctx.writes()[1].receipt_id);
 });
-test('supplier sheets use the authenticated API wrapper with blob responses and no writes',async t=>{
+test('generic fulfillment sheets use the authenticated API wrapper with blob responses and no writes',async t=>{
  const ctx=await setup(t,fixture());await ctx.button('Download PDF').onclick();await ctx.button('Download CSV').onclick();
  assert.equal(ctx.writes().length,0);assert.equal(ctx.objectURLs.length,2);assert.deepEqual(ctx.downloads.map(d=>d.name),['fulfillment-ORD-TEST91.pdf','fulfillment-ORD-TEST91.csv']);
- const exports=ctx.calls.filter(c=>c.options?.responseType==='blob');assert.equal(exports.length,2);for(const c of exports){const url=new URL(c.url,'https://altapurelabs.com');assert.equal(url.pathname,'/api/admin-orders');assert.equal(url.searchParams.get('view'),'fulfillment-sheet');assert.equal(url.searchParams.get('source'),'commerce');assert.equal(url.searchParams.get('id'),id)}assert.match(ctx.w.document.querySelector('.uc-export').textContent,/HOLD \/ DO NOT SHIP/);
+ const exports=ctx.calls.filter(c=>c.options?.responseType==='blob');assert.equal(exports.length,2);for(const c of exports){const url=new URL(c.url,'https://altapurelabs.com');assert.equal(url.pathname,'/api/admin-orders');assert.equal(url.searchParams.get('view'),'fulfillment-sheet');assert.equal(url.searchParams.get('source'),'commerce');assert.equal(url.searchParams.get('id'),id)}assert.match(ctx.w.document.querySelector('.uc-export').textContent,/HOLD \/ DO NOT SHIP/);assert.equal(ctx.w.document.querySelector('.uc-export h4').textContent,'Fulfillment sheet');assert.doesNotMatch(ctx.w.document.querySelector('.uc-export').textContent,/99Purity|Lotus|supplier/i);
 });
 test('manual shipment is a complete-order transition and refuses blank tracking',async t=>{
  const ctx=await setup(t,fixture('paid',{allocations:manual()})),f=ctx.form('Update complete order');assert.ok(f);assert.deepEqual([...f.elements.namedItem('status').options].map(o=>o.value),['processing','shipped']);assert.doesNotMatch(ctx.w.document.querySelector('dialog').textContent,/Update line ·|Save line status/);
@@ -52,15 +52,15 @@ test('shipped manual order supports delivery and tracking correction separately'
  assert.deepEqual(ctx.writes()[0],{action:'update_tracking',id,version:7,tracking_carrier:'UPS',tracking_number:'1Z-CORRECTED-456',note:'Correct transposed tracking number'});
  f=ctx.form('Update complete order');assert.deepEqual([...f.elements.namedItem('status').options].map(o=>o.value),['delivered']);field(f,'note','Delivery confirmed by carrier');await submit(f);assert.equal(ctx.writes()[1].action,'update_order');assert.equal(ctx.writes()[1].status,'delivered');
 });
-test('Lotus controls never offer manual shipment before synced shipping',async t=>{
+test('historical integration orders cannot offer a duplicate manual shipment',async t=>{
  const allocations=[{variant_key:'bpc-157|10mg',route:'lotus',supplier_name:'Lotus',status:'pending',version:1}],jobs=[{supplier_id:'lotus-fixture',status:'submitted',provider_status:'owed',reference:'ALTA-FIXTURE',has_payload:true}];
  const pending=await setup(t,fixture('processing',{allocations,jobs}));assert.equal(pending.form('Update complete order'),undefined);assert.equal(pending.form('Correct shipment tracking'),undefined);assert.equal(pending.form('Send shipping label to Lotus'),undefined);assert.doesNotMatch(pending.w.document.querySelector('dialog').textContent,/Update line ·/);
  const shipped=await setup(t,fixture('shipped',{allocations:[{...allocations[0],status:'shipped'}],jobs:[{...jobs[0],status:'shipped',provider_status:'shipped'}]}));assert.equal(shipped.form('Correct shipment tracking'),undefined);assert.deepEqual([...shipped.form('Update complete order').elements.namedItem('status').options].map(o=>o.value),['delivered']);
 });
-test('historical Lotus payment never restores disabled supplier write controls',async t=>{
+test('historical supplier data remains hidden while duplicate shipment controls stay blocked',async t=>{
  const ctx=await setup(t,fixture('processing',{supplier_enabled:true,allocations:[{variant_key:'bpc-157|10mg',route:'lotus',status:'pending',version:1}],jobs:[{supplier_id:'lotus-fixture',status:'submitted',provider_status:'paid',reference:'ALTA-FIXTURE',has_payload:true}]}));
- const text=ctx.w.document.querySelector('.uc-supplier').textContent;
- assert.match(text,/Previous supplier record/);assert.match(text,/ALTA-FIXTURE/);assert.match(text,/Do not send a duplicate fulfillment request/);assert.match(text,/Automatic Lotus processing is disabled/);
+ const text=ctx.w.document.querySelector('dialog').textContent;
+ assert.equal(ctx.w.document.querySelector('.uc-supplier'),null);assert.doesNotMatch(text,/Previous supplier record|ALTA-FIXTURE|99Purity|Lotus/i);assert.match(text,/existing fulfillment record needs review/i);assert.match(text,/Fulfillment has already started/);
  for(const label of ['Check Lotus availability & cost','Attach label to Lotus order','Assign complete order to Lotus','Retry Lotus job','Request supplier cancellation'])assert.equal(ctx.button(label),undefined,label);
  assert.equal(ctx.form('Assign complete order to 99Purity Peptides'),undefined);assert.equal(ctx.form('Update complete order'),undefined);assert.equal(ctx.writes().length,0);
 });
@@ -68,30 +68,40 @@ test('activity history treats notes, references and actor names as text',async t
  const payload='<img src=x onerror="window.INJECTED=1">',ctx=await setup(t,fixture('paid',{history:[{action:'payment_received',actor:payload,note:payload,reference:payload,from:'accepted',to:'paid',created_at:'2026-11-16T07:00:00Z'}]}));
  const history=[...ctx.w.document.querySelectorAll('details.uc-history')].find(x=>x.querySelector('summary')?.textContent==='Activity history');assert.ok(history);assert.match(history.textContent,/Activity history/);assert.ok(history.textContent.includes(payload));assert.equal(history.querySelector('img'),null);assert.equal(ctx.w.INJECTED,undefined);assert.match(history.textContent,/Awaiting payment → Paid/);
 });
-function apiWrapper(fetch,logout=()=>{}){const html=fs.readFileSync('admin-orders.html','utf8'),start=html.indexOf('    async function api(path, options = {}) {'),end=html.indexOf('    async function loadOrders()',start);assert.ok(start>=0&&end>start);return new Function('fetch','adminPassword','logout',html.slice(start,end)+'\nreturn api;')(fetch,'fixture-secret',logout)}
-test('admin API blob mode keeps authentication and never passes responseType to fetch',async()=>{
+test('supplier assignment history uses a generic summary while retaining ordinary order history',async t=>{
+ const ctx=await setup(t,fixture('paid',{history:[
+  {action:'fulfillment_assign',actor:'Lotus worker',note:'Send full order to 99Purity Peptides',reference:'99P-SUPPLIER-123',created_at:'2026-11-16T07:00:00Z'},
+  {action:'lotus_manual_takeover',actor:'Lotus',note:'Lotus cancellation was confirmed',reference:'LOTUS-123',created_at:'2026-11-16T07:01:00Z'},
+  {action:'edit_shipping',actor:'admin',note:'Apartment number corrected',created_at:'2026-11-16T07:02:00Z'},
+  {action:'payment_received',actor:'admin',reference:'BANK-ORDER-123',from:'accepted',to:'paid',created_at:'2026-11-16T07:03:00Z'}
+ ]}));
+ const history=[...ctx.w.document.querySelectorAll('details.uc-history')].find(x=>x.querySelector('summary')?.textContent==='Activity history');
+ assert.equal(history.querySelectorAll('.uc-history-item').length,4);assert.match(history.textContent,/Fulfillment record updated/);assert.match(history.textContent,/Apartment number corrected/);assert.match(history.textContent,/BANK-ORDER-123/);assert.match(history.textContent,/Awaiting payment → Paid/);assert.doesNotMatch(history.textContent,/99Purity|Lotus|99P-SUPPLIER-123/i);assert.equal(ctx.writes().length,0);
+});
+function apiWrapper(fetch,logout=()=>{}){const html=fs.readFileSync('admin-orders.html','utf8'),start=html.indexOf('    async function api(path, options = {}) {'),end=html.indexOf('    async function loadOrders()',start);assert.ok(start>=0&&end>start);return new Function('window','logout',html.slice(start,end)+'\nreturn api;')({PureAdminAuth:{fetch}},logout)}
+test('admin API blob mode uses the shared authenticated client without forwarding responseType',async()=>{
  const blob={fixture:true};let seen;const api=apiWrapper(async(path,options)=>{seen={path,options};return{ok:true,status:200,blob:async()=>blob,json:()=>{throw Error('Do not parse a binary download as JSON')}}});
- assert.equal(await api('/api/admin-orders?view=fulfillment-sheet',{responseType:'blob',headers:{Accept:'application/pdf'}}),blob);assert.equal(seen.options.headers['x-admin-password'],'fixture-secret');assert.equal(seen.options.headers.Accept,'application/pdf');assert.equal(seen.options.cache,'no-store');assert.equal('responseType'in seen.options,false);
+ assert.equal(await api('/api/admin-orders?view=fulfillment-sheet',{responseType:'blob',headers:{Accept:'application/pdf'}}),blob);assert.equal(seen.path,'/api/admin-orders?view=fulfillment-sheet');assert.equal(seen.options.headers.Accept,'application/pdf');assert.equal('responseType'in seen.options,false);
 });
 test('admin API binary download errors still enforce logout and readable JSON errors',async()=>{
  let loggedOut=false;const expired=apiWrapper(async()=>({ok:false,status:401,json:async()=>({error:'Unauthorized'})}),()=>{loggedOut=true});await assert.rejects(()=>expired('/export',{responseType:'blob'}),/Session rejected/);assert.equal(loggedOut,true);
  const rejected=apiWrapper(async()=>({ok:false,status:409,json:async()=>({error:'No physical fulfillment order'})}));await assert.rejects(()=>rejected('/export',{responseType:'blob'}),/No physical fulfillment order/);
 });
-test('unpaid orders show 99Purity manual preparation without submitting or quoting',async t=>{
+test('unpaid orders keep generic preparation and payment controls without supplier panels or writes',async t=>{
  const ctx=await setup(t,fixture('accepted',{supplier_enabled:true,manual_payment_allowed:true}));
- const supplier=ctx.w.document.querySelector('.uc-supplier').textContent;
- assert.match(supplier,/Fulfillment supplier99Purity Peptides/);assert.match(supplier,/SubmissionManual/);assert.match(supplier,/No supplier order is sent automatically/);assert.match(supplier,/sheet remains on hold until funds are received/);
- assert.match(ctx.form('Confirm received bank payment').textContent,/It does not send a supplier order/);assert.equal(ctx.form('Update complete order'),undefined);assert.equal(ctx.button('Check Lotus availability & cost'),undefined);assert.equal(ctx.writes().length,0);
+ assert.equal(ctx.w.document.querySelector('.uc-supplier'),null);assert.doesNotMatch(ctx.w.document.querySelector('dialog').textContent,/99Purity|Lotus|supplier/i);assert.match(ctx.w.document.querySelector('.uc-export').textContent,/HOLD \/ DO NOT SHIP/);
+ assert.match(ctx.form('Confirm received bank payment').textContent,/Verify that the full amount has arrived/);assert.equal(ctx.form('Update complete order'),undefined);assert.equal(ctx.button('Check Lotus availability & cost'),undefined);assert.equal(ctx.writes().length,0);
 });
 test('stale Lotus enable flag and mappings cannot expose supplier submission actions',async t=>{
  const allocations=manual(),ctx=await setup(t,fixture('paid',{supplier_enabled:true,allocations,mappings:allocations.map(a=>({variant_key:a.variant_key,verified_at:'2026-11-11'}))}));
  const labels=[...ctx.w.document.querySelectorAll('dialog button')].map(b=>b.textContent).join(' | ');
- assert.doesNotMatch(labels,/Lotus|supplier cancellation/);assert.equal(ctx.form('Assign complete order to 99Purity Peptides'),undefined);assert.match(ctx.w.document.querySelector('.uc-supplier').textContent,/99Purity Peptides/);assert.equal(ctx.writes().length,0);
+ assert.doesNotMatch(labels,/Lotus|supplier cancellation/);assert.equal(ctx.form('Assign complete order to 99Purity Peptides'),undefined);assert.equal(ctx.w.document.querySelector('.uc-supplier'),null);assert.doesNotMatch(ctx.w.document.querySelector('dialog').textContent,/99Purity|Lotus|supplier/i);assert.equal(ctx.writes().length,0);
 });
-test('confirmed Lotus cancellation unlocks manual supplier reassignment and shipment, not resubmission',async t=>{
+test('confirmed previous cancellation allows complete manual shipment without restoring supplier assignment',async t=>{
  const ctx=await setup(t,fixture('processing',{allocations:manual().map(a=>({...a,supplier_name:'Previous supplier'})),jobs:[{supplier_id:'old-lotus',reference:'OLD-LOTUS',has_payload:true,status:'cancelled',provider_status:'cancelled',takeover_requested:true}],mappings:[{variant_key:'bpc-157|10mg',verified_at:'2026-11-11'},{variant_key:'ghk-cu|50mg',verified_at:'2026-11-11'}]}));
- const f=ctx.form('Update complete order');assert.ok(f,'Manual dispatch should remain manageable after confirmed supplier cancellation');assert.deepEqual([...f.elements.namedItem('status').options].map(o=>o.value),['shipped']);assert.ok(ctx.form('Assign complete order to 99Purity Peptides'));assert.equal(ctx.form('Route complete order to Lotus'),undefined);assert.equal(ctx.form('Edit shipping address'),undefined);
+ const f=ctx.form('Update complete order');assert.ok(f,'Manual dispatch should remain manageable after confirmed supplier cancellation');assert.deepEqual([...f.elements.namedItem('status').options].map(o=>o.value),['shipped']);assert.equal(ctx.form('Assign complete order to 99Purity Peptides'),undefined);assert.equal(ctx.form('Route complete order to Lotus'),undefined);assert.equal(ctx.form('Edit shipping address'),undefined);assert.doesNotMatch(ctx.w.document.querySelector('dialog').textContent,/Previous supplier|OLD-LOTUS|99Purity/i);
 });
-test('unassigned manual fulfillment explains assignment requirement instead of offering a rejected shipment',async t=>{
- const ctx=await setup(t,fixture('processing',{allocations:manual().map(a=>({...a,supplier_name:''}))}));assert.equal(ctx.form('Update complete order'),undefined);assert.match(ctx.w.document.querySelector('dialog').textContent,/assign.*supplier/i);
+test('manual fulfillment with no named supplier can record actual dispatch with tracking',async t=>{
+ const ctx=await setup(t,fixture('processing',{allocations:manual().map(a=>({...a,supplier_name:''}))})),f=ctx.form('Update complete order');assert.ok(f);assert.deepEqual([...f.elements.namedItem('status').options].map(o=>o.value),['shipped']);assert.doesNotMatch(ctx.w.document.querySelector('dialog').textContent,/assign.*supplier/i);
+ field(f,'carrier','Canada Post');field(f,'tracking','CA-FIXTURE-123');field(f,'note','All items packed and dispatched');await submit(f);assert.deepEqual(ctx.writes(),[{action:'update_order',id,version:7,status:'shipped',note:'All items packed and dispatched',tracking_carrier:'Canada Post',tracking_number:'CA-FIXTURE-123'}]);
 });

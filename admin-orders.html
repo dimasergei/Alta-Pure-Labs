@@ -963,7 +963,7 @@
     }
 
 </style>
-<link rel="stylesheet" href="/admin-fulfillment.css?v=20261117b"><style id="simplified-order-ui">
+<link rel="stylesheet" href="/admin-fulfillment.css?v=20261117e"><style id="simplified-order-ui">
 #orders-message{display:none!important}
 #admin-notifications-section>.notification-panel{display:none!important}
 .fh-advanced {margin:0 0 14px; padding:9px 12px;border:1px solid var(--border);border-radius:8px;color:var(--muted)}
@@ -1102,7 +1102,7 @@
                 <select id="fulfillment-filter">
                   <option value="">All fulfillment statuses</option>
                   <option value="unfulfilled">Unfulfilled</option><option value="processing">Processing</option>
-                  <option value="awaiting_supplier">Awaiting supplier</option><option value="partially_shipped">Partially shipped</option>
+                  <option value="awaiting_supplier">Awaiting fulfillment</option><option value="partially_shipped">Partially shipped</option>
                   <option value="shipped">Shipped</option><option value="delivered">Delivered</option><option value="canceled">Canceled</option>
                 </select>
               </label>
@@ -1120,7 +1120,7 @@
                 <button class="tab active" data-status="active" type="button" aria-pressed="true">Active</button>
                 <button class="tab" data-status="paid" type="button" aria-pressed="false">Paid</button>
                 <button class="tab" data-status="processing" type="button" aria-pressed="false">Processing</button>
-                <button class="tab" data-status="awaiting_supplier" type="button" aria-pressed="false">Awaiting Supplier</button>
+                <button class="tab" data-status="awaiting_supplier" type="button" aria-pressed="false">Awaiting fulfillment</button>
                 <button class="tab" data-status="shipped" type="button" aria-pressed="false">Shipped</button>
                 <button class="tab" data-status="delivered" type="button" aria-pressed="false">Delivered</button>
                 <button class="tab" data-status="canceled" type="button" aria-pressed="false">Canceled</button>
@@ -1171,7 +1171,7 @@
 
           <div class="bulk-actions">
             <button id="generate-pdf" class="ghost" type="button">
-              Supplier report / PDF
+              Fulfillment report / PDF
             </button>
             <button id="archive-selected" class="ghost" type="button">
               Archive
@@ -1361,7 +1361,7 @@
   <script src="/admin-auth.js?v=20261117c"></script>
   <link rel="stylesheet" href="/admin-shipping-labels.css?v=20261117d">
   <script src="/admin-shipping-labels.js?v=20261117d"></script>
-  <script src="/admin-fulfillment.js?v=20261117d"></script>
+  <script src="/admin-fulfillment.js?v=20261117e"></script>
   <script src="/admin-unified-notifications.js"></script>
   <script>
     const $ = (selector) => document.querySelector(selector);
@@ -1434,7 +1434,7 @@
     const LABELS = {
       unfulfilled: 'Unfulfilled',
       processing: 'Processing',
-      awaiting_supplier: 'Awaiting Supplier',
+      awaiting_supplier: 'Awaiting fulfillment',
       partially_shipped: 'Partially Shipped',
       shipped: 'Shipped',
       delivered: 'Delivered',
@@ -1838,11 +1838,6 @@
               <span class="item-variant">
                 ${escapeHtml(item.variant_size)}
                 × ${escapeHtml(item.quantity)}
-                ${
-                  item.supplier_sku
-                    ? ` · SKU: ${escapeHtml(item.supplier_sku)}`
-                    : ''
-                }
               </span>
             </div>
             <strong>
@@ -2033,16 +2028,6 @@
                         </select>
                       </label>
 
-                      <label class="field full">
-                        Supplier status
-                        <input
-                          name="supplier_status"
-                          maxlength="254"
-                          value="${escapeHtml(order.supplier_status || '')}"
-                          placeholder="e.g. Requested, Confirmed, Awaiting tracking"
-                        >
-                      </label>
-
                       <label class="field">
                         Carrier
                         <input
@@ -2137,8 +2122,8 @@
         if (!window.confirm(
           'Cancel order ' + (order.order_number || order.id) +
           '?\\n\\nThis changes fulfillment status to Canceled and may email the customer.' +
-          (paid ? '\\n\\nThis order has a payment. CANCELLATION DOES NOT REFUND IT. Check the payment and supplier before proceeding.' :
-           '\\n\\nThis does not issue a refund or reverse any supplier shipment.')
+          (paid ? '\\n\\nThis order has a payment. CANCELLATION DOES NOT REFUND IT. Check the payment and fulfillment before proceeding.' :
+           '\\n\\nThis does not issue a refund or reverse an existing shipment.')
         )) return;
         quickCancel.disabled = true;
         quickCancel.textContent = 'Canceling…';
@@ -2149,7 +2134,7 @@
             body: JSON.stringify({order_id:order.id,fulfillment_status:'canceled'})
           });
           await loadOrders();
-          setNotice('Order ' + (order.order_number || order.id) + ' marked Canceled. Review notifications and any supplier activity. No refund was issued.');
+          setNotice('Order ' + (order.order_number || order.id) + ' marked Canceled. Review notifications and any fulfillment activity. No refund was issued.');
         } catch (error) {
           quickCancel.disabled = false;
           quickCancel.textContent = 'Cancel order';
@@ -2286,7 +2271,6 @@
           body: JSON.stringify({
             order_id: order.id,
             fulfillment_status: nextStatus,
-            supplier_status: data.get('supplier_status'),
             priority: data.get('priority'),
             tracking_carrier: data.get('tracking_carrier'),
             tracking_number: data.get('tracking_number'),
@@ -2417,7 +2401,7 @@
       updateArchive('unarchive');
     });
 
-    async function generateSupplierReport() {
+    async function generateFulfillmentReport() {
       const orders = loadedOrders.filter((order) =>
         selectedOrders.has(order.id)
       );
@@ -2432,38 +2416,7 @@
       const report = window.open('', '_blank', 'width=1000,height=850');
 
       if (!report) {
-        setNotice('Allow pop-ups to open the supplier report.', true);
-        return;
-      }
-
-      try {
-        const reportResult = await api('/api/admin-orders', {
-          method: 'PATCH',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            action: 'supplier_report_generated',
-            order_ids: orders.map((order) => order.id)
-          })
-        });
-
-        const timestamps = new Map(
-          (reportResult.orders || []).map((order) => [
-            order.id,
-            order.supplier_report_generated_at
-          ])
-        );
-
-        loadedOrders = loadedOrders.map((order) =>
-          timestamps.has(order.id)
-            ? {
-                ...order,
-                supplier_report_generated_at: timestamps.get(order.id)
-              }
-            : order
-        );
-      } catch (error) {
-        report.close();
-        setNotice(error.message, true);
+        setNotice('Allow pop-ups to open the fulfillment report.', true);
         return;
       }
 
@@ -2472,8 +2425,7 @@
       orders.forEach((order) => {
         (order.store_order_items || []).forEach((item) => {
           const key = JSON.stringify([
-            item.supplier_name || '',
-            item.supplier_sku || '',
+            item.product_id || '',
             item.product_name || '',
             item.variant_size || ''
           ]);
@@ -2500,8 +2452,6 @@
         <tr>
           <td>${escapeHtml(item.product_name)}</td>
           <td>${escapeHtml(item.variant_size)}</td>
-          <td>${escapeHtml(item.supplier_sku || '—')}</td>
-          <td>${escapeHtml(item.supplier_name || '—')}</td>
           <td>${escapeHtml(item.quantity)}</td>
         </tr>
       `).join('');
@@ -2511,7 +2461,12 @@
           <h2>Order ${escapeHtml(order.order_number || order.id)}</h2>
 
           <p class="meta">
-            Ordered: ${escapeHtml(formatDate(order.created_at))}
+            Ordered: ${escapeHtml(formatDate(order.created_at))}<br>
+            Payment: ${escapeHtml(formatStatus(order.payment_status))}<br>
+            Fulfillment: ${escapeHtml(formatStatus(order.fulfillment_status))}<br>
+            ${order.payment_status === 'paid' && ['unfulfilled','processing','awaiting_supplier'].includes(order.fulfillment_status) && !order.tracking_number
+              ? 'Verify order details and any existing shipment before dispatch.'
+              : 'REFERENCE ONLY — DO NOT SHIP. Review payment and any existing fulfillment first.'}
           </p>
 
           <h3>Ship to</h3>
@@ -2524,7 +2479,6 @@
               <tr>
                 <th>Product</th>
                 <th>Size</th>
-                <th>Supplier SKU</th>
                 <th>Quantity</th>
               </tr>
             </thead>
@@ -2533,16 +2487,8 @@
                 <tr>
                   <td>
                     ${escapeHtml(item.product_name)}
-                    ${
-                      item.fulfillment_notes
-                        ? `<br><small>${escapeHtml(
-                            item.fulfillment_notes
-                          )}</small>`
-                        : ''
-                    }
                   </td>
                   <td>${escapeHtml(item.variant_size)}</td>
-                  <td>${escapeHtml(item.supplier_sku || '—')}</td>
                   <td>${escapeHtml(item.quantity)}</td>
                 </tr>
               `).join('')}
@@ -2633,7 +2579,7 @@
 
           <h1>PURE</h1>
           <p class="meta">
-            Supplier fulfillment report<br>
+            Fulfillment report<br>
             Report: ${escapeHtml(reportId)}<br>
             Generated: ${escapeHtml(formatDate(new Date().toISOString()))}<br>
             Orders included: ${orders.length}<br>
@@ -2646,8 +2592,6 @@
               <tr>
                 <th>Product</th>
                 <th>Size</th>
-                <th>Supplier SKU</th>
-                <th>Supplier</th>
                 <th>Total quantity</th>
               </tr>
             </thead>
@@ -2662,7 +2606,7 @@
             use, ingestion, injection, diagnosis, treatment, or consumption.
             <br><br>
             This document contains shipping information.
-            Share only with the supplier responsible for these orders.
+            Share only with the person packing or dispatching these orders.
             Retail prices and internal admin notes are intentionally omitted.
           </div>
         </body>
@@ -2673,10 +2617,10 @@
       report.document.querySelector('#print-report')
         .addEventListener('click', () => report.print());
 
-      setNotice('Supplier report opened. Use Print / Save as PDF in that window.');
+      setNotice('Fulfillment report opened. Use Print / Save as PDF in that window.');
     }
 
-    $('#generate-pdf').addEventListener('click', generateSupplierReport);
+    $('#generate-pdf').addEventListener('click', generateFulfillmentReport);
 
     function openAdminWorkspace() {
       if (workspaceOpening) return workspaceOpening;
@@ -2914,8 +2858,6 @@
         'Unit Price Cents',
         'Line Total Cents',
         'Currency',
-        'Supplier',
-        'Supplier SKU',
         'Lot Number',
         'Carrier',
         'Tracking Number'
@@ -2971,8 +2913,6 @@
             item?.unit_price_cents,
             lineTotal,
             String(order.currency || 'usd').toUpperCase(),
-            item?.supplier_name,
-            item?.supplier_sku,
             item?.lot_number,
             order.tracking_carrier,
             order.tracking_number

@@ -29,31 +29,34 @@ test('unpaid current order exports full contact and physical BOGO units under a 
   }
 });
 
-test('unallocated orders name 99Purity as intended manual supplier without inventing a SKU or submission', () => {
+test('unallocated orders use an order-only template without inventing a supplier or submission', () => {
   const s=sheet();
-  assert.equal(s.items[0].supplier,'99Purity Peptides');
-  assert.equal(s.items[0].route,'manual');
-  assert.equal(s.items[0].supplier_sku,'');
+  assert.equal(Object.hasOwn(s.items[0],'supplier'),false);
+  assert.equal(Object.hasOwn(s.items[0],'route'),false);
+  assert.equal(Object.hasOwn(s.items[0],'supplier_sku'),false);
   assert.equal(s.items[0].fulfillment_status,'unallocated');
-  assert.equal(s.supplier_order,'');
+  assert.equal(Object.hasOwn(s,'supplier_order'),false);
+  assert.equal(Object.hasOwn(s,'supplier_reference'),false);
   assert.equal(s.release.ready,false);
   for(const output of [buildFulfillmentCsv(s).toString('utf8'),buildFulfillmentPdf(s).toString('latin1')]) {
-    assert.match(output,/99Purity Peptides/);
-    assert.doesNotMatch(output,/Lotus/);
+    assert.match(output,/Fulfillment Sheet/);
+    assert.doesNotMatch(output,/99Purity|Lotus|Supplier|Route/);
     assert.match(output,/DO NOT SHIP/);
   }
 });
 
-test('99Purity paid allocations export exact physical units and preserve historical supplier evidence', () => {
+test('paid allocations export exact physical units while historical supplier evidence stays private', () => {
   const manual=sheet({status:'paid'},{allocations:[allocation({supplier_name:'99Purity Peptides'})]});
-  assert.equal(manual.items[0].supplier,'99Purity Peptides');
   assert.equal(manual.items[0].total,4);
   assert.equal(manual.release.ready,true);
-  const previous=sheet({status:'paid'},{allocations:[allocation({supplier_name:'Lotus Labs',route:'lotus',product:41,vials:1})],jobs:[{supplier_id:'L-EXISTING'}]});
-  assert.equal(previous.items[0].supplier,'Lotus Labs');
-  assert.match(previous.items[0].supplier_sku,/Lotus product 41/);
+  const previous=sheet({status:'paid'},{allocations:[allocation({supplier_name:'Lotus Labs',route:'lotus',product:41,vials:1})],jobs:[{supplier_id:'L-EXISTING',reference:'PRIVATE-EXTERNAL-REFERENCE',payload:{private:'PRIVATE-PROVIDER-PAYLOAD'}}]});
   assert.equal(previous.release.ready,false);
-  assert.match(previous.release.title,/SUPPLIER ACTIVITY/);
+  assert.match(previous.release.title,/FULFILLMENT ACTIVITY/);
+  for(const s of [manual,previous]) {
+    for(const output of [JSON.stringify(s),buildFulfillmentCsv(s).toString('utf8'),buildFulfillmentPdf(s).toString('latin1')]) {
+      assert.doesNotMatch(output,/99Purity|Lotus|supplier|route|L-EXISTING|PRIVATE-/i);
+    }
+  }
 });
 
 test('bulk order preserves total units without promotional quantities and gift allocation is included', () => {
@@ -65,16 +68,23 @@ test('bulk order preserves total units without promotional quantities and gift a
   assert.equal(s.release.ready,true);
 });
 
-test('paid manual order has fulfillment sheet; canceled, refunded, dispatched and Lotus orders cannot look like new releases', () => {
+test('paid manual order has fulfillment sheet; canceled, refunded, dispatched and automated orders cannot look like new releases', () => {
   assert.equal(sheet({status:'paid'},{allocations:[allocation()]}).release.ready,true);
   for(const status of ['void','refunded','shipped','delivered']) {
     const s=sheet({status}); assert.equal(s.release.ready,false); assert.match(s.release.title,/HOLD|REFERENCE/);
   }
   const mapped=sheet({status:'paid'},{allocations:[allocation({route:'lotus',product:16,vials:1})]});
-  assert.match(mapped.release.title,/LOTUS ROUTED/); assert.match(mapped.items[0].supplier_sku,/Lotus product 16 \/ 1 vial pack/);
+  assert.equal(mapped.release.ready,false); assert.match(mapped.release.title,/AUTOMATED FULFILLMENT/);
+  assert.doesNotMatch(buildFulfillmentCsv(mapped).toString(),/Lotus|Supplier SKU|Route/);
   const existing=sheet({status:'paid'},{allocations:[allocation()],jobs:[{supplier_id:'L-100',reference:'ALTA-'+id}]});
-  assert.equal(existing.release.ready,false); assert.match(existing.release.title,/SUPPLIER ACTIVITY/);
-  assert.match(buildFulfillmentCsv(existing).toString(),/L-100/);
+  assert.equal(existing.release.ready,false); assert.match(existing.release.title,/FULFILLMENT ACTIVITY/);
+  assert.doesNotMatch(buildFulfillmentCsv(existing).toString(),/L-100|ALTA-/);
+  for(const jobs of [[{has_payload:true}],[{payload:{request:'PRIVATE-PAYLOAD'}}],[{}, {supplier_id:'PRIVATE-SECOND-JOB'}]]) {
+    const active=sheet({status:'paid'},{allocations:[allocation()],jobs});
+    assert.equal(active.release.ready,false); assert.match(active.release.title,/FULFILLMENT ACTIVITY/);
+    assert.doesNotMatch(JSON.stringify(active),/PRIVATE-|supplier|payload/);
+  }
+  assert.equal(sheet({status:'paid'},{allocations:[allocation({status:'ordered'})]}).release.ready,false);
 });
 
 test('quantity mismatch and unknown extra allocations stop exports instead of causing wrong fulfillment', () => {
@@ -95,8 +105,20 @@ test('missing address or shipping service is held and private route review is ex
 test('legacy order export preserves quantities and says the purchased/free split is unavailable', () => {
   const s=normalizeSheet({source:'store',order:{id,order_number:'AP-1234',created_at:date,customer_name:'Legacy Customer',customer_email:'legacy@example.test',payment_status:'paid',fulfillment_status:'processing',shipping_address:{line1:'1 Main',city:'Austin',state:'TX',postal_code:'78701',country:'US',service:'UPS Ground'},store_order_items:[{product_id:'p1',product_name:'Peptide',variant_size:'5mg',quantity:3,supplier_sku:'SKU-5MG',supplier_name:'Supplier',lot_number:'LOT-1',fulfillment_notes:'PRIVATE-NOTES'}]}});
   assert.equal(s.items[0].total,3);assert.equal(s.items[0].purchased,null);assert.equal(s.items[0].free,null);
-  const csv=buildFulfillmentCsv(s).toString();assert.match(csv,/Not recorded/);assert.match(csv,/SKU-5MG/);assert.doesNotMatch(csv,/PRIVATE-NOTES/);
+  for(const output of [JSON.stringify(s),buildFulfillmentCsv(s).toString(),buildFulfillmentPdf(s).toString('latin1')]) {
+    assert.match(output,/LOT-1/); assert.doesNotMatch(output,/SKU-5MG|Supplier|supplier|PRIVATE-NOTES/);
+  }
+  const csv=buildFulfillmentCsv(s).toString();assert.match(csv,/Not recorded/);
   assert.equal(s.release.ready,true);
+});
+
+test('legacy supplier-waiting status uses generic fulfillment wording in the exported projection', () => {
+  const s=normalizeSheet({source:'store',order:{id,order_number:'AP-1234',created_at:date,customer_name:'Legacy Customer',customer_email:'legacy@example.test',payment_status:'paid',fulfillment_status:'awaiting_supplier',shipping_address:{line1:'1 Main',city:'Austin',state:'TX',postal_code:'78701',country:'US',service:'UPS Ground'},store_order_items:[{product_id:'p1',product_name:'Peptide',variant_size:'5mg',quantity:3,supplier_sku:'PRIVATE-SKU',supplier_name:'99Purity Peptides'}]}});
+  assert.equal(s.order_status,'awaiting_fulfillment');
+  assert.equal(s.items[0].fulfillment_status,'awaiting_fulfillment');
+  for(const output of [JSON.stringify(s),buildFulfillmentCsv(s).toString(),buildFulfillmentPdf(s).toString('latin1')]) {
+    assert.doesNotMatch(output,/supplier|99Purity|PRIVATE-/i);
+  }
 });
 
 test('CSV is UTF-8 with quoted fields, CRLF and formula injection disabled', () => {

@@ -458,7 +458,7 @@ async function updateOrder(res, body) {
     previousOrder.supplier_report_generated_at ||
     (previousOrder.supplier_status && previousOrder.supplier_status.trim())
   )) {
-    throw httpError(409, 'Supplier activity is recorded. Reconcile with the supplier before cancellation.');
+    throw httpError(409, 'Fulfillment activity is recorded. Reconcile the existing fulfillment before cancellation.');
   }
   const trackingChanged =
     (previousOrder.tracking_carrier || null) !== trackingCarrier ||
@@ -648,7 +648,7 @@ function formatStatus(status) {
   const labels = {
     unfulfilled: 'Unfulfilled',
     processing: 'Processing',
-    awaiting_supplier: 'Awaiting Supplier',
+    awaiting_supplier: 'Awaiting fulfillment',
     partially_shipped: 'Partially Shipped',
     shipped: 'Shipped',
     delivered: 'Delivered',
