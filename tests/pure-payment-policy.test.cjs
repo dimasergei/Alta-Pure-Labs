@@ -42,9 +42,9 @@ test('direct crypto gives 5% of merchandise; card conversion receives no crypto 
  for(const method of [card,cryptoMethod]){
   const record=await checkout.normalize({},user,body(method),catalog),quote=checkout.price(record,method,null,{points:0,credit_cents:0});
   assert.equal(quote.subtotal_cents,6999);assert.equal(quote.shipping_cents,7495);
-  assert.equal(quote.discount_cents,method===cryptoMethod?350:0);
-  assert.equal(quote.pricing.crypto_discount_cents,method===cryptoMethod?350:0);
-  assert.equal(quote.total_cents,method===cryptoMethod?14144:14494);
+  assert.equal(quote.discount_cents,method===cryptoMethod?540:200);
+  assert.equal(quote.pricing.crypto_discount_cents,method===cryptoMethod?340:0);
+  assert.equal(quote.total_cents,method===cryptoMethod?13954:14294);
   assert.equal(quote.pricing.lines.reduce((total,line)=>total+line.crypto_discount_cents,0),quote.pricing.crypto_discount_cents);
  }
 });
@@ -59,16 +59,18 @@ test('BLACKFRIDAY15 applies first, then Crypto saves 5% of the remaining merchan
  assert.ok(quote.pricing.lines.every(line=>line.discount_bps===1925&&line.line_total_cents===line.gross_cents-line.coupon_discount_cents-line.crypto_discount_cents));
  record.request.checkout.coupon='';
  const restored=checkout.price(record,cryptoMethod,null,{points:0,credit_cents:0});
- assert.equal(restored.discount_cents,350);assert.equal(restored.pricing.discount_source,'crypto');
+ assert.equal(restored.discount_cents,540);assert.equal(restored.pricing.discount_source,'quantity_crypto');
 });
 test('the extra Crypto discount stacks to 19.25% with a 15% coupon at regular and bulk quantities; Card keeps the coupon alone',async()=>{
  const cat=[{id:'a',name:'Compound A',variants:[{size:'5mg',price:100}]}];
- for(const method of [cryptoMethod,card])for(const qty of [1,10,25,50]){
+ for(const method of [cryptoMethod,card])for(const qty of [1,2,5,10,25,50]){
   const input={...body(method),bulk_order:true,coupon:'BLACKFRIDAY15',items:[{id:'a',size:'5mg',qty}]};
   const record=await checkout.normalize({},user,input,cat),q=checkout.price(record,method,null,{points:0,credit_cents:0});
-  assert.equal(q.pricing.coupon_discount_cents,1500*qty);
-  assert.equal(q.pricing.crypto_discount_cents,method===cryptoMethod?425*qty:0);
-  assert.equal(q.discount_cents,(method===cryptoMethod?1925:1500)*qty);
+  const gross=10000*qty,rate=qty>=10?2000:1500,base=Math.round(gross*rate/10000),crypto=method===cryptoMethod?Math.round((gross-base)*.05):0;
+  assert.equal(q.pricing.quantity_discount_cents||0,qty>=10?base:0);
+  assert.equal(q.pricing.coupon_discount_cents,qty>=10?0:base);
+  assert.equal(q.pricing.crypto_discount_cents,crypto);
+  assert.equal(q.discount_cents,base+crypto);
   assert.equal(q.shipping_cents,7495);assert.equal(q.tax_cents,0);
   assert.equal(q.total_cents,10000*qty-q.discount_cents+7495);
  }
@@ -77,10 +79,10 @@ test('unauthenticated or unselected cart never receives payment discount; authen
  const input=body(cryptoMethod),preview={...input,country:input.address.country};
  for(const signed of [false,true]){
   const {response}=await request(preview,'checkout=cart',signed);
-  assert.equal(response.statusCode,200);assert.equal(response.body.discount_cents,signed?350:0);
+  assert.equal(response.statusCode,200);assert.equal(response.body.discount_cents,signed?540:200);
  }
  const {response:unselected}=await request({...preview,method_id:null},'checkout=cart',true);
- assert.equal(unselected.body.discount_cents,0);
+ assert.equal(unselected.body.discount_cents,200);
  const {response:cart}=await request(preview,'checkout=cart');
  const {response:quoted,db}=await request({...input,action:'quote'});
  assert.equal(quoted.statusCode,200);assert.deepEqual(cart.body.pricing,quoted.body.pricing);
