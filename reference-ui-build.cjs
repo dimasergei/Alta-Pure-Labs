@@ -8,7 +8,7 @@ for(const [file,anchor,functions] of [['storefront-v2.js',' window.AltaStore=',v
  s=s.replace('limit:12,','limit:20,').replace(":1;if(!Number.isInteger(qty)",":Number(button.dataset.quantity||1);if(!Number.isInteger(qty)");
  fs.writeFileSync(p,s);
 }
-for(const file of ['reference-ui.css','reference-ui.js'])fs.copyFileSync(file,path.join(out,file));
-function decorate(dir){for(const e of fs.readdirSync(dir,{withFileTypes:true})){const p=path.join(dir,e.name);if(e.isDirectory())decorate(p);else if(e.name.endsWith('.html')&&!e.name.startsWith('admin-')){let s=fs.readFileSync(p,'utf8');if(!s.includes('ap-site'))continue;s=s.replace('</head>','<link rel="stylesheet" href="/reference-ui.css?v=20261117-reset"></head>').replace('</body>','<script src="/reference-ui.js?v=20261117-reset"></script></body>');fs.writeFileSync(p,s);}}}
+for(const file of ['reference-ui.css','reference-ui.js','quantity-pricing.js'])fs.copyFileSync(file,path.join(out,file));
+function decorate(dir){for(const e of fs.readdirSync(dir,{withFileTypes:true})){const p=path.join(dir,e.name);if(e.isDirectory())decorate(p);else if(e.name.endsWith('.html')&&!e.name.startsWith('admin-')){let s=fs.readFileSync(p,'utf8');if(!s.includes('ap-site'))continue;if(s.includes('/storefront-v2.js')&&!s.includes('/quantity-pricing.js'))s=s.replace('<script src="/storefront-v2.js','<script src="/quantity-pricing.js?v=20261118"></script><script src="/storefront-v2.js');s=s.replace('</head>','<link rel="stylesheet" href="/reference-ui.css?v=20261117-reset"></head>').replace('</body>','<script src="/reference-ui.js?v=20261117-reset"></script></body>');fs.writeFileSync(p,s);}}}
 decorate(out);
 console.log('Built reference storefront layouts, product cards and shared customer-page styling.');
