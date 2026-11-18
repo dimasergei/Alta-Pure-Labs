@@ -717,3 +717,50 @@ html[data-display-currency]:not([data-display-currency="USD"]) body.ap-site :is(
   .ap-site .nl-home-bulk .ap-mini-product { min-height: 57px; gap: 5px; }
   .ap-site .nl-home-bulk .ap-mini-product .ap-vial-example,.ap-site .nl-home-bulk .ap-mini-product .ap-vial-example img { width: 42px; height: 57px; }
 }
+
+/* Product quantity cards */
+.ap-site .ap-bundle-options{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:9px;margin:24px 0 8px;padding:0;border:0;min-width:0}
+.ap-site .ap-bundle-options legend{margin-bottom:12px;font-size:12px;font-weight:800;letter-spacing:.06em;text-transform:uppercase}
+.ap-site .ap-bundle-options button{min-width:0;min-height:103px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:7px;padding:10px 6px;border:1px solid #dadada;border-radius:13px;background:#f7f7f7;color:#111;transition:background .2s,border-color .2s}
+.ap-site .ap-bundle-options button strong{font-size:12px;font-weight:850}
+.ap-site .ap-bundle-options button b{font-size:clamp(13px,1.35vw,20px);line-height:1.15;letter-spacing:-.04em}
+.ap-site .ap-bundle-options button small{font-size:9px;line-height:1.35;font-weight:850;letter-spacing:.01em}
+.ap-site .ap-bundle-options button:hover{border-color:#111;background:#fff}
+.ap-site .ap-bundle-options button[aria-pressed=true]{border-color:#111;background:#111;color:#fff;box-shadow:0 7px 17px #0002}
+.ap-site .ap-bundle-options button[data-bundle-quantity="10"]:not([aria-pressed=true]){border:2px solid #111}
+.ap-site .ap-bundle-estimate{font-size:14px;color:#333}.ap-site .ap-bundle-estimate strong{font-weight:850}
+.ap-site .pure-tier-saving{display:inline-block;font-size:11px;color:#137843;font-weight:850;margin-left:5px}
+.ap-site .pure-tier-note{font-size:11px;line-height:1.55;color:#696969;margin:6px 0 18px}
+@media(max-width:640px){.ap-site .ap-bundle-options{grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}.ap-site .ap-bundle-options button{min-height:91px}.ap-site .ap-bundle-options button b{font-size:17px}}
+/* Contact: bold PURE editorial, high contrast, approachable form */
+.ap-site .pure-contact-page{background:#f7f7f7;color:#111}
+.ap-site .pure-contact-hero{position:relative;background:#0b0b0b;color:#fff;overflow:hidden}
+.ap-site .pure-contact-hero-inner{position:relative;min-height:340px;padding-top:65px;padding-bottom:69px}
+.ap-site .pure-contact-kicker,.ap-site .pure-contact-caption{font-weight:800;font-size:10px;letter-spacing:.18em}
+.ap-site .pure-contact-kicker{color:#bbb}.ap-site .pure-contact-hero h1{position:relative;z-index:1;font-weight:900;letter-spacing:-.065em;font-size:clamp(42px,6vw,88px);line-height:1;margin:22px 0;color:#fff}
+.ap-site .pure-contact-hero h1 em{font-style:normal;color:#bbb}
+.ap-site .pure-contact-hero p{position:relative;z-index:1;max-width:540px;font-size:16px;line-height:1.7;color:#ddd}
+.ap-site .pure-contact-chips{position:relative;z-index:1;display:flex;gap:8px;flex-wrap:wrap;margin-top:24px}
+.ap-site .pure-contact-chips span{border:1px solid #555;color:#eee;font-size:10px;font-weight:800;letter-spacing:.08em;border-radius:30px;padding:8px 12px}
+.ap-site .pure-contact-watermark{position:absolute;right:-25px;bottom:-60px;pointer-events:none;font-weight:900;letter-spacing:-.10em;font-size:clamp(165px,25vw,390px);color:#ffffff0b;line-height:1}
+.ap-site .pure-contact-main{display:grid;grid-template-columns:minmax(270px,.82fr) minmax(0,1.18fr);gap:20px;padding-top:42px;padding-bottom:28px;align-items:stretch}
+.ap-site .pure-contact-side{min-width:0;display:flex;flex-direction:column;background:#111;color:#fff;border-radius:20px;padding:clamp(25px,3vw,44px)}
+.ap-site .pure-contact-side .pure-contact-caption{color:#aaa}
+.ap-site .pure-contact-side h2{font-size:clamp(38px,3.8vw,60px);letter-spacing:-.06em;font-weight:900;line-height:1.02;color:#fff;margin:22px 0}
+.ap-site .pure-contact-side>p{font-size:14px;line-height:1.6;color:#ccc;margin-bottom:25px}
+.ap-site .pure-contact-email{display:flex;justify-content:space-between;gap:12px;align-items:center;overflow-wrap:anywhere;border-block:1px solid #444;padding:17px 0;color:#fff;text-decoration:none;font-size:clamp(13px,1.5vw,18px);font-weight:800}
+.ap-site .pure-contact-side .pure-contact-links{margin:20px 0 30px}
+.ap-site .pure-contact-links>a{display:flex;align-items:center;justify-content:space-between;min-height:65px;gap:9px;text-decoration:none;color:#fff;border-bottom:1px solid #383838}
+.ap-site .pure-contact-links>a>span:first-child{display:flex;align-items:center;gap:14px;min-width:0}.ap-site .pure-contact-links b{font-size:11px;color:#aaa}.ap-site .pure-contact-links strong{font-size:13px}
+.ap-site .pure-contact-links>a:hover strong{text-decoration:underline;text-underline-offset:4px}.ap-site .pure-contact-motto{font-size:10px;letter-spacing:.12em;color:#aaa;margin-top:auto}
+.ap-site .pure-contact-form-card{min-width:0;background:#fff;border:1px solid #e0e0e0;border-radius:20px;box-shadow:0 18px 55px #0000000b;padding:clamp(22px,3.4vw,46px)}
+.ap-site .pure-contact-form-card .pure-contact-caption{color:#666}
+.ap-site .pure-contact-form-card h2{margin:16px 0 8px;letter-spacing:-.04em;font-weight:850;font-size:clamp(28px,3.3vw,43px);line-height:1.1}
+.ap-site .pure-contact-form-card>p{font-size:14px;color:#666;line-height:1.6;margin-bottom:27px}
+.ap-site .pure-contact-form-card .ap-inquiry-form input:not([type=checkbox]),.ap-site .pure-contact-form-card .ap-inquiry-form textarea{background:#fbfbfb;border-color:#d9d9d9}
+.ap-site .pure-contact-form-card .ap-inquiry-form>.ap-button{background:#111;color:#fff;border-color:#111;border-radius:10px;min-height:52px;font-size:13px;font-weight:800}
+.ap-site .pure-contact-form-card .ap-inquiry-form>.ap-button:hover{background:#333}
+.ap-site .pure-contact-outro{display:flex;justify-content:space-between;gap:16px;flex-wrap:wrap;padding-bottom:56px;font-size:11px;font-weight:800;letter-spacing:.1em;color:#666}
+.ap-site .pure-contact-outro a{color:#111;text-underline-offset:4px}
+@media(max-width:850px){.ap-site .pure-contact-main{grid-template-columns:1fr;padding-top:23px}.ap-site .pure-contact-hero-inner{min-height:290px;padding-top:48px;padding-bottom:45px}}
+@media(max-width:550px){.ap-site .pure-contact-hero h1{font-size:clamp(36px,10vw,58px)}.ap-site .pure-contact-hero p{font-size:14px}.ap-site .pure-contact-chips span{font-size:9px;padding:6px 9px}.ap-site .pure-contact-watermark{font-size:165px;right:-20px;bottom:-16px}.ap-site .pure-contact-side{padding:26px}.ap-site .pure-contact-form-card{padding:24px 18px}.ap-site .pure-contact-outro{padding-bottom:35px}}

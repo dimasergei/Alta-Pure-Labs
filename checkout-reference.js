@@ -175,6 +175,7 @@
    const counts=[['Subtotal',subtotal]];
    if(p?.pricing?.membership_discount_cents>0)counts.push([(p.pricing.membership_name||'Membership')+' savings',-p.pricing.membership_discount_cents]);
    if(savings)counts.push(['BLACKFRIDAY15 (15%)',-savings]);
+    if(p?.pricing?.quantity_discount_cents>0)counts.push(['Quantity savings',-p.pricing.quantity_discount_cents]);
    if(cryptoSavings)counts.push(['Crypto discount (5%)',-cryptoSavings]);
    counts.push(['Shipping',shipBase]);
    for(const x of fees)counts.push([x.label,x.amount_cents]);

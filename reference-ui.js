@@ -14,13 +14,13 @@
   if(!group||!input)return;
   const qty=Number(input.value),unit=Number(group.dataset.unitPrice);
   if(!Number.isInteger(qty)||qty<1||qty>100)return;
-  const total=qty*unit;
+  const cents=Math.round(unit*100),tier=window.PureQuantityPricing,rate=tier?.basisPoints(qty)||0,total=(tier?.totalCents(cents,qty)??cents*qty)/100;
   const format=n=>window.AltaLocale?.price?window.AltaLocale.price(Math.round(n*100),{compact:true}):new Intl.NumberFormat('en-US',{style:'currency',currency:'USD'}).format(n);
   for(const button of group.querySelectorAll('[data-bundle-quantity]'))button.setAttribute('aria-pressed',String(Number(button.dataset.bundleQuantity)===qty));
   const estimate=document.querySelector('[data-bundle-estimate]');
-  if(estimate)estimate.innerHTML=format(total)+' for '+qty+' unit'+(qty===1?'':'s');
+  if(estimate)estimate.innerHTML='<strong>'+format(total)+'</strong> for '+qty+' vial'+(qty===1?'':'s')+(rate?' <span class="pure-tier-saving">SAVE '+rate/100+'% · '+format(unit*qty-total)+' OFF</span>':'');
   const mobile=document.querySelector('[data-mobile-total]');
-  if(mobile)mobile.innerHTML=format(total)+' estimated total';
+  if(mobile)mobile.innerHTML=format(total)+(rate?' · save '+rate/100+'%':'');
  }
  document.addEventListener('click',event=>{
   const bundle=event.target.closest('[data-bundle-quantity]');
@@ -33,6 +33,7 @@
  document.addEventListener('input',event=>{if(event.target.id==='ap-detail-quantity')updateQuantity();});
  const main=document.getElementById('ap-main');
  if(main)new MutationObserver(records=>{if(records.some(r=>[...r.addedNodes].some(n=>n.nodeType===1&&(n.matches?.('.nl-detail')||n.querySelector?.('.nl-detail')))))updateQuantity();}).observe(main,{childList:true});
+ window.AltaLocale?.onChange?.(()=>updateQuantity());
  updateQuantity();
 })();
 
