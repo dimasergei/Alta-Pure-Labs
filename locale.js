@@ -297,7 +297,7 @@
   }
   function priceParts(cents, options={}){
     const code=effectiveCurrency(),base=formatValue(cents,"USD"),local=code!=="USD";
-    return {code,base,local,value:(local?"≈ ":"")+formatValue(cents,code,options)};
+    return {code,base,local,value:formatValue(cents,code,options)};
   }
   function price(usdCents, options={}){
     if(!Number.isSafeInteger(usdCents))return "—";
@@ -411,7 +411,7 @@
   const formatMoney=usdDollars=>{
     const cents=Number(usdDollars)*100;if(!Number.isFinite(cents))return "—";
     const code=effectiveCurrency();
-    return (code!=="USD"?"≈ ":"")+formatValue(cents,code,{showCode:code!=="USD"});
+    return formatValue(cents,code,{showCode:code!=="USD"});
   };
   window.AltaLocale={t,formatMoney,price,currencyCode,estimateNote,refreshPrices,setCurrency,setLanguage,
     currencyLabel:effectiveCurrency,onChange:listener=>{if(typeof listener!=="function")return()=>{};listeners.add(listener);return()=>listeners.delete(listener);},
