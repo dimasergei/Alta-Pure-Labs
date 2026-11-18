@@ -1,0 +1,157 @@
+/* Static legal and documentation pages share PURE's storefront shell. */
+html:root body.pure-policy-page .pure-policy-main {
+  width: min(74ch, calc(100% - 48px));
+  max-width: 760px;
+  margin: 0 auto;
+  padding: 48px 0 64px;
+  color: #111;
+  text-align: left;
+  scroll-margin-top: 132px;
+}
+
+html:root body.pure-policy-page .pure-policy-content {
+  font-size: 16px;
+  line-height: 1.7;
+  overflow-wrap: break-word;
+}
+
+html:root body.pure-policy-page .pure-policy-content :is(article, section) {
+  width: auto;
+  max-width: none;
+  margin: 0;
+  padding: 0;
+  border: 0;
+  border-radius: 0;
+  background: transparent;
+  box-shadow: none;
+  text-align: left;
+}
+
+html:root body.pure-policy-page .pure-policy-content :is(.pure-policy-kicker, .ap-eyebrow) {
+  display: block;
+  margin: 0 0 12px;
+  padding: 0;
+  border: 0;
+  border-radius: 0;
+  background: none;
+  color: #555;
+  font-size: 13px;
+  font-weight: 800;
+  line-height: 1.5;
+  letter-spacing: .08em;
+  text-transform: uppercase;
+}
+
+html:root body.pure-policy-page .pure-policy-content h1 {
+  max-width: none;
+  margin: 0 0 16px;
+  color: #111;
+  font-size: clamp(34px, 4.4vw, 48px);
+  font-weight: 850;
+  line-height: 1.08;
+  letter-spacing: -.04em;
+  text-align: left;
+  overflow-wrap: normal;
+}
+
+html:root body.pure-policy-page .pure-policy-content h2 {
+  margin: 32px 0 10px;
+  color: #111;
+  font-size: 23px;
+  font-weight: 800;
+  line-height: 1.25;
+  letter-spacing: -.025em;
+}
+
+html:root body.pure-policy-page .pure-policy-content h3 {
+  margin: 24px 0 8px;
+  color: #111;
+  font-size: 18px;
+  font-weight: 750;
+  line-height: 1.35;
+  letter-spacing: -.015em;
+}
+
+html:root body.pure-policy-page .pure-policy-content :is(p, li) {
+  max-width: none;
+  color: #444;
+  font-size: 16px;
+  line-height: 1.7;
+  text-align: left;
+}
+
+html:root body.pure-policy-page .pure-policy-content p { margin: 12px 0; }
+html:root body.pure-policy-page .pure-policy-content :is(ul, ol) { margin: 12px 0; padding-left: 24px; }
+html:root body.pure-policy-page .pure-policy-content li { margin: 8px 0; }
+html:root body.pure-policy-page .pure-policy-content strong { color: #111; }
+
+html:root body.pure-policy-page .pure-policy-content :is(.effective, .pure-policy-meta) {
+  margin: 0 0 24px;
+  color: #666;
+  font-size: 14px;
+  line-height: 1.5;
+}
+
+html:root body.pure-policy-page .pure-policy-content a:not(.ap-button) {
+  color: #111;
+  text-decoration: underline;
+  text-decoration-thickness: 1px;
+  text-underline-offset: 3px;
+  overflow-wrap: anywhere;
+}
+
+html:root body.pure-policy-page .pure-policy-content a:not(.ap-button):hover {
+  text-decoration-thickness: 2px;
+}
+
+html:root body.pure-policy-page .pure-policy-content > a:first-child {
+  display: inline-block;
+  margin-bottom: 20px;
+  font-size: 14px;
+  font-weight: 700;
+}
+
+html:root body.pure-policy-page .pure-policy-content :is(#manual-invoice-policy-note, #supplier-delivery-estimates, .ap-guide-note) {
+  margin: 24px 0;
+  padding: 20px;
+  border: 1px solid #dedede;
+  border-radius: 12px;
+  background: #f7f7f7;
+}
+
+html:root body.pure-policy-page .pure-policy-content :is(#manual-invoice-policy-note, #supplier-delivery-estimates, .ap-guide-note) > :first-child {
+  margin-top: 0;
+}
+
+html:root body.pure-policy-page .pure-policy-content :is(#manual-invoice-policy-note, #supplier-delivery-estimates, .ap-guide-note) > :last-child {
+  margin-bottom: 0;
+}
+
+html:root body.pure-policy-page #supplier-delivery-estimates article + article {
+  margin-top: 20px;
+  padding-top: 4px;
+  border-top: 1px solid #dedede;
+}
+
+html:root body.pure-policy-page .pure-policy-content .ap-actions {
+  gap: 12px;
+  margin: 20px 0 28px;
+}
+
+html:root body.pure-policy-page .pure-policy-content .back {
+  display: inline-block;
+  margin-top: 20px;
+  padding: 6px 0;
+  font-weight: 750;
+}
+
+@media (max-width: 767px) {
+  html:root body.pure-policy-page .pure-policy-main {
+    width: calc(100% - 40px);
+    padding-block: 32px 48px;
+  }
+  html:root body.pure-policy-page .pure-policy-content h1 { font-size: clamp(32px, 8.4vw, 40px); }
+  html:root body.pure-policy-page .pure-policy-content h2 { margin-top: 28px; font-size: 21px; }
+  html:root body.pure-policy-page .pure-policy-content :is(#manual-invoice-policy-note, #supplier-delivery-estimates, .ap-guide-note) { padding: 16px; }
+  html:root body.pure-policy-page .pure-policy-content .ap-actions > .ap-button { min-height: 44px; }
+}

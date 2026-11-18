@@ -1,0 +1,127 @@
+/* Public storefront layout polish. Loaded after the existing brand layers. */
+html:root body.ap-site {
+  --pure-section-space: 56px;
+  --pure-panel-space: 24px;
+  --pure-content-gap: 24px;
+}
+
+/* Let the opening composition fit its content instead of filling tall screens. */
+html:root body.ap-site .nl-hero .nl-hero-inner {
+  height: auto;
+  min-height: 0;
+  grid-template-rows: auto auto;
+  padding-block: 38px 24px;
+  row-gap: 24px;
+}
+html:root body.ap-site .nl-hero .nl-vial-stage { height: 360px; }
+html:root body.ap-site .nl-featured { padding-block: 40px; }
+html:root body.ap-site .nl-center { padding-top: 28px; }
+html:root body.ap-site .nl-center .ap-button { padding: 15px 30px; }
+html:root body.ap-site .nl-editorial { padding: 40px 40px 64px; gap: 56px; }
+html:root body.ap-site .nl-editorial h2 { margin-block: 18px; }
+html:root body.ap-site .nl-doc-art { min-height: 0; padding: 28px 32px; }
+html:root body.ap-site .nl-doc-art > strong { margin-block: 22px; }
+html:root body.ap-site .nl-home-bulk { padding-block: 8px 32px; }
+html:root body.ap-site .ap-page-intro { padding-block: 40px 28px; }
+html:root body.ap-site .ap-page-intro h1 { margin-block: 22px 16px; }
+html:root body.ap-site .ap-page-intro > .ap-eyebrow { padding: 7px 14px; }
+html:root body.ap-site .ap-faq details { margin-block: 0; }
+html:root body.ap-site .ap-faq summary { padding-block: 18px; font-size: 16px; line-height: 1.45; }
+html:root body.ap-site .ap-faq p { margin-block: 0 18px; font-size: 15px; }
+
+/* Readable supporting text, with the existing bold hierarchy left intact. */
+html:root body.ap-site :is(.ap-eyebrow, .nl-capsule) { font-size: 12px; }
+html:root body.ap-site .ap-header-compact :is(.ap-nav > a, .ap-nav-more) { font-size: 12px !important; }
+html:root body.ap-site .ap-header-popover a { font-size: 14px !important; }
+html:root body.ap-site :is(.ap-fine, .ap-result-count, .nl-label, .nl-product-breadcrumb) { font-size: 13px; line-height: 1.5; }
+html:root body.ap-site :is(.ap-detail-copy > p, .ap-detail-tabs p, .ap-contact-card p, .nl-editorial p) { font-size: 16px; line-height: 1.6; }
+html:root body.ap-site .ap-detail-copy h1 { margin-bottom: 16px; }
+html:root body.ap-site .ap-detail-price { margin-block: 18px; }
+html:root body.ap-site .ap-size-options { margin-block: 10px 18px; }
+html:root body.ap-site .ap-size-options button { min-height: 40px; font-size: 13px; }
+html:root body.ap-site .nl-mini-benefits { margin-block: 18px; font-size: 14px; }
+html:root body.ap-site :is(.nl-document-link, .ap-detail-tabs summary) { font-size: 15px; }
+html:root body.ap-site .ap-form label { font-size: 14px; line-height: 1.5; }
+html:root body.ap-site .ap-form :is(input, select, textarea) { font-size: 16px; }
+html:root body.ap-site .ap-contact-card a { font-size: 14px; }
+html:root body.ap-site .ap-coa-context { font-size: 14px; }
+html:root body.ap-site .ap-coa-card :is(dl, dt, .ap-fine, .ap-text-link) { font-size: 13px; line-height: 1.5; }
+html:root body.ap-site .ap-coa-card .ap-pill { font-size: 11px; }
+html:root body.ap-site .ap-footer { padding-top: 40px; }
+html:root body.ap-site .ap-footer :is(p, a, #currency-status) { font-size: 14px; line-height: 1.6; }
+html:root body.ap-site .ap-footer h3 { font-size: 14px; }
+html:root body.ap-site .ap-footer-bottom { font-size: 12px; line-height: 1.5; }
+html:root body.ap-site .ap-footer-bottom a { font-size: 12px; }
+html:root body.ap-site .nl-home-bulk-table th { font-size: 12px; letter-spacing: .02em; }
+html:root body.ap-site :is(.nl-home-bulk-product-name small, .nl-home-bulk-preview .nl-home-bulk-note) { font-size: 13px; }
+
+/* Retain the cart's fixed purchase area and improve its small labels. */
+html:root body.ap-site .ap-cart-dialog .nlc-product-title :is(strong, .nlc-size),
+html:root body.ap-site .ap-cart-dialog .nlc-price strong { font-size: 13px !important; line-height: 1.4 !important; }
+html:root body.ap-site .ap-cart-dialog .nlc-unlock p { font-size: 12px !important; }
+html:root body.ap-site .ap-cart-dialog .nlc-recs h3 { font-size: 11px !important; letter-spacing: .06em; }
+html:root body.ap-site .ap-cart-dialog .nlc-rec { flex-basis: 204px; }
+html:root body.ap-site .ap-cart-dialog .nlc-rec :is(strong, span, small, button) { font-size: 12px; line-height: 1.35; }
+html:root body.ap-site .ap-cart-dialog .nlc-rec button { min-height: 32px; }
+html:root body.ap-site .nlc-cart-totals > div { font-size: 13px; padding-block: 3px; line-height: 1.4; }
+html:root body.ap-site .nlc-coupon > p { font-size: 12px; line-height: 1.45; margin-block: 4px; }
+html:root body.ap-site .nlc-coupon input { font-size: 16px; }
+html:root body.ap-site .nlc-delivery-est { flex-wrap: wrap; white-space: normal; font-size: 12px; line-height: 1.4; gap: 3px; }
+html:root body.ap-site .nlc-proceed { min-height: 44px; font-size: 13px; padding: 13px 10px; }
+html:root body.ap-site .nlc-wallet-area p { font-size: 12px; line-height: 1.45; margin-top: 6px; }
+html:root body.ap-site .nlc-wallet-row :is(button, .nlc-wallet-link) { min-height: 40px; }
+
+/* Checkout keeps its existing steps, with readable labels and helper copy. */
+html:root body.ap-site .nlx-checkout-root label:not(.nlx-small-check):not(.nlx-delivery-card):not(.nlx-extra-box):not(.nlx-mini-check):not(.nlx-payment-option):not(.nlx-member-types label):not(.nlx-terms label) { font-size: 13px; line-height: 1.5; }
+html:root body.ap-site .nlx-checkout-root :is(.nlx-quote-note, .nlx-shipping-terms, .nlx-wallet-consent, .nlx-disclosure, .nlx-disclosure a, .nlx-extra-box p, .nlx-delivery-desc small, .nlx-product-name small, .nlx-protection-body a, .nlx-protection-price) { font-size: 13px; line-height: 1.5; }
+html:root body.ap-site .nlx-checkout-root :is(.nlx-product-name strong, .nlx-product-price, .nlx-delivery-desc strong) { font-size: 14px; }
+html:root body.ap-site .nlx-checkout-root .nlx-step-shipping :is(input:not([type=checkbox]), select, textarea),
+html:root body.ap-site .nlx-checkout-root .nlx-billing-other :is(input, select) { font-size: 16px; }
+@media (min-width: 771px) {
+  html:root body.ap-site .nlx-summary { top: 129px; }
+}
+
+@media (max-width: 1050px) {
+  html:root body.ap-site .ap-header-compact :is(.ap-nav > a, .ap-nav-more) { font-size: 14px !important; }
+}
+@media (max-width: 900px) {
+  html:root body.ap-site .nl-hero .nl-hero-inner { grid-template-rows: auto auto auto; padding-block: 28px 22px; row-gap: 14px; }
+  html:root body.ap-site .nl-hero .nl-vial-stage { height: 260px; max-height: none; min-height: 0; }
+  html:root body.ap-site .nl-editorial { padding-inline: 16px; gap: 36px; }
+}
+@media (max-width: 767px) {
+  html:root body.ap-site { --pure-section-space: 36px; --pure-panel-space: 20px; --pure-content-gap: 20px; }
+  html:root body.ap-site .nl-hero .nl-hero-inner { padding-block: 24px 20px; row-gap: 12px; }
+  html:root body.ap-site .nl-hero .nl-hero-description { font-size: 15px; line-height: 1.5; margin-block: 12px 18px; }
+  html:root body.ap-site .nl-hero .nl-vial-stage { height: clamp(190px, 54vw, 260px); }
+  html:root body.ap-site .nl-hero .nl-trust > div > span { font-size: 12px; line-height: 1.4; }
+  html:root body.ap-site .nl-featured { padding-block: 30px; }
+  html:root body.ap-site .nl-center { padding-top: 22px; }
+  html:root body.ap-site .nl-editorial { padding: 24px 0 44px; gap: 28px; }
+  html:root body.ap-site .nl-doc-art { padding: 24px; }
+  html:root body.ap-site .nl-home-bulk { padding-bottom: 24px; }
+  html:root body.ap-site .ap-page-intro { padding-block: 28px 22px; }
+  html:root body.ap-site .ap-page-intro h1 { margin-block: 18px 14px; }
+  html:root body.ap-site .ap-page-intro p { font-size: 16px; line-height: 1.6; }
+  html:root body.ap-site .nl-product-breadcrumb { padding-block: 18px; }
+  html:root body.ap-site .ap-footer { padding-top: 32px; }
+  html:root body.ap-site .nl-home-bulk-table th { font-size: 11px; }
+  html:root body.ap-site .nl-home-bulk .nl-home-bulk-card { padding: 24px 18px; }
+  html:root body.ap-site .nl-home-bulk-preview { padding: 16px 12px; }
+}
+@media (max-height: 720px) {
+  html:root body.ap-site .nlc-cart-checkout { padding: 4px 12px 6px; }
+  html:root body.ap-site .nlc-coupon summary { padding-block: 3px; }
+  html:root body.ap-site .nlc-coupon > div { padding-block: 2px; }
+  html:root body.ap-site .nlc-cart-totals { padding-block: 2px; }
+  html:root body.ap-site .nlc-cart-totals > div { padding-block: 2px; }
+  html:root body.ap-site .nlc-delivery-est { padding-block: 4px; }
+  html:root body.ap-site .nlc-pay-divider { margin-bottom: 4px; }
+  html:root body.ap-site .nlc-proceed { margin-block: 4px; }
+  html:root body.ap-site .nlc-wallet-area p { margin-top: 4px; }
+}
+/* In landscape or at large browser zoom, let every cart control remain reachable. */
+@media (max-height: 560px) {
+  html:root body.ap-site #ap-cart-content { overflow-y: auto; }
+  html:root body.ap-site .nlc-scrollable-items { flex: 0 0 auto; overflow: visible; }
+}
