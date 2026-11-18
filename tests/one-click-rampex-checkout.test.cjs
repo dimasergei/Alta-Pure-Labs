@@ -58,7 +58,7 @@ test('Unknown payment leaves the saved order visible without creating another pa
  const f=fixture({state:'unknown',redirect_url:null});
  try{
   const button=await submitReview(f);await button.onclick();
-  assert.match(f.root.textContent,/Order 80000000-0000-4000-8000-000000000001 was saved/);
+  assert.match(f.root.textContent,/Your order reference is 80000000-0000-4000-8000-000000000001/);
   assert.match(f.root.textContent,/No second payment link will be created/);
   assert.ok(f.root.querySelector('a[href^="/account/purchases?id="]'));
   assert.equal(f.logs.filter(x=>x.body?.action==='place').length,1);

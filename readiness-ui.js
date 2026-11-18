@@ -21,9 +21,29 @@
  }
  function delivery(data,cart=[]){
   const options=data.delivery_options||[];
-  return `<h3>Delivery speed</h3><p>Free standard US shipping on merchandise orders of $150 after discounts.</p><div class="rd-delivery-grid">${options.filter(o=>o.kind==='shipping').map(o=>`<label class="rd-delivery ${!o.enabled?'rd-unavailable':''}"><input type="radio" name="shipping_speed" value="${esc(o.id)}" ${o.id==='standard'?'checked':''} ${!o.enabled?'disabled data-unavailable="true"':''}><strong>${esc(o.label)}</strong><span data-rd-shipping-price="${esc(o.id)}">${money(o.price_cents)}</span><small>${esc(o.description)}</small>${!o.enabled?'<em>Not available yet</em>':''}</label>`).join('')}</div><div class="rd-delivery-extras">${options.filter(o=>o.kind==='extra').map(o=>`<label class="rd-extra ${!o.enabled?'rd-unavailable':''}"><input type="checkbox" name="delivery_extra" value="${esc(o.id)}" ${o.id==='protection'&&o.enabled&&wantsProtection(cart)?'checked ':''}${!o.enabled?'disabled data-unavailable="true"':''}><span><strong>${esc(o.label)}</strong><small>${esc(o.description)}</small>${o.id==='protection'?'<a href="/shipping-protection.html">Shipping protection terms</a>':''}${!o.enabled?'<em>Not available yet</em>':''}</span><b>${money(o.price_cents)}</b></label>`).join('')}</div>`;
+  return `<h3>Delivery speed</h3><p>Free standard US shipping on merchandise orders of $150 after discounts.</p><div class="rd-delivery-grid">${options.filter(o=>o.kind==='shipping').map(o=>`<label class="rd-delivery ${!o.enabled?'rd-unavailable':''}"><input type="radio" name="shipping_speed" value="${esc(o.id)}" ${o.id==='standard'?'checked':''} ${!o.enabled?'disabled data-unavailable="true"':''}><strong>${esc(o.label)}</strong><span data-rd-shipping-price="${esc(o.id)}">${money(o.price_cents)}</span><small>${esc(o.description)}</small>${!o.enabled?'<em>Not available yet</em>':''}</label>`).join('')}</div><div class="rd-delivery-extras">${options.filter(o=>o.kind==='extra').map(o=>`<label class="rd-extra ${!o.enabled?'rd-unavailable':''}"><input type="checkbox" name="delivery_extra" value="${esc(o.id)}" ${o.id==='protection'&&o.enabled&&wantsProtection(cart)?'checked ':''}${!o.enabled?'disabled data-unavailable="true"':''}><span><strong>${esc(o.label)}</strong><small>${esc(o.description)}</small>${o.id==='protection'?'<a href="/shipping-protection.html">Shipping protection terms</a>':''}${!o.enabled?'<em>Not available yet</em>':''}</span><b data-rd-extra-price="${esc(o.id)}">${money(o.price_cents)}</b></label>`).join('')}</div>`;
  }
  function selection(form){return{shipping:form.elements.shipping_speed?.value||'standard',extras:[...form.querySelectorAll('[name=delivery_extra]:checked')].map(x=>x.value)};}
+ function syncCheckoutPrices(form,aside,cart,data,quote){
+  const method=(data.methods||[]).find(item=>item.id===form.elements.method_id?.value),currency=window.DirectCheckout.paymentKind(method)==='interac'?'CAD':'USD';
+  const current=quote?.currency===currency?quote:null,fx=current?.pricing?.fx_ppm;
+  const fromUsd=value=>!Number.isSafeInteger(value)?'Unavailable':currency==='USD'?money(value):Number.isSafeInteger(fx)&&fx>0?money(Math.round(value*fx/1000000),'CAD'):'Calculating…';
+  const country=form.elements.country?.value||'US',rates=data.shipping_zones?.[country]||data.shipping_zones?.OTHER||Object.fromEntries((data.delivery_options||[]).filter(option=>option.kind==='shipping').map(option=>[option.id,option.price_cents]));
+  const delivery=current?.pricing?.delivery;
+  for(const target of form.querySelectorAll('[data-rd-shipping-price]')){
+   const id=target.dataset.rdShippingPrice,enabled=(data.delivery_options||[]).some(option=>option.id===id&&option.enabled);
+   target.textContent=!enabled?'Unavailable':delivery?.selection?.shipping===id?delivery.shipping_cents===0?'FREE':money(delivery.shipping_cents,currency):fromUsd(rates[id]);
+  }
+  for(const target of form.querySelectorAll('[data-rd-extra-price]')){
+   const id=target.dataset.rdExtraPrice,extra=delivery?.extras?.find(item=>item.id===id),configured=(data.delivery_options||[]).find(item=>item.id===id);
+   target.textContent=extra?money(extra.amount_cents,currency):fromUsd(configured?.price_cents);
+  }
+  for(const target of aside.querySelectorAll('[data-dc-line-price]')){
+   const [id,size]=JSON.parse(target.dataset.dcLinePrice),item=cart.find(line=>line.id===id&&line.size===size),quoted=current?.pricing?.lines?.find(line=>line.id===id&&line.size===size&&line.qty===item?.qty);
+   target.textContent=Number.isSafeInteger(quoted?.gross_cents)?money(quoted.gross_cents,currency):currency==='USD'&&item?money(Math.round(item.price*100)*item.qty):'Calculating…';
+  }
+  const heading=aside.querySelector('h2');if(heading)heading.textContent=currency==='CAD'?'Your order · CAD':'Your order';
+ }
  function enhanceCheckout(form,aside,auth,cart,data){
   // Card wallets are offered by the hosted provider when eligible; no placeholder native buttons.
 
@@ -42,10 +62,11 @@
     input.disabled=!eligible;if(!eligible)input.checked=false;
     input.closest('.rd-delivery')?.classList.toggle('rd-unavailable',!eligible);
     const price=form.querySelector('[data-rd-shipping-price="'+input.value+'"]');
-    if(price)price.textContent=!eligible?'Unavailable':input.value==='standard'&&country==='US'&&quote?.free_shipping_remaining_cents===0?'FREE':money(rates[input.value]);
+    if(price&&!eligible)price.textContent='Unavailable';
    }
    if(!form.querySelector('[name=shipping_speed]:checked')){const standard=form.querySelector('[name=shipping_speed][value=standard]:not(:disabled)');if(standard)standard.checked=true;}
    try{sessionStorage.setItem(cartKey(cart),JSON.stringify(selection(form).extras));}catch{}
+   syncCheckoutPrices(form,aside,cart,data,quote);
   }
   syncDelivery();
   const estimate=aside.querySelector('.dc-totals'),input=form.elements.coupon,apply=form.querySelector('[data-dc-apply-coupon]'),remove=form.querySelector('[data-dc-remove-coupon]'),status=form.querySelector('[data-dc-coupon-status]');let timer,sequence=0;
@@ -59,8 +80,11 @@
    if(status&&action!=='refresh')status.textContent=action==='remove'?'Removing coupon…':'Checking coupon…';
    try{
     const session=await auth.auth.getSession(),headers={'Content-Type':'application/json'};if(session.data.session)headers.Authorization='Bearer '+session.data.session.access_token;
-    const r=await fetch('/api/customer-config?checkout=cart',{method:'POST',cache:'no-store',headers,body:JSON.stringify({items:cart.map(({id,size,qty})=>({id,size,qty})),bulk_order:form.dataset.bulkOrder==='true',coupon:candidate,method_id:form.elements.method_id.value,country:form.elements.country?.value||'US',delivery:selection(form)})}),q=await r.json();
+    const method=(data.methods||[]).find(item=>item.id===form.elements.method_id.value),interac=window.DirectCheckout.paymentKind(method)==='interac';
+    const r=await fetch('/api/customer-config?checkout=cart',{method:'POST',cache:'no-store',headers,body:JSON.stringify({items:cart.map(({id,size,qty})=>({id,size,qty})),bulk_order:form.dataset.bulkOrder==='true',coupon:candidate,method_id:form.elements.method_id.value,country:form.elements.country?.value||'US',delivery:selection(form),...(interac&&form.dataset.fxQuote?{fx_quote:form.dataset.fxQuote}:{})})}),q=await r.json();
     if(n!==sequence)return;if(!r.ok||!Number.isSafeInteger(q.total_cents))throw Error(q.error||'Could not calculate your total.');
+    if(q.currency!==(interac?'CAD':'USD')||q.request_only===true||interac&&(!q.fx_quote||!Number.isSafeInteger(q.pricing?.fx_ppm)||q.pricing.fx_ppm<=0))throw Error('The payment currency could not be verified. Refresh your order total.');
+    if(interac)form.dataset.fxQuote=q.fx_quote;else delete form.dataset.fxQuote;
     form.dataset.appliedCoupon=q.pricing?.coupon_code==='BLACKFRIDAY15'?'BLACKFRIDAY15':'';
     keys.forEach(key=>form.dataset.appliedCoupon?localStorage.setItem(key,form.dataset.appliedCoupon):localStorage.removeItem(key));
     if(input)input.value=form.dataset.appliedCoupon;if(remove)remove.hidden=!form.dataset.appliedCoupon;
@@ -68,8 +92,8 @@
     const rows=[['Subtotal',q.subtotal_cents]];
     if(q.pricing?.coupon_discount_cents>0)rows.push(['BLACKFRIDAY15 (15%)',-q.pricing.coupon_discount_cents]);
     if(q.pricing?.crypto_discount_cents>0)rows.push(['Crypto discount (5%)',-q.pricing.crypto_discount_cents]);
-    rows.push(['Delivery & options',q.shipping_cents],[q.request_only?'Estimated total (USD)':'Estimated total',q.total_cents]);
-    estimate.innerHTML=rows.map(([label,v])=>`<div class="dc-total-row"><span>${label}</span><strong>${money(v)}</strong></div>`).join('')+(q.pricing?.discount_source==='coupon_crypto'?'<p class="dc-note">Your coupon is applied first, then an extra 5% Crypto discount on the remaining merchandise.</p>':'')+(q.request_only?'<p class="dc-note">This USD estimate is not an amount to transfer. PURE will issue a reviewed CAD invoice for you to accept before payment. USD points and store credit cannot be applied to this invoice.</p>':'<p class="dc-note">Existing points and store credit are applied when you review the final total.</p>');
+    rows.push(['Delivery & options',q.shipping_cents]);if(q.tax_cents)rows.push(['Tax',q.tax_cents]);rows.push([interac?'Total (CAD)':'Estimated total',q.total_cents]);
+    estimate.innerHTML=rows.map(([label,v])=>`<div class="dc-total-row"><span>${label}</span><strong>${money(v,q.currency)}</strong></div>`).join('')+(q.pricing?.discount_source==='coupon_crypto'?'<p class="dc-note">Your coupon is applied first, then an extra 5% Crypto discount on the remaining merchandise.</p>':'')+(interac?'<p class="dc-note">Your total is in CAD. Interac receiving details appear after you place the order. USD points and store credit cannot be applied to this payment.</p>':'<p class="dc-note">Existing points and store credit are applied when you review the final total.</p>');
     syncDelivery(q);
    }catch(error){if(n===sequence&&status)status.textContent=error.message;}
    finally{if(n===sequence){form.dataset.couponPending='false';if(apply)apply.disabled=false;if(remove)remove.disabled=false;}}
@@ -84,7 +108,7 @@
     try{sessionStorage.setItem(protectionKey,String(event.target.checked));}catch{}
    }
    if(event.target.name==='country')localStorage.setItem('ap-shipping-country',event.target.value);
-   syncDelivery();clearTimeout(timer);timer=setTimeout(()=>refresh(),180);
+   sequence++;form.dataset.couponPending='true';syncDelivery();estimate.innerHTML='<p role="status">Calculating your order total…</p>';clearTimeout(timer);timer=setTimeout(()=>refresh(),180);
   };
   form.addEventListener('input',onDeliveryChange);
   form.addEventListener('change',onDeliveryChange);
@@ -93,9 +117,9 @@
  async function overview(root,auth,user){try{const [d,o]=await Promise.all([window.DirectCheckout.api(auth),window.DirectCheckout.api(auth,null,'orders')]);const paid=o.invoices.filter(order=>['paid','processing','shipped','delivered'].includes(order.status));
   const paidByCurrency=paid.reduce((totals,order)=>{const currency=order.currency||'USD';totals[currency]=(totals[currency]||0)+order.total_cents;return totals;},{});
   const paidTotal=Object.entries(paidByCurrency).map(([currency,total])=>money(total,currency)).join(' · ')||money(0);
-  const orderTotal=order=>!Number.isSafeInteger(order.total_cents)&&order.request_data?.preferred_payment?.provider_key==='interac'?order.status==='requested'?'CAD invoice pending':'CAD total not issued':money(order.total_cents,order.currency);
+  const orderTotal=order=>!Number.isSafeInteger(order.total_cents)&&order.request_data?.preferred_payment?.provider_key==='interac'?order.status==='requested'?'CAD order total pending':'CAD total unavailable':money(order.total_cents,order.currency);
   root.innerHTML=`<div class="rd-welcome"><small>YOUR ACCOUNT</small><h1>Hey, ${esc(user.user_metadata?.first_name||user.user_metadata?.full_name?.split(' ')[0]||'researcher')}.</h1><span>Orders, saved details and balances</span></div><div class="rd-overview-grid"><section class="ae-panel"><h2>Your orders</h2><p>Review purchases, payment status and tracking.</p><a href="/account/purchases">View orders →</a></section><section class="ae-panel rd-points"><small>POINTS BALANCE</small><strong>${d.balances.points}</strong><p>${money(d.balances.credit_cents)} store credit</p><a href="/account/points">View points →</a> · <a href="/account/store-credit">View store credit →</a></section></div><div class="rd-stat-grid"><article><strong>${o.invoices.length}</strong><span>Orders in current checkout</span></article><article><strong>${paidTotal}</strong><span>Paid order total</span></article><article><strong>${money(d.balances.credit_cents)}</strong><span>Available store credit</span></article></div><div class="rd-quick-links">${[['Partner Program','Referral codes, earnings and payouts','partner'],['Profile','Contact details and saved addresses','profile'],['Orders','Purchases, history and tracking','purchases']].map(([a,b,path])=>`<a href="/account/${path}"><strong>${a}</strong><span>${b}</span><b>Open →</b></a>`).join('')}</div><section class="ae-panel"><h2>Recent orders</h2>${o.invoices.length?'<div class="rd-table"><table><thead><tr><th>Order</th><th>Date</th><th>Status</th><th>Total</th></tr></thead><tbody>'+o.invoices.slice(0,5).map(order=>`<tr><td><a href="/account/purchases?id=${encodeURIComponent(order.id)}">ORD-${esc(order.id.slice(0,8).toUpperCase())}</a></td><td>${new Date(order.created_at).toLocaleDateString()}</td><td>${esc(order.status==='accepted'?'Awaiting payment':order.status)}</td><td>${orderTotal(order)}</td></tr>`).join('')+'</tbody></table></div>':empty('No orders yet','Your orders and tracking will appear here.')}<a href="/account/purchases">All orders, including historical purchases →</a></section><a href="/account/requests">Support requests →</a>`;
  }catch(error){root.textContent=error.message;}}
  async function balance(root,auth,path){try{const data=await window.DirectCheckout.api(auth),points=path.endsWith('points'),rows=data.events.filter(event=>event.asset===(points?'points':'credit'));root.innerHTML=`<section class="ae-panel rd-balance"><small>AVAILABLE BALANCE</small><h2>${points?data.balances.points+' points':money(data.balances.credit_cents)}</h2><p>${points?'Use your existing points at checkout. Redeem 100 points for $1; minimum 100 points.':'Use your USD store credit for products and delivery at checkout. You choose how much to apply.'}</p><a href="/shop">Shop products →</a></section><section class="ae-panel"><h2>${points?'Points':'Store credit'} history</h2><p>Credits, redemptions and adjustments on your account. Showing the latest ${rows.length} entries.</p>${rows.length?'<div class="rd-table"><table><thead><tr><th>Date</th><th>Detail</th><th>Amount</th></tr></thead><tbody>'+rows.map(event=>`<tr><td>${new Date(event.created_at).toLocaleDateString()}</td><td>${esc(event.reason)}</td><td>${event.delta>0?'+':''}${points?event.delta:money(event.delta)}</td></tr>`).join('')+'</tbody></table></div>':empty('No activity yet','Your credits and redemptions will appear here.')}<p class="dc-note">Redemptions are reserved when an order is placed. Cancellation of an unpaid order or a full refund restores them. Balances do not automatically expire.</p></section>`;}catch(error){root.textContent=error.message;}}
- window.ReadinessUI={walletButtons,delivery,selection,enhanceCheckout,overview,balance};
+ window.ReadinessUI={walletButtons,delivery,selection,enhanceCheckout,syncCheckoutPrices,overview,balance};
 })();

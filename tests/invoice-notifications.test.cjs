@@ -19,12 +19,33 @@ test('admin alerts go to configured staff, invalid recipients are held',()=>{ass
 test('manual product invoice alerts open the unified order review without sending receiving details or a zero-dollar request',()=>{
  const request={...notification,audience:'admin',event_action:'requested',snapshot:{...notification.snapshot,status:'requested',currency:null,total_cents:null}};
  const out=mail.envelope(request,env);
- assert.match(out.text,/admin-orders\.html/);assert.match(out.text,/Review CAD invoice/);
+ assert.match(out.text,/admin-orders\.html/);assert.match(out.text,/Review CAD order/);
  assert.doesNotMatch(out.text,/Order amount:|BANK-PRIVATE|admin-payments/);assert.doesNotMatch(out.html,/BANK-PRIVATE|admin-payments/);
  const customer=mail.envelope({...request,audience:'customer'},env);
- assert.match(customer.text,/not a payment request yet/);assert.match(customer.text,/account\/purchases\?id=/);assert.doesNotMatch(customer.text,/BANK-PRIVATE|Order amount:/);
+ assert.match(customer.text,/Payment is not due yet/);assert.match(customer.text,/account\/purchases\?id=/);assert.doesNotMatch(customer.text,/BANK-PRIVATE|Order amount:/);
  const issued=mail.envelope({...notification,snapshot:{...notification.snapshot,currency:'CAD'}},env);
- assert.match(issued.text,/CA\$129\.00/);assert.match(issued.text,/accept the invoice/);
+ assert.match(issued.text,/CA\$129\.00/);assert.match(issued.text,/accept the final order amount/);
+});
+test('accepted CAD checkout, verified receipt and refund emails preserve CAD amounts and province with normal order language',()=>{
+ const detail={request_data:{address:{line1:'123 Fixture Street',city:'Toronto',region:'ON',postal_code:'M5V 1A1',country:'CA'},items:[{name:'Fixture product',size:'60mg',qty:1,unit_price_usd_cents:10000}]},pricing:{currency:'CAD',fx_ppm:1350000,coupon_code:'BLACKFRIDAY15',coupon_discount_cents:2025,crypto_discount_cents:0,lines:[{name:'Fixture product',size:'60mg',qty:1,unit_price_usd_cents:10000,unit_price_cents:13500,gross_cents:13500,discount_cents:2025,line_total_cents:11475}]},subtotal_cents:13500,discount_cents:2025,shipping_cents:2000,tax_cents:1752,points_redeemed:0,credit_redeemed_cents:0};
+ const before=JSON.stringify(detail);
+ for(const [event_action,status] of [['checkout_placed','accepted'],['payment_recorded','paid'],['full_refund_recorded','refunded']])for(const audience of ['customer','admin']){
+  const out=mail.envelope({...notification,audience,event_action,detail,snapshot:{...notification.snapshot,checkout_version:'interac-checkout-2026-11-v1',status,currency:'CAD',total_cents:15227}},env);
+  assert.match(out.text,/Subtotal: CA\$135\.00/);assert.match(out.text,/Coupon discount \(BLACKFRIDAY15\): -CA\$20\.25/);
+  assert.match(out.text,/Shipping: CA\$20\.00/);assert.match(out.text,/Tax: CA\$17\.52/);assert.match(out.text,/Total: CA\$152\.27/);
+  assert.match(out.text,/Toronto, ON, M5V 1A1/);assert.match(out.text,/Fixture product 60mg × 1: CA\$135\.00/);
+  assert.doesNotMatch(out.text,/invoice|USD|BANK-PRIVATE|CA\$100\.00|reviewed total/i);
+  assert.doesNotMatch(out.html,/BANK-PRIVATE|<script>/);
+  if(event_action==='checkout_placed'){assert.match(out.text,/Payment is not yet confirmed/);assert.doesNotMatch(out.text,/payment was successful/);}
+  if(event_action==='payment_recorded')assert.match(out.text,/payment was successful/);
+  if(event_action==='full_refund_recorded')assert.match(out.text,/verified external refund was recorded/);
+ }
+ assert.equal(JSON.stringify(detail),before,'email does not reprice or mutate the stored order');
+});
+test('CAD checkout notifications wait for recorded CAD pricing instead of relabelling fallback USD catalog amounts',()=>{
+ const request={...notification,event_action:'checkout_placed',snapshot:{...notification.snapshot,status:'accepted',currency:'CAD',total_cents:13500,checkout_version:'interac-checkout-2026-11-v1'}};
+ const usdItems=[{name:'Fixture product',size:'60mg',qty:1,unit_price_usd_cents:10000}];
+ for(const detail of [undefined,{request_data:{items:usdItems}},{request_data:{items:usdItems},pricing:{currency:'USD',lines:[{...usdItems[0],unit_price_cents:10000}]}},{pricing:{currency:'CAD',lines:usdItems},subtotal_cents:13500,discount_cents:0,shipping_cents:0,tax_cents:0}])assert.equal(mail.envelope({...request,detail},env),null);
 });
 test('successful sends use the immutable claimed envelope and stable idempotency key',async()=>{const old={from:env.ORDER_CONFIRMATION_FROM,to:['owner@example.test'],subject:'Previously saved',text:'Saved immutable body'};const db=dbMock({storedEnvelope:old});let sent;const out=await mail.dispatch(db,{env,delay:async()=>{},fetchImpl:async(url,args)=>{sent={url,args};return{ok:true,json:async()=>({id:'mail-fixture'})};}});assert.equal(out.accepted,1);assert.equal(sent.args.headers['Idempotency-Key'],'altapure-invoice/'+nid);assert.deepEqual(JSON.parse(sent.args.body),old);assert.equal(db.calls[1].args.p_outcome,'accepted');});
 test('no claim means no duplicate email',async()=>{let sent=0;const out=await mail.dispatch(dbMock({claimed:false}),{env,fetchImpl:async()=>{sent++;}});assert.equal(sent,0);assert.equal(out.held,1);});

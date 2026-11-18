@@ -63,12 +63,12 @@
     const delivery = checkout.delivery || {}, labels = { standard: 'Standard delivery', express: 'Express delivery', priority: 'Priority processing', protection: 'Shipping protection' };
     const selected = [delivery.shipping, ...(Array.isArray(delivery.extras) ? delivery.extras : [])].filter(Boolean).map(value => labels[value] || value);
     fact(facts, 'Requested delivery', selected.join(' · ') || 'No selection recorded');
-    parent.append(facts, el('p', 'The USD estimate is a reference. The customer must accept the final CAD invoice before Interac instructions are shown.', 'pica-note'));
+    parent.append(facts, el('p', 'This earlier request needs a final CAD total. The customer must accept the reviewed order before Interac instructions are shown.', 'pica-note'));
   }
   function mount({ host, order, api, onIssued, onRefresh }) {
     if (!host || !eligible(order) || typeof api !== 'function') return;
     const section = el('section', undefined, 'pica-panel');
-    section.append(el('h4', 'Review CAD invoice'));
+    section.append(el('h4', 'Review CAD order'));
     requestSummary(section, order);
     const status = el('p', 'Loading approved Interac methods…', 'pica-status'); status.setAttribute('role', 'status'); status.setAttribute('aria-live', 'polite');
     section.append(status); host.append(section);
@@ -104,7 +104,7 @@
     fields.append(deliveryDetails);
 
     const taxDetails = el('details', undefined, 'pica-review'); taxDetails.append(el('summary', 'Tax review · required'));
-    taxDetails.append(el('p', 'Tax destination: ' + destination.region + ', ' + destination.country + '. The invoice uses the requested delivery address.', 'pica-note'));
+    taxDetails.append(el('p', 'Tax destination: ' + destination.region + ', ' + destination.country + '. The order uses the requested delivery address.', 'pica-note'));
     const taxGrid = grid(taxDetails), seller = field(taxGrid, 'Legal seller', 'seller_name', { value: '1001517614 ONTARIO INC.', minLength: 2 });
     const taxMode = select(taxGrid, 'Reviewed tax treatment', 'tax_mode', [['', 'Choose tax treatment'], ['reviewed', 'Reviewed tax lines / no collection'], ['canada_taxable_goods', 'Canadian taxable goods: calculate GST/HST']]);
     taxMode.querySelector('[value="canada_taxable_goods"]').disabled = String(destination.country).toUpperCase() !== 'CA';
@@ -122,21 +122,21 @@
       button(row, 'Remove tax line', () => { if (busy || issued) return; components.splice(components.indexOf(item), 1); row.remove(); addTax.disabled = false; invalidate(); });
       components.push(item); taxLines.append(row); addTax.disabled = components.length >= 5; invalidate(); item.label.focus();
     });
-    taxDetails.append(el('p', 'Add only the taxes you reviewed. A zero-tax invoice requires a documented no-collection basis. GST/HST calculated above must not be added again.', 'pica-note'));
-    const basis = field(taxDetails, 'Tax treatment explanation (shown on invoice)', 'tax_basis', { type: 'textarea', minLength: 12, maxLength: 1200 });
+    taxDetails.append(el('p', 'Add only the taxes you reviewed. A zero-tax order requires a documented no-collection basis. GST/HST calculated above must not be added again.', 'pica-note'));
+    const basis = field(taxDetails, 'Tax treatment explanation (shown on order)', 'tax_basis', { type: 'textarea', minLength: 12, maxLength: 1200 });
     const jurisdictions = check(taxDetails, 'I reviewed destination collection obligations, including provincial, state and local taxes.', 'jurisdictions_reviewed');
     fields.append(taxDetails);
-    const reviewNote = field(fields, 'Internal invoice review note', 'review_note', { type: 'textarea', minLength: 12, maxLength: 2000 }); reviewNote.placeholder = 'Record the conversion source and final delivery, tax and fulfillment review.';
+    const reviewNote = field(fields, 'Internal order review note', 'review_note', { type: 'textarea', minLength: 12, maxLength: 2000 }); reviewNote.placeholder = 'Record the conversion source and final delivery, tax and fulfillment review.';
     const reviewed = check(fields, 'I can fulfill these exact items and destination, and I reviewed the final conversion, shipping and tax treatment.', 'fulfillment_confirmed');
-    const previewButton = el('button', 'Preview CAD invoice', 'primary'); previewButton.type = 'submit'; previewButton.disabled = true; form.append(previewButton); section.append(form);
-    const previewBox = el('section', undefined, 'pica-preview'); previewBox.hidden = true; previewBox.setAttribute('aria-label', 'Final CAD invoice preview'); section.append(previewBox);
+    const previewButton = el('button', 'Preview CAD total', 'primary'); previewButton.type = 'submit'; previewButton.disabled = true; form.append(previewButton); section.append(form);
+    const previewBox = el('section', undefined, 'pica-preview'); previewBox.hidden = true; previewBox.setAttribute('aria-label', 'Final CAD order preview'); section.append(previewBox);
     const issueBox = el('div', undefined, 'pica-issue'); issueBox.hidden = true;
-    const finalReview = check(issueBox, 'I reviewed this exact CAD invoice and am ready to issue it to the customer.', 'issue_confirmed');
-    const issueButton = button(issueBox, 'Issue CAD invoice', issue, 'primary'); issueButton.disabled = true; section.append(issueBox);
+    const finalReview = check(issueBox, 'I reviewed this exact CAD total and am ready to send the order to the customer for acceptance.', 'issue_confirmed');
+    const issueButton = button(issueBox, 'Send CAD order for acceptance', issue, 'primary'); issueButton.disabled = true; section.append(issueBox);
     const reloadButton = button(section, 'Reload order', () => onRefresh?.(), 'ghost pica-reload'); reloadButton.hidden = true;
 
     function notice(message, bad = false) { status.textContent = message; status.classList.toggle('pica-error', bad); status.setAttribute('role', bad ? 'alert' : 'status'); }
-    function invalidate(message = 'Details changed. Review and preview the updated CAD invoice.') {
+    function invalidate(message = 'Details changed. Review and preview the updated CAD total.') {
       revision++; preview = null; finalReview.checked = false; issueButton.disabled = true; issueBox.hidden = true; previewBox.hidden = true;
       reviewed.checked = false;
       if (methodReady) notice(message);
@@ -163,7 +163,7 @@
       if (!invalid) return true;
       let ancestor = invalid.parentElement;
       while (ancestor && ancestor !== form) { if (ancestor.tagName === 'DETAILS') ancestor.open = true; ancestor = ancestor.parentElement; }
-      invalid.reportValidity(); invalid.focus(); notice('Complete the highlighted invoice review field before previewing.', true); return false;
+      invalid.reportValidity(); invalid.focus(); notice('Complete the highlighted order review field before previewing.', true); return false;
     }
     function body() {
       const selected = methods.find(item => item.id === method.value);
@@ -181,7 +181,7 @@
     const send = payload => api(endpoint + 'write', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) });
     function setBusy(value, issuing = false) { busy = value; fields.disabled = value && issuing; previewButton.disabled = value || !methodReady || !methods.length || issued; refresh.disabled = value || issued; issueButton.disabled = value || !preview || !finalReview.checked || issued; finalReview.disabled = value || issued; }
     function showPreview(result, payload) {
-      previewBox.replaceChildren(el('h5', 'Final CAD invoice preview'));
+      previewBox.replaceChildren(el('h5', 'Final CAD order preview'));
       const facts = el('dl', undefined, 'pica-totals');
       fact(facts, 'Merchandise', money(result.subtotal_cents)); fact(facts, 'Discounts', '−' + money(result.discount_cents));
       fact(facts, 'Delivery', money(result.shipping_cents)); fact(facts, 'Tax', money(result.tax_cents));
@@ -202,29 +202,29 @@
         previewBox.append(facts);
       }
       previewBox.append(el('p', '1 USD = ' + (payload.fx_ppm / 1000000) + ' CAD · Pay before ' + new Date(result.expires_at).toLocaleString(), 'pica-note'));
-      previewBox.hidden = false; issueBox.hidden = false; finalReview.checked = false; issueButton.textContent = 'Issue ' + money(result.total_cents) + ' invoice';
+      previewBox.hidden = false; issueBox.hidden = false; finalReview.checked = false; issueButton.textContent = 'Send ' + money(result.total_cents) + ' order for acceptance';
     }
     form.addEventListener('submit', async event => {
       event.preventDefault(); if (busy || issued || !validate()) return;
       preview = null; finalReview.checked = false; issueBox.hidden = true; previewBox.hidden = true;
-      const ticket = revision; setBusy(true); notice('Calculating the final CAD invoice…');
+      const ticket = revision; setBusy(true); notice('Calculating the final CAD total…');
       try {
         const payload = body(), result = await send({ action: 'preview', ...payload });
         if (!section.isConnected || ticket !== revision) return;
         if (result.id !== order.id || result.version !== order.version || result.method_id !== payload.method_id || result.currency !== 'CAD' || !Number.isSafeInteger(result.total_cents) || result.total_cents <= 0 || !Number.isFinite(Date.parse(result.expires_at)) || Date.parse(result.expires_at) <= Date.now()) throw Error('The CAD preview is unavailable or expired. Reload this order and preview again.');
         if (JSON.stringify(body()) !== JSON.stringify(payload)) { invalidate(); return; }
-        preview = { result, payload, fingerprint: JSON.stringify(payload) }; showPreview(result, payload); notice('Preview ready. Review the exact CAD amount before issuing.');
-      } catch (error) { if (section.isConnected && ticket === revision) { preview = null; notice(error.message || 'The CAD invoice could not be previewed.', true); } }
+        preview = { result, payload, fingerprint: JSON.stringify(payload) }; showPreview(result, payload); notice('Preview ready. Review the exact CAD amount before sending the order for acceptance.');
+      } catch (error) { if (section.isConnected && ticket === revision) { preview = null; notice(error.message || 'The CAD total could not be previewed.', true); } }
       finally { setBusy(false); }
     });
     async function issue() {
       if (busy || issued) return;
-      if (!preview || !finalReview.checked) { notice('Preview and review the final CAD invoice before issuing it.', true); return; }
+      if (!preview || !finalReview.checked) { notice('Preview and review the final CAD total before sending the order for acceptance.', true); return; }
       if (!validate()) return;
       const current = preview, ticket = revision;
       try {
-        if (Date.parse(current.result.expires_at) <= Date.now() || JSON.stringify(body()) !== current.fingerprint) { invalidate('The preview changed or expired. Preview the invoice again.'); return; }
-        setBusy(true, true); notice('Checking the approved method and issuing the reviewed CAD invoice…');
+        if (Date.parse(current.result.expires_at) <= Date.now() || JSON.stringify(body()) !== current.fingerprint) { invalidate('The preview changed or expired. Preview the order again.'); return; }
+        setBusy(true, true); notice('Checking the approved method and preparing the reviewed CAD order…');
         const latest = safeMethods(await api(endpoint + 'methods'), order.request_data.preferred_payment.method_id), selected = latest.find(item => item.id === current.payload.method_id);
         if (!section.isConnected || ticket !== revision) return;
         if (!selected || selected.version !== current.payload.expected_method_version) {
@@ -233,13 +233,13 @@
         if (JSON.stringify(body()) !== current.fingerprint) { invalidate(); return; }
         const result = await send({ action: 'issue', ...current.payload, expected_total_cents: current.result.total_cents });
         issued = true; fields.disabled = true; issueBox.hidden = true; preview = null;
-        notice('CAD invoice issued. The customer must accept it before viewing Interac instructions. Payment has not been marked received.');
+        notice('CAD order total prepared. The customer must accept it before viewing Interac instructions. Payment has not been marked received.');
         if (typeof onIssued === 'function') {
           try { await onIssued(result); }
-          catch { notice('CAD invoice issued. Reload this order to view its updated status.'); reloadButton.hidden = typeof onRefresh !== 'function'; }
+          catch { notice('CAD order total prepared. Reload this order to view its updated status.'); reloadButton.hidden = typeof onRefresh !== 'function'; }
         }
       } catch (error) {
-        invalidate(); notice((error.message || 'Issuance could not be confirmed.') + ' Reload the order before trying to issue again.', true); reloadButton.hidden = typeof onRefresh !== 'function';
+        invalidate(); notice((error.message || 'The order update could not be confirmed.') + ' Reload the order before trying again.', true); reloadButton.hidden = typeof onRefresh !== 'function';
       } finally { setBusy(false); if (issued) fields.disabled = true; }
     }
     function renderMethods(current = method.value || order.request_data.preferred_payment.method_id) {

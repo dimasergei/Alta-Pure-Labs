@@ -2,7 +2,7 @@
 const fs=require('node:fs'),path=require('node:path'),out='public-build';
 const patch=(f,fn)=>fs.writeFileSync(path.join(out,f),fn(fs.readFileSync(path.join(out,f),'utf8')));
 for(const f of ['readiness-ui.js','readiness-ui.css','admin-supplier.js','admin-fulfillment.js','admin-fulfillment.css','interac-invoice-admin.js','interac-invoice-admin.css'])fs.copyFileSync(f,path.join(out,f));
-patch('admin-orders.html',s=>s.replace('<script src="/admin-fulfillment.js','<link rel="stylesheet" href="/interac-invoice-admin.css?v=20261118-interac"><script src="/interac-invoice-admin.js?v=20261118-interac"></script><script src="/admin-fulfillment.js'));
+patch('admin-orders.html',s=>s.replace('<script src="/admin-fulfillment.js','<link rel="stylesheet" href="/interac-invoice-admin.css?v=20261118-interac"><script src="/interac-invoice-admin.js?v=20261118-cad-checkout"></script><script src="/admin-fulfillment.js'));
 patch('account-experience.js',s=>s.replace(/async function rewards\(root,auth,path\)\{[\s\S]*?\n window.AccountExperience=/,"async function rewards(root,auth,path){return window.ReadinessUI.balance(root,auth,path);}\n window.AccountExperience="));
 function decorate(dir){for(const e of fs.readdirSync(dir,{withFileTypes:true})){const p=path.join(dir,e.name);if(e.isDirectory())decorate(p);else if(e.name.endsWith('.html')){let s=fs.readFileSync(p,'utf8');if(!s.includes('ap-site'))continue;s=s.replace('</head>','<link rel="stylesheet" href="/readiness-ui.css?v=3"></head>').replace('<script src="/conversion-ui.js','<script src="/readiness-ui.js?v=3"></script><script src="/conversion-ui.js');fs.writeFileSync(p,s);}}}
 decorate(out);

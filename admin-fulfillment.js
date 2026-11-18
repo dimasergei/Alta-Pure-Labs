@@ -27,7 +27,7 @@ function rows(){const host=root?.querySelector('[data-unified-list]');if(!host)r
   identity.append(el('strong',ref(o)),el('small',type(o)+' · '+when(o.created_at)),el('span',o.customer_name||o.customer_email||'Unknown customer'));
   const pendingCad=interacRequest(o),estimate=requestEstimate(o);
   sum.append(el('strong',pendingCad?'CAD quote pending':cash(o.total_cents,o.currency)+(o.source==='research_subscription'?'/mo':'')),el('small',pendingCad&&Number.isSafeInteger(estimate?.total_cents)?cash(estimate.total_cents,'USD')+' USD estimate':orderState(o,o.source==='research_subscription'?o.research_status:o.source==='commerce'?o.commerce_status:o.fulfillment_status)));
-  card.append(identity,sum,btn(o.source==='research_subscription'?'View subscription':pendingCad?'Review CAD invoice':'Manage order',()=>detail(o),'primary'));host.append(card)}
+  card.append(identity,sum,btn(o.source==='research_subscription'?'View subscription':pendingCad?'Review CAD order':'Manage order',()=>detail(o),'primary'));host.append(card)}
 }
 async function load(){if(!api||!root)return;const ticket=++epoch,params=new URLSearchParams({status:'all',page:String(page),page_size:'25',sort,search:query,type:filter});
  try{const result=await api('/api/admin-orders?'+params);if(ticket!==epoch)return;orders=result.orders||[];paging=result.pagination||{};const count=document.getElementById('orders-message');if(count)count.textContent=(paging.total||0)+' orders · use Manage order for payment and fulfillment';root.replaceChildren();
@@ -50,7 +50,7 @@ async function detail(record){let row=typeof record==='object'?record:orders.fin
  const head=el('div',undefined,'uc-dialog-head'),title=el('div');title.append(el('h2',ref(row)),el('small',type(row)+' · '+orderState(o,o.status||row.research_status||row.fulfillment_status)));head.append(title,btn('Close',()=>dlg.close()));dlg.append(head);
  const notice=el('p','','uc-message');notice.setAttribute('data-unified-message','');notice.setAttribute('role','status');dlg.append(notice);
  const pendingCad=interacRequest(o),estimate=requestEstimate(o);
- const info=el('section',undefined,'uc-info');info.append(field('Customer',o.customer_name||row.customer_name),field('Email',o.customer_email||row.customer_email),field('Payment',pendingCad?'CAD invoice review pending':orderState(o,row.payment_status)),field('Fulfillment',row.source==='research_subscription'?state(row.research_status):orderState(o,o.status||row.fulfillment_status)),field(pendingCad?'USD request estimate':'Total',pendingCad?(Number.isSafeInteger(estimate?.total_cents)?cash(estimate.total_cents,'USD')+' USD':'Awaiting CAD quote'):cash(o.total_cents??row.total_cents,o.currency||row.currency)+(row.source==='research_subscription'?'/mo':'')),field('Placed',when(o.created_at||row.created_at)));
+ const info=el('section',undefined,'uc-info');info.append(field('Customer',o.customer_name||row.customer_name),field('Email',o.customer_email||row.customer_email),field('Payment',pendingCad?'CAD order review pending':orderState(o,row.payment_status)),field('Fulfillment',row.source==='research_subscription'?state(row.research_status):orderState(o,o.status||row.fulfillment_status)),field(pendingCad?'USD request estimate':'Total',pendingCad?(Number.isSafeInteger(estimate?.total_cents)?cash(estimate.total_cents,'USD')+' USD':'Awaiting CAD quote'):cash(o.total_cents??row.total_cents,o.currency||row.currency)+(row.source==='research_subscription'?'/mo':'')),field('Placed',when(o.created_at||row.created_at)));
  if(row.organization)info.append(field('Organization',row.organization));
  if(row.source==='commerce'&&o.payment_snapshot?.label)info.append(field('Payment method',o.payment_snapshot.label));
  if(row.kind==='membership')info.append(field('Membership plan',o.plan||row.plan));
@@ -89,8 +89,8 @@ function historySection(host,changes){const box=el('details',undefined,'uc-histo
 function commerceActions(host,row,data){const o=data.order,id=o.id,allocations=data.allocations||[],job=data.jobs?.[0];
  const pay=el('section',undefined,'uc-payment');pay.append(el('h3','Payment'));
  if(interacRequest(o)){
-  if(window.PureInteracInvoiceAdmin)window.PureInteracInvoiceAdmin.mount({host:pay,order:o,api,onRefresh:()=>reload(row),onIssued:async()=>{await reload(row);msg('CAD invoice issued. The customer must accept it before viewing Interac payment instructions.')}});
-  else pay.append(el('p','CAD invoice review is unavailable. Refresh the Orders page and try again.','uc-hint'));
+  if(window.PureInteracInvoiceAdmin)window.PureInteracInvoiceAdmin.mount({host:pay,order:o,api,onRefresh:()=>reload(row),onIssued:async()=>{await reload(row);msg('CAD order total prepared. The customer must accept it before viewing Interac payment instructions.')}});
+  else pay.append(el('p','CAD order review is unavailable. Refresh the Orders page and try again.','uc-hint'));
  }
  else if(data.manual_payment_allowed){const f=form('Confirm received bank payment',pay);f.append(el('p','Verify that the full amount has arrived before confirming payment and preparing this order for fulfillment.','uc-hint'));
   f.append(field('Amount to verify',cash(o.total_cents,o.currency)),field('Method',data.payment_method?.label||o.payment_snapshot?.label));

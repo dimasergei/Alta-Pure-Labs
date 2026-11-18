@@ -5,6 +5,7 @@ const fs = require('node:fs');
 const path = require('node:path');
 const { JSDOM } = require('jsdom');
 const { issueInvoice } = require('../lib/manual-commerce');
+const { manualPaymentAllowed } = require('../lib/unified-admin-actions');
 
 const source = fs.readFileSync(path.join(__dirname, '../interac-invoice-admin.js'), 'utf8');
 const fulfillmentSource = fs.readFileSync(path.join(__dirname, '../admin-fulfillment.js'), 'utf8');
@@ -41,18 +42,24 @@ function harness(t, options = {}) {
   window.fetch = () => { throw Error('Unexpected external request'); };
   window.HTMLDialogElement.prototype.showModal = function () { this.open = true; };
   window.HTMLDialogElement.prototype.close = function () { this.open = false; };
+  window.confirm = () => true;
   const api = async (url, init = {}) => {
     const parsed = new URL(url, window.location.href), body = init.body ? JSON.parse(init.body) : null;
     calls.push({ url, method: init.method || 'GET', body, headers: init.headers });
     if (!body) {
       if (parsed.searchParams.get('view') === 'methods') return { methods: clone(methods) };
       if (parsed.searchParams.get('view') === 'shipping-preferences') return { preferences: clone(preferences) };
-      if (parsed.searchParams.get('lotus') === 'admin') return { order: clone(order), allocations: [], jobs: [], history: [], manual_payment_allowed: false };
+      if (parsed.searchParams.get('lotus') === 'admin') { const method = methods.find(item => item.id === order.method_id); return { order: clone(order), allocations: [], jobs: [], history: [], manual_payment_allowed: manualPaymentAllowed(order, method), payment_method: method ? { id: method.id, kind: method.kind, label: method.label, currency: method.currency } : null }; }
       if (parsed.pathname === '/api/admin-orders') return { orders: [row()], pagination: { total: 1 } };
       throw Error('Unexpected read: ' + url);
     }
-    assert.equal(parsed.searchParams.get('commerce'), 'admin'); assert.equal(parsed.searchParams.get('view'), 'write');
     assert.equal(init.method, 'POST'); assert.equal(init.headers['Content-Type'], 'application/json');
+    if (parsed.searchParams.get('lotus') === 'admin') {
+      assert.equal(parsed.searchParams.get('view'), 'write'); assert.equal(body.action, 'record_payment');
+      assert.equal(body.expected_version, order.version); assert.equal(body.method_id, order.method_id); assert.equal(body.confirm_funds_received, true);
+      order.status = 'paid'; order.version++; return { id: order.id, status: 'paid' };
+    }
+    assert.equal(parsed.searchParams.get('commerce'), 'admin'); assert.equal(parsed.searchParams.get('view'), 'write');
     assert.ok(['preview', 'issue'].includes(body.action), 'UI may only preview or issue, never record payment or change methods');
     const result = await issueInvoice(db, body);
     if (body.action === 'preview' && controls.previewGate) await controls.previewGate;
@@ -94,18 +101,33 @@ test('only requested Interac orders mount the review; estimates and approved met
 test('the existing Orders list exposes the review action and never presents an unissued CAD request as a zero-dollar total', async t => {
   const h = harness(t, { fulfillment: true }); await tick();
   const row = h.window.document.querySelector('.uc-order-row'); assert.match(row.textContent, /CAD quote pending/); assert.match(row.textContent, /104\.95 USD estimate/);
-  assert.equal(row.querySelector('button').textContent, 'Review CAD invoice');
+  assert.equal(row.querySelector('button').textContent, 'Review CAD order');
   await h.window.AltaFulfillment.manage(h.row()); await tick();
   const dialog = h.window.document.querySelector('dialog'); assert.ok(dialog.querySelector('.pica-panel')); assert.equal(dialog.querySelector('.uc-total'), null);
   assert.match(dialog.querySelector('.uc-info').textContent, /USD request estimate\$104\.95 USD/);
   assert.doesNotMatch(dialog.querySelector('.uc-payment').textContent, /Mark payment received|Awaiting confirmed payment/);
 });
 
+test('normal accepted CAD checkout uses the existing payment confirmation without a review or issuance step', async t => {
+  const order = { ...fixture(), status: 'accepted', checkout_version: 'interac-checkout-2026-11-v1', currency: 'CAD', subtotal_cents: 13500, discount_cents: 2025, shipping_cents: 2000, tax_cents: 1752, total_cents: 15227, method_id: methodId, payment_snapshot: { kind: 'interac', label: 'Interac', currency: 'CAD' }, pricing: { currency: 'CAD', lines: [{ name: 'Tirzepatide', size: '60mg', qty: 1, unit_price_cents: 13500, gross_cents: 13500, discount_cents: 2025, line_total_cents: 11475 }] } };
+  const h = harness(t, { fulfillment: true, order }); await tick();
+  const row = h.window.document.querySelector('.uc-order-row'); assert.match(row.textContent, /CA\$152\.27/); assert.equal(row.querySelector('button').textContent, 'Manage order');
+  await h.window.AltaFulfillment.manage(h.row()); await tick();
+  const dialog = h.window.document.querySelector('dialog'), payment = dialog.querySelector('.uc-payment');
+  assert.equal(dialog.querySelector('.pica-panel'), null); assert.match(payment.textContent, /Confirm received bank payment/); assert.match(payment.textContent, /Amount to verifyCA\$152\.27/);
+  assert.doesNotMatch(payment.textContent, /invoice|preview|accept|review CAD order/i); assert.equal(h.calls.some(call => call.body), false);
+  const form = payment.querySelector('form'); form.querySelector('[name="bank_reference"]').value = 'INTERAC-FIXTURE-RECEIPT';
+  form.dispatchEvent(new h.window.Event('submit', { bubbles: true, cancelable: true })); await tick(); assert.equal(h.calls.some(call => call.body), false, 'received-funds confirmation remains mandatory');
+  form.querySelector('[type="checkbox"]').checked = true; form.dispatchEvent(new h.window.Event('submit', { bubbles: true, cancelable: true })); await tick();
+  assert.equal(posts(h, 'record_payment').length, 1); assert.equal(posts(h, 'issue').length, 0); assert.equal(posts(h, 'preview').length, 0);
+  assert.equal(h.order.currency, 'CAD'); assert.equal(h.order.total_cents, 15227); assert.equal(h.order.status, 'paid');
+});
+
 test('a requested method with the wrong provider, native provider, currency or sale scope is never offered', async t => {
   for (const patch of [{ provider_key: 'wire' }, { native_provider: 'provider' }, { currency: 'USD' }, { sale_scope: 'membership' }]) {
     const h = harness(t, { methods: [{ id: methodId, version: 1, label: 'Fixture method', active: true, kind: 'interac', provider_key: 'interac', currency: 'CAD', sale_scope: 'goods', ...patch }] }); await tick();
     assert.deepEqual([...input(h, 'method_id').options].map(option => option.value), ['']);
-    assert.equal(button(h, 'Preview CAD invoice').disabled, true); assert.equal(h.calls.some(call => call.body), false);
+    assert.equal(button(h, 'Preview CAD total').disabled, true); assert.equal(h.calls.some(call => call.body), false);
   }
 });
 

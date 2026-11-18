@@ -1,6 +1,5 @@
 'use strict';
 const test=require('node:test'),assert=require('node:assert/strict');
-const {createHash}=require('node:crypto');
 const checkout=require('../lib/direct-checkout'),policy=require('../lib/pure-payment-policy'),gateway=require('../lib/gateway-config');
 const config=require('../config/checkout.json');
 const id='a0000000-0000-4000-8000-000000000001',uid='a0000000-0000-4000-8000-000000000002',mid='a0000000-0000-4000-8000-000000000003';
@@ -11,6 +10,7 @@ const env={SITE_URL:'https://getpurelabs.com',CHECKOUT_RATE_LIMIT_SECRET:'isolat
  RAMPEX_ENABLED:'true',RAMPEX_MODE:'live',RAMPEX_API_KEY:'isolated-rampex-key',RAMPEX_WEBHOOK_SECRET:'isolated-rampex-webhook-secret',
  POLYGON_USDC_ENABLED:'true',POLYGON_USDC_RECIPIENT:'0x1111111111111111111111111111111111111111',POLYGON_USDC_RPC_URL:'https://polygon-rpc.test',POLYGON_USDC_SECONDARY_RPC_URL:'https://polygon-second.test'};
 const catalog=[{id:'fixture-product',name:'Fixture product',variants:[{size:'5mg',price:100}]}];
+const fx={fx_ppm:1375000,source:'Bank of Canada',series:'FXUSDCAD',rate_date:'2026-11-17',quoted_at:'2026-11-18T07:00:00.000Z',expires_at:'2026-11-18T07:30:00.000Z',token:'fixture-signed-rate-token'};
 const body={id,kind:'goods',method_id:mid,consent:true,research_use:true,checkout_version:config.version,name:'Fixture Researcher',organization:'Fixture Lab',
  items:[{id:'fixture-product',size:'5mg',qty:1}],address:{line1:'123 Fixture Street',city:'Fixture City',region:'ON',postal_code:'N2L 1A1',country:'CA'},
  delivery:{shipping:'standard',extras:['protection']},coupon:'BLACKFRIDAY15',points:0,credit_cents:0};
@@ -33,19 +33,19 @@ function database({methods=[interac],balance={points:1000,credit_cents:5000},inv
   }};return q;
  },rpc:async(name,args)=>{
   calls.push({name,args:structuredClone(args)});
-  assert.equal(name,'commerce_request_invoice','Interac must only request a reviewed invoice');
+  assert.equal(name,'commerce_place_interac_checkout','Interac must use its atomic CAD placement, never native checkout or an invoice request');
   const r=args.p_data,existing=state.invoices.find(row=>row.id===r.id);
   if(existing){if(existing.customer_id!==r.customer_id||existing.request_digest!==r.digest)return{error:{code:'23505'}};return{data:{id:r.id,status:existing.status,created:false}};}
-  state.invoices.push({id:r.id,customer_id:r.customer_id,status:'requested',request_digest:r.digest,request_data:structuredClone(r.request),checkout_version:null});
-  return{data:{id:r.id,status:'requested',created:true}};
+  state.invoices.push({id:r.id,customer_id:r.customer_id,status:'accepted',request_digest:r.digest,request_data:structuredClone(r.request),checkout_version:r.checkout_version,currency:'CAD',total_cents:r.total_cents});
+  return{data:{id:r.id,status:'accepted',currency:'CAD',total_cents:r.total_cents,manual_transfer:true,created:true}};
  }};
 }
-async function call(input,{db=database(),cat=catalog,params='',headers={},method=input?'POST':'GET'}={}){
- let networkCalls=0;
+async function call(input,{db=database(),cat=catalog,params='',headers={},method=input?'POST':'GET',exchange=fx}={}){
+ let networkCalls=0;const fxCalls=[];
  const res={code:200,headers:{},setHeader(k,v){this.headers[k]=v;},status(n){this.code=n;return this;},json(value){this.body=value;return this;}};
  await checkout.handle({method,headers:{origin:env.SITE_URL,'content-type':'application/json',authorization:'Bearer isolated-fixture-token-long-enough',...headers},body:input},res,new URLSearchParams(params),
-  {db,env,catalog:cat,rateLimit:async()=>{},fetchImpl:async()=>{networkCalls++;throw Error('No network call is allowed in this request-only fixture.');}});
- assert.equal(networkCalls,0);return{res,db};
+  {db,env,catalog:cat,rateLimit:async()=>{},interacFx:{resolve:async options=>{fxCalls.push(options);if(options.strict&&options.token!==fx.token)throw Object.assign(Error('CAD quote expired or invalid.'),{status:409});return structuredClone(exchange);}},fetchImpl:async()=>{networkCalls++;throw Error('No payment, fulfillment or message network call is allowed in this fixture.');}});
+ assert.equal(networkCalls,0);return{res,db,fxCalls};
 }
 
 test('Interac is an active manual CAD route for Canada without a gateway account or public receiving details',async()=>{
@@ -56,13 +56,13 @@ test('Interac is an active manual CAD route for Canada without a gateway account
  for(const country of ['US','GB'])assert.deepEqual(await checkout.methods(db,env,country),[]);
  const {res}=await call(null,{db,params:'checkout=public',headers:{authorization:''}});
  assert.equal(res.code,200);assert.equal(res.body.methods.length,1);
- assert.deepEqual(res.body.methods[0],{id:mid,label:'Interac e-Transfer',kind:'interac',currency:'CAD',native_provider:null,provider_key:'interac',sale_scope:'goods',payment_kind:'interac',countries:['CA'],display_order:3,request_only:true,payment_currency:'CAD',mode:'reviewed_invoice'});
+ assert.deepEqual(res.body.methods[0],{id:mid,label:'Interac e-Transfer',kind:'interac',currency:'CAD',native_provider:null,provider_key:'interac',sale_scope:'goods',payment_kind:'interac',countries:['CA'],display_order:3,manual_transfer:true,payment_currency:'CAD',mode:'direct_transfer'});
  assert.deepEqual(res.body.payment_options.map(x=>[x.key,x.status]),[['card','setup_pending'],['crypto','setup_pending'],['interac','available']]);
- assert.doesNotMatch(JSON.stringify(res.body),/Private fixture|instructions|acceptance_reference|payee|receiving@example/);
+ assert.doesNotMatch(JSON.stringify(res.body),/Private fixture|acceptance_reference|payee|receiving@example/);
  assert.equal(res.body.capabilities.card,false);assert.equal(db.calls.length,0);
  const description=require('../lib/gateway-public').describe(available);
  const choice=description.payment_options.find(x=>x.key==='interac');
- assert.equal(choice.mode,'reviewed_invoice');assert.equal(choice.request_only,true);assert.equal(choice.payment_currency,'CAD');assert.deepEqual(choice.currencies,['CAD']);
+ assert.equal(choice.mode,'direct_transfer');assert.equal(choice.request_only,undefined);assert.equal(choice.manual_transfer,true);assert.equal(choice.payment_currency,'CAD');assert.deepEqual(choice.currencies,['CAD']);
  assert.equal(description.card_to_crypto_connected,false);
 });
 
@@ -77,14 +77,18 @@ test('inactive, wrong currency, wrong provider, native hybrids and membership-on
  assert.equal(policy.kind({...interac,currency:'USD',native_provider:'polygon_usdc'}),null);
 });
 
-test('Interac quote is a non-payable USD cart estimate with current coupon and selected delivery, never a CAD charge',async()=>{
+test('Interac quote has exact CAD products, coupon and separately rounded delivery components at a signed rate',async()=>{
  const {res,db}=await call({...body,action:'quote',coupon:' blackFriday15 '});
- assert.equal(res.code,200);assert.equal(res.body.currency,'USD');assert.equal(res.body.payment_currency,'CAD');assert.equal(res.body.request_only,true);
- assert.equal(res.body.subtotal_cents,10000);assert.equal(res.body.discount_cents,1500);assert.equal(res.body.shipping_cents,4495);assert.equal(res.body.tax_cents,0);assert.equal(res.body.total_cents,12995);
+ assert.equal(res.code,200);assert.equal(res.body.currency,'CAD');assert.equal(res.body.payment_currency,'CAD');assert.equal(res.body.request_only,undefined);assert.equal(res.body.manual_transfer,true);
+ assert.equal(res.body.subtotal_cents,13750);assert.equal(res.body.discount_cents,2063);assert.equal(res.body.shipping_cents,6181);assert.equal(res.body.tax_cents,0);assert.equal(res.body.total_cents,17868);
+ assert.equal(res.body.pricing.lines[0].unit_price_cents,13750);assert.equal(res.body.pricing.lines[0].unit_price_usd_cents,10000);
+ assert.equal(res.body.pricing.delivery.currency,'CAD');assert.equal(res.body.pricing.delivery.shipping_cents,5493);assert.equal(res.body.pricing.delivery.extras[0].amount_cents,688);
+ assert.equal(res.body.pricing.fx_ppm,1375000);assert.equal(res.body.pricing.fx.token,undefined);assert.equal(res.body.fx_quote,fx.token);
+ assert.deepEqual(res.body.pricing.usd_basis,{currency:'USD',subtotal_cents:10000,coupon_discount_cents:1500,merchandise_cents:8500});
  assert.equal(res.body.pricing.coupon_code,'BLACKFRIDAY15');assert.equal(res.body.pricing.crypto_discount_cents,0);assert.equal(res.body.pricing.payment_discount,undefined);
  assert.equal(res.body.points_redeemed,0);assert.equal(res.body.credit_redeemed_cents,0);assert.equal(res.body.earned_points,0);
  assert.match(res.body.quote,/^[a-f0-9]{64}$/);assert.equal(db.calls.length,0);
- const {res:regular}=await call({...body,action:'quote',coupon:''},{db});assert.equal(regular.body.discount_cents,0);assert.equal(regular.body.total_cents,14495);
+ const {res:regular}=await call({...body,action:'quote',coupon:''},{db});assert.equal(regular.body.discount_cents,0);assert.equal(regular.body.total_cents,19931);
  assert.deepEqual(db.state.balance,{points:1000,credit_cents:5000});
 });
 
@@ -96,25 +100,27 @@ test('USD points or credit, non-Canadian destinations and disabled delivery are 
  const {res}=await call({...body,action:'quote'},{db});assert.equal(res.code,400);assert.equal(db.calls.length,0);
 });
 
-test('placement persists a reviewed request with server identity, product prices, coupon, delivery and bulk intent only',async t=>{
- let notifications=0;t.mock.method(require('../lib/invoice-notifications'),'dispatch',async()=>{notifications++;throw Error('Request-only checkout must not dispatch messages.');});
+test('placement atomically accepts an unpaid CAD order with server identity, product prices, coupon, delivery and bulk intent',async t=>{
+ let notifications=0;t.mock.method(require('../lib/invoice-notifications'),'dispatch',async()=>{notifications++;throw Error('This isolated checkout fixture must not dispatch messages.');});
  const db=database(),input={...body,bulk_order:true,coupon:' blackfriday15 ',items:[{...body.items[0],qty:10,price:.01,unit_price_usd_cents:1}],
   customer_id:'forged',customer_email:'forged@example.test',currency:'CAD',total_cents:1,checkout_version:config.version,
   preferred_payment:{method_id:'forged',provider_key:'rampex',currency:'USD'},request:{checkout:{coupon:'FAKE',payment_kind:'crypto'}},payment_kind:'crypto',pricing:{discount_cents:999999},status:'paid'};
  const {res:q}=await call({...input,action:'quote'},{db});assert.equal(q.code,200);
- const {res}=await call({...input,action:'place',quote:q.body.quote},{db});assert.equal(res.code,201);assert.equal(res.body.status,'requested');assert.equal(res.body.request_only,true);
+ const {res,fxCalls}=await call({...input,action:'place',quote:q.body.quote,fx_quote:q.body.fx_quote},{db});assert.equal(res.code,201);assert.equal(res.body.status,'accepted');assert.equal(res.body.request_only,undefined);assert.equal(res.body.manual_transfer,true);assert.equal(res.body.currency,'CAD');assert.equal(res.body.total_cents,q.body.total_cents);assert.equal(fxCalls[0].strict,true);
  assert.equal(db.calls.length,1);const saved=db.calls[0].args.p_data;
  assert.equal(saved.customer_id,uid);assert.equal(saved.customer_email,'customer@example.test');assert.equal(saved.consent,true);
- for(const field of ['checkout_version','currency','total_cents','pricing','method_id','payment_snapshot','paid_at','status'])assert.equal(saved[field],undefined,field);
+ for(const field of ['payment_snapshot','paid_at','status','request_only'])assert.equal(saved[field],undefined,field);
+ assert.equal(saved.checkout_version,checkout.INTERAC_VERSION);assert.equal(saved.currency,'CAD');assert.equal(saved.total_cents,123056);assert.equal(saved.pricing.currency,'CAD');
  assert.equal(saved.request.items[0].unit_price_usd_cents,10000);assert.equal(saved.request.items[0].qty,10);assert.equal(saved.request.bulk_order,true);
  assert.deepEqual(saved.request.preferred_payment,{method_id:mid,provider_key:'interac',label:interac.label,currency:'CAD'});
- assert.equal(saved.request.checkout.payment_kind,'interac');assert.equal(saved.request.checkout.request_only,true);assert.equal(saved.request.checkout.payment_method_version,3);
+ assert.equal(saved.request.checkout.payment_kind,'interac');assert.equal(saved.request.checkout.request_only,undefined);assert.equal(saved.request.checkout.payment_method_version,3);
  assert.equal(saved.request.checkout.coupon,'BLACKFRIDAY15');assert.equal(saved.request.checkout.points,0);assert.equal(saved.request.checkout.credit_cents,0);assert.deepEqual(saved.request.checkout.delivery,body.delivery);
- assert.deepEqual(saved.request.checkout.usd_estimate,{currency:'USD',subtotal_cents:100000,discount_cents:15000,coupon_discount_cents:15000,shipping_cents:4495,tax_cents:0,total_cents:89495,delivery:q.body.pricing.delivery});
- const unhashed={...saved};delete unhashed.digest;assert.equal(saved.digest,createHash('sha256').update(JSON.stringify(unhashed)).digest('hex'));
- assert.equal(db.state.invoices[0].checkout_version,null);assert.deepEqual(db.state.balance,{points:1000,credit_cents:5000});assert.equal(notifications,0);
- const {res:again}=await call({...input,action:'place',quote:q.body.quote},{db});assert.equal(again.code,200);assert.equal(again.body.replayed,true);assert.equal(again.body.request_only,true);assert.equal(db.calls.length,1);
- const {res:conflict}=await call({...input,action:'place',quote:q.body.quote,note:'Changed after submitting'},{db});assert.equal(conflict.code,409);assert.equal(db.calls.length,1);
+ assert.equal(saved.request.checkout.usd_estimate,undefined);assert.deepEqual(saved.pricing.usd_basis,{currency:'USD',subtotal_cents:100000,coupon_discount_cents:15000,merchandise_cents:85000});
+ assert.equal(saved.request.checkout.input_digest,(await checkout.normalize({},user,input,catalog)).digest);assert.match(saved.digest,/^[a-f0-9]{64}$/);
+ assert.equal(db.state.invoices[0].checkout_version,checkout.INTERAC_VERSION);assert.deepEqual(db.state.balance,{points:1000,credit_cents:5000});assert.equal(notifications,1,'A failed mocked post-commit email attempt cannot fail or undo placement');
+ db.state.methods[0].active=false;
+ const {res:again,fxCalls:replayedFx}=await call({...input,action:'place',quote:q.body.quote,fx_quote:'expired-token'},{db});assert.equal(again.code,200);assert.equal(again.body.replayed,true);assert.equal(again.body.manual_transfer,true);assert.equal(again.body.total_cents,123056);assert.equal(db.calls.length,1);assert.equal(replayedFx.length,0);
+ const {res:conflict}=await call({...input,action:'place',quote:q.body.quote,fx_quote:q.body.fx_quote,note:'Changed after submitting'},{db});assert.equal(conflict.code,409);assert.equal(db.calls.length,1);
 });
 
 test('changed cart, delivery, coupon, catalog, request reference or method version invalidates the quoted request',async()=>{
@@ -123,7 +129,7 @@ test('changed cart, delivery, coupon, catalog, request reference or method versi
   {body:{quote:'0'.repeat(64)}},{catalog:[{...catalog[0],variants:[{size:'5mg',price:101}]}]},{method:{version:4}},{method:{active:false}}]){
   const db=database(),{res:q}=await call({...body,action:'quote'},{db});
   if(change.method)Object.assign(db.state.methods[0],change.method);
-  const {res}=await call({...body,action:'place',quote:q.body.quote,...change.body},{db,cat:change.catalog||catalog});
+  const {res}=await call({...body,action:'place',quote:q.body.quote,fx_quote:q.body.fx_quote,...change.body},{db,cat:change.catalog||catalog});
   assert.equal(res.code,409,JSON.stringify(change));assert.equal(db.calls.length,0);
  }
 });
@@ -132,15 +138,24 @@ test('receiving method is revalidated just before request creation',async()=>{
  for(const change of [{active:false},{version:4},{label:'Changed receiving route'},{currency:'USD'},{native_provider:'rampex'}]){
   const db=database({onMethodsRead:state=>{if(state.methodReads===3)Object.assign(state.methods[0],change);}});
   const {res:q}=await call({...body,action:'quote'},{db});assert.equal(q.code,200);
-  const {res}=await call({...body,action:'place',quote:q.body.quote},{db});assert.equal(res.code,409);assert.equal(db.calls.length,0);
+  const {res}=await call({...body,action:'place',quote:q.body.quote,fx_quote:q.body.fx_quote},{db});assert.equal(res.code,409);assert.equal(db.calls.length,0);
  }
 });
 
 test('foreign or conflicting invoice references cannot replay another request',async()=>{
  const db=database({invoices:[{id,customer_id:'a0000000-0000-4000-8000-000000000099',status:'requested',request_digest:'unrelated',checkout_version:null}]});
  const {res:q}=await call({...body,action:'quote'},{db});
- const {res}=await call({...body,action:'place',quote:q.body.quote},{db});assert.equal(res.code,409);assert.equal(db.state.invoices.length,1);assert.deepEqual(db.state.balance,{points:1000,credit_cents:5000});
+ const {res}=await call({...body,action:'place',quote:q.body.quote,fx_quote:q.body.fx_quote},{db});assert.equal(res.code,409);assert.equal(db.state.invoices.length,1);assert.deepEqual(db.state.balance,{points:1000,credit_cents:5000});
  for(const change of [{consent:false},{research_use:false},{checkout_version:'outdated'},{method_id:'forged'}]){
   const {res:invalid,db:untouched}=await call({...body,action:'quote',...change});assert.equal(invalid.code,400);assert.equal(untouched.calls.length,0);
  }
+});
+
+test('CAD cart preview reuses or refreshes signed FX, while placing needs the validated existing token',async()=>{
+ const db=database(),{res:cart,fxCalls}=await call({...body,country:'CA',fx_quote:'expired-token'},{db,params:'checkout=cart'});
+ assert.equal(cart.code,200);assert.equal(cart.body.currency,'CAD');assert.equal(cart.body.fx_quote,fx.token);assert.equal(fxCalls[0].strict,false);assert.equal(db.calls.length,0);
+ const {res:q}=await call({...body,action:'quote',fx_quote:cart.body.fx_quote},{db});assert.equal(q.body.total_cents,cart.body.total_cents);assert.deepEqual(q.body.pricing,cart.body.pricing);
+ for(const token of [undefined,'forged-token','expired-token']){const {res}=await call({...body,action:'place',quote:q.body.quote,fx_quote:token},{db});assert.equal(res.code,409);assert.equal(db.calls.length,0);}
+ const {res:changed}=await call({...body,action:'place',quote:q.body.quote,fx_quote:fx.token},{db,exchange:{...fx,fx_ppm:1400000}});assert.equal(changed.code,409);assert.equal(db.calls.length,0);
+ const {res:anonymous,fxCalls:anonymousFx}=await call({...body,country:'CA'},{db,params:'checkout=cart',headers:{authorization:''}});assert.equal(anonymous.body.currency,'USD');assert.equal(anonymousFx.length,0);
 });

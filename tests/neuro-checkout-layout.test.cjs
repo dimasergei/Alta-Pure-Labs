@@ -19,7 +19,8 @@ function fixture(ready=false,seedUnselected=false){
  let cart=[{key:'fixture:5mg',id:'fixture',name:'Research compound',size:'5mg',qty:2,price:100}];
  w.AltaStore={get cart(){return cart},product:()=>products[0],image:()=>'/assets/compound.png',adjustQuantity(key,delta){
   cart=cart.map(x=>x.key===key?{...x,qty:x.qty+delta}:x);return true;}};
- w.DirectCheckout={checkout:async()=>{},api:async(_auth,body)=>{
+ w.eval(fs.readFileSync(path.join(base,'direct-checkout-client.js'),'utf8'));
+ w.DirectCheckout={...w.DirectCheckout,checkout:async()=>{},api:async(_auth,body)=>{
   if(!body)return data;
   orders.push(body);
   if(body.action==='quote')return{...quotes.at(-1),quote:'a'.repeat(64)};
