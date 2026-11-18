@@ -44,7 +44,7 @@ test('isolated PostgreSQL enforces current stacked discounts and cents while pre
    payload.pricing.conversion_version='conversion-2026-11-v2';
    for(const key of ['membership_plan','membership_name','membership_discount_bps','membership_discount_cents','membership_benefits','usd_earned_points_basis_cents'])delete payload.pricing[key];
    for(const line of payload.pricing.lines)delete line.membership_discount_cents;
-   delete payload.pricing.delivery.membership_shipping;return payload;
+   delete payload.pricing.delivery.membership_shipping;payload.pricing.delivery.rate_version='shipping-2026-11-v1';return payload;
   };
   // A coupon-only v6 Crypto order is created with the previous SQL contract.
   // Card's coupon amounts match that historical policy; only the route and
