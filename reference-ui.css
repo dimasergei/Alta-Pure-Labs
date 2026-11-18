@@ -764,3 +764,74 @@ html[data-display-currency]:not([data-display-currency="USD"]) body.ap-site :is(
 .ap-site .pure-contact-outro a{color:#111;text-underline-offset:4px}
 @media(max-width:850px){.ap-site .pure-contact-main{grid-template-columns:1fr;padding-top:23px}.ap-site .pure-contact-hero-inner{min-height:290px;padding-top:48px;padding-bottom:45px}}
 @media(max-width:550px){.ap-site .pure-contact-hero h1{font-size:clamp(36px,10vw,58px)}.ap-site .pure-contact-hero p{font-size:14px}.ap-site .pure-contact-chips span{font-size:9px;padding:6px 9px}.ap-site .pure-contact-watermark{font-size:165px;right:-20px;bottom:-16px}.ap-site .pure-contact-side{padding:26px}.ap-site .pure-contact-form-card{padding:24px 18px}.ap-site .pure-contact-outro{padding-bottom:35px}}
+
+/* Consistent PURE catalog and bulk typography, contrast, spacing and responsive cards */
+.ap-site .pure-shop-page{background:#f8f8f8;color:#111}
+.ap-site .pure-shop-hero{position:relative;overflow:hidden;background:#0b0b0b;color:#fff}
+.ap-site .pure-shop-hero-inner{position:relative;min-height:250px;padding:54px 0 55px}
+.ap-site .pure-shop-kicker{display:inline-flex;align-items:center;gap:12px;font-size:11px;letter-spacing:.16em;font-weight:800;color:#cfcfcf}
+.ap-site .pure-shop-kicker:before{content:"";display:block;width:26px;height:2px;background:#fff}
+.ap-site .pure-shop-hero h1{position:relative;z-index:1;font-weight:900;color:#fff;font-size:clamp(49px,6vw,85px);letter-spacing:-.064em;line-height:1;margin:16px 0 17px}
+.ap-site .pure-shop-period{color:#aaa}
+.ap-site .pure-shop-hero p{position:relative;z-index:1;max-width:550px;color:#dfdfdf;font-size:16px;line-height:1.65}
+.ap-site .pure-shop-watermark{position:absolute;right:-15px;bottom:-68px;color:#ffffff0c;font-size:clamp(170px,25vw,340px);font-weight:900;letter-spacing:-.12em;line-height:1;pointer-events:none}
+.ap-site .pure-shop-page .nl-shop{padding:36px 0 70px}
+.ap-site .pure-shop-page .nl-shop-header{display:block;margin-bottom:24px}
+.ap-site .pure-shop-section-label{display:block;margin-bottom:10px;font-size:10px;color:#777;font-weight:800;letter-spacing:.16em}
+.ap-site .pure-shop-page .nl-shop-header h2{font-size:clamp(27px,3vw,39px);line-height:1.12;letter-spacing:-.045em;font-weight:900;margin:0 0 9px;color:#111}
+.ap-site .pure-shop-page .nl-shop-header p{font-size:14px;color:#666}
+.ap-site .pure-shop-page .nl-shop .nl-shop-controls{margin-bottom:25px}
+.ap-site .pure-shop-page .nl-shop .nl-filter-pills{margin-bottom:20px}
+.ap-site .pure-shop-page .nl-shop .nl-filter-pills button{min-height:44px;border:1px solid #ccc;border-radius:99px;background:#fff;color:#111;font-size:12px;font-weight:750;padding:10px 20px}
+.ap-site .pure-shop-page .nl-shop .nl-filter-pills button[aria-pressed=true]{background:#111;color:#fff;border-color:#111}
+.ap-site .pure-shop-page .ap-product-card{border:1px solid #e1e1e1;border-radius:17px;background:#fff;overflow:hidden;box-shadow:0 7px 22px #00000008;transition:box-shadow .18s,border-color .18s,transform .18s}
+.ap-site .pure-shop-page .ap-product-card:hover{border-color:#aaa;box-shadow:0 13px 30px #00000016;transform:translateY(-2px)}
+.ap-site .pure-shop-page .ap-product-image{border-radius:0}
+.ap-site .pure-shop-page .nl-featured-meta{padding:15px 15px 20px}
+.ap-site .pure-shop-page .ap-load-more{display:flex;justify-content:center;min-height:44px;border-radius:12px;margin:30px auto 0;background:#111;color:#fff;border-color:#111}
+.ap-site .pure-shop-page .ap-load-more[hidden]{display:none}
+.ap-site .nl-bulk-hero{position:relative;overflow:hidden;background:#0b0b0b;padding:52px 0 43px}
+.ap-site .nl-bulk-hero:after{content:"PURE";position:absolute;right:-10px;bottom:-72px;color:#ffffff0b;font-weight:900;font-size:clamp(150px,21vw,315px);line-height:1;letter-spacing:-.11em;pointer-events:none}
+.ap-site .nl-bulk-hero>.ap-container{position:relative;z-index:1}
+.ap-site .nl-bulk-hero h1{margin:18px 0;font-size:clamp(39px,5vw,65px);font-weight:900;line-height:1.05;letter-spacing:-.052em}
+.ap-site .nl-bulk-hero h1 em{color:#bdbdbd;-webkit-text-fill-color:#bdbdbd}
+.ap-site .nl-bulk-hero>div>p{max-width:610px;font-size:15px;line-height:1.65;color:#dedede}
+.ap-site .nl-bulk-benefits{gap:11px;margin-top:21px}
+.ap-site .nl-bulk-benefits>.nl-bulk-benefit{min-height:110px;padding:16px;border-radius:15px;box-shadow:0 7px 19px #00000009}
+.ap-site .nl-bulk-benefit-rate{font-size:28px!important;letter-spacing:-.03em}
+.ap-site .nl-bulk-benefit-copy{font-size:13px!important}
+.ap-site .nl-bulk-benefit small{font-size:11px;line-height:1.45}
+.ap-site .nl-bulk-layout{padding-top:20px}
+.ap-site .nl-bulk-grid{gap:13px;margin-top:13px}
+.ap-site .nl-bulk-product{border-radius:16px;box-shadow:0 7px 19px #00000008}
+.ap-site .nl-bulk-product .nl-bulk-image{height:auto;aspect-ratio:1.24/1;max-height:215px;background:#f5f5f5}
+.ap-site .nl-bulk-product .nl-bulk-image img{object-fit:contain}
+.ap-site .nl-bulk-product .nl-bulk-product-body{padding:13px}
+.ap-site .nl-bulk-product .nl-bulk-product-body h3{font-weight:850;font-size:16px;letter-spacing:-.015em}
+.ap-site .nl-bulk-product .nl-bulk-sizes button{min-height:34px;font-size:11px}
+.ap-site .nl-bulk-product .nl-bulk-prices strong{font-size:21px}
+.ap-site .nl-bulk-summary{border-radius:17px;box-shadow:0 14px 35px #0000000b}
+.ap-site .nl-bulk-faq{padding-top:35px}
+.ap-site .nl-bulk-faq h2{font-weight:900;letter-spacing:-.04em}
+@media(max-width:767px){
+.ap-site .pure-shop-hero-inner{padding:42px 0;min-height:215px}
+.ap-site .pure-shop-hero h1{font-size:clamp(42px,10vw,62px)}
+.ap-site .pure-shop-hero p{font-size:14px}
+.ap-site .pure-shop-watermark{font-size:160px;bottom:-25px}
+.ap-site .pure-shop-page .nl-shop{padding-top:26px}
+.ap-site .pure-shop-page .nl-shop .nl-shop-controls{margin-bottom:15px}
+.ap-site .pure-shop-page .nl-shop .nl-filter-pills button{min-height:44px;font-size:12px;padding:9px 15px}
+.ap-site .pure-shop-page .nl-featured-meta{padding:12px 12px 16px}
+.ap-site .nl-bulk-hero{padding:35px 0 29px}
+.ap-site .nl-bulk-benefits>.nl-bulk-benefit{min-height:105px;padding:12px}
+.ap-site .nl-bulk-benefit-rate{font-size:25px!important}
+.ap-site .nl-bulk-product .nl-bulk-image{max-height:170px}
+.ap-site .nl-bulk-product .nl-bulk-product-body{padding:11px}
+.ap-site .nl-bulk-product .nl-bulk-product-body h3{font-size:15px}
+}
+@media(max-width:480px){
+.ap-site .pure-shop-hero-inner{min-height:205px}
+.ap-site .pure-shop-hero h1{font-size:44px}
+.ap-site .nl-bulk-grid{grid-template-columns:1fr}
+.ap-site .nl-bulk-product .nl-bulk-image{max-height:220px}
+}
