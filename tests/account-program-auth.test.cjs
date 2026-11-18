@@ -22,15 +22,17 @@ const source=generatedAccount(),user={id:'fixture-member',email:'researcher@exam
 const tick=()=>new Promise(resolve=>setTimeout(resolve,0));
 async function page(route,{signedIn=false,storedReturn=null}={}){
  const dom=new JSDOM('<body class="ap-site ap-account-site"><main class="account-page"><div class="account-shell"><section id="account-root" class="account-card"></section></div></main><span id="year"></span></body>',{url:'https://pure.example'+route});
- const w=dom.window,assigned=[],panels=[],signins=[],oauth=[],requests=[];
+ const w=dom.window,assigned=[],panels=[],signins=[],signups=[],oauth=[],resets=[],requests=[];
  if(storedReturn)w.sessionStorage.setItem('ap-account-return',storedReturn);
  let onState;
  const auth={auth:{
   onAuthStateChange(callback){onState=callback;},
   getSession:async()=>({data:{session:signedIn?{user,access_token:'fixture-token'}:null}}),
   signInWithPassword:async value=>{signins.push(value);return {error:null};},
+  signUp:async value=>{signups.push(value);return {data:{session:null},error:null};},
   signInWithOAuth:async value=>{oauth.push(value);return {error:null};},
-  resetPasswordForEmail:async()=>({}),signOut:async()=>({})
+  resetPasswordForEmail:async(email,options)=>{resets.push({email,options});return {};},
+  updateUser:async()=>({error:null}),signOut:async()=>({})
  }};
  w.supabase={createClient:()=>auth};
  w.AltaWorkspace={renderAccountPanel:(route,element)=>{panels.push(route);element.textContent='Authenticated '+route;}};
@@ -40,7 +42,24 @@ async function page(route,{signedIn=false,storedReturn=null}={}){
  const context={window:w,document:w.document,location,sessionStorage:w.sessionStorage,FormData:w.FormData,URL,URLSearchParams,Intl,Date,
   fetch:async endpoint=>{requests.push(endpoint);assert.equal(endpoint,'/api/customer-config');return {ok:true,json:async()=>({supabaseUrl:'https://fixture.invalid',anonKey:'fixture-public-key'})};}};
  vm.runInNewContext(source,context,{timeout:1000});await tick();
- return {dom,w,assigned,panels,signins,oauth,requests,recovery:()=>onState('PASSWORD_RECOVERY',{user})};
+ return {dom,w,assigned,panels,signins,signups,oauth,resets,requests,recovery:()=>onState('PASSWORD_RECOVERY',{user})};
+}
+function authLink(env,route){
+ const link=[...env.w.document.querySelectorAll('a[href]')].find(a=>new URL(a.href).pathname===route);
+ assert.ok(link,'expected an auth link to '+route);return link.getAttribute('href');
+}
+function assertDestination(href,route,destination){
+ const url=new URL(href,'https://pure.example');
+ assert.equal(url.origin,'https://pure.example');assert.equal(url.pathname,route);
+ assert.equal(url.searchParams.get('returnTo'),destination);
+}
+async function submit(env,id,values){
+ const form=env.w.document.getElementById(id);assert.ok(form,'expected '+id+' form');
+ for(const [name,value] of Object.entries(values)){
+  const input=form.elements.namedItem(name);assert.ok(input,'expected '+name+' field');
+  if(input.type==='checkbox')input.checked=Boolean(value);else input.value=value;
+ }
+ await form.onsubmit({preventDefault(){},currentTarget:form});
 }
 
 for(const route of ['/account/membership','/account/subscriptions','/account/partner'])test(route+' keeps its destination through password login and the stored sign-in callback',async()=>{
@@ -75,6 +94,80 @@ test('account aliases preserve a safe canonical program destination',async()=>{
  const env=await page('/my-account/membership/?view=benefits');
  try{assert.equal(new URL(env.assigned[0],'https://pure.example').searchParams.get('returnTo'),'/account/membership?view=benefits');}
  finally{env.dom.window.close();}
+});
+
+test('auth cross-links retain membership checkout in fresh page contexts and through password reset feedback',async()=>{
+ for(const destination of ['/checkout?plan=vip&period=monthly','/checkout?plan=elite&period=annual']){
+  const pages=[];
+  try{
+   const login=await page('/account/login?returnTo='+encodeURIComponent(destination));pages.push(login);
+   const signupHref=authLink(login,'/account/signup'),resetHref=authLink(login,'/account/reset-password');
+   assertDestination(signupHref,'/account/signup',destination);
+   assertDestination(resetHref,'/account/reset-password',destination);
+   // No session storage is copied: these links work in independently opened tabs.
+   const signup=await page(signupHref);pages.push(signup);
+   assert.equal(signup.w.sessionStorage.getItem('ap-account-return'),destination);
+   const loginHref=authLink(signup,'/account/login');assertDestination(loginHref,'/account/login',destination);
+   const returned=await page(loginHref);pages.push(returned);
+   await submit(returned,'login',{email:user.email,password:'Fixture-only-password1!'});
+   assert.deepEqual(returned.assigned,[destination]);
+   const reset=await page(resetHref);pages.push(reset);
+   assert.equal(reset.w.sessionStorage.getItem('ap-account-return'),destination);
+   assertDestination(authLink(reset,'/account/login'),'/account/login',destination);
+   await submit(reset,'forgot',{email:user.email});
+   assert.equal(reset.w.document.querySelector('h1').textContent,'Check your email');
+   assertDestination(authLink(reset,'/account/login'),'/account/login',destination);
+   assert.equal(reset.resets[0].options.redirectTo,'https://pure.example/account/reset-password','provider callback stays on its existing query-free URL');
+  }finally{for(const env of pages)env.dom.window.close();}
+ }
+});
+
+test('signup and password-update confirmation links carry the saved destination without changing email callback URLs',async()=>{
+ const destination='/checkout?plan=vip&period=annual',signup=await page('/account/signup?returnTo='+encodeURIComponent(destination));
+ let reset;
+ try{
+  await submit(signup,'signup',{name:'Fixture Researcher',email:user.email,password:'Fixture-only-password1!',confirm:'Fixture-only-password1!',research:true});
+  assert.equal(signup.signups.length,1);assert.equal(signup.w.document.querySelector('h1').textContent,'Check your email');
+  assertDestination(authLink(signup,'/account/login'),'/account/login',destination);
+  assert.equal(signup.signups[0].options.emailRedirectTo,'https://pure.example/account','confirmation callback stays on its existing URL');
+  reset=await page('/account/reset-password?type=recovery',{storedReturn:destination});
+  await submit(reset,'newpw',{password:'Fixture-only-new-password2!',confirm:'Fixture-only-new-password2!'});
+  assert.equal(reset.w.document.querySelector('h1').textContent,'Password updated');
+  assertDestination(authLink(reset,'/account/login'),'/account/login',destination);
+ }finally{signup.dom.window.close();reset?.dom.window.close();}
+});
+
+test('auth cross-links reuse only allowed saved destinations and never propagate external or private admin targets',async()=>{
+ const destination='/account/membership?view=benefits';
+ const saved=await page('/account/login',{storedReturn:destination});
+ try{
+  assertDestination(authLink(saved,'/account/signup'),'/account/signup',destination);
+  assertDestination(authLink(saved,'/account/reset-password'),'/account/reset-password',destination);
+ }finally{saved.dom.window.close();}
+ for(const value of ['https://outside.example/checkout','//outside.example/checkout','/admin','/checkout\\outside','/checkout\r\nX-Test: yes']){
+  const env=await page('/account/login?returnTo='+encodeURIComponent(value),{storedReturn:value});
+  try{
+   assert.equal(authLink(env,'/account/signup'),'/account/signup');
+   assert.equal(authLink(env,'/account/reset-password'),'/account/reset-password');
+  }finally{env.dom.window.close();}
+ }
+});
+
+test('Google sign-in precedes the alternative divider and email form on both auth pages',async()=>{
+ for(const route of ['/account/login','/account/signup']){
+  const env=await page(route+'?returnTo='+encodeURIComponent('/checkout?plan=vip&period=monthly'));
+  try{
+   const google=env.w.document.getElementById('google-signin'),divider=env.w.document.querySelector('.account-divider'),form=env.w.document.querySelector('.account-form');
+   assert.ok(google&&divider&&form);
+   const follows=env.w.Node.DOCUMENT_POSITION_FOLLOWING;
+   assert.ok(google.compareDocumentPosition(divider)&follows,'Google comes before the divider');
+   assert.ok(divider.compareDocumentPosition(form)&follows,'the divider separates Google from email');
+   assert.equal(env.w.document.querySelectorAll('.account-divider').length,1);
+   await google.onclick();assert.equal(env.oauth.length,1);assert.equal(env.oauth[0].provider,'google');
+   const callback=new URL(env.oauth[0].options.redirectTo);
+   assert.equal(callback.pathname,'/account');assert.equal(callback.search,'','OAuth callback URL remains query-free');
+  }finally{env.dom.window.close();}
+ }
 });
 
 test('the compact auth presentation is applied only by auth renderers, including recovery and success screens',async()=>{

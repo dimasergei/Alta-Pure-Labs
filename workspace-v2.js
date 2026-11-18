@@ -71,7 +71,7 @@
  }
  function render(path,root){
   if(!root)return;
-  const pageFallback=(title,copy,href,label)=>()=>heading('PURE',title,copy)+'<section class="ap-container ap-section"><a class="ap-button ap-button-secondary" href="'+href+'">'+label+' →</a></section>';
+  const pageFallback=(title,copy,href,label)=>()=>'<div class="pure-simple-page">'+heading('PURE',title,copy)+'<section class="ap-container ap-section"><a class="ap-button ap-button-secondary" href="'+href+'">'+label+' →</a></section></div>';
   const routes={
    '/bulk-orders':bulkPage,
    '/rewards':pageFallback('Points & Credit','Sign in to view your issued points and store credit.','/account/points','View your balance'),

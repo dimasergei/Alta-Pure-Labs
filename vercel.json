@@ -113,6 +113,11 @@
       "source": "/my-account/memberships",
       "destination": "/account/membership",
       "permanent": false
+    },
+    {
+      "source": "/storefront-v2.html",
+      "destination": "/",
+      "permanent": true
     }
   ]
 }

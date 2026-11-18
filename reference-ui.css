@@ -514,6 +514,7 @@ body.ap-site{font-family:Archivo,Arial,sans-serif;background:#fff;color:#111111}
 .ap-site .ap-inquiry-form .ap-form-status{margin:12px 0 0}
 @media(max-width:767px){
  .ap-site .ap-inquiry-form .ap-form-grid{grid-template-columns:1fr;gap:16px}
+ .ap-site .ap-inquiry-form label:not(.ap-honeypot) input:not([type=checkbox]),.ap-site .ap-inquiry-form textarea{font-size:16px}
  .ap-site .ap-contact-layout .ap-panel{padding:22px 18px}
  .ap-site .ap-inquiry-form>.ap-button{width:100%;justify-content:center}
 }

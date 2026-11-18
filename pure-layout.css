@@ -25,6 +25,8 @@ html:root body.ap-site .nl-home-bulk { padding-block: 8px 32px; }
 html:root body.ap-site .ap-page-intro { padding-block: 40px 28px; }
 html:root body.ap-site .ap-page-intro h1 { margin-block: 22px 16px; }
 html:root body.ap-site .ap-page-intro > .ap-eyebrow { padding: 7px 14px; }
+html:root body.ap-site .pure-simple-page .ap-page-intro { padding-bottom: 16px; }
+html:root body.ap-site .pure-simple-page .ap-section { padding-block: 8px 48px; text-align: center; }
 html:root body.ap-site .ap-faq details { margin-block: 0; }
 html:root body.ap-site .ap-faq summary { padding-block: 18px; font-size: 16px; line-height: 1.45; }
 html:root body.ap-site .ap-faq p { margin-block: 0 18px; font-size: 15px; }

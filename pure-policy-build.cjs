@@ -10,6 +10,7 @@ const {JSDOM} = require('jsdom');
 
 const policyFiles = [
   'shipping-policy.html',
+  'shipping-protection.html',
   'refund-policy.html',
   'privacy-policy.html',
   'terms-and-conditions.html',

@@ -4,6 +4,17 @@ const patch=(file,fn)=>{const path='public-build/'+file;fs.writeFileSync(path,fn
 const replace=(s,from,to)=>{if(!s.includes(from))throw Error('Account integration anchor missing: '+from.slice(0,100));return s.replace(from,to);};
 patch('account.html',s=>replace(s,'<script src="/account.js">','<script src="/account-experience.js"></script><script src="/account.js">').replace('</head>','<link rel="stylesheet" href="/account-experience.css"></head>'));
 patch('account.js',s=>{
+ // Keep checkout/program destinations explicit across internal auth links. The
+ // existing checkout allowlist also validates any saved session destination.
+ const authLinks=`function authReturnUrl(route){const next=safeCheckoutReturn(new URLSearchParams(location.search).get('returnTo'))||safeCheckoutReturn(sessionStorage.getItem('ap-account-return'));return route+(next?'?returnTo='+encodeURIComponent(next):'');}\n`;
+ s=replace(s,'function route(){',authLinks+'function route(){');
+ s=replace(s,"if(['/account/login','/account/signup'].includes(p))","if(['/account/login','/account/signup','/account/reset-password'].includes(p))");
+ for(const route of ['/account/login','/account/signup','/account/reset-password']){
+  s=s.replaceAll(`href="${route}"`,`href="'+authReturnUrl('${route}')+'"`);
+ }
+ const divider='<div class="account-divider" aria-label="or"><span>or</span></div>';
+ s=replace(s,"function googleOption(){return '"+divider,"function googleOption(){return '");
+ s=replace(s,'<p id="google-error" class="google-error" role="alert" aria-live="polite"></p>', '<p id="google-error" class="google-error" role="alert" aria-live="polite"></p>'+divider);
  for(const signature of ["function login(error=''){","function signup(error=''){","function reset(recoveryMode){"]){
   s=replace(s,signature,signature+"document.body.classList.remove('ap-checkout-page');document.body.classList.add('ap-auth-page');");
  }
