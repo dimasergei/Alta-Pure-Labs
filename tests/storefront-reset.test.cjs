@@ -22,7 +22,7 @@ async function fixture(route,{workspace=false,cart=[]}={}){
  w.HTMLDialogElement.prototype.showModal=function(){this.open=true;};
  w.HTMLDialogElement.prototype.close=function(){this.open=false;};
  w.fetch=async url=>({ok:true,json:async()=>String(url).includes('/data/supplier-coas.json')?require('../data/supplier-coas.json'):[]});
- const scripts=['products.js','product-images.js'].map(read);
+ const scripts=['products.js','product-images.js','quantity-pricing.js'].map(read);
  // The production build replaces these views inside the storefront closure.
  scripts.push(referenceSource('storefront-v2.js','store',' window.AltaStore='));
  if(workspace)scripts.push(read('supplier-coas.js'),referenceSource('workspace-v2.js','workspace',' window.AltaWorkspace='));
@@ -124,7 +124,7 @@ test('catalog photo cards preserve product navigation, integer prices, search, f
   assert.doesNotMatch(d.querySelector('.nl-shop').textContent,retired);
  }finally{await f.close();}
 });
-test('product quantities use the regular unit price and add exactly the selected units',async()=>{
+test('product quantity value tiers preserve the selected number of units and base SKU price',async()=>{
  const f=await fixture('/product/retatrutide');
  try{
   const {d,w}=f;
@@ -132,11 +132,13 @@ test('product quantities use the regular unit price and add exactly the selected
   assert.equal(d.querySelector('[data-bundle-quantity="1"]').getAttribute('aria-pressed'),'true');
   assert.equal(d.querySelectorAll('.nl-badge,del,.nl-sale-box,[data-promo-active]').length,0);
   const price=w.AltaStore.product('retatrutide').variants[0].price;
-  d.querySelector('[data-bundle-quantity="4"]').click();
-  assert.equal(d.querySelector('#ap-detail-quantity').value,'4');
-  assert.match(d.querySelector('[data-bundle-estimate]').textContent,/for 4 units/);
+  d.querySelector('[data-bundle-quantity="10"]').click();
+  assert.equal(d.querySelector('#ap-detail-quantity').value,'10');
+  assert.match(d.querySelector('[data-bundle-estimate]').textContent,/for 10 vials/);
+   assert.match(d.querySelector('[data-bundle-estimate]').textContent,/SAVE 20%/);
+   assert.equal(d.querySelectorAll('[data-bundle-quantity]').length,4);
   d.querySelector('[data-action="detail-add"]').click();
-  assert.equal(w.AltaStore.cart[0].qty,4);assert.equal(w.AltaStore.cart[0].price,price);
+  assert.equal(w.AltaStore.cart[0].qty,10);assert.equal(w.AltaStore.cart[0].price,price);
   assert.doesNotMatch(d.querySelector('.nl-detail').textContent,retired);
  }finally{await f.close();}
 });
