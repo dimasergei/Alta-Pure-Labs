@@ -1,5 +1,5 @@
 {
-  "version": "conversion-2026-11-v2",
+  "version": "conversion-2026-11-v3",
   "free_shipping_threshold_cents": 15000,
   "shipping_service": "Standard US delivery",
   "plans": {
@@ -17,33 +17,35 @@
       "free_bac_water_3ml": false
     },
     "vip": {
-      "name": "PURE GOLD",
+      "name": "PURE WHITE",
       "monthly_cents": 1999,
       "annual_cents": 19190,
-      "points_per_dollar": 0,
-      "discount_bps": 0,
-      "free_shipping": false,
-      "early_access": false,
+      "points_per_dollar": 5,
+      "discount_bps": 500,
+      "free_shipping": true,
+      "early_access": true,
       "priority_fulfillment": false,
       "monthly_credit_cents": 0,
       "monthly_credit_min_order_cents": 0,
-      "free_bac_water_3ml": false
+      "free_bac_water_3ml": false,
+      "shipping_label": "Free US standard or express shipping"
     },
     "elite": {
-      "name": "PURE PLATINUM",
+      "name": "PURE BLACK",
       "monthly_cents": 9999,
       "annual_cents": 95990,
-      "points_per_dollar": 0,
-      "discount_bps": 0,
-      "free_shipping": false,
-      "early_access": false,
-      "priority_fulfillment": false,
-      "monthly_credit_cents": 0,
-      "monthly_credit_min_order_cents": 0,
-      "free_bac_water_3ml": false
+      "points_per_dollar": 10,
+      "discount_bps": 1000,
+      "free_shipping": true,
+      "early_access": true,
+      "priority_fulfillment": true,
+      "monthly_credit_cents": 5000,
+      "monthly_credit_min_order_cents": 15000,
+      "free_bac_water_3ml": true,
+      "shipping_label": "Free US standard or express shipping"
     }
   },
-  "annual_saving_percent": 0,
+  "annual_saving_percent": 20,
   "automatic_renewal": false,
   "partner": {
     "version": "partner-2026-11-v1",
@@ -53,5 +55,9 @@
     "cookie_days": 30,
     "minimum_payout_cents": 10000
   },
-  "memberships_enabled": false
+  "memberships_enabled": true,
+  "recurring_available": false,
+  "billing_mode": "prepaid",
+  "membership_shipping_label": "Free US standard or express shipping",
+  "discount_stacking": "Best of membership or coupon, plus eligible Crypto savings"
 }

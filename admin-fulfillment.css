@@ -9,6 +9,8 @@
 .uc-list{display:grid;gap:10px}.uc-order-row{display:grid;grid-template-columns:minmax(0,1fr) auto auto;gap:18px;align-items:center;padding:17px;border:1px solid #111;background:#111;border-radius:10px}
 .uc-order-identity{display:grid;gap:5px;min-width:0}.uc-order-identity strong{font-size:14px;letter-spacing:.01em}
 .uc-order-identity small,.uc-order-identity span{font-size:12px;color:#b8b8b8;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.uc-order-identity .uc-priority-badge,.uc-dialog .uc-priority-badge{display:inline-flex;justify-self:start;align-items:center;width:fit-content;max-width:100%;box-sizing:border-box;padding:5px 9px;margin-top:4px;border:1px solid #111;border-radius:5px;background:#111;color:#fff;font-size:11px;font-weight:800;letter-spacing:.04em;line-height:1.4;white-space:normal}
+body .ap-workspace .uc-order-identity .uc-priority-badge,body .uc-dialog .uc-priority-badge{background:#111!important;color:#fff!important}
 .uc-order-total{display:grid;gap:5px;text-align:right}.uc-order-total small{font-size:12px;color:#d0d0d0}
 .uc-pager{display:flex;justify-content:center;align-items:center;gap:14px;padding:17px}
 .uc-empty{padding:25px;border:1px dashed #555;border-radius:9px;text-align:center}.uc-message{font-size:12px;min-height:14px;color:#b8b8b8}.uc-message.failed{color:#b8b8b8}

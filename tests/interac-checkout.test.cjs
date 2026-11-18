@@ -19,13 +19,14 @@ function database({methods=[interac],balance={points:1000,credit_cents:5000},inv
  const calls=[],reads=[];
  return {state,calls,reads,auth:{getUser:async()=>({data:{user}})},from(table){
   reads.push(table);const filters={};let one=false;
-  const q={select(){return q;},eq(key,value){filters[key]=value;return q;},in(){return q;},order(){return q;},limit(){return q;},maybeSingle(){one=true;return q;},then(resolve,reject){
+  const q={select(){return q;},eq(key,value){filters[key]=value;return q;},in(){return q;},is(){return q;},lte(){return q;},gt(){return q;},order(){return q;},limit(){return q;},maybeSingle(){one=true;return q;},then(resolve,reject){
    let value;
    if(table==='commerce_payment_methods'){state.methodReads++;if(onMethodsRead)onMethodsRead(state);value=state.methods;}
    else if(table==='commerce_gateway_accounts')value=state.methods.filter(m=>m.native_provider).map(m=>({method_id:m.id,provider:m.native_provider,mode:'live',account_tag:gateway.configuration(m.native_provider,env).account_tag,countries:m.countries||['US','CA'],rampex_provider:m.rampex_provider}));
    else if(table==='commerce_delivery_options')value=state.delivery;
    else if(table==='commerce_balance_accounts')value=state.balance;
    else if(table==='commerce_balance_events')value=[];
+   else if(table==='commerce_memberships')value=[];
    else if(table==='commerce_referrals')value=null;
    else if(table==='commerce_invoices'){const matching=state.invoices.filter(r=>Object.entries(filters).every(([k,v])=>r[k]===v));value=one?matching[0]||null:matching;}
    else throw Error('Unexpected table: '+table);
@@ -84,7 +85,7 @@ test('Interac quote has exact CAD products, coupon and separately rounded delive
  assert.equal(res.body.pricing.lines[0].unit_price_cents,13750);assert.equal(res.body.pricing.lines[0].unit_price_usd_cents,10000);
  assert.equal(res.body.pricing.delivery.currency,'CAD');assert.equal(res.body.pricing.delivery.shipping_cents,5493);assert.equal(res.body.pricing.delivery.extras[0].amount_cents,688);
  assert.equal(res.body.pricing.fx_ppm,1375000);assert.equal(res.body.pricing.fx.token,undefined);assert.equal(res.body.fx_quote,fx.token);
- assert.deepEqual(res.body.pricing.usd_basis,{currency:'USD',subtotal_cents:10000,coupon_discount_cents:1500,merchandise_cents:8500});
+ assert.deepEqual(res.body.pricing.usd_basis,{currency:'USD',subtotal_cents:10000,coupon_discount_cents:1500,membership_discount_cents:0,merchandise_cents:8500});
  assert.equal(res.body.pricing.coupon_code,'BLACKFRIDAY15');assert.equal(res.body.pricing.crypto_discount_cents,0);assert.equal(res.body.pricing.payment_discount,undefined);
  assert.equal(res.body.points_redeemed,0);assert.equal(res.body.credit_redeemed_cents,0);assert.equal(res.body.earned_points,0);
  assert.match(res.body.quote,/^[a-f0-9]{64}$/);assert.equal(db.calls.length,0);
@@ -115,7 +116,7 @@ test('placement atomically accepts an unpaid CAD order with server identity, pro
  assert.deepEqual(saved.request.preferred_payment,{method_id:mid,provider_key:'interac',label:interac.label,currency:'CAD'});
  assert.equal(saved.request.checkout.payment_kind,'interac');assert.equal(saved.request.checkout.request_only,undefined);assert.equal(saved.request.checkout.payment_method_version,3);
  assert.equal(saved.request.checkout.coupon,'BLACKFRIDAY15');assert.equal(saved.request.checkout.points,0);assert.equal(saved.request.checkout.credit_cents,0);assert.deepEqual(saved.request.checkout.delivery,body.delivery);
- assert.equal(saved.request.checkout.usd_estimate,undefined);assert.deepEqual(saved.pricing.usd_basis,{currency:'USD',subtotal_cents:100000,coupon_discount_cents:15000,merchandise_cents:85000});
+ assert.equal(saved.request.checkout.usd_estimate,undefined);assert.deepEqual(saved.pricing.usd_basis,{currency:'USD',subtotal_cents:100000,coupon_discount_cents:15000,membership_discount_cents:0,merchandise_cents:85000});
  assert.equal(saved.request.checkout.input_digest,(await checkout.normalize({},user,input,catalog)).digest);assert.match(saved.digest,/^[a-f0-9]{64}$/);
  assert.equal(db.state.invoices[0].checkout_version,checkout.INTERAC_VERSION);assert.deepEqual(db.state.balance,{points:1000,credit_cents:5000});assert.equal(notifications,1,'A failed mocked post-commit email attempt cannot fail or undo placement');
  db.state.methods[0].active=false;

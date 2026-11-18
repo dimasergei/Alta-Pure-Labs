@@ -32,7 +32,7 @@
  const initialCoupon=()=>{const value=(localStorage.getItem('ap-checkout-coupon')||localStorage.getItem('ap-cart-coupon')||'').trim().toUpperCase();const code=value==='BLACKFRIDAY15'?value:'';saveCoupon(code);return code;};
  async function checkout(root,auth,user,options={}){
   const params=new URLSearchParams(location.search);
-  if(params.has('plan')||params.has('period')){location.replace('/checkout');return;}
+  if(params.has('plan')||params.has('period'))return window.PureMembershipCheckout.checkout(root,auth,user);
   if(params.get('bulk')==='1'||params.get('balance')==='1'){
    if(!standardCheckout){root.replaceChildren(el('p','nlx-error','Checkout is unavailable.'));return;}
    return standardCheckout(root,auth,user,options);
@@ -51,7 +51,7 @@
   const supported=data.config.shipping_countries||['US'];
   const countries=countryOptions(supported);
   const optionsById=Object.fromEntries((data.delivery_options||[]).map(x=>[x.id,x]));
-  const isActive=id=>!!optionsById[id]?.enabled;
+  const isActive=id=>!!optionsById[id]?.enabled&&!(id==='priority'&&data.membership?.benefits?.priority_fulfillment);
   const priorExtras=(()=>{try{return JSON.parse(sessionStorage.getItem(cartKey(cart))||'null');}catch{return null;}})();
 
   let stage=0,quote=null,quoteVersion=0,quoteTimer=null,onePayment=false,lastPlaced=null,orderId=crypto.randomUUID(),currentPreview=null,loadingPreview=false,sms=false;
@@ -68,7 +68,7 @@
     +'<aside class="nlx-right" aria-label="Order summary"><div class="nlx-summary"><div class="nlx-summary-head"><h2>Order Summary</h2><span data-nlx-item-count></span></div>'
     +'<div class="nlx-protect" data-nlx-protection></div><div class="nlx-products" data-nlx-products></div>'
     +'<p class="nlx-coupon-help">Use <strong>BLACKFRIDAY15</strong> for 15% off merchandise.</p><div class="nlx-coupon"><input aria-label="Coupon code" name="sidebar_coupon" placeholder="BLACKFRIDAY15" maxlength="40"><button type="button" data-nlx-coupon>APPLY</button><button type="button" data-nlx-remove-coupon hidden>REMOVE</button></div><p data-nlx-coupon-status role="status" aria-live="polite"></p>'
-    +'<div class="nlx-total-rows" data-nlx-totals></div><div class="nlx-points" data-nlx-points></div><p class="nlx-quote-note" data-nlx-quote-note></p></div></aside></div>';
+    +'<div class="nlx-total-rows" data-nlx-totals></div><div class="nlx-points" data-nlx-points></div><p class="nlx-quote-note" data-nlx-quote-note></p><div data-pure-membership-offer></div></div></aside></div>';
   const form=view('#nlx-form',div),detail=view('.nlx-summary',div),columns=view('.nlx-columns',div);
   const mobileLayout=window.matchMedia?.('(max-width: 770px)');
   let stepActions=null,actionsHome=null;
@@ -106,6 +106,7 @@
   function extraDisplay(id){const quoted=currentPreview?.pricing?.delivery?.extras?.find(item=>item.id===id);return quoted?currentMoney(quoted.amount_cents):usdDisplay(optionsById[id]?.price_cents);}
   function deliveryDisplay(id,amount){
    const delivery=currentPreview?.pricing?.delivery;
+   if(data.membership?.benefits?.free_shipping&&shippingCountry()==='US'&&['standard','express'].includes(id))return 'Included';
    if(delivery?.selection?.shipping===id)return currentMoney(delivery.shipping_cents);
    return usdDisplay(amount);
   }
@@ -172,6 +173,7 @@
    const ships=p?.shipping_cents??0,shipBase=delivery.shipping_cents??0;
    const fees=delivery.extras||[];
    const counts=[['Subtotal',subtotal]];
+   if(p?.pricing?.membership_discount_cents>0)counts.push([(p.pricing.membership_name||'Membership')+' savings',-p.pricing.membership_discount_cents]);
    if(savings)counts.push(['BLACKFRIDAY15 (15%)',-savings]);
    if(cryptoSavings)counts.push(['Crypto discount (5%)',-cryptoSavings]);
    counts.push(['Shipping',shipBase]);
@@ -211,6 +213,7 @@
     return '<div class="nlx-product"><button type="button" class="nlx-remove" data-nlx-remove="'+esc(x.key)+'" aria-label="Remove '+esc(x.name)+'">×</button><img src="'+esc(image)+'" alt=""><div class="nlx-product-name"><strong>'+esc(x.name)+'</strong><div class="nlx-size-line"><small>'+esc(x.size)+'</small>'+'</div><div class="nlx-qty"><button data-nlx-qty="-1" data-key="'+esc(x.key)+'" aria-label="Decrease quantity">−</button><span>'+x.qty+'</span><button data-nlx-qty="1" data-key="'+esc(x.key)+'" aria-label="Increase quantity">+</button></div></div><strong class="nlx-product-price">'+amount+'</strong></div>';
    }).join('');
    view('[data-nlx-totals]',detail).innerHTML=currentPreview?moneyLines().map(([n,v])=>'<div class="'+(['Total','Total (CAD)'].includes(n)?'nlx-grand':'')+'"><span>'+esc(n)+'</span><strong>'+currentMoney(v)+'</strong></div>').join(''):'<p role="status">Calculating your order total…</p>';
+   window.PureMembershipCheckout?.offer(view('[data-pure-membership-offer]',detail),currentPreview,data.terms?.conversion);
    const balances=view('[data-nlx-points]',detail),hasBalance=(data.balances?.points||0)>0||(data.balances?.credit_cents||0)>0;balances.hidden=!hasBalance;balances.innerHTML=hasBalance?'<span>Available: '+Math.max(0,data.balances.points||0)+' points · '+usd(data.balances.credit_cents||0)+' store credit.</span>'+(state.paymentKind==='interac'?'<span>USD points and store credit cannot be applied to an Interac payment. Choose Card or Crypto to use these balances.</span>':'<a href="/checkout?balance=1">Use existing balance →</a>'):'';
    view('[data-nlx-quote-note]',detail).textContent=(state.paymentKind==='interac'?'Your total is in CAD. Place your order to view the Interac receiving details and payment reference. ':currentPreview?.pricing?.discount_source==='coupon_crypto'?'Your coupon is applied first, then an extra 5% Crypto discount on the remaining merchandise. ':'')+(currentPreview?.shipping_note||'');
    view('[data-nlx-remove-coupon]',detail).hidden=!state.coupon;
@@ -300,7 +303,7 @@
     const regularAmount=map[id],eligible=x.enabled&&Number.isSafeInteger(regularAmount);const amount=id==='standard'&&country==='US'&&currentPreview?.free_shipping_remaining_cents===0?0:regularAmount;
     return '<label class="nlx-delivery-card '+(state.shipping===id?'nlx-chosen':'')+(eligible?'':' nlx-disabled')+'"><input type="radio" name="delivery_speed" value="'+id+'" '+(state.shipping===id?'checked ':'')+(eligible?'':'disabled')+'><span class="nlx-delivery-desc"><strong>'+esc(x.label)+'</strong><small>'+esc(arrivalLabel(id))+'</small></span><span class="nlx-delivery-price">'+(eligible?deliveryDisplay(id,amount):'Unavailable')+'</span></label>';
    }).join('');
-   const extra=['priority'].map(id=>{const x=optionsById[id];if(!x)return'';
+   const extra=(data.membership?.benefits?.priority_fulfillment?[]:['priority']).map(id=>{const x=optionsById[id];if(!x)return'';
     const target='nlx-disclose-priority';
     return '<div class="nlx-extra-box nlx-extra-'+id+'"><div><span class="nlx-extra-icon">◷</span><div><strong>'+esc(x.label)+'</strong><button type="button" class="nlx-disclosure-trigger" data-nlx-info="'+id+'" data-testid="priority-disclosure" aria-expanded="false" aria-controls="'+target+'">Read more</button><div id="'+target+'" data-testid="priority-disclosure-panel" data-nlx-panel class="nlx-disclosure" hidden><p>'+esc(x.description)+'</p><p>Optional service; pricing is included only when selected in the final quote.</p></div></div></div><span data-nlx-extra-price="'+id+'">'+extraDisplay(id)+'</span><label class="nlx-extra-check"><input type="checkbox" aria-label="'+esc(x.label)+'" data-nlx-extra="'+id+'" '+(state.extras.has(id)?'checked':'')+(x.enabled?'':' disabled')+'></label></div>';
    }).join('');

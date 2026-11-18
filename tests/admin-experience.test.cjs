@@ -25,7 +25,7 @@ test('admin routes load complete structural experience after all older styles',(
     assert.ok(html.lastIndexOf('/admin-violet.css')>html.lastIndexOf('/admin-experience.css'));
   }
 });
-test('Orders has two-section navigation, sidebar, main workbench and intact operational controls',()=>{
+test('Orders has Orders, Marketing and Inventory navigation, sidebar, main workbench and intact operational controls',()=>{
   const dom=render('admin-orders.html'),d=dom.window.document;
   assert.ok(d.querySelector('#login-view.ap-auth-layout'));
   assert.ok(d.querySelector('.ap-auth-visual .ap-auth-hero-title'));
@@ -35,7 +35,8 @@ test('Orders has two-section navigation, sidebar, main workbench and intact oper
   assert.ok(root.querySelector(':scope > .ap-workspace-sidebar'));
   assert.ok(root.querySelector(':scope > .ap-workspace-body'));
   const links=[...root.querySelectorAll('.ap-primary-nav .admin-nav-link')].map(e=>e.textContent.trim());
-  assert.deepEqual(links,['Orders','Marketing']);
+  assert.deepEqual(links,['Orders','Marketing','Inventory']);
+  assert.equal(root.querySelector('.ap-primary-nav a[href="/admin-inventory.html"]').textContent.trim(),'Inventory');
   assert.ok(d.querySelector('#admin-orders-section .ap-orders-console #fulfillment-hub'));
   for(const id of ['refresh-button','logout-button','admin-batches-section','admin-notifications-section','admin-lotus-section']){
     assert.ok(d.getElementById(id),id+' must be preserved');

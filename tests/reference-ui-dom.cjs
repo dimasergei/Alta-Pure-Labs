@@ -1,14 +1,14 @@
 'use strict';
 const {JSDOM,VirtualConsole}=require('jsdom'),fs=require('node:fs'),assert=require('node:assert/strict');
 const read=p=>fs.readFileSync(p,'utf8');
-const retiredCopy=/\bBOGO\b|research\s+builder|\bmemberships?\b|subscribe and save|free\s+BAC|buy\s*1\s*,?\s*get\s*1/i;
-const retiredRoute=/^\/(?:memberships?|research-builder|research-checkout|offers)(?:[/.?#]|$)|^\/(?:account|my-account)\/(?:memberships?|subscriptions)(?:[/.?#]|$)/;
+const retiredCopy=/\bBOGO\b|\b(?:ALTA|PURE)\s+(?:GOLD|PLATINUM)\b|subscribe and save|buy\s*1\s*,?\s*get\s*1/i;
+const retiredRoute=/^\/offers(?:[/.?#]|$)/;
 function assertCurrentView(d,route){
  for(const a of d.querySelectorAll('a[href]'))assert.doesNotMatch(a.getAttribute('href'),retiredRoute,route+' has no retired destinations');
- for(const area of d.querySelectorAll('header,#ap-main,footer'))assert.doesNotMatch(area.textContent,retiredCopy,route+' has no retired feature or offer copy');
+ for(const area of d.querySelectorAll('header,#ap-main,footer'))assert.doesNotMatch(area.textContent,retiredCopy,route+' has no retired brand or BOGO offer copy');
  assert.equal(d.querySelectorAll('#ap-main del,#ap-main [data-promo-clock],#ap-main .nl-offer-grid').length,0,route+' has no old sale presentation');
 }
-async function setup(route){const errors=[];const console=new VirtualConsole();console.on('jsdomError',e=>errors.push(e.message));const dom=new JSDOM(read('public-build/index.html'),{url:'https://getpurelabs.com'+route,runScripts:'outside-only',virtualConsole:console}),w=dom.window;w.localStorage.setItem('ap-age-verified','true');w.matchMedia=()=>({matches:false});w.HTMLElement.prototype.scrollIntoView=()=>{};w.HTMLDialogElement.prototype.showModal=function(){this.open=true;};w.HTMLDialogElement.prototype.close=function(){this.open=false;};w.fetch=async()=>({ok:true,json:async()=>[]});w.AltaConversionConfig=require('../config/conversion.json');w.eval(read('public-build/conversion-ui.js')+'\n'+read('public-build/products.js')+'\n'+read('public-build/product-images.js')+'\n'+read('public-build/storefront-v2.js')+'\n'+read('public-build/workspace-v2.js'));await new Promise(r=>setTimeout(r,0));assert.deepEqual(errors,[],route);assertCurrentView(w.document,route);return{dom,w,d:w.document};}
+async function setup(route){const errors=[];const console=new VirtualConsole();console.on('jsdomError',e=>errors.push(e.message));const dom=new JSDOM(read('public-build/index.html'),{url:'https://getpurelabs.com'+route,runScripts:'outside-only',virtualConsole:console}),w=dom.window;w.localStorage.setItem('ap-age-verified','true');w.matchMedia=()=>({matches:false});w.HTMLElement.prototype.scrollIntoView=()=>{};w.HTMLDialogElement.prototype.showModal=function(){this.open=true;};w.HTMLDialogElement.prototype.close=function(){this.open=false;};w.fetch=async()=>({ok:true,json:async()=>[]});w.AltaConversionConfig=require('../config/conversion.json');w.eval(read('public-build/membership-experience.js')+'\n'+read('public-build/conversion-ui.js')+'\n'+read('public-build/products.js')+'\n'+read('public-build/product-images.js')+'\n'+read('public-build/storefront-v2.js')+'\n'+read('public-build/workspace-v2.js'));await new Promise(r=>setTimeout(r,0));assert.deepEqual(errors,[],route);assertCurrentView(w.document,route);return{dom,w,d:w.document};}
 (async()=>{
  {const{dom,d,w}=await setup('/');
   assert.match(d.querySelector('h1').textContent,/CUTTING EDGEPURITY/);
@@ -27,7 +27,7 @@ async function setup(route){const errors=[];const console=new VirtualConsole();c
    assert.doesNotMatch(card.textContent,/per unit|View More|Add to Cart|\(\d+\s*mg\)/i);
   }
   const bulk=d.querySelector('.nl-home-bulk');
-  assert.ok(d.querySelector('.nl-editorial').nextElementSibling===bulk,'bulk ordering follows documentation');
+  const memberships=d.querySelector('[data-mx-membership-home]');assert.ok(d.querySelector('.nl-editorial').nextElementSibling===memberships,'membership comparison follows documentation');assert.equal(memberships.querySelectorAll('.mx-card').length,3);assert.ok(memberships.nextElementSibling===bulk,'bulk ordering follows membership comparison');
   assert.equal(bulk.nextElementSibling.id,'faq');
   assert.equal(bulk.querySelector('a').getAttribute('href'),'/bulk-orders');
   assert.match(bulk.textContent,/regular unit prices/);

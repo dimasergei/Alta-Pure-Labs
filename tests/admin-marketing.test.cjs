@@ -70,17 +70,20 @@ test('marketing drafting has safe unavailable response without API key',async()=
   await handle(req('POST',{body:{action:'draft',name:'Creator A'}}),res,{env:{...env,OPENAI_API_KEY:''}});
   assert.equal(res.statusCode,503);
 });
-test('admin navigation is Orders and Marketing only; existing operational sections preserved',()=>{
+test('admin navigation includes Orders, Marketing and Inventory; existing operations and manual sending are preserved',()=>{
   const html=fs.readFileSync(path.join(__dirname,'../admin-orders.html'),'utf8');
   const match=html.match(/<nav class="admin-nav" aria-label="Admin sections">([\s\S]*?)<\/nav>/);
   assert.ok(match,'Admin nav found');
-  const links=[...match[1].matchAll(/>(Orders|Marketing|Batches|Notifications|Lotus)<\/(?:a|button)>/g)].map(x=>x[1]);
-  assert.deepEqual(links,['Orders','Marketing']);
+  const links=[...match[1].matchAll(/>(Orders|Marketing|Inventory|Batches|Notifications|Lotus)<\/(?:a|button)>/g)].map(x=>x[1]);
+  assert.deepEqual(links,['Orders','Marketing','Inventory']);
+  assert.match(match[1],/href="\/admin-inventory\.html">Inventory/);
   for(const id of ['admin-orders-section','admin-batches-section','admin-notifications-section','admin-lotus-section'])assert.match(html,new RegExp('id="'+id+'"'));
   const marketing=fs.readFileSync(path.join(__dirname,'../admin-marketing.html'),'utf8');
   assert.match(marketing,/href="\/admin-orders\.html">Orders/);
   assert.match(marketing,/href="\/admin-marketing\.html" aria-current="page">Marketing/);
-  assert.match(marketing,/This workspace does not send Instagram messages automatically/);
+  assert.match(marketing,/href="\/admin-inventory\.html">Inventory/);
+  assert.match(marketing,/Messages are sent only when you click Send\./);
+  assert.match(marketing,/manual review and send only/);
 });
 test('Marketing browser script parses and uses official review-only draft flow',()=>{
   const source=fs.readFileSync(path.join(__dirname,'../admin-marketing.js'),'utf8');
@@ -110,9 +113,16 @@ test('Meta OAuth URL is disabled until Instagram credentials are configured',asy
 });
 test('all Instagram reply sends require explicit manual actions',()=>{
   const frontend=fs.readFileSync(path.join(__dirname,'../admin-marketing.js'),'utf8');
-  assert.ok(frontend.includes("confirm('Send this exact reply"));
-  assert.ok(frontend.includes("action:'instagram_send'"));
-  assert.ok(!frontend.includes('setInterval(()=>endpoint({action:\'instagram_send\''));
+  const handler=frontend.match(/\$\('mk-ig-send'\)\.addEventListener\('click',async\(\)=>\{([\s\S]*?)\n  \}\);/);
+  assert.ok(handler,'Instagram sending must be registered on an explicit click');
+  assert.match(handler[1],/if\(!recipient_id\|\|!message\)return/);
+  assert.match(handler[1],/if\(!confirm\('Send this exact reply[\s\S]*?\)\)return/);
+  assert.ok(handler[1].indexOf("confirm('Send this exact reply")<handler[1].indexOf("action:'instagram_send'"));
+  assert.equal([...frontend.matchAll(/action\s*:\s*['"]instagram_send['"]/g)].length,1,'No background or draft path may send an Instagram reply');
+  assert.match(handler[1],/await endpoint\(\{action:'instagram_send',recipient_id,message\}\)/);
+  const backend=fs.readFileSync(path.join(__dirname,'../lib/admin-marketing.js'),'utf8');
+  assert.match(backend,/if\(body\.action==='instagram_send'\)return res\.status\(200\)\.json\(await platform\.sendReply/);
+  assert.equal([...backend.matchAll(/platform\.sendReply\(/g)].length,1);
 });
 
 test('marketing Instagram connection uses Meta Unified Login and a one-time state',async()=>{

@@ -4,6 +4,7 @@ const {randomUUID,createHash}=require('node:crypto');
 const {PGlite}=require('@electric-sql/pglite');
 const checkout=require('../lib/direct-checkout'),config=require('../config/checkout.json'),delivery=require('../lib/delivery-options');
 const read=name=>fs.readFileSync(path.join(__dirname,'../supabase/migrations',name),'utf8');
+const fixture=require('./fixtures/commerce-sql-fixture.cjs');
 
 test('isolated PostgreSQL creates accepted CAD Interac orders, preserves USD ledgers, and requires verified receipt before fulfillment',{timeout:60000},async t=>{
  const db=new PGlite(),methodId=randomUUID(),cardId=randomUUID(),partner=randomUUID();
@@ -28,25 +29,15 @@ test('isolated PostgreSQL creates accepted CAD Interac orders, preserves USD led
  const payment=(p,extra={})=>({method_id:methodId,expected_version:1,receipt_id:randomUUID(),external_reference:'FIXTURE-BANK-'+randomUUID(),confirm_funds_received:true,...extra});
  const pay=(p,receipt)=>rpc('commerce_admin_record_bank_payment',[p.id,JSON.stringify(receipt)]);
  try{
-  await db.exec('create role anon;create role authenticated;create role service_role;create schema commerce_internal;');
-  await db.exec(read('20261110040926_manual_invoice_commerce.sql'));
-  await db.exec(read('20261110074742_payment_provider_options.sql'));
-  await db.exec('alter table commerce_payment_methods add column native_provider text;create table commerce_gateway_accounts(method_id uuid primary key,provider text,mode text,account_tag text,countries text[],rampex_provider text);create table commerce_gateway_attempts(id uuid primary key,invoice_id uuid,provider text,state text);');
-  await db.exec(read('20261111025932_direct_checkout_balances.sql'));
-  const partners=read('20261111163930_conversion_memberships_partners.sql');
-  await db.exec(partners.slice(0,partners.indexOf('create function commerce_internal.membership_term'))+'\ncommit;');
-  await db.exec(read('20261111174353_partner_settings_supplier_queue.sql'));
-  await db.exec(read('20261111195957_unified_supplier_fulfillment.sql'));
-  await db.exec(read('20261111210000_single_supplier_per_order.sql'));
-  await db.exec(read('20261116140000_unified_order_management.sql'));
-  await db.exec(read('20261113030240_safe_checkout_cancellation.sql'));
+  await fixture.base(db);
+  await db.exec(read('20261117084413_pure_storefront_regular_pricing.sql'));
   await db.exec(read('20261118020145_pure_generic_manual_fulfillment.sql'));
   for(const option of delivery.defaults)await db.query('update commerce_delivery_options set label=$2,price_cents=$3,enabled=$4,description=$5 where id=$1',[option.id,option.label,option.price_cents,option.enabled,option.description]);
   await db.exec(read('20261117192240_pure_canada_next_day_delivery.sql'));
   await db.exec(read('20261117221328_pure_stack_crypto_discount.sql'));
   await db.query("insert into commerce_payment_methods(id,kind,provider_key,label,currency,payee,instructions,acceptance_reference,active,sale_scope) values($1,'interac','interac','Fixture Interac','CAD','Fixture business','Fixture only: receiving@example.test','Isolated bank approval fixture',true,'goods')",[methodId]);
   await db.query("insert into commerce_payment_methods(id,kind,provider_key,label,currency,payee,instructions,acceptance_reference,active,sale_scope,native_provider) values($1,'hosted_link','custom','Card','USD','Fixture business','Fixture native instructions','Isolated native route fixture',true,'goods','rampex')",[cardId]);
-  await db.query("insert into commerce_gateway_accounts values($1,'rampex','live',$2,array['US','CA'],'hosted')",[cardId,'a'.repeat(64)]);
+  await db.query("insert into commerce_gateway_accounts(method_id,provider,mode,account_tag,countries,rampex_provider) values($1,'rampex','live',$2,array['US','CA'],'hosted')",[cardId,'a'.repeat(64)]);
   await db.query("insert into commerce_partners(customer_id,code,terms_version) values($1,'FIXTUREPARTNER','partner-2026-11-v1')",[partner]);
   await db.query("insert into commerce_partner_codes(code,partner_id) values('FIXTUREPARTNER',$1)",[partner]);
   method=(await db.query('select * from commerce_payment_methods where id=$1',[methodId])).rows[0];
@@ -63,6 +54,10 @@ test('isolated PostgreSQL creates accepted CAD Interac orders, preserves USD led
    const grants=(await db.query("select has_function_privilege('anon','public.commerce_place_interac_checkout(jsonb)','EXECUTE') anon,has_function_privilege('authenticated','public.commerce_place_interac_checkout(jsonb)','EXECUTE') customer,has_function_privilege('service_role','public.commerce_place_interac_checkout(jsonb)','EXECUTE') backend,has_function_privilege('service_role','commerce_internal.validate_interac_checkout(jsonb)','EXECUTE') validator")).rows[0];
    assert.deepEqual(grants,{anon:false,customer:false,backend:true,validator:false});
   });
+
+  await fixture.polygon(db);
+  await db.exec(read('20261118173524_pure_membership_checkout.sql'));
+  method=(await db.query('select * from commerce_payment_methods where id=$1',[methodId])).rows[0];
 
   await t.test('SQL independently matches per-unit CAD conversion, coupon allocation and each selected delivery component',async()=>{
    for(const rate of [1000000,1375000,1429100])for(const cents of [1,9,19,21,1999])for(const coupon of ['','BLACKFRIDAY15']){
@@ -91,8 +86,8 @@ test('isolated PostgreSQL creates accepted CAD Interac orders, preserves USD led
   await t.test('inactive, changed or native receiving routes and disabled delivery are rejected inside the transaction',async()=>{
    for(const update of ["active=false","version=version+1","native_provider='rampex'","currency='USD'","provider_key='bank_transfer'","sale_scope='membership'"]){
     const p=await make();await db.query('update commerce_payment_methods set '+update+' where id=$1',[methodId]);
-    await assert.rejects(place(p),/Interac receiving method changed/);
-    await db.query("update commerce_payment_methods set active=true,version=1,native_provider=null,currency='CAD',provider_key='interac',sale_scope='goods' where id=$1",[methodId]);
+    await assert.rejects(place(p),/Payment method changed|Interac receiving method changed/);
+    await db.query("update commerce_payment_methods set active=true,version=$2,native_provider=null,currency='CAD',provider_key='interac',sale_scope='both' where id=$1",[methodId,method.version]);
    }
    const p=await make();await db.exec("update commerce_delivery_options set enabled=false where id='protection'");await assert.rejects(place(p),/Delivery extra unavailable/);await db.exec("update commerce_delivery_options set enabled=true where id='protection'");
   });

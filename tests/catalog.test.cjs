@@ -38,26 +38,49 @@ test("featured and spotlight entries keep their original minimum prices", () => 
   }
 });
 
-test("every category has a unique card background and every vial uses the original brand asset", () => {
+test("category cards keep the PURE neutral palette and variants resolve to their exact branded photos", () => {
   const imageSource = readFileSync(resolve(__dirname, "../product-images.js"), "utf8");
-  vm.runInContext(imageSource, sandbox);
-  const app = readFileSync(resolve(__dirname, "../app.js"), "utf8").replace(/\binit\(\);\s*$/, "");
-  vm.runInContext(`${app}; globalThis.cardMarkup = productCardMarkup; globalThis.productSvg = vialSvg;`, sandbox);
+  vm.runInContext(`${imageSource}; globalThis.images = PRODUCT_IMAGES; globalThis.fallbacks = PRODUCT_IMAGE_FALLBACKS;`, sandbox);
+  const storefront = readFileSync(resolve(__dirname, "../storefront-v2.js"), "utf8");
+  const resolverStart = storefront.indexOf("const image="), resolverEnd = storefront.indexOf("function normalizeLines", resolverStart);
+  assert.ok(resolverStart >= 0 && resolverEnd > resolverStart, "The live storefront exposes its image resolver.");
+  vm.runInContext(`${storefront.slice(resolverStart, resolverEnd)}; globalThis.resolveProductImage = image;`, sandbox);
   const css = readFileSync(resolve(__dirname, "../styles.css"), "utf8");
-  const colors = new Set();
   for (const group of groups.filter((group) => group !== "All")) {
     const rule = `.card[data-group="${group}"]`;
     assert.ok(css.includes(rule), `Missing background for ${group}`);
-    const color = css.slice(css.indexOf(rule)).match(/--card-bg:\s*(#[a-f0-9]+)/)[1];
-    colors.add(color);
+    const color = css.slice(css.indexOf(rule)).match(/--card-bg:\s*#([a-f0-9]{6})/i)?.[1];
+    assert.ok(color, `Missing neutral background value for ${group}`);
+    assert.equal(color.slice(0, 2), color.slice(2, 4), `${group} uses a neutral tone`);
+    assert.equal(color.slice(2, 4), color.slice(4, 6), `${group} uses a neutral tone`);
   }
-  assert.equal(colors.size, 8);
+  let brandedPhotos = 0;
+  const fallbacks = [];
   for (const product of catalog) {
-    const svg = sandbox.productSvg(product);
-    const logos = svg.match(/class="vial-brand"/g) || [];
-    assert.equal(logos.length, product.variants.length > 1 ? 2 : 1, product.id);
-    assert.ok(svg.includes('href="assets/pure-brand-label.svg"'));
-    assert.ok(sandbox.cardMarkup(product).includes(`data-group="${product.group.replaceAll("&", "&amp;")}"`));
+    for (const variant of product.variants) {
+      const image = sandbox.images[product.id]?.[variant.size];
+      if (!image) {
+        fallbacks.push([product.id, variant.size]);
+        const fallback = sandbox.fallbacks[product.id];
+        assert.equal(new URL(fallback).protocol, "https:");
+        assert.equal(sandbox.resolveProductImage(product, variant.size), fallback);
+        continue;
+      }
+      assert.match(image, /^assets\/products-pure\/[^/]+\.svg$/);
+      const svg = readFileSync(resolve(__dirname, "..", image), "utf8");
+      assert.equal(svg.match(/<title[^>]*>([\s\S]*?)<\/title>/)?.[1], `PURE ${product.name} ${variant.size}`);
+      assert.match(svg, /viewBox="0 0 1081 1455"/);
+      const photo = svg.match(/(?:xlink:)?href="data:image\/webp;base64,([^"]+)"/)?.[1];
+      assert.ok(photo, `${product.id} ${variant.size} contains its photographic vial frame`);
+      const bytes = Buffer.from(photo, "base64");
+      assert.ok(bytes.length > 1000);
+      assert.equal(bytes.toString("ascii", 0, 4), "RIFF");
+      assert.equal(bytes.toString("ascii", 8, 12), "WEBP");
+      assert.equal(sandbox.resolveProductImage(product, variant.size), "/" + image);
+      brandedPhotos++;
+    }
   }
-  assert.ok(readFileSync(resolve(__dirname, "../assets/pure-brand-label.svg")).length > 0);
+  assert.equal(brandedPhotos, 83);
+  assert.deepEqual(fallbacks, [["needles", "10pk"]], "Only the product without a matching supplied photograph retains its existing fallback.");
+  assert.match(readFileSync(resolve(__dirname, "../assets/pure-brand-label.svg"), "utf8"), /<title[^>]*>PURE<\/title>/);
 });

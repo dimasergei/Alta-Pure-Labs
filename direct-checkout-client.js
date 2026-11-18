@@ -43,6 +43,7 @@
  function link(label,url){const a=node('a',label);a.href=url;a.className='ap-button ap-button-secondary';return a;}
  function summary(q){const box=node('section');box.className='dc-review-summary';box.append(node('span',q.currency==='CAD'?'ORDER TOTAL · CAD':'FINAL TOTAL'));const totals=node('div');totals.className='dc-totals';
   const rows=[['Subtotal',q.subtotal_cents]];
+  if(q.pricing?.membership_discount_cents>0)rows.push([(q.pricing.membership_name||'Membership')+' savings',-q.pricing.membership_discount_cents]);
   if(q.pricing?.coupon_discount_cents>0)rows.push(['BLACKFRIDAY15 (15%)',-q.pricing.coupon_discount_cents]);
   if(q.pricing?.crypto_discount_cents>0)rows.push(['Crypto discount (5%)',-q.pricing.crypto_discount_cents]);
   rows.push(['Delivery',q.shipping_cents],['Tax',q.tax_cents],['Points redeemed',-q.points_redeemed],['Store credit',-q.credit_redeemed_cents],[q.currency==='CAD'?'Total (CAD)':'Due now',q.total_cents]);
@@ -68,7 +69,7 @@
  }
  async function checkout(root,auth,user,options={}){
   try{
-   const params=new URLSearchParams(location.search);if(params.has('plan')||params.has('period')){location.replace('/checkout');return;}
+   const params=new URLSearchParams(location.search);if(params.has('plan')||params.has('period'))return window.PureMembershipCheckout.checkout(root,auth,user);
    const bulk=params.get('bulk')==='1',data=await api(auth),cart=bulk?window.AltaStore.normalizeLines(window.AltaStore.read('ap-bulk-draft-v2',[])):window.AltaStore?.cart||[];
    root.innerHTML='<div class="dc-topline"><a href="'+(bulk?'/bulk-orders':'/shop')+'">← Continue shopping</a><a href="/account/purchases">My orders</a></div><header class="dc-heading"><h1>Checkout</h1><p class="dc-steps">Your details &nbsp; / &nbsp; Review order &nbsp; / &nbsp; Payment</p></header>'; document.title='Checkout | PURE';
    if(!cart.length){root.append(node('p',bulk?'Your bulk order is empty.':'Your cart is empty.'),link(bulk?'Build a bulk order':'Shop products',bulk?'/bulk-orders':'/shop'));return;}

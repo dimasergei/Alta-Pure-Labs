@@ -1,26 +1,25 @@
 'use strict';
 const {test}=require('node:test'),assert=require('node:assert/strict'),fs=require('node:fs'),{randomUUID}=require('node:crypto');
 const checkout=require('../lib/direct-checkout'),config=require('../config/checkout.json'),delivery=require('../lib/delivery-options');
-let PGlite;try{({PGlite}=require('@electric-sql/pglite'));}catch{}
+const {PGlite}=require('@electric-sql/pglite'),fixture=require('./fixtures/commerce-sql-fixture.cjs');
 const read=name=>fs.readFileSync('supabase/migrations/'+name,'utf8');
 const hosted='1efcda11-7310-4c45-b6bb-3cfdd8873784',payer=randomUUID(),stripe=randomUUID(),bank=randomUUID();
 
-test('isolated PostgreSQL enforces v7 stacked discounts and cents while preserving saved v6 payment and commission terms',{skip:!PGlite,timeout:60000},async()=>{
+test('isolated PostgreSQL enforces current stacked discounts and cents while preserving saved v6/v7 payments and commissions',{timeout:60000},async()=>{
  const db=new PGlite();
  try{
-  await db.exec('create role anon;create role authenticated;create role service_role;create schema commerce_internal;');
-  await db.exec(read('20261110040926_manual_invoice_commerce.sql'));
-  await db.exec("alter table commerce_payment_methods add column native_provider text,add column sale_scope text default 'goods',add column display_order integer default 1;create table commerce_gateway_accounts(method_id uuid primary key,provider text,mode text,account_tag text,countries text[],rampex_provider text);create table commerce_delivery_options(id text primary key,kind text,label text,price_cents integer,enabled boolean,description text);");
-  await db.exec(read('20261111025932_direct_checkout_balances.sql'));
-  await db.exec('create table commerce_gateway_attempts(invoice_id uuid,state text);');
+  await fixture.base(db);
+  await fixture.polygon(db);
   for(const [id,provider,rail,active] of [[hosted,'rampex','hosted',false],[payer,'polygon_usdc',null,true],[stripe,'rampex','stripe',true],[bank,null,null,true]]){
-   await db.query("insert into commerce_payment_methods(id,kind,label,currency,payee,instructions,acceptance_reference,active,native_provider) values($1,$2,'Fixture route','USD','Fixture business','Isolated fixture instructions','Isolated fixture account approval',$3,$4)",[id,provider?'hosted_link':'bank_transfer',active,provider]);
-   if(provider)await db.query("insert into commerce_gateway_accounts values($1,$2,'live',$3,array['US'],$4)",[id,provider,'a'.repeat(64),rail]);
+   await db.query("insert into commerce_payment_methods(id,kind,label,currency,payee,instructions,allowed_host,acceptance_reference,active,native_provider,provider_key,sale_scope) values($1,$2,'Fixture route','USD','Fixture business','Isolated fixture instructions','getpurelabs.com','Isolated fixture account approval',$3,$4,$5,'goods')",[id,provider?'hosted_link':'bank_transfer',active,provider,provider?'custom':'bank_transfer']);
+   if(provider)await db.query("insert into commerce_gateway_accounts(method_id,provider,mode,account_tag,countries,rampex_provider,polygon_recipient) values($1,$2,'live',$3,array['US'],$4,$5)",[id,provider,'a'.repeat(64),rail,provider==='polygon_usdc'?'0x'+'a'.repeat(40):null]);
   }
-  for(const option of delivery.defaults)await db.query('insert into commerce_delivery_options values($1,$2,$3,$4,$5,$6)',[option.id,option.kind,option.label,option.price_cents,option.enabled,option.description]);
+  for(const option of delivery.defaults)await db.query('update commerce_delivery_options set label=$2,price_cents=$3,enabled=$4,description=$5 where id=$1',[option.id,option.label,option.price_cents,option.enabled,option.description]);
   const oldOrder=randomUUID(),oldCustomer=randomUUID();
   await db.query("insert into commerce_invoices(id,customer_id,customer_email,customer_name,kind,request_digest,request_data,status,method_id,payment_snapshot,currency,subtotal_cents,discount_cents,shipping_cents,tax_cents,total_cents) values($1,$2,'historical@example.test','Historical fixture','goods',$3,'{}','accepted',$4,'{\"kind\":\"bank_transfer\",\"label\":\"Original receiving method\"}','USD',10000,0,0,0,10000)",[oldOrder,oldCustomer,'b'.repeat(64),bank]);
   const before=(await db.query('select to_jsonb(i) row from commerce_invoices i where id=$1',[oldOrder])).rows[0].row;
+  await db.exec(read('20261117084413_pure_storefront_regular_pricing.sql'));
+  await db.exec(read('20261118020145_pure_generic_manual_fulfillment.sql'));
   await db.exec(read('20261117192240_pure_canada_next_day_delivery.sql'));
   await db.exec(read('20261117194109_pure_card_crypto_checkout.sql'));
   const after=(await db.query('select to_jsonb(i) row from commerce_invoices i where id=$1',[oldOrder])).rows[0].row;
@@ -35,17 +34,23 @@ test('isolated PostgreSQL enforces v7 stacked discounts and cents while preservi
    const id=randomUUID(),user={id:randomUUID(),email:'fixture@example.test',email_confirmed_at:'2026-11-17'};
    const catalog=[{id:'a',name:'Compound A',variants:[{size:'5mg',price:cents/100}]},{id:'b',name:'Compound B',variants:[{size:'10mg',price:secondCents/100}]}];
    const body={id,kind:'goods',method_id:method,consent:true,research_use:true,checkout_version:config.version,coupon,points,credit_cents:credit,bulk_order:bulk,name:'Fixture Researcher',items:[{id:'a',size:'5mg',qty},{id:'b',size:'10mg',qty:1}],address:{line1:'123 Test Street',city:'Test City',region:'ON',postal_code:'N2L 1A1',country},delivery:{shipping,extras:['protection']}};
-   const record=await checkout.normalize({},user,body,catalog),m={id:method,kind:method===bank?'bank_transfer':'hosted_link',native_provider:method===payer?'polygon_usdc':method===bank?null:'rampex',rampex_provider:method===stripe?'stripe':'hosted',sale_scope:'goods',version:method===hosted?2:1};
+   const record=await checkout.normalize({},user,body,catalog),m=(await db.query('select m.*,a.rampex_provider from commerce_payment_methods m left join commerce_gateway_accounts a on a.method_id=m.id where m.id=$1',[method])).rows[0];
    const quote=checkout.price(record,m,null,{points:Math.max(1000,points),credit_cents:Math.max(1000,credit)});
    return {...record,...quote,checkout_version:config.version};
   };
   const place=payload=>db.query('select commerce_place_checkout($1::jsonb) result',[JSON.stringify(payload)]);
+  const historicalShape=(payload,version)=>{
+   payload.checkout_version=payload.request.checkout.version=payload.pricing.checkout_version=version;
+   payload.pricing.conversion_version='conversion-2026-11-v2';
+   for(const key of ['membership_plan','membership_name','membership_discount_bps','membership_discount_cents','membership_benefits','usd_earned_points_basis_cents'])delete payload.pricing[key];
+   for(const line of payload.pricing.lines)delete line.membership_discount_cents;
+   delete payload.pricing.delivery.membership_shipping;return payload;
+  };
   // A coupon-only v6 Crypto order is created with the previous SQL contract.
   // Card's coupon amounts match that historical policy; only the route and
   // version metadata change to construct this known historical fixture.
-  const savedV6=await make({coupon:'BLACKFRIDAY15'});
+  const savedV6=historicalShape(await make({coupon:'BLACKFRIDAY15'}),'checkout-2026-11-v6');
   savedV6.method_id=payer;savedV6.request.checkout.method_id=payer;savedV6.method_version=1;
-  savedV6.checkout_version=savedV6.request.checkout.version=savedV6.pricing.checkout_version='checkout-2026-11-v6';
   savedV6.pricing.payment_discount_version='pure-payments-2026-11-v1';savedV6.pricing.crypto_discount_eligible=true;
   assert.equal((await place(savedV6)).rows[0].result.status,'accepted');
   const savedBefore=(await db.query('select to_jsonb(i) row from commerce_invoices i where id=$1',[savedV6.id])).rows[0].row;
@@ -55,6 +60,13 @@ test('isolated PostgreSQL enforces v7 stacked discounts and cents while preservi
   assert.deepEqual((await db.query('select to_jsonb(m) row from commerce_payment_methods m order by id')).rows,routesBefore,'Pricing migration does not change financial routes');
   const validate=payload=>db.query('select commerce_internal.validate_regular_checkout($1::jsonb)',[JSON.stringify(payload)]);
   await assert.rejects(validate(savedV6),/current regular product checkout/);
+  const savedV7=historicalShape(await make({method:payer,country:'CA',coupon:'BLACKFRIDAY15'}),'checkout-2026-11-v7');
+  assert.equal((await place(savedV7)).rows[0].result.status,'accepted');
+  const v7Before=(await db.query('select pricing,total_cents from commerce_invoices where id=$1',[savedV7.id])).rows[0];
+  await db.exec(read('20261118070801_pure_interac_cad_checkout.sql'));
+  await db.exec(read('20261118173524_pure_membership_checkout.sql'));
+  assert.deepEqual((await db.query('select pricing,total_cents from commerce_invoices where id=$1',[savedV7.id])).rows[0],v7Before);
+  assert.deepEqual((await db.query('select pricing,total_cents from commerce_invoices where id=$1',[savedV6.id])).rows[0],{pricing:savedV6.pricing,total_cents:savedV6.total_cents});
   for(const method of [hosted,payer])for(const country of ['US','CA'])for(const coupon of ['','BLACKFRIDAY15'])for(const cents of [1,9,19,21,1999,3001,9999]){
    const payload=await make({method,country,coupon,cents,shipping:country==='CA'?'next_day':'standard'});
    await validate(payload);
@@ -95,7 +107,7 @@ test('isolated PostgreSQL enforces v7 stacked discounts and cents while preservi
   const pointsOrder=await make({method:payer,coupon:'BLACKFRIDAY15',cents:10000,points:18573,credit:500});
   await validate(pointsOrder);assert.equal(pointsOrder.pricing.crypto_discount_suppressed_for_balance,true);
   assert.equal(pointsOrder.pricing.coupon_discount_cents,3450);assert.equal(pointsOrder.total_cents,978);
-  for(const method of [bank,stripe])await assert.rejects(validate(await make({method})),/Choose Card or Crypto|historical card route/);
+  for(const method of [bank,stripe])await assert.rejects(validate(await make({method})),/Choose the current Card or Crypto checkout route/);
   const placed=await make({method:payer,country:'CA',coupon:'BLACKFRIDAY15',points:100,credit:500});
   await db.query('insert into commerce_balance_accounts(customer_id,points,credit_cents) values($1,1000,1000)',[placed.customer_id]);
   assert.equal((await place(placed)).rows[0].result.status,'accepted');
@@ -103,12 +115,10 @@ test('isolated PostgreSQL enforces v7 stacked discounts and cents while preservi
   assert.deepEqual((await db.query('select points,credit_cents from commerce_balance_accounts where customer_id=$1',[placed.customer_id])).rows[0],{points:900,credit_cents:500});
   assert.equal((await db.query('select count(*)::int n from commerce_balance_events where invoice_id=$1',[placed.id])).rows[0].n,2);
   const wrongCountry=await make({country:'GB'});await assert.rejects(place(wrongCountry),/Live gateway scope unavailable/);
-  // Exercise the saved-order transition for both pricing versions with actual
-  // referral fixtures, preserving v6 commission basis and including v7 savings.
-  await db.exec("create table commerce_partners(customer_id uuid primary key,status text);create table commerce_referrals(customer_id uuid primary key,partner_id uuid,first_invoice_id uuid);create table commerce_partner_commissions(invoice_id uuid primary key,partner_id uuid,basis_cents integer,rate_bps integer,amount_cents integer,status text default 'pending',eligible_at timestamptz);create trigger fixture_partner_transition after update of status on commerce_invoices for each row execute function commerce_internal.partner_order_transition();");
-  const partner=randomUUID();await db.query("insert into commerce_partners values($1,'active')",[partner]);
-  for(const order of [savedV6,placed]){
-   await db.query('insert into commerce_referrals values($1,$2,$3)',[order.customer_id,partner,order.id]);
+  // Actual partner tables and transition handle v6, v7 and current v8 snapshots.
+  const partner=randomUUID();await db.query("insert into commerce_partners(customer_id,code,terms_version) values($1,'PAYMENTFIXTURE','partner-2026-11-v1')",[partner]);
+  for(const order of [savedV6,savedV7,placed]){
+   await db.query('insert into commerce_referrals(customer_id,partner_id,first_invoice_id) values($1,$2,$3)',[order.customer_id,partner,order.id]);
    const paid={id:order.id,version:1,receipt_id:randomUUID(),external_reference:'FIXTURE-'+order.id,amount_cents:order.total_cents,currency:'USD',funds_confirmed:true};
    await db.query("select commerce_admin_command('record_payment',$1::jsonb,'isolated-fixture-admin')",[JSON.stringify(paid)]);
    const basis=order.subtotal_cents-order.discount_cents-order.points_redeemed-order.credit_redeemed_cents;

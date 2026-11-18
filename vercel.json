@@ -66,6 +66,18 @@
     {
       "source": "/partner-program",
       "destination": "/partner-program.html"
+    },
+    {
+      "source": "/memberships",
+      "destination": "/memberships.html"
+    },
+    {
+      "source": "/research-builder",
+      "destination": "/research-builder.html"
+    },
+    {
+      "source": "/research-checkout",
+      "destination": "/research-checkout.html"
     }
   ],
   "git": {
@@ -83,36 +95,6 @@
       "permanent": false
     },
     {
-      "source": "/research-builder",
-      "destination": "/shop",
-      "permanent": true
-    },
-    {
-      "source": "/research-builder.html",
-      "destination": "/shop",
-      "permanent": true
-    },
-    {
-      "source": "/memberships",
-      "destination": "/shop",
-      "permanent": true
-    },
-    {
-      "source": "/memberships.html",
-      "destination": "/shop",
-      "permanent": true
-    },
-    {
-      "source": "/research-checkout",
-      "destination": "/shop",
-      "permanent": true
-    },
-    {
-      "source": "/research-checkout.html",
-      "destination": "/shop",
-      "permanent": true
-    },
-    {
       "source": "/offers",
       "destination": "/shop",
       "permanent": true
@@ -123,34 +105,14 @@
       "permanent": true
     },
     {
-      "source": "/account/membership",
-      "destination": "/account",
-      "permanent": true
-    },
-    {
       "source": "/account/memberships",
-      "destination": "/account",
-      "permanent": true
-    },
-    {
-      "source": "/account/subscriptions",
-      "destination": "/account",
-      "permanent": true
-    },
-    {
-      "source": "/my-account/membership",
-      "destination": "/account",
-      "permanent": true
+      "destination": "/account/membership",
+      "permanent": false
     },
     {
       "source": "/my-account/memberships",
-      "destination": "/account",
-      "permanent": true
-    },
-    {
-      "source": "/my-account/subscriptions",
-      "destination": "/account",
-      "permanent": true
+      "destination": "/account/membership",
+      "permanent": false
     }
   ]
 }

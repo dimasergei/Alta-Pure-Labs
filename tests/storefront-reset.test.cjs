@@ -7,7 +7,7 @@ const {JSDOM,VirtualConsole}=require('jsdom');
 const root=path.resolve(__dirname,'..');
 const read=file=>fs.readFileSync(path.join(root,file),'utf8');
 const settle=()=>new Promise(resolve=>setTimeout(resolve,0));
-const retired=/BOGO|buy\s*1\s*,?\s*get\s*1|additional free|research builder|memberships?|subscribe and save|free BAC|5%.*bank|50%|60%/i;
+const retired=/BOGO|buy\s*1\s*,?\s*get\s*1|additional free|subscribe and save|5%.*bank|50%|60%/i;
 function referenceSource(file,scope,anchor){
  const source=read(file),views=require('../reference-ui-functions.cjs')[scope];
  assert.ok(source.includes(anchor),file+' exposes the reference view insertion point');
@@ -56,7 +56,8 @@ test('homepage keeps the announcement, five-vial hero and product links without 
    assert.equal(card.querySelector('h3 a').textContent,p.name);
   }
   assert.equal(w.AltaStore.cart.length,0);
-  assert.equal(d.querySelectorAll('a[href*="research-builder"],a[href*="memberships"],a[href="/account/membership"],del,[data-promo-clock],.nl-offer-grid').length,0);
+  assert.equal(d.querySelectorAll('del,[data-promo-clock],.nl-offer-grid').length,0);
+  assert.ok(d.querySelector('[data-mx-membership-home]'),'the homepage includes the shared membership component mount');
   assert.doesNotMatch(d.body.textContent,retired);
  }finally{await f.close();}
 });

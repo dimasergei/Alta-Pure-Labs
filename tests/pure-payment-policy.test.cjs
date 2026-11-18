@@ -19,8 +19,8 @@ function dbMock(methods=[card,cryptoMethod,stripe,bank]){
  const accounts=methods.filter(m=>m.native_provider).map(m=>({method_id:m.id,provider:m.native_provider,mode:'live',account_tag:gateway.configuration(m.native_provider,env).account_tag,countries:m.countries,rampex_provider:m.rampex_provider}));
  const calls=[];
  return {calls,auth:{getUser:async()=>({data:{user}})},from(table){
-  const result=table==='commerce_payment_methods'?methods:table==='commerce_gateway_accounts'?accounts:table==='commerce_delivery_options'?require('../config/delivery-options.json'):table==='commerce_balance_accounts'?{points:0,credit_cents:0}:table==='commerce_balance_events'?[]:null;
-  const q={select(){return q;},eq(){return q;},in(){return q;},order(){return q;},limit(){return q;},maybeSingle(){return q;},then(resolve,reject){return Promise.resolve({data:result}).then(resolve,reject);}};return q;
+  const result=table==='commerce_payment_methods'?methods:table==='commerce_gateway_accounts'?accounts:table==='commerce_delivery_options'?require('../config/delivery-options.json'):table==='commerce_balance_accounts'?{points:0,credit_cents:0}:['commerce_balance_events','commerce_memberships'].includes(table)?[]:null;
+  const q={select(){return q;},eq(){return q;},in(){return q;},is(){return q;},lte(){return q;},gt(){return q;},order(){return q;},limit(){return q;},maybeSingle(){return q;},then(resolve,reject){return Promise.resolve({data:result}).then(resolve,reject);}};return q;
  },rpc:async(name,args)=>{calls.push({name,args});return{data:{id:args.p_data?.id,status:'accepted'}};}};
 }
 async function request(body,params='',signed=true,db=dbMock(),overrides={}){

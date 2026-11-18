@@ -23,7 +23,7 @@ fs.writeFileSync('workspace-v2.js',workspace);
 // Extend navigation to the real operations inbox without modifying order workflows.
 for(const file of ['admin-operations-overview.html']){let html=fs.readFileSync(file,'utf8');if(!html.includes('href="/admin-operations.html"'))html=html.replace('</main>','<p><a href="/admin-operations.html">Requests & operating readiness →</a></p></main>');fs.writeFileSync(file,html);}
 fs.rmSync(out,{recursive:true,force:true});fs.mkdirSync(out,{recursive:true});
-const retiredFiles=new Set(['research-builder.html','memberships.html','offers.html','research-checkout.html','membership-experience.js','membership-experience.css','research-builder-parity.css','research-checkout-client.js','research-checkout.css']);
+const retiredFiles=new Set(['offers.html']);
 for(const entry of fs.readdirSync(root,{withFileTypes:true}))if(entry.isFile()&&!retiredFiles.has(entry.name)&&/\.(html|css|js)$/.test(entry.name))fs.copyFileSync(entry.name,path.join(out,entry.name));
 // Keep source artwork available in Git while publishing the current brand assets.
 const retiredArtwork=new Set(['assets/products','assets/brand-label.webp','assets/research-vials.webp','assets/hero-lab.webp','assets/capsules.webp']);
@@ -38,6 +38,9 @@ if(fs.existsSync(appleAssociation)){fs.mkdirSync(path.join(out,'.well-known'),{r
 const shell=fs.readFileSync('storefront-v2.html','utf8').replace('</head>','<link rel="stylesheet" href="/supplier-coas.css"></head>').replace('<script src="/workspace-v2.js','<script src="/supplier-coas.js?v=2"></script><script src="/workspace-v2.js');
 function page(html,url,title,description,main,structured){html=html.replace(/<title>[\s\S]*?<\/title>/,'<title>'+esc(title)+'</title>');html=html.replace(/<meta name="description"[^>]*>/,'<meta name="description" content="'+esc(description)+'">');html=html.replace('</head>','<link rel="canonical" href="'+esc(base+url)+'"><meta property="og:title" content="'+esc(title)+'"><meta property="og:description" content="'+esc(description)+'"><meta property="og:url" content="'+esc(base+url)+'"><meta property="og:type" content="website">'+(structured?'<script type="application/ld+json">'+JSON.stringify(structured).replace(/</g,'\\u003c')+'</script>':'')+'</head>');if(main)html=html.replace(/<main id="ap-main">[\s\S]*?<\/main>/,'<main id="ap-main">'+main+'</main>');return html;}
 const routes={
+ '/memberships':['PURE Memberships','Explore PURE WHITE and PURE BLACK prepaid memberships, with account benefits and clear terms.'],
+ '/research-builder':['Research Builder','Choose four different compounds, compare strengths and build a one-time research set.'],
+ '/research-checkout':['Review Your Research Set','Review your saved research selections before checkout.'],
  '/shop':['Research Catalog','Browse all PURE research products and exact product-size variants.'],
  '/bulk-orders':['Bulk Requests','Build exact product quantities and submit a bulk quote inquiry.'],
  '/rewards':['Rewards and Credit','Find the account workspaces for issued rewards and store credit.'],
@@ -51,7 +54,7 @@ fs.writeFileSync(path.join(out,'index.html'),page(shell,'/','PURE | Cutting Edge
 for(const [url,[title,description]] of Object.entries(routes)){const body='<section class="ap-container ap-page-intro"><h1>'+esc(title)+'</h1><p>'+esc(description)+'</p><a href="/shop">Explore the catalog</a></section>';fs.writeFileSync(path.join(out,url.slice(1)+'.html'),page(shell,url,title+' | PURE',description,body));}
 fs.mkdirSync(path.join(out,'product'),{recursive:true});
 for(const p of catalog){const sizes=p.variants.map(v=>esc(v.size)).join(', '),url='/product/'+p.id;const main='<section class="ap-container ap-page-intro"><p>'+esc(p.group)+'</p><h1>'+esc(p.name)+'</h1><p>'+esc(p.blurb)+'</p><p>Listed sizes: '+sizes+'.</p><p>For controlled laboratory research only. Review the product and select your quantity to order.</p><a href="/coas?product='+encodeURIComponent(p.id)+'">Product documentation</a></section>';fs.writeFileSync(path.join(out,'product',p.id+'.html'),page(shell,url,p.name+' | PURE',p.blurb+' Sizes: '+p.variants.map(v=>v.size).join(', ')+'.',main,{'@context':'https://schema.org','@type':'Product',name:p.name,description:p.blurb,sku:p.id,brand:{'@type':'Brand',name:'PURE'},url:base+url}));}
-const urls=['/',...Object.keys(routes),...catalog.map(p=>'/product/'+p.id)];
+const urls=['/',...Object.keys(routes).filter(url=>url!=='/research-checkout'),...catalog.map(p=>'/product/'+p.id)];
 fs.writeFileSync(path.join(out,'sitemap.xml'),'<?xml version="1.0" encoding="UTF-8"?><urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">'+urls.map(url=>'<url><loc>'+base+url+'</loc></url>').join('')+'</urlset>');
 fs.writeFileSync(path.join(out,'robots.txt'),'User-agent: *\nDisallow: /admin-\nDisallow: /account\nDisallow: /my-account\nDisallow: /api/\nSitemap: '+base+'/sitemap.xml\n');
 fs.writeFileSync(path.join(out,'404.html'),'<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width"><meta name="robots" content="noindex"><title>Page not found | PURE</title><link rel="stylesheet" href="/storefront-v2.css"></head><body class="ap-site"><main class="ap-container ap-page-intro"><h1>That page is not here.</h1><p>Browse the current catalog or contact our team.</p><a class="ap-button" href="/shop">Open the catalog</a> <a href="/contact">Contact support</a></main></body></html>');

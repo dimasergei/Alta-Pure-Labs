@@ -10,15 +10,16 @@ const batchApi = fs.readFileSync(path.join(root, 'api/admin-supplier-batches.js'
 const supplierApi = fs.readFileSync(path.join(root, 'api/admin-suppliers.js'), 'utf8');
 const notificationApi = fs.readFileSync(path.join(root, 'api/admin-notifications.js'), 'utf8');
 
-test('admin dashboard exposes Orders and Marketing while retaining internal fulfillment sections', () => {
+test('admin dashboard exposes Orders, Marketing and Inventory while retaining internal fulfillment sections', () => {
   const nav = html.match(/<nav class="admin-nav"[\s\S]*?<\/nav>/);
   assert.ok(nav);
   assert.deepEqual([...nav[0].matchAll(/data-admin-view="([^"]+)"/g)].map(x => x[1]), [
     'orders'
   ]);
   assert.match(nav[0], /href="\/admin-marketing\.html">Marketing<\/a>/);
+  assert.match(nav[0], /href="\/admin-inventory\.html">Inventory<\/a>/);
   assert.doesNotMatch(nav[0], />Batches<\/|>Notifications<\/|>Lotus<\//);
-  assert.doesNotMatch(nav[0], /Overview|Inventory/);
+  assert.doesNotMatch(nav[0], /Overview/);
   assert.match(html, /id="fulfillment-hub"/);
   assert.doesNotMatch(html, /class="fh-advanced"/);
   assert.match(html, /class="simple-order-list"/);

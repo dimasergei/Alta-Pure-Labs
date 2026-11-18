@@ -65,8 +65,8 @@
       "title": "Rates and eligible destinations",
       "state": "implemented",
       "owner": "Owner / Carrier / Engineering",
-      "next": "Destination and service determine the shipping rate. US standard shipping is free on merchandise of at least US$150 after merchandise discounts and before account balances. Express service and optional extras retain their charges.",
-      "done_when": "Quotes and stored orders agree at the US$150 boundary and for supported destinations, services and extras."
+      "next": "Destination and service determine the rate. US standard shipping is free on merchandise of at least US$150 after discounts and before account balances. Verified paid PURE WHITE and PURE BLACK members receive US standard or express shipping; next-day, international delivery and shipping protection retain their charges. PURE BLACK priority fulfillment is included.",
+      "done_when": "Quotes and stored orders agree at the US$150 boundary and for member tiers, supported destinations, services and extras."
     },
     {
       "id": "tax",
@@ -78,19 +78,19 @@
     },
     {
       "id": "rewards",
-      "title": "Existing points and store-credit balances",
+      "title": "Membership points and account credit",
       "state": "implemented",
       "owner": "Owner / Engineering",
-      "next": "Existing earned points and issued credit remain redeemable. New orders earn no points. Balance reservations, cancellation restores and verified refund reversals remain atomic.",
+      "next": "Verified paid PURE WHITE earns 5 points per eligible US$1 and PURE BLACK earns 10. PURE BLACK receives one US$50 future-order credit per UTC month after a qualifying US$150 merchandise order. CAD earnings use the canonical USD merchandise basis; USD balances are redeemable only in USD product checkout. Reservations, cancellation restores and verified refund reversals remain atomic; spent monthly rewards require reconciliation after refund.",
       "done_when": "Concurrent redemption cannot overspend and duplicate cancellation or refund events cannot restore balances twice."
     },
     {
       "id": "promotions",
-      "title": "Regular catalog pricing and explicit coupon",
+      "title": "Catalog pricing, member discounts and explicit coupon",
       "state": "implemented",
       "owner": "Owner / Engineering",
-      "next": "Regular catalog prices apply at every quantity. BLACKFRIDAY15 applies 15% when entered, then eligible direct Crypto payments receive an extra 5% on remaining merchandise. Shipping, tax and fees are excluded. No automatic member, volume, bank or referral discount and no free units.",
-      "done_when": "Cart quotes and persisted checkout totals agree, coupon and Crypto savings are shown separately, coupon removal preserves eligible Crypto savings, and stale quotes fail closed."
+      "next": "Regular catalog prices apply at every quantity. Checkout uses the better of the paid member discount (WHITE 5%, BLACK 10%) or entered BLACKFRIDAY15 (15%), followed by an eligible direct Crypto saving of 5% on remaining merchandise. Membership fees, shipping, tax and fees receive no merchandise discount. No volume, bank or customer-referral discount or free purchased units is added.",
+      "done_when": "Cart quotes and persisted checkout totals agree; member/coupon and Crypto savings are shown correctly, fee purchases remain full price, and stale quotes fail closed."
     },
     {
       "id": "partners",

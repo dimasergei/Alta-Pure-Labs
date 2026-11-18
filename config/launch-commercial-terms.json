@@ -10,22 +10,22 @@
       "discount_bps": 0
     },
     "vip": {
-      "name": "PURE VIP",
-      "price_cents": 4900,
-      "discount_bps": 0
+      "name": "PURE WHITE",
+      "price_cents": 19190,
+      "discount_bps": 500
     },
     "elite": {
-      "name": "PURE Elite",
-      "price_cents": 9900,
-      "discount_bps": 0
+      "name": "PURE BLACK",
+      "price_cents": 95990,
+      "discount_bps": 1000
     }
   },
   "volume_tiers": [],
-  "stacking": "one_explicit_coupon",
+  "stacking": "best_member_or_coupon_then_crypto",
   "renewal": "prepaid_nonrenewing",
   "invoice_expiry_hours": 24,
-  "rewards_earning_enabled": false,
+  "rewards_earning_enabled": true,
   "affiliate_commissions_enabled": true,
   "gift_cards_enabled": false,
-  "memberships_enabled": false
+  "memberships_enabled": true
 }

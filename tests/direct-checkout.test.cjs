@@ -21,12 +21,12 @@ test('checkout quotes work on both verified domains without placing orders',asyn
   assert.equal(res.code,200);assert.equal(db.calls.length,0);
  }
 });
-test('authoritative catalog ignores client prices and automatic member, volume, bank and referral discounts',async()=>{
+test('authoritative catalog ignores client prices and retired volume/referral discounts while applying verified BLACK benefits',async()=>{
  for(const qty of [1,2,10,25,50]){
   const record=await checkout.normalize({},user,{...body,items:[{...body.items[0],qty}]},catalog);
   const q=checkout.price(record,method,{plan:'elite',invoice_id:id},{points:0,credit_cents:0},{customer_id:uid,code:'PARTNER',first_order:true});
-  assert.equal(q.subtotal_cents,qty*10000);assert.equal(q.discount_cents,0);assert.equal(q.earned_points,0);
-  assert.equal(q.total_cents,qty*10000+(qty===1?1495:0));assert.equal(q.membership_invoice_id,null);
+  assert.equal(q.subtotal_cents,qty*10000);assert.equal(q.discount_cents,qty*1000);assert.equal(q.earned_points,qty*900);
+  assert.equal(q.total_cents,qty*9000);assert.equal(q.membership_invoice_id,id);
   assert.equal(q.pricing.lines[0].qty,qty);assert.equal(q.pricing.lines[0].unit_price_cents,10000);
   assert.equal(q.pricing.lines[0].bogo_free_units,0);assert.deepEqual(q.pricing.referral,{partner_id:uid,code:'PARTNER',first_order:true});assert.equal(q.pricing.payment_discount,undefined);
  }
@@ -56,7 +56,7 @@ test('BLACKFRIDAY15 is normalized and cart, quote and persisted order have ident
  const saved=db.calls[0].args.p_data;assert.equal(db.calls[0].name,'commerce_place_checkout');
  assert.deepEqual(saved.pricing,quoted.body.pricing);assert.equal(saved.total_cents,quoted.body.total_cents);
  assert.equal(saved.request.checkout.coupon,'BLACKFRIDAY15');assert.deepEqual(saved.request.items.map(x=>x.qty),[2,1]);
- assert.equal(saved.checkout_version,'checkout-2026-11-v7');assert.equal(saved.earned_points,0);
+ assert.equal(saved.checkout_version,config.version);assert.equal(saved.earned_points,0);
 });
 test('removing the explicit coupon restores regular price and invalidates the prior quote',async()=>{
  const b={...body,coupon:'BLACKFRIDAY15',items:[{...body.items[0],qty:2}]};
@@ -81,9 +81,9 @@ test('coupon does not make express, international shipping, priority or protecti
   assert.throws(()=>checkout.price(r,method,null,{points:0,credit_cents:0}),/unavailable|not available/);
  }
 });
-test('removed coupons, memberships, builder and subscriptions are blocked before any writes',async()=>{
+test('removed coupons, unsupported membership routes and forged program flags are blocked before any writes',async()=>{
  for(const params of ['','checkout=cart'])for(const action of ['quote','place'])for(const extra of [{kind:'membership',plan:'vip'},{plan:'elite'},{billing_period:'annual'},{research_builder:true},{subscription:true}]){
-  const {res,db}=await call({...body,action,...extra},{params});assert.equal(res.code,409);assert.equal(db.calls.length,0);
+  const {res,db}=await call({...body,action,...extra},{params});assert.ok([400,409].includes(res.code));assert.equal(db.calls.length,0);
  }
  for(const coupon of ['BOGO','AP-ABCDEFGH2345','WELCOME10'])for(const params of ['','checkout=cart']){
   const {res,db}=await call({...body,action:'quote',coupon},{params});assert.equal(res.code,400);assert.equal(db.calls.length,0);
@@ -120,12 +120,12 @@ test('authentication, origin, malformed cart and credit issuance fail closed',as
  }
  const {res,db}=await call({action:'issue_credit',id,customer_id:uid,amount_cents:100},{params:'checkout=admin'});assert.equal(res.code,401);assert.equal(db.calls.length,0);
 });
-test('public preview needs no card processor and public/account terms expose no retired plans',async()=>{
+test('public preview needs no card processor and public/account terms expose current PURE plans',async()=>{
  const db=dbMock({paymentMethods:[]});const {res}=await call({...body,country:'CA',delivery:{shipping:'standard',extras:['protection']}},{db,params:'checkout=cart',headers:{authorization:''}});
  assert.equal(res.code,200);assert.equal(res.body.total_cents,14495);assert.equal(db.calls.length,0);
  for(const params of ['checkout=public','']){const r=response();await checkout.handle({method:'GET',headers:{authorization:'Bearer fixture-auth-token-long-enough'}},r,new URLSearchParams(params),{env,db,catalog});
   assert.equal(r.code,200);assert.equal(r.body.terms.memberships,undefined);assert.equal(r.body.terms.membership_days,undefined);assert.equal(r.body.terms.renewal,undefined);
-  assert.equal(r.body.terms.conversion.plans,undefined);assert.equal(r.body.config.points_per_dollar,0);
+  assert.equal(r.body.terms.conversion.plans.vip.name,'PURE WHITE');assert.equal(r.body.terms.conversion.plans.elite.name,'PURE BLACK');assert.equal(r.body.terms.conversion.automatic_renewal,false);assert.equal(r.body.config.points_per_dollar,0);
  }
 });
 

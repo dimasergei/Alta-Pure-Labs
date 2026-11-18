@@ -7,7 +7,10 @@ const state=s=>({queued:'Queued',retry:'Retry scheduled',working:'Processing',su
 const orderState=(o,fallback)=>o.cancellation_status==='pending'?'Cancellation pending':o.cancellation_status==='review'?'Cancellation needs payment review':state(fallback||o.status);
 const interacRequest=o=>(o.status||o.commerce_status)==='requested'&&o.request_data?.preferred_payment?.provider_key==='interac';
 const requestEstimate=o=>o.request_data?.checkout?.usd_estimate;
-let api,root,dlg,orders=[],paging={},page=1,query='',sort='newest',filter='all',epoch=0,poll,timer;
+const priorityOrder=o=>o.source==='commerce'&&['goods','bulk'].includes(o.kind)&&o.priority_fulfillment===true&&typeof o.membership_invoice_id==='string'
+ &&/^[a-f0-9]{8}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{12}$/i.test(o.membership_invoice_id)&&['paid','processing'].includes(o.commerce_status||o.status)&&!o.cancellation_requested_at&&!o.cancellation_status;
+const priorityBadge=()=>el('span','PURE BLACK / Priority','uc-priority-badge');
+let api,root,dlg,orders=[],paging={},page=1,query='',sort='fulfillment_priority',filter='all',epoch=0,poll,timer;
 const lotus=(view,more='')=>'/api/customer-config?lotus=admin&view='+view+more;
 const send=(url,body,method='POST')=>api(url,{method,headers:{'Content-Type':'application/json'},body:JSON.stringify(body)});
 const write=b=>send(lotus('write'),b);
@@ -25,6 +28,7 @@ function rows(){const host=root?.querySelector('[data-unified-list]');if(!host)r
  if(!list.length){host.append(el('p','No matching checkout orders or subscriptions.','uc-empty'));return}
  for(const o of list){const card=el('article',undefined,'uc-order-row'),identity=el('div',undefined,'uc-order-identity'),sum=el('div',undefined,'uc-order-total');
   identity.append(el('strong',ref(o)),el('small',type(o)+' · '+when(o.created_at)),el('span',o.customer_name||o.customer_email||'Unknown customer'));
+  if(priorityOrder(o))identity.append(priorityBadge());
   const pendingCad=interacRequest(o),estimate=requestEstimate(o);
   sum.append(el('strong',pendingCad?'CAD quote pending':cash(o.total_cents,o.currency)+(o.source==='research_subscription'?'/mo':'')),el('small',pendingCad&&Number.isSafeInteger(estimate?.total_cents)?cash(estimate.total_cents,'USD')+' USD estimate':orderState(o,o.source==='research_subscription'?o.research_status:o.source==='commerce'?o.commerce_status:o.fulfillment_status)));
   card.append(identity,sum,btn(o.source==='research_subscription'?'View subscription':pendingCad?'Review CAD order':'Manage order',()=>detail(o),'primary'));host.append(card)}
@@ -34,8 +38,8 @@ async function load(){if(!api||!root)return;const ticket=++epoch,params=new URLS
   const head=el('div',undefined,'uc-header');head.append(el('h2','Orders'),btn('Refresh',load));root.append(head);
   const tools=el('div',undefined,'uc-search'),q=el('input');q.type='search';q.placeholder='Search orders or customers';q.setAttribute('aria-label','Search orders');q.value=query;
   q.oninput=()=>{query=q.value;page=1;clearTimeout(timer);timer=setTimeout(()=>{const focused=document.activeElement===q,pos=q.selectionStart;load().then(()=>{if(focused){const replacement=root?.querySelector('.uc-search input');replacement?.focus();replacement?.setSelectionRange(pos,pos)}})},300)};
-  const sorting=el('select');for(const [v,t]of [['newest','Newest first'],['oldest','Oldest first'],['highest_total','Highest total']]){const option=el('option',t);option.value=v;sorting.append(option)}sorting.value=sort;sorting.setAttribute('aria-label','Sort orders');sorting.onchange=()=>{sort=sorting.value;page=1;load()};
-  const types=el('select');for(const [v,t]of [['all','All types'],['goods','Product orders'],['bulk','Bulk orders']]){const option=el('option',t);option.value=v;types.append(option)}types.value=filter;types.setAttribute('aria-label','Filter order type');types.onchange=()=>{filter=types.value;page=1;load()};
+  const sorting=el('select');for(const [v,t]of [['fulfillment_priority','Fulfillment priority'],['newest','Newest first'],['oldest','Oldest first'],['highest_total','Highest total']]){const option=el('option',t);option.value=v;sorting.append(option)}sorting.value=sort;sorting.setAttribute('aria-label','Sort orders');sorting.onchange=()=>{sort=sorting.value;page=1;load()};
+  const types=el('select');for(const [v,t]of [['all','All types'],['goods','Product orders'],['bulk','Bulk orders'],['membership','Membership purchases']]){const option=el('option',t);option.value=v;types.append(option)}types.value=filter;types.setAttribute('aria-label','Filter order type');types.onchange=()=>{filter=types.value;page=1;load()};
   tools.append(q,sorting,types);root.append(tools);const notice=el('p','','uc-message');notice.setAttribute('data-unified-message','');notice.setAttribute('role','status');root.append(notice);
   const list=el('div',undefined,'uc-list');list.setAttribute('data-unified-list','');root.append(list);rows();
   const pager=el('div',undefined,'uc-pager'),prev=btn('Previous',()=>{page--;return load()}),next=btn('Next',()=>{page++;return load()});prev.disabled=!paging.has_previous;next.disabled=!paging.has_next;
@@ -47,13 +51,13 @@ async function detail(record){let row=typeof record==='object'?record:orders.fin
  if(!row)throw Error('Order unavailable. Refresh the list.');const ticket=epoch;
  const data=row.source==='commerce'?await api(lotus('detail','&id='+encodeURIComponent(row.id))):{order:row,allocations:[],jobs:[]};if(ticket!==epoch)return;const o=data.order;
  if(!dlg){dlg=el('dialog');dlg.className='fh-dialog uc-dialog';document.body.append(dlg)}dlg.replaceChildren();
- const head=el('div',undefined,'uc-dialog-head'),title=el('div');title.append(el('h2',ref(row)),el('small',type(row)+' · '+orderState(o,o.status||row.research_status||row.fulfillment_status)));head.append(title,btn('Close',()=>dlg.close()));dlg.append(head);
+ const head=el('div',undefined,'uc-dialog-head'),title=el('div');title.append(el('h2',ref(row)),el('small',type(row)+' · '+orderState(o,o.status||row.research_status||row.fulfillment_status)));if(priorityOrder({...row,...o,commerce_status:o.status||row.commerce_status}))title.append(priorityBadge());head.append(title,btn('Close',()=>dlg.close()));dlg.append(head);
  const notice=el('p','','uc-message');notice.setAttribute('data-unified-message','');notice.setAttribute('role','status');dlg.append(notice);
  const pendingCad=interacRequest(o),estimate=requestEstimate(o);
  const info=el('section',undefined,'uc-info');info.append(field('Customer',o.customer_name||row.customer_name),field('Email',o.customer_email||row.customer_email),field('Payment',pendingCad?'CAD order review pending':orderState(o,row.payment_status)),field('Fulfillment',row.source==='research_subscription'?state(row.research_status):orderState(o,o.status||row.fulfillment_status)),field(pendingCad?'USD request estimate':'Total',pendingCad?(Number.isSafeInteger(estimate?.total_cents)?cash(estimate.total_cents,'USD')+' USD':'Awaiting CAD quote'):cash(o.total_cents??row.total_cents,o.currency||row.currency)+(row.source==='research_subscription'?'/mo':'')),field('Placed',when(o.created_at||row.created_at)));
  if(row.organization)info.append(field('Organization',row.organization));
  if(row.source==='commerce'&&o.payment_snapshot?.label)info.append(field('Payment method',o.payment_snapshot.label));
- if(row.kind==='membership')info.append(field('Membership plan',o.plan||row.plan));
+ if(row.kind==='membership')info.append(field('Membership plan',({vip:'PURE WHITE',elite:'PURE BLACK'})[o.plan||row.plan]||'Membership'),field('Term',o.request_data?.billing_period==='annual'?'12 months prepaid':o.request_data?.billing_period==='monthly'?'1 month prepaid':'View purchase terms'));
  if(row.source==='research_subscription')info.append(field('Paid cycles',row.paid_cycles),field('Next billing',when(row.next_billing_at)));dlg.append(info);
  const items=el('section',undefined,'uc-items');items.append(el('h3',row.source==='research_subscription'?'Subscription items':'Order items'));
  const lines=row.source==='commerce'?(o.pricing?.lines||o.request_data?.items||[]):row.source==='research_subscription'?(row.lines||[]):row.store_order_items||[];
@@ -92,13 +96,13 @@ function commerceActions(host,row,data){const o=data.order,id=o.id,allocations=d
   if(window.PureInteracInvoiceAdmin)window.PureInteracInvoiceAdmin.mount({host:pay,order:o,api,onRefresh:()=>reload(row),onIssued:async()=>{await reload(row);msg('CAD order total prepared. The customer must accept it before viewing Interac payment instructions.')}});
   else pay.append(el('p','CAD order review is unavailable. Refresh the Orders page and try again.','uc-hint'));
  }
- else if(data.manual_payment_allowed){const f=form('Confirm received bank payment',pay);f.append(el('p','Verify that the full amount has arrived before confirming payment and preparing this order for fulfillment.','uc-hint'));
+ else if(data.manual_payment_allowed){const f=form('Confirm received bank payment',pay);f.append(el('p',o.kind==='membership'?'Verify that the full amount has arrived before confirming payment and activating this prepaid membership.':'Verify that the full amount has arrived before confirming payment and preparing this order for fulfillment.','uc-hint'));
   f.append(field('Amount to verify',cash(o.total_cents,o.currency)),field('Method',data.payment_method?.label||o.payment_snapshot?.label));
   const reference=input(f,'Bank transaction reference','bank_reference','',true);reference.minLength=8;reference.maxLength=150;
   const check=el('label',undefined,'uc-check'),yes=el('input');yes.type='checkbox';yes.required=true;check.append(yes,el('span','I verified the full amount has arrived in the receiving account.'));f.append(check);
-  const receipt=crypto.randomUUID();submit(f,'Mark payment received',async()=>{if(!yes.checked)throw Error('Verify received funds first.');if(!window.confirm('Confirm '+cash(o.total_cents,o.currency)+' was received? This makes the order available for fulfillment.'))return;
-   const result=await write({action:'record_payment',id,expected_version:o.version,method_id:o.method_id,receipt_id:receipt,external_reference:reference.value,confirm_funds_received:true});await reload(row);msg('Payment recorded. The fulfillment sheet is ready to review.')})}
- else if(['accepted','requested','issued'].includes(o.status))pay.append(el('p','Awaiting confirmed payment. Shipping stays on hold until this payment is reconciled through its provider.','uc-hint'));
+  const receipt=crypto.randomUUID();submit(f,'Mark payment received',async()=>{if(!yes.checked)throw Error('Verify received funds first.');if(!window.confirm('Confirm '+cash(o.total_cents,o.currency)+' was received? '+(o.kind==='membership'?'This activates the prepaid membership.':'This makes the order available for fulfillment.')))return;
+   const result=await write({action:'record_payment',id,expected_version:o.version,method_id:o.method_id,receipt_id:receipt,external_reference:reference.value,confirm_funds_received:true});await reload(row);msg(o.kind==='membership'?'Payment recorded. The prepaid membership is active.':'Payment recorded. The fulfillment sheet is ready to review.')})}
+ else if(['accepted','requested','issued'].includes(o.status))pay.append(el('p',o.kind==='membership'?'Awaiting confirmed payment. Membership benefits stay inactive until payment is verified.':'Awaiting confirmed payment. Shipping stays on hold until this payment is reconciled through its provider.','uc-hint'));
  else pay.append(el('p',o.paid_at?'Payment received '+when(o.paid_at)+'.':state(o.status)+'.','uc-hint'));
  if(o.cancellation_status==='pending')pay.append(el('p','Cancellation requested. Checkout and fulfillment are on hold while the wallet authorization expires and payment is checked automatically. Do not send payment.','uc-hint'));
  if(o.cancellation_status==='review')pay.append(el('p','A crypto transfer was received after cancellation was requested. Fulfillment remains on hold. Review the verified payment and arrange any refund before resolving this order.','uc-hint'));

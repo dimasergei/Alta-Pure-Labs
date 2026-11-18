@@ -18,7 +18,8 @@ const policyFiles = [
   'corrections-policy.html',
   'medical-disclaimer.html',
   'research-documentation.html',
-  'partner-terms.html'
+  'partner-terms.html',
+  'membership-terms.html'
 ];
 
 const sharedScriptNames = new Set([

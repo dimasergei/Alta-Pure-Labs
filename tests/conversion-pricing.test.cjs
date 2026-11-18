@@ -1,10 +1,27 @@
 const test=require('node:test'),assert=require('node:assert/strict');
 const pricing=require('../lib/conversion-pricing'),partners=require('../lib/partner-program');
-test('memberships are unavailable; shipping and earning have no membership benefit',()=>{
- for(const plan of ['vip','elite'])for(const period of ['monthly','annual'])assert.throws(()=>pricing.membershipItem(plan,period),e=>e.status===409);
- for(const membership of [null,{plan:'vip'},{plan:'elite'}]){
-  assert.equal(pricing.shipping(14999,membership),1495);assert.equal(pricing.shipping(15000,membership),0);
-  assert.equal(pricing.earnings(99999,membership),0);
+test('PURE memberships expose canonical prepaid terms and tier benefits without automatic renewal',()=>{
+ const expected={vip:{name:'PURE WHITE',monthly:1999,annual:19190,discount_bps:500,points_per_dollar:5,priority:false,credit:0,gift:false},
+  elite:{name:'PURE BLACK',monthly:9999,annual:95990,discount_bps:1000,points_per_dollar:10,priority:true,credit:5000,gift:true}};
+ for(const [plan,values] of Object.entries(expected)){
+  for(const period of ['monthly','annual'])assert.deepEqual(pricing.membershipItem(plan,period),{
+   id:'membership-'+plan,name:values.name+' — '+period+' prepaid membership',size:period,qty:1,unit_price_usd_cents:values[period]});
+  const benefits=pricing.planFor({plan});assert.equal(benefits.name,values.name);assert.equal(benefits.discount_bps,values.discount_bps);
+  assert.equal(benefits.points_per_dollar,values.points_per_dollar);assert.equal(benefits.free_shipping,true);assert.equal(benefits.early_access,true);
+  assert.equal(benefits.priority_fulfillment,values.priority);assert.equal(benefits.monthly_credit_cents,values.credit);assert.equal(benefits.free_bac_water_3ml,values.gift);
+ }
+ assert.equal(pricing.config.plans.elite.monthly_credit_min_order_cents,15000);
+ assert.equal(pricing.config.memberships_enabled,true);assert.equal(pricing.config.billing_mode,'prepaid');
+ assert.equal(pricing.config.recurring_available,false);assert.equal(pricing.config.automatic_renewal,false);
+ for(const plan of ['member','unknown','__proto__'])assert.throws(()=>pricing.membershipItem(plan,'monthly'),e=>e.status===400);
+ for(const period of ['weekly','subscription',null])assert.throws(()=>pricing.membershipItem('vip',period),e=>e.status===400);
+});
+test('verified membership tiers determine shipping and integer points earnings',()=>{
+ assert.equal(pricing.shipping(14999,null),1495);assert.equal(pricing.shipping(15000,null),0);
+ assert.equal(pricing.earnings(99999,null),0);
+ for(const [plan,points] of [['vip',4999],['elite',9999]]){
+  assert.equal(pricing.shipping(14999,{plan}),0);assert.equal(pricing.shipping(15000,{plan}),0);
+  assert.equal(pricing.earnings(99999,{plan}),points);assert.equal(pricing.earnings(-1,{plan}),0);
  }
  assert.equal(pricing.bankLabel({kind:'bank_transfer'}),'Same-day bank transfer');
 });

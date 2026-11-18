@@ -1,70 +1,71 @@
-/* Membership page: desktop NeuroLabs-like layout with AltaPure identity. */
-.mx-membership-page{background:#fff;color:#111a29;padding:39px 24px 92px;font-family:Poppins,Arial,sans-serif}
-.mx-hero{text-align:center;max-width:730px;margin:0 auto}
-.mx-eyebrow{display:inline-flex;align-items:center;padding:8px 17px;border:1px solid #dce3ee;border-radius:99px;background:#f4f7fb;color:#385b85;font-size:10px;font-weight:800;letter-spacing:1.1px}
-.mx-membership-icon{display:block;width:23px;height:23px;flex:none;margin-right:8px}
-.mx-hero h1,.mx-hero h2{margin:21px 0 15px;font-size:clamp(35px,4vw,54px);line-height:1.12;letter-spacing:-.055em;font-weight:900;color:#101827}
-.mx-hero h1 em,.mx-hero h2 em{font-style:normal;color:#164b94}
-.mx-hero>p{max-width:525px;margin:0 auto;color:#7c8490;font-size:13px;line-height:1.72}
-.mx-period{display:flex;gap:3px;width:max-content;margin:28px auto 30px;padding:4px;background:#f2f5f9;border:1px solid #d8e0e9;border-radius:99px}
-.mx-period button{border:0;background:transparent;color:#47617c;border-radius:99px;padding:10px 16px;font-size:12px;font-weight:800;cursor:pointer}
-.mx-period button[aria-pressed=true]{background:#174c96;color:#fff;box-shadow:0 4px 12px #154c9644}
-.mx-period button span{margin-left:6px;padding:4px 8px;background:#e2f6e7;color:#0d8747;border-radius:99px;font-size:10px}
-.mx-card-grid{max-width:1110px;margin:0 auto;display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:18px;align-items:stretch}
-.mx-card{position:relative;display:flex;flex-direction:column;min-width:0;min-height:432px;padding:27px 23px 21px;border:1px solid #dfe5eb;border-radius:17px;background:#fff;color:#17243a;box-shadow:0 6px 17px #1d304215}
-.mx-card-top{text-align:center;border-bottom:1px solid #e4e8ee;padding-bottom:17px}
-.mx-card h3{margin:0 0 9px;font-size:17px;line-height:1.3;font-weight:850;letter-spacing:-.025em;color:#184377}
-.mx-price{font-size:32px;font-weight:900;line-height:1.15;letter-spacing:-.045em;color:#0a1018}
-.mx-price small{margin-left:3px;font-size:13px;font-weight:500;letter-spacing:0;color:#697c92}
-.mx-card-top p{margin:9px auto 0;color:#8a93a1;font-size:11px;line-height:1.5;min-height:30px}
-.mx-benefits{display:grid;align-content:start;gap:12px;margin:20px 0 23px!important;padding:0!important;list-style:none}
-.mx-benefits li{display:flex;align-items:flex-start;gap:8px;font-size:12px;line-height:1.45;font-weight:550;color:#1b2b42}
-.mx-icon{width:17px;height:17px;flex:0 0 17px;display:inline-flex;align-items:center;justify-content:center;border-radius:50%;font-size:11px;background:#101d30;color:#fff}
-.mx-unavailable{color:#a8b0bb!important;text-decoration:line-through}.mx-unavailable .mx-icon{border:1px solid #c7d1dc;background:transparent;color:#b5bfcb}
-.mx-choose{margin-top:auto;display:flex;align-items:center;justify-content:center;min-height:42px;padding:10px 12px;border:1px solid #dce3ed;border-radius:50px;color:#17345b!important;background:#fff;font-size:11px;font-weight:850;text-transform:uppercase;letter-spacing:.055em;text-decoration:none!important;transition:background .2s,transform .2s}
-.mx-choose:hover{transform:translateY(-2px);background:#edf5ff}
-.mx-card-vip{transform:translateY(-9px);background:linear-gradient(155deg,#1e4f98,#113566 63%,#091d3c);color:#fff;border-color:#16457f;box-shadow:0 16px 28px #16385b60}
-.mx-card-vip .mx-card-top{border-color:#ffffff29}.mx-card-vip h3{color:#f2f9ff}.mx-card-vip .mx-price{color:white}.mx-card-vip .mx-price small,.mx-card-vip .mx-card-top p{color:#d4dff0}
-.mx-card-vip .mx-benefits li{color:#f0f6ff}.mx-card-vip .mx-icon{background:#2a74c7}
-.mx-card-vip .mx-choose{border-color:#3771c0;background:#1d5bb5;color:#fff!important}.mx-card-vip .mx-choose:hover{background:#2c6bc7}
-.mx-popular{position:absolute;top:-15px;left:50%;transform:translateX(-50%);white-space:nowrap;border-radius:50px;background:#a55ee8;color:white;padding:6px 16px;font-size:9px;font-weight:900;letter-spacing:.09em}
-.mx-metal-gold,.mx-metal-platinum{display:inline-block;font-weight:900;color:transparent;-webkit-background-clip:text;background-clip:text;background-size:180px 100%;background-repeat:repeat;animation:mx-metal-shimmer 3.4s linear infinite}
-.mx-metal-gold{background-image:linear-gradient(90deg,#d6a840 0%,#f8df83 22%,#fff9d1 35%,#cc8e2a 53%,#fff2a7 75%,#d6a840 100%)}
-.mx-metal-platinum{background-image:linear-gradient(90deg,#a6b4c7 0%,#eff6ff 24%,#fff 36%,#8291a5 54%,#e7f0ff 77%,#a6b4c7 100%)}
-@keyframes mx-metal-shimmer{from{background-position:0 0}to{background-position:-180px 0}}
-.mx-terms{max-width:780px;text-align:center;margin:26px auto 0;font-size:11px;line-height:1.65;color:#748092}
-.mx-faq{max-width:800px;margin:83px auto 0}.mx-faq>header{text-align:center;margin-bottom:26px}
-.mx-faq h2{font-size:33px;line-height:1.25;font-weight:900;letter-spacing:-.05em;color:#111b2a;margin:0 0 9px}
-.mx-faq>header p{font-size:13px;color:#8792a0;margin:0}
-.mx-faq-items{display:grid;gap:10px}.mx-faq-items details{border:1px solid #dfe5ec;border-radius:13px;overflow:hidden;box-shadow:0 2px 10px #15294212;background:#fff}
-.mx-faq-items summary{padding:17px 20px;display:flex;align-items:center;justify-content:space-between;gap:15px;cursor:pointer;list-style:none;color:#14233a;font-size:13px;font-weight:800}
-.mx-faq-items summary::-webkit-details-marker{display:none}.mx-faq-items summary span:before{content:"+";color:#1651a1;font-size:21px;font-weight:850}
-.mx-faq-items details[open] summary span:before{content:"−"}
-.mx-faq-items details p{padding:0 20px 18px;margin:0;color:#68778c;font-size:12px;line-height:1.7}
-@media(max-width:850px){.mx-membership-page{padding:35px 17px 65px}.mx-card-grid{gap:12px}.mx-card{padding:24px 14px 17px}.mx-card h3{font-size:14px}.mx-price{font-size:26px}.mx-benefits li{font-size:11px}}
-@media(max-width:680px){.mx-membership-page{padding:31px 16px 60px}.mx-hero h1,.mx-hero h2{font-size:clamp(31px,8.3vw,43px)}.mx-card-grid{grid-template-columns:1fr;gap:27px;max-width:430px}.mx-card{min-height:0;padding:25px 21px 20px}.mx-card-vip{transform:none}.mx-faq{margin-top:57px}.mx-faq h2{font-size:28px}}
-@media(prefers-reduced-motion:reduce){.mx-metal-gold,.mx-metal-platinum{animation:none}.mx-choose{transition:none}}
-
-/* Comparison parity: seven shared benefit rows, with unavailable perks visibly
-   struck through. Platinum uses an ink-black premium surface for contrast. */
-.mx-card{min-height:495px}
-.mx-benefits{gap:10px;margin:20px 0 22px!important}
-.mx-benefits li{font-size:11.5px;line-height:1.45}
-.mx-card-member .mx-benefits li.mx-unavailable,
-.mx-card-vip .mx-benefits li.mx-unavailable{color:#98a2b1!important;text-decoration:line-through;text-decoration-thickness:1px}
-.mx-card-vip .mx-benefits li.mx-unavailable{color:#91a7c2!important}
-.mx-card-vip .mx-benefits li.mx-unavailable .mx-icon{color:#b6c9df;background:transparent!important;border:1.5px solid #9ab2ca}
-.mx-card-elite{background:linear-gradient(158deg,#11151d 0%,#080b10 48%,#020407 100%)!important;border-color:#303944!important;color:#f8fafc!important;box-shadow:0 16px 30px #060b1670}
-.mx-card-elite .mx-card-top{border-bottom:1px solid #38414a}
-.mx-card-elite h3{color:#fff!important}
-.mx-card-elite .mx-price{color:#fff!important}
-.mx-card-elite .mx-price small{color:#c6d2df!important}
-.mx-card-elite .mx-card-top p{color:#cbd3dd!important}
-.mx-card-elite .mx-benefits li{color:#eff5fa!important}
-.mx-card-elite .mx-icon{background:#dce4ed!important;color:#17202b!important}
-.mx-card-elite .mx-choose{background:linear-gradient(115deg,#e8edf4,#bec9d7 55%,#f8fbff)!important;color:#0b1522!important;border-color:#c3cfdd;font-weight:900}
-.mx-card-elite .mx-choose:hover{background:linear-gradient(115deg,#fff,#d8e4ef 55%,#fff)!important}
-.mx-card-elite .mx-metal-platinum{filter:drop-shadow(0 0 2px #dde9fa55)}
-.mx-card-vip .mx-metal-gold{filter:drop-shadow(0 0 2px #f5d79555)}
-@media(max-width:850px){.mx-benefits li{font-size:11px}}
-@media(max-width:680px){.mx-card{min-height:0}.mx-benefits{gap:11px}}
+/* PURE memberships: deliberate white space, clear typography, inverse tiers. */
+.mx-membership-page{--mx-ink:#111;--mx-muted:#5c5c5c;--mx-line:#dedede;max-width:1272px;margin:0 auto;padding:48px 28px 64px;color:var(--mx-ink);background:#fff}
+.mx-membership-page *,.mx-comparison *{box-sizing:border-box}
+.mx-intro{display:grid;grid-template-columns:1.2fr .8fr;gap:48px;align-items:end;margin-bottom:32px}
+.mx-kicker{display:inline-flex;align-items:center;min-height:28px;font-size:11px;font-weight:800;letter-spacing:.13em;line-height:1.3}
+.mx-kicker:before{content:'';width:7px;height:7px;flex:none;margin-right:9px;background:currentColor;border-radius:50%}
+.mx-intro h1,.mx-intro h2{margin:13px 0 0;font-size:clamp(36px,4.6vw,64px);font-weight:900;letter-spacing:-.055em;line-height:.99;color:#111}
+.mx-intro-copy{max-width:390px;padding-bottom:3px}
+.mx-intro-copy p{margin:0 0 22px;color:#555;font-size:16px;line-height:1.65}
+.mx-intro-copy a,.mx-faq a{color:#111;font-size:13px;font-weight:800;text-decoration:none;border-bottom:1px solid #111;padding-bottom:5px;display:inline-flex;gap:24px;align-items:center}
+.mx-intro-detail{display:block;font-size:10px;font-weight:800;letter-spacing:.12em;color:#555}
+.mx-billing{display:flex;width:max-content;max-width:100%;gap:4px;padding:5px;margin:0 auto 24px;background:#eee;border:1px solid #e7e7e7;border-radius:100px}
+.mx-billing button{min-height:43px;border:0;border-radius:100px;padding:10px 23px;background:transparent;color:#484848;font:inherit;font-size:13px;font-weight:800;cursor:pointer}
+.mx-billing button[aria-pressed=true]{background:#111;color:#fff}
+.mx-billing button span{display:inline-block;margin-left:6px;border-radius:100px;padding:4px 6px;background:#ddd;color:#333;font-size:10px;line-height:1}
+.mx-billing button[aria-pressed=true] span{background:#fff;color:#111}
+.mx-billing button:focus-visible,.mx-choose:focus-visible,.mx-faq summary:focus-visible,.mx-intro-copy a:focus-visible{outline:3px solid #777;outline-offset:4px}
+.mx-grid{display:grid;grid-template-columns:.88fr 1fr 1fr;gap:16px;align-items:stretch}
+.mx-card{position:relative;display:flex;flex-direction:column;min-width:0;padding:25px 23px 24px;border:1px solid #d8d8d8;border-radius:18px;color:#111;background:#fff;box-shadow:none}
+.mx-card-member{background:#f4f4f4;border-color:#e5e5e5}
+.mx-card-white{border:1.5px solid #111}
+.mx-card-black{background:#111;color:#fff;border-color:#111}
+.mx-card-top{display:flex;align-items:center;justify-content:space-between;gap:10px;min-height:20px;margin-bottom:28px}
+.mx-tier-label{font-size:10px;letter-spacing:.10em;font-weight:800;line-height:1.5}
+.mx-tier-index{font-size:10px;opacity:.5}
+.mx-card h3{font-size:clamp(22px,2.3vw,30px);font-weight:900;letter-spacing:-.045em;line-height:1.15;margin:0 0 10px;color:inherit}
+.mx-description{font-size:13px;line-height:1.6;color:#666;min-height:42px;margin:0 0 25px;max-width:270px}
+.mx-card-black .mx-description{color:#bbb}
+.mx-price{display:flex;align-items:baseline;flex-wrap:wrap;gap:6px;font-size:38px;font-weight:850;letter-spacing:-.045em;line-height:1.1;color:inherit;min-height:43px}
+.mx-price span{font-size:11px;letter-spacing:0;font-weight:500;color:#666;white-space:nowrap}
+.mx-card-black .mx-price span{color:#bcbcbc}
+.mx-billing-note{font-size:12px;color:#666;line-height:1.5;min-height:18px;margin:8px 0 20px}
+.mx-card-black .mx-billing-note{color:#bcbcbc}
+.mx-choose{display:flex;align-items:center;justify-content:space-between;gap:12px;min-height:46px;padding:13px 16px;border:1px solid #111;border-radius:100px;background:#111;color:#fff;text-decoration:none;font:inherit;font-size:11px;font-weight:800;text-transform:uppercase;letter-spacing:.035em;line-height:1.3;cursor:pointer}
+.mx-choose span{font-size:17px;line-height:1}
+.mx-choose:hover{background:#333;border-color:#333;color:#fff}
+.mx-choose-secondary{background:transparent;color:#111;border-color:#c8c8c8}
+.mx-choose-secondary:hover{background:#e8e8e8;border-color:#aaa;color:#111}
+.mx-card-black .mx-choose{color:#111;background:#fff;border-color:#fff}
+.mx-card-black .mx-choose:hover{background:#e4e4e4;border-color:#e4e4e4}
+.mx-choose:disabled{cursor:not-allowed;opacity:.55}
+.mx-current-note{min-height:46px;margin:0;display:flex;align-items:center;font-size:12px;font-weight:700;line-height:1.5}
+.mx-features{margin:23px 0 0;padding:20px 0 0;border-top:1px solid #ddd;list-style:none;display:grid;gap:12px}
+.mx-features li{display:flex;gap:9px;align-items:flex-start;font-size:13px;line-height:1.45;color:#3f3f3f;margin:0;padding:0}
+.mx-check{display:inline-block;flex:none;width:15px;line-height:1.45;font-weight:800;color:#111}
+.mx-feature-emphasis{font-weight:750}
+.mx-features li small{display:block;margin-top:6px;color:#777;font-size:12px;line-height:1.5;font-weight:400}
+.mx-card-black .mx-features{border-color:#3f3f3f}
+.mx-card-black .mx-features li,.mx-card-black .mx-check{color:#eee}
+.mx-card-black .mx-features li small{color:#aaa}
+.mx-terms{max-width:900px;margin:20px auto 0;text-align:center;color:#666;font-size:12px;line-height:1.65}
+.mx-terms a{color:inherit;text-decoration:underline;text-underline-offset:3px;white-space:nowrap}
+.mx-faq{display:grid;grid-template-columns:.75fr 1.25fr;gap:64px;margin-top:54px;padding-top:37px;border-top:1px solid #dedede}
+.mx-faq h2{font-size:clamp(27px,3vw,37px);font-weight:850;letter-spacing:-.045em;line-height:1.08;margin:13px 0 24px}
+.mx-faq-list details{border-bottom:1px solid #dedede}
+.mx-faq-list details:first-child{border-top:1px solid #dedede}
+.mx-faq summary{display:flex;justify-content:space-between;align-items:center;gap:25px;padding:19px 0;cursor:pointer;list-style:none;font-size:14px;font-weight:750;line-height:1.5}
+.mx-faq summary::-webkit-details-marker{display:none}
+.mx-faq summary span{font-size:22px;font-weight:400;line-height:1}
+.mx-faq details[open] summary span{transform:rotate(45deg)}
+.mx-faq details p{margin:0 35px 20px 0;color:#666;font-size:13px;line-height:1.7}
+.mx-membership-embedded{padding-top:42px;padding-bottom:44px}
+.mx-membership-embedded .mx-intro h2{font-size:clamp(34px,3.9vw,52px)}
+@media(max-width:1000px){.mx-membership-page{padding-left:22px;padding-right:22px}.mx-grid{grid-template-columns:repeat(3,minmax(0,1fr));gap:12px}.mx-card{padding:22px 17px}.mx-price{font-size:32px}.mx-price span{display:block;width:100%}.mx-card-top{margin-bottom:23px}.mx-description{min-height:62px}.mx-features li{font-size:12px}.mx-intro{gap:28px}.mx-choose{padding:12px;font-size:10px}.mx-faq{gap:36px}}
+@media(max-width:700px){.mx-membership-page{padding:32px 18px 44px}.mx-intro{grid-template-columns:1fr;gap:21px;margin-bottom:26px}.mx-intro h1,.mx-intro h2{font-size:43px}.mx-intro-copy{max-width:480px}.mx-intro-copy p{font-size:14px;margin-bottom:15px}.mx-grid{grid-template-columns:1fr;max-width:460px;margin:0 auto;gap:16px}.mx-card{padding:24px}.mx-card-top{margin-bottom:22px}.mx-card h3{font-size:30px}.mx-description{min-height:0;max-width:none;margin-bottom:20px}.mx-price{font-size:39px;gap:9px}.mx-price span{width:auto;display:inline}.mx-choose{min-height:47px;padding:13px 17px;font-size:11px}.mx-features li{font-size:13px}.mx-features li small{font-size:12px}.mx-faq{grid-template-columns:1fr;gap:25px;margin-top:35px;padding-top:28px}.mx-faq h2{margin-top:9px;margin-bottom:19px;font-size:31px}.mx-faq h2 br{display:none}.mx-faq summary{padding:17px 0}.mx-terms{font-size:12px;max-width:460px;text-align:left}.mx-billing{margin-bottom:20px}.mx-billing button{padding:10px 19px}.mx-intro-detail{font-size:10px}}
+@media(prefers-reduced-motion:reduce){.mx-membership-page *,.mx-comparison *{scroll-behavior:auto!important;transition:none!important;animation:none!important}}
+/* Keep captions and actions readable through the shared legacy style layers. */
+.mx-intro-detail,.mx-tier-label,.mx-tier-index,.mx-billing button span,.mx-price span,.mx-billing-note,.mx-choose,.mx-features li small,.mx-terms{font-size:12px}
+@media(max-width:1000px){.mx-choose,.mx-tier-label,.mx-price span{font-size:12px}}
+@media(max-width:700px){.mx-description,.mx-features li,.mx-faq details p,.mx-intro-copy p{font-size:14px}.mx-features li small,.mx-terms{font-size:13px}.mx-choose{font-size:12px;min-height:48px}.mx-current-note{font-size:14px}.mx-intro-detail{font-size:12px}.mx-billing button{font-size:14px}}
+@media(max-width:360px){.mx-intro h1,.mx-intro h2{font-size:38px}}
