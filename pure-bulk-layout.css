@@ -393,13 +393,18 @@ html:root body.ap-site .nl-bulk-faq details p {
     display: grid;
     grid-template-columns: minmax(0, 1fr) auto;
     align-items: center;
-    gap: 12px;
+    gap: 8px;
+  }
+  html:root body.ap-site .ap-summary.nl-bulk-summary:has(#ap-bulk-summary[data-empty="true"]) {
+    padding: 12px !important;
   }
   html:root body.ap-site .nl-bulk-summary #ap-bulk-summary[data-empty="true"] .nl-bulk-summary-heading {
     padding-right: 0;
   }
   html:root body.ap-site .nl-bulk-summary #ap-bulk-summary[data-empty="true"] .nl-bulk-summary-heading h2 {
     margin: 0;
+    font-size: 18px;
+    line-height: 1.2;
   }
   html:root body.ap-site .nl-bulk-summary #ap-bulk-summary[data-empty="true"] :is(
     .nl-bulk-total-units, .nl-bulk-summary-scroll, .nl-bulk-totals,
@@ -409,7 +414,13 @@ html:root body.ap-site .nl-bulk-faq details p {
     display: flex;
     align-items: center;
     justify-content: center;
+    width: auto;
+    min-width: 0;
+    min-height: 44px;
     margin: 0;
+    padding: 10px 12px;
+    font-size: 12px;
+    white-space: nowrap;
   }
   html:root body.ap-site .nl-bulk-menu-line {
     grid-template-columns: minmax(0, 1fr) auto auto;
@@ -463,9 +474,6 @@ html:root body.ap-site .nl-bulk-faq details p {
 
 @media (max-width: 650px) {
   html:root body.ap-site .nl-bulk-grid { grid-template-columns: minmax(0, 1fr); }
-  html:root body.ap-site .nl-bulk-summary #ap-bulk-summary[data-empty="true"] {
-    grid-template-columns: minmax(0, 1fr);
-  }
   html:root body.ap-site .nl-bulk-product {
     grid-template-columns: 84px minmax(0, 1fr);
   }

@@ -48,7 +48,7 @@ html:root body.ap-site .ap-coa-context { font-size: 14px; }
 html:root body.ap-site .ap-coa-card :is(dl, dt, .ap-fine, .ap-text-link) { font-size: 13px; line-height: 1.5; }
 html:root body.ap-site .ap-coa-card .ap-pill { font-size: 11px; }
 html:root body.ap-site .ap-footer { padding-top: 40px; }
-html:root body.ap-site .ap-footer :is(p, a, #currency-status) { font-size: 14px; line-height: 1.6; }
+html:root body.ap-site .ap-footer :where(p, a, #currency-status) { font-size: 14px; line-height: 1.6; }
 html:root body.ap-site .ap-footer h3 { font-size: 14px; }
 html:root body.ap-site .ap-footer-bottom { font-size: 12px; line-height: 1.5; }
 html:root body.ap-site .ap-footer-bottom a { font-size: 12px; }
@@ -75,6 +75,7 @@ html:root body.ap-site .nlc-wallet-row :is(button, .nlc-wallet-link) { min-heigh
 html:root body.ap-site .nlx-checkout-root label:not(.nlx-small-check):not(.nlx-delivery-card):not(.nlx-extra-box):not(.nlx-mini-check):not(.nlx-payment-option):not(.nlx-member-types label):not(.nlx-terms label) { font-size: 13px; line-height: 1.5; }
 html:root body.ap-site .nlx-checkout-root :is(.nlx-quote-note, .nlx-shipping-terms, .nlx-wallet-consent, .nlx-disclosure, .nlx-disclosure a, .nlx-extra-box p, .nlx-delivery-desc small, .nlx-product-name small, .nlx-protection-body a, .nlx-protection-price) { font-size: 13px; line-height: 1.5; }
 html:root body.ap-site .nlx-checkout-root :is(.nlx-product-name strong, .nlx-product-price, .nlx-delivery-desc strong) { font-size: 14px; }
+html:root body.ap-site .nlx-checkout-root :is(.nlx-delivery-desc small, .nlx-size-line small) { font-size: 13px !important; }
 html:root body.ap-site .nlx-checkout-root .nlx-step-shipping :is(input:not([type=checkbox]), select, textarea),
 html:root body.ap-site .nlx-checkout-root .nlx-billing-other :is(input, select) { font-size: 16px; }
 @media (min-width: 771px) {
