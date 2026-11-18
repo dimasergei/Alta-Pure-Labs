@@ -45,6 +45,8 @@ html:root body.ap-site .nl-bulk-benefit > small {
   line-height: 1.4;
 }
 html:root body.ap-site .nl-bulk-benefits .nl-bulk-coa-proof {
+  grid-template-columns: 27px minmax(0, 1fr);
+  width: 100%;
   min-height: 0;
   margin: 0 0 4px;
   padding: 0;
@@ -54,6 +56,11 @@ html:root body.ap-site .nl-bulk-benefits .nl-bulk-coa-proof {
 }
 html:root body.ap-site .nl-bulk-coa-proof strong { font-size: 14px; }
 html:root body.ap-site .nl-bulk-coa-proof small { font-size: 12px; }
+html:root body.ap-site .nl-bulk-coa-proof > span:last-child { min-width: 0; }
+html:root body.ap-site .nl-bulk-coa-proof :is(strong, small) {
+  white-space: normal;
+  overflow-wrap: anywhere;
+}
 
 html:root body.ap-site .nl-bulk-layout {
   display: grid;
