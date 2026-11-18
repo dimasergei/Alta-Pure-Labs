@@ -99,6 +99,7 @@ test('PURE memberships execute verified fees and goods benefits atomically in di
   const historicalBefore=await load(historicalOrder);
   await db.exec(read(migration));
   await db.exec(read('20261118231100_pure_quantity_tiers.sql'));
+  await db.exec(read('20261118235500_pure_canadian_free_standard_shipping.sql'));
   for(const route of Object.keys(ids))methods[route]=(await db.query('select * from commerce_payment_methods where id=$1',[ids[route]])).rows[0];
 
   await t.test('migration preserves history, retired recurring guards, and inactive/old Stripe receiving routes',async()=>{
