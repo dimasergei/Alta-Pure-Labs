@@ -43,21 +43,3 @@ end $$;
 
 revoke all on function commerce_internal.regular_delivery_quote(jsonb,text,integer) from public,anon,authenticated,service_role;
 
-create or replace function commerce_internal.membership_delivery_quote(p_selection jsonb,p_country text,p_merchandise integer,p_plan text)
-returns jsonb language plpgsql security definer set search_path=pg_catalog,pg_temp as $$
-declare q jsonb; free boolean; included_extras jsonb; extras_total integer;
-begin
-  q:=commerce_internal.regular_delivery_quote(p_selection,p_country,p_merchandise);
-  free:=coalesce(p_plan in ('vip','elite') and p_country in ('US','CA') and p_selection->>'shipping' in ('standard','express'),false);
-  q:=q||jsonb_build_object('membership_shipping',free);
-  if free then q:=q||jsonb_build_object('shipping_cents',0,'total_cents',(q->>'extras_cents')::integer);end if;
-  if p_plan='elite' then
-    select coalesce(jsonb_agg(case when value->>'id'='priority' then value||jsonb_build_object('amount_cents',0,'included_by_membership',true) else value end order by ordinality),'[]'::jsonb),
-      coalesce(sum(case when value->>'id'='priority' then 0 else (value->>'amount_cents')::integer end),0)::integer
-      into included_extras,extras_total from jsonb_array_elements(q->'extras') with ordinality;
-    q:=q||jsonb_build_object('extras',included_extras,'extras_cents',extras_total,'total_cents',(q->>'shipping_cents')::integer+extras_total);
-  end if;
-  return q;
-end $$;
-
-revoke all on function commerce_internal.membership_delivery_quote(jsonb,text,integer,text) from public,anon,authenticated,service_role;
