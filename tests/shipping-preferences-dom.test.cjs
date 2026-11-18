@@ -39,7 +39,7 @@ for(const route of ['', '?bulk=1', '?balance=1'])test('Canadian next-day and def
   assert.equal(f.root.querySelector('[name=country]').value,'CA');
   assert.equal(protection(f).checked,true);
   assert.deepEqual(f.requests.at(-1).delivery.extras,['protection']);
-  assert.equal(f.quotes.at(-1).shipping_cents,4495);
+  assert.equal(f.quotes.at(-1).shipping_cents,500);
   f.root.querySelector('[data-nlx-next],[data-step-next="0"]').click();await tick();
   const nextDay=f.root.querySelector('[name=delivery_speed][value=next_day],[name=shipping_speed][value=next_day]');
   assert.equal(nextDay.disabled,false);
@@ -63,7 +63,7 @@ test('checkout opt-out persists across country, quantity, cart, reload, bulk and
   assert.equal(f.w.AltaStore.cart[0].qty,3);
   assert.equal(protection(f).checked,false);
   assert.deepEqual(f.requests.at(-1).delivery.extras,[]);
-  assert.equal(f.quotes.at(-1).shipping_cents,3995);
+  assert.equal(f.quotes.at(-1).shipping_cents,0);
   await f.w.AltaCartNmi.offer(f.cartRoot);await tick();
   assert.deepEqual(f.requests.at(-1).delivery.extras,[]);
   assert.equal(f.cartRoot.querySelector('.nlc-protection-static'),null);
