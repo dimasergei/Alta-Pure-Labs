@@ -1,6 +1,6 @@
 # PURE shipping labels
 
-Orders → Manage order → **Generate shipping label** uses Shippo to quote and buy one parcel label for a paid physical order. A label does not mark the order shipped or contact the supplier. Existing manual fulfillment remains the dispatch record.
+Orders → Manage order → Shipping → **Get rates & manage labels** provides rate comparison, paid-order label purchase, saved label previews, printing, downloads, and purchase-status recovery inside PURE. Shippo supplies the carrier connection and postage billing in the background. Getting rates is available before payment; creating a label always requires a paid physical order. A label does not mark the order shipped or contact the supplier. Existing manual fulfillment remains the dispatch record.
 
 ## Activation
 
@@ -21,16 +21,26 @@ The operator enters the actual sender/return address, packed dimensions, and pac
 
 ## Workflow
 
-1. Open the order and choose **Generate shipping label**.
+1. Open the order and choose **Get rates & manage labels**.
 2. Review the recipient and requested delivery selection. Enter sender and packed parcel details.
 3. For an international parcel, enter accurate customs descriptions, quantities, total item values, total net weights, countries of manufacture, tariff codes, signer, and applicable export references. Quantities come from physical fulfillment items, including recorded gifts.
-4. Select **Get shipping rates**. No postage is purchased at this step.
-5. Review the sender, recipient, parcel, carrier messages, service, currency, and postage amount. Select one rate, check the review confirmation, then explicitly confirm the displayed purchase amount.
-6. Download the provider's 4 × 6 PDF, any commercial invoice, and review tracking. Record dispatch through the normal fulfillment workflow after the parcel is handed to the carrier.
+4. Select **Get shipping rates**. No postage is purchased at this step. Filter by carrier and sort by price within each currency or estimated transit time. Estimates are not delivery guarantees.
+5. Review the sender, recipient, parcel, carrier messages, service, currency, and postage amount. An unpaid order shows **Payment required to buy label**. After payment is confirmed, use **Refresh shipping details** and obtain a fresh quote. For an eligible paid order, select one rate, check the review confirmation, then explicitly confirm the displayed purchase amount.
+6. The generated 4 × 6 PDF appears in the order's Shipping section. Print at actual size (100%), open the PDF, or download it without visiting Shippo. Customs documents, transaction references, selected postage, and tracking are shown when available. Record dispatch through the normal fulfillment workflow after the parcel is handed to the carrier.
 
 Quotes expire after fifteen minutes and support USD/CAD postage amounts. Carrier availability depends on the connected account and the actual origin/destination. The amount is the provider's selected postage rate; a Shippo plan may separately charge label fees. This does not change the customer's saved shipping charge.
 
-Carrier/country-specific customs requirements can extend beyond the fields in this menu. Provider messages are shown before purchasing. If a required field is unavailable, finish the label directly in Shippo instead of ignoring the requirement. No tariff code, origin, legal exemption, export statement, or customs certification is fabricated by the application.
+Reopening the workspace restores the current quote and the last saved sender, parcel, and customs draft. Customs certification is never restored as checked. Changes to payment status or saved order details invalidate the old quote and require fresh rates. Older purchased labels remain visible independently of rate-preview history; reads return at most 50 non-quote attempts plus the current quote and active attempt. An old active attempt remains reachable even beyond the history window.
+
+Carrier/country-specific customs requirements can extend beyond the fields in this menu. Provider messages are shown before purchasing. If a required field is unavailable, the integration needs that field added before proceeding with that carrier/service. No tariff code, origin, legal exemption, export statement, or customs certification is fabricated by the application.
+
+## Postage billing
+
+An explicitly confirmed live label purchase incurs postage charges through the connected Shippo account and its configured payment method. Shippo handles collection on its billing schedule. The dashboard shows the label's selected postage and transaction reference; this is a purchase record, not proof that a Shippo billing invoice has been settled. Carrier adjustments, separate label fees, taxes, refunds, and account invoice balances are not inferred from that rate.
+
+Shippo's documented standard API does not expose an operation to manually settle an outstanding account invoice or change its payment method. The Shipping section therefore includes **Manage Shippo billing** as an explicit exception, opening <https://apps.goshippo.com/settings/account/billing>. Routine rate comparison, label purchase, viewing, printing, downloads, and uncertain-purchase recovery stay in PURE. There is no dashboard control that pretends to pay an invoice, and no hosted billing page is embedded or automated.
+
+The Shippo Reporting API can expose historical invoice reports, but it is not a payment API or a reliable live outstanding balance; no invoice balance or settlement state is fabricated from the label history.
 
 ## Purchase and recovery guarantees
 
@@ -38,9 +48,11 @@ Carrier/country-specific customs requirements can extend beyond the fields in th
 
 The service-only claim locks the supplier job, invoice, allocations, and label in the existing fulfillment order; it checks paid state, cancellation holds, shipment activity, unchanged order/address snapshot, quote age, and the exact selected rate/amount/currency. A partial unique index allows one active label per order and test/live mode. Repeat submissions return the stored attempt without another provider purchase.
 
-The claim is saved before the purchase POST. There is no automatic POST retry. Definite validation or authorization rejections close the attempt as failed. A timeout, unexpected response, or unknown outcome remains in review, blocking another purchase. Locate `pure-label:<attempt UUID>` in Shippo and enter that transaction ID to reconcile. Do not clear an uncertain attempt by editing database rows.
+The claim is saved before the purchase POST. There is no automatic POST retry. Definite validation or authorization rejections close the attempt as failed. A timeout, unexpected response, or unknown outcome remains in review, blocking another purchase. Use **Check label status** in the dashboard. If the transaction ID was not received, the server checks at most five pages of provider transaction history, bounded by the attempt date, and matches `pure-label:<attempt UUID>`, selected rate, and test/live mode. It retrieves the unique match again before recording its current status. Missing, ambiguous, mismatched, or incomplete results leave the hold in place and never submit another purchase. Do not clear an uncertain attempt by editing database rows.
 
 Provider results must match the order metadata, selected rate, and test/live mode. The row-locked result RPC binds the transaction ID immutably. Older pending/error responses cannot erase a successful label, and refund states cannot be undone by stale purchase responses. Live unresolved purchases hold relevant order, allocation, and supplier-job changes; test labels do not hold real operations.
+
+PDFs are served through an authenticated, same-origin PURE endpoint using the saved order/label identity. Each read refreshes the verified provider transaction and checks that the label remains usable before fetching its current document URL. Only the exact documented delivery hosts are allowed; each redirect is revalidated, downloads are bounded, and PDF type/signature checks reject unexpected content. Provider authorization is sent only to the Shippo API, never to the document CDN. Documents are private, noncached, and limited to same-origin framing. A browser-supplied URL is never accepted.
 
 Untracked services can return a valid label without a tracking number. They do not bypass the existing order shipment requirements. Choose an appropriate tracked carrier service for orders that require tracking.
 
@@ -50,7 +62,7 @@ Refund unused postage in Shippo. **Check label status** reflects refund pending,
 
 Apply `20261117221540_pure_admin_shipping_labels.sql` before releasing its API. The migration is transactional and changes no existing order data. It creates private attempt storage, claim/result RPCs, immutable provider identity, and live purchase guards.
 
-Focused tests cover authenticated order access, selected amount confirmation, JSON request handling, domestic/international form validation, unknown transport outcomes, duplicate clicks, stale order snapshots, unpaid/canceled/refunded orders, service-role privileges, optional tracking, monotonic status and refund sequences, and test/live isolation. The automated unit/DOM/SQL tests use fixtures and mocked provider calls.
+Focused tests cover authenticated order access, selected amount confirmation, JSON request handling, domestic/international form validation, unknown transport outcomes, duplicate clicks, stale order snapshots, unpaid/canceled/refunded orders, service-role privileges, optional tracking, monotonic status and refund sequences, and test/live isolation. They also exercise unpaid rate previews with real SQL purchase rejection, paid transitions requiring new quotes, retained label history, filtering/sorting, restored drafts, authenticated inline/download PDF responses, document-host restrictions, bounded downloads, and GET-only purchase recovery. The automated unit/DOM/SQL tests use fixtures and mocked provider calls; they do not purchase live postage or settle invoices.
 
 ### Optional provider verification without purchasing postage
 
@@ -73,3 +85,8 @@ Additional verification references:
 - <https://docs.goshippo.com/guides/testing>
 - <https://docs.goshippo.com/api-reference/carrier-accounts/list-all-carrier-accounts>
 - <https://docs.goshippo.com/shipments/shipping-label-sizes>
+- <https://docs.goshippo.com/api-reference/transactions/retrieve-a-shipping-label>
+- <https://docs.goshippo.com/api-reference/transactions/list-all-shipping-labels>
+- <https://support.goshippo.com/hc/en-us/articles/360003859092-How-Billing-Works-in-Shippo>
+- <https://support.goshippo.com/hc/en-us/articles/360029049972-Manage-Your-Payment-Methods-in-Shippo>
+- <https://docs.goshippo.com/shipping-elements/install>

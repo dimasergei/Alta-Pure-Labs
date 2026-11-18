@@ -116,6 +116,18 @@ module.exports = async (req, res) => {
         return res.status(200).json(await state(db, { id: params.get('id'), source: params.get('source') }));
       }
 
+      if (params.get('view') === 'shipping-label-file') {
+        const { readDocument } = require('../lib/admin-shipping-documents');
+        const file = await readDocument(db, { id: params.get('id'), source: params.get('source'), label_id: params.get('label_id'), kind: params.get('kind') || 'label' });
+        res.setHeader('Cache-Control', 'private, no-store, max-age=0');
+        res.setHeader('Content-Type', 'application/pdf');
+        res.setHeader('Content-Disposition', `${params.get('download') === '1' ? 'attachment' : 'inline'}; filename="${file.filename}"`);
+        res.setHeader('X-Frame-Options', 'SAMEORIGIN');
+        res.setHeader('Content-Security-Policy', "default-src 'none'; frame-ancestors 'self'; base-uri 'none'");
+        res.setHeader('Referrer-Policy', 'no-referrer');
+        return res.status(200).send(file.bytes);
+      }
+
       if (params.get('view') === 'fulfillment-sheet') {
         const format = params.get('format') || 'pdf';
         if (!['pdf', 'csv'].includes(format)) throw httpError(400, 'Choose PDF or CSV.');
@@ -146,6 +158,10 @@ module.exports = async (req, res) => {
     if (typeof body.action === 'string' && body.action.startsWith('shipping_label_')) {
       const { handleAction } = require('../lib/admin-shipping-labels');
       const { db } = clients();
+      if (body.action === 'shipping_label_reconcile') {
+        const { reconcile } = require('../lib/admin-shipping-documents');
+        return res.status(200).json(await reconcile(db, body));
+      }
       return res.status(200).json(await handleAction(db, body));
     }
 

@@ -20,14 +20,16 @@ function harness(t, options = {}) {
   const dom = new JSDOM('<!doctype html><html><body><main id="host"></main></body></html>', { url: 'https://getpurelabs.com/admin-orders.html', runScripts: 'outside-only' });
   t.after(() => dom.window.close());
   const { window } = dom, host = window.document.getElementById('host');
-  const calls = [], confirmations = [];
+  const calls = [], confirmations = [], opened = [];
+  const availableRates = clone(options.rates || rates);
   const state = {
-    configured: true, test_mode: false, eligible: true, reason: null, sender: clone(sender), recipient: clone(recipient),
+    configured: true, test_mode: false, quote_eligible: true, quote_reason: null, eligible: true, purchase_enabled: true, payment_confirmed: true, reason: null, sender: clone(sender), recipient: clone(recipient),
     currency: 'USD', shipping_service: 'Standard UPS (US)', items: [{ description: 'Synthetic research item', quantity: 2 }], labels: [],
     ...clone(options.state || {})
   };
-  let quoted, purchaseStarted = false;
+  let quoted = state.current_quote ? clone(state.current_quote) : undefined, purchaseStarted = false;
   const controls = { confirm: true };
+  window.open = (url, target, features) => { opened.push({ url, target, features }); return {}; };
   window.confirm = message => { confirmations.push(message); return controls.confirm; };
   window.fetch = () => { throw new Error('External network requests are forbidden in this DOM test.'); };
   const api = async (url, init = {}) => {
@@ -47,23 +49,29 @@ function harness(t, options = {}) {
     assert.equal(body.id, orderId);
     assert.equal(body.source, 'commerce');
     if (body.action === 'shipping_label_quote') {
-      quoted = { id: labelId, status: 'quoted', test: state.test_mode, sender: clone(body.sender), recipient: clone(state.recipient), parcel: clone(body.parcel), rates: clone(rates) };
+      quoted = { id: labelId, status: 'quoted', test: state.test_mode, sender: clone(body.sender), recipient: clone(state.recipient), parcel: clone(body.parcel), rates: clone(availableRates), expires_at: new Date(Date.now() + 15 * 60 * 1000).toISOString() };
+      state.current_quote = clone(quoted);
+      state.draft = { sender: clone(body.sender), parcel: clone(body.parcel), customs: clone(body.customs) };
       return { label: clone(quoted) };
     }
     if (body.action === 'shipping_label_buy') {
       purchaseStarted = true;
-      const rate = rates.find(row => row.id === body.rate_id);
-      const label = { ...quoted, rate, status: options.buyFails ? 'review' : 'created', transaction_id: options.buyFails ? null : 'provider-fixture', label_url: options.buyFails ? null : 'https://deliver.goshippo.com/fixture-label.pdf', tracking_number: options.buyFails ? null : 'FIXTURE-TRACKING' };
-      state.labels = [label];
+      if (options.buyReject) {
+        if (options.onBuyReject) options.onBuyReject(state);
+        throw new Error(options.buyReject);
+      }
+      const rate = availableRates.find(row => row.id === body.rate_id);
+      const label = { ...quoted, created_at: '2026-11-18T12:00:00Z', rate, status: options.buyFails ? 'review' : 'created', transaction_id: options.buyFails ? null : 'provider-fixture', label_url: options.buyFails ? null : 'https://deliver.goshippo.com/fixture-label.pdf', tracking_number: options.buyFails ? null : 'FIXTURE-TRACKING' };
+      state.labels = [label]; state.current_quote = null;
       if (options.buyFails) throw new Error('Purchase response was lost.');
       return { label: clone(label) };
     }
-    if (body.action === 'shipping_label_refresh') return { label: clone(state.labels[0]) };
+    if (body.action === 'shipping_label_refresh' || body.action === 'shipping_label_reconcile') return { label: clone(state.labels[0]) };
     throw new Error('Unexpected shipping mutation: ' + body.action);
   };
   window.eval(source);
   window.PureShippingLabels.mount({ host, row: { id: orderId, source: 'commerce', kind: 'goods' }, api });
-  return { window, host, calls, confirmations, controls, state };
+  return { window, host, calls, confirmations, controls, state, opened };
 }
 
 function field(h, label, scope = h.host) {
@@ -74,7 +82,7 @@ function field(h, label, scope = h.host) {
 function button(h, text) { return [...h.host.querySelectorAll('button')].find(node => node.textContent === text); }
 function submit(h, form) { form.dispatchEvent(new h.window.Event('submit', { bubbles: true, cancelable: true })); }
 function setValue(h, input, value) { input.value = value; input.dispatchEvent(new h.window.Event('input', { bubbles: true })); }
-async function open(h) { button(h, 'Generate shipping label').click(); await tick(); }
+async function open(h) { button(h, 'Get rates & manage labels').click(); await tick(); }
 function fillParcel(h) { for (const [name, value] of [['Length', '6'], ['Width', '4'], ['Height', '2'], ['Packed weight', '1']]) field(h, name).value = value; }
 async function quote(h) { fillParcel(h); submit(h, h.host.querySelector('.psl-form')); await tick(); }
 function chooseRate(h, index = 1) {
@@ -86,8 +94,8 @@ function approve(h) { h.host.querySelector('.psl-rates input[type=checkbox]').ch
 test('unconfigured and cancellation-blocked orders cannot request quotes or purchase labels', async t => {
   for (const state of [
     { configured: false },
-    { eligible: false, reason: 'Cancellation pending. Fulfillment remains on hold.' },
-    { eligible: false, reason: 'Cancellation needs payment review. Fulfillment remains on hold.' }
+    { quote_eligible: false, eligible: false, reason: 'Cancellation pending. Fulfillment remains on hold.' },
+    { quote_eligible: false, eligible: false, reason: 'Cancellation needs payment review. Fulfillment remains on hold.' }
   ]) {
     const h = harness(t, { state });
     assert.equal(h.calls.length, 0, 'mount does not contact a provider');
@@ -96,7 +104,7 @@ test('unconfigured and cancellation-blocked orders cannot request quotes or purc
     assert.equal(h.host.querySelector('.psl-form'), null);
     assert.equal(h.host.querySelector('.psl-rates'), null);
     assert.equal(button(h, 'Get shipping rates'), undefined);
-    if (state.configured === false) assert.equal(h.host.querySelector('a').href, 'https://apps.goshippo.com/settings/api');
+    if (state.configured === false) assert.match(h.host.textContent, /Connect Shippo/);
     else assert.ok(h.host.textContent.includes(state.reason));
     assert.equal(h.calls.filter(call => call.method !== 'GET').length, 0);
   }
@@ -269,4 +277,201 @@ test('an uncertain purchase removes the buy controls and refreshes saved state b
   assert.equal(h.host.querySelector('.psl-form'), null);
   assert.ok(button(h, 'Check label status'));
   assert.equal(h.calls.filter(call => call.body?.action === 'shipping_label_buy').length, 1);
+  assert.ok([...h.host.querySelectorAll('[role=alert]')].some(node => node.textContent === 'Purchase response was lost.'), 'the purchase error remains visible after the state refresh');
+});
+
+test('a purchase validation rejection stays visible after refreshing the safe current state', async t => {
+  const message = 'The shipping connection changed. Get a fresh rate before purchasing.';
+  const h = harness(t, { buyReject: message, onBuyReject: state => { state.purchase_enabled = false; } });
+  await open(h); await quote(h); chooseRate(h); approve(h);
+  submit(h, h.host.querySelector('.psl-rates')); await tick();
+  assert.ok([...h.host.querySelectorAll('[role=alert]')].some(node => node.textContent === message));
+  assert.equal(h.calls.at(-1).method, 'GET');
+  assert.equal(h.host.querySelector('.psl-rates button').disabled, true);
+  assert.equal(h.calls.filter(call => call.body?.action === 'shipping_label_buy').length, 1);
+});
+
+test('a failed state refresh after purchase cannot re-enable the stale Buy controls', async t => {
+  const h = harness(t, { afterPurchaseRead: async () => { throw new Error('Shipping details are temporarily unavailable.'); } });
+  await open(h); await quote(h); chooseRate(h); approve(h);
+  submit(h, h.host.querySelector('.psl-rates')); await tick();
+  assert.equal(h.calls.filter(call => call.body?.action === 'shipping_label_buy').length, 1);
+  assert.equal(h.host.querySelector('.psl-rates'), null);
+  assert.equal(h.host.querySelector('.psl-form').hidden, true);
+  assert.match(h.host.textContent, /Shipping details are temporarily unavailable/);
+  assert.ok(button(h, 'Refresh shipping details'));
+});
+
+test('refunded and unresolved labels cannot offer stale customs or label documents', async t => {
+  for (const status of ['refunded', 'review', 'purchasing', 'failed']) {
+    const h = harness(t, { state: { labels: [{ id: labelId, status, test: false, recipient, sender, rate: rates[0], transaction_id: 'provider-fixture', label_url: 'https://deliver.goshippo.com/stale-label.pdf', customs_url: 'https://deliver.goshippo.com/stale-customs.pdf' }] } });
+    await open(h);
+    assert.equal(h.host.querySelector('iframe'), null);
+    assert.equal([...h.host.querySelectorAll('a')].some(a => a.href.includes('view=shipping-label-file')), false);
+  }
+});
+
+test('an unpaid order can compare rates while payment confirmation is required to buy a label', async t => {
+  const h = harness(t, { state: { quote_eligible: true, eligible: false, payment_confirmed: false, purchase_reason: 'Payment must be confirmed before purchasing a label.' } });
+  await open(h);
+  assert.match(h.host.textContent, /Awaiting payment/);
+  assert.ok(h.host.querySelector('.psl-form'));
+  await quote(h);
+  assert.equal(h.calls.filter(call => call.body?.action === 'shipping_label_quote').length, 1);
+  assert.equal(h.host.querySelectorAll('.psl-rate').length, 2);
+  chooseRate(h); approve(h);
+  const form = h.host.querySelector('.psl-rates'), buy = form.querySelector('button');
+  assert.equal(buy.disabled, true);
+  assert.equal(buy.textContent, 'Payment required to buy label');
+  buy.disabled = false;
+  submit(h, form); await tick();
+  assert.equal(h.confirmations.length, 0);
+  assert.equal(h.calls.filter(call => call.body?.action === 'shipping_label_buy').length, 0);
+});
+
+test('purchase controls fail closed unless payment, order eligibility, and configuration each explicitly allow purchase', async t => {
+  for (const state of [{ payment_confirmed: undefined }, { eligible: undefined }, { purchase_enabled: undefined }, { payment_confirmed: false }, { eligible: false }]) {
+    const h = harness(t);
+    Object.assign(h.state, state);
+    await open(h); await quote(h); chooseRate(h); approve(h);
+    const form = h.host.querySelector('.psl-rates'), buy = form.querySelector('button');
+    assert.equal(buy.disabled, true);
+    buy.disabled = false;
+    submit(h, form); await tick();
+    assert.equal(h.confirmations.length, 0);
+    assert.equal(h.calls.filter(call => call.body?.action === 'shipping_label_buy').length, 0);
+  }
+});
+
+test('carrier comparison sorts prices within currency and fastest estimates put unknown transit last', async t => {
+  const h = harness(t, { rates: [...rates,
+    { id: 'canada-fixture', carrier: 'Canada Post', service: 'Expedited Parcel', amount_cents: 1100, currency: 'CAD', estimated_days: 3 },
+    { id: 'unknown-fixture', carrier: 'DHL', service: 'Express', amount_cents: 1000, currency: 'USD', estimated_days: null }
+  ] });
+  await open(h); await quote(h);
+  const ids = () => [...h.host.querySelectorAll('.psl-rates input[type=radio]')].map(input => input.value);
+  assert.deepEqual(ids(), ['canada-fixture', 'ground-fixture', 'unknown-fixture', 'express-fixture']);
+  const sort = field(h, 'Sort rates'); sort.value = 'fastest'; sort.dispatchEvent(new h.window.Event('change', { bubbles: true }));
+  assert.deepEqual(ids(), ['express-fixture', 'canada-fixture', 'ground-fixture', 'unknown-fixture']);
+  assert.match(h.host.textContent, /Transit estimate unavailable/);
+  const carrier = field(h, 'Carrier'); carrier.value = 'UPS'; carrier.dispatchEvent(new h.window.Event('change', { bubbles: true }));
+  assert.deepEqual(ids(), ['express-fixture', 'ground-fixture']);
+  chooseRate(h, 0); approve(h);
+  carrier.value = 'Canada Post'; carrier.dispatchEvent(new h.window.Event('change', { bubbles: true }));
+  assert.deepEqual(ids(), ['canada-fixture']);
+  assert.equal(h.host.querySelector('.psl-rates input[type=radio]').checked, false, 'hidden selected rate is cleared');
+  assert.equal(h.host.querySelector('.psl-rates input[type=checkbox]').checked, false);
+  submit(h, h.host.querySelector('.psl-rates')); await tick();
+  assert.equal(h.confirmations.length, 0);
+});
+
+test('reopening the workspace restores the saved current quote and parcel draft without requesting rates again', async t => {
+  const h = harness(t); await open(h); await quote(h);
+  button(h, 'Hide shipping workspace').click(); await tick();
+  assert.equal(h.host.querySelector('.psl-panel').hidden, true);
+  assert.equal(button(h, 'Get rates & manage labels').getAttribute('aria-expanded'), 'false');
+  await open(h);
+  assert.ok(h.host.querySelector('.psl-rates'));
+  assert.equal(h.host.querySelector('.psl-form').hidden, true);
+  assert.match(h.host.textContent, /Quote expires/);
+  button(h, 'Edit parcel or sender').click();
+  assert.equal(field(h, 'Length').value, '6');
+  assert.equal(field(h, 'Width').value, '4');
+  assert.equal(field(h, 'Height').value, '2');
+  assert.equal(field(h, 'Packed weight').value, '1');
+  assert.equal(field(h, 'Street address').value, sender.street1);
+  assert.equal(h.calls.filter(call => call.body?.action === 'shipping_label_quote').length, 1);
+});
+
+test('a saved international draft prefills customs details but requires a fresh certification', async t => {
+  const customs = { certify: true, certify_signer: 'Fixture Operator', incoterm: 'DDU', eel_pfc: 'SAVED-REFERENCE', items: [{ description: 'Saved merchandise description', origin_country: 'US', tariff_number: '3822190000', value_amount: '123.45', net_weight: '0.25' }] };
+  const h = harness(t, { state: { recipient: { ...recipient, country: 'CA', state: 'ON', zip: 'M5V 1A1' }, quote_notice: 'The previous quote expired. Your shipment details were restored.', draft: { sender, parcel: { length: '10', width: '8', height: '3', weight: '2', distance_unit: 'in', mass_unit: 'lb' }, customs } } });
+  await open(h);
+  assert.match(h.host.textContent, /previous quote expired/);
+  assert.equal(field(h, 'Accurate customs description').value, 'Saved merchandise description');
+  assert.equal(field(h, 'Country of manufacture (2 letters)').value, 'US');
+  assert.equal(field(h, 'HS / tariff code').value, '3822190000');
+  assert.equal(field(h, 'Total declared value (USD)').value, '123.45');
+  assert.equal(field(h, 'Total net weight for this line').value, '0.25');
+  assert.equal(field(h, 'Person certifying the declaration').value, 'Fixture Operator');
+  assert.equal(field(h, 'US export filing reference or applicable exemption').value, 'SAVED-REFERENCE');
+  assert.equal(h.host.querySelector('.psl-customs input[type=checkbox]').checked, false);
+  submit(h, h.host.querySelector('.psl-form')); await tick();
+  assert.equal(h.calls.filter(call => call.method === 'PATCH').length, 0);
+});
+
+test('refreshing after payment confirmation restores the draft and allows a fresh purchasable quote', async t => {
+  const h = harness(t, { state: { eligible: false, payment_confirmed: false } });
+  await open(h); await quote(h);
+  assert.equal(h.host.querySelector('.psl-rates button').disabled, true);
+  Object.assign(h.state, { eligible: true, payment_confirmed: true, purchase_reason: '', current_quote: null, quote_notice: 'The order or payment status changed. Get fresh shipping rates before creating a label.' });
+  button(h, 'Refresh shipping details').click(); await tick();
+  assert.match(h.host.textContent, /Payment confirmed/);
+  assert.match(h.host.textContent, /Get fresh shipping rates/);
+  assert.equal(h.host.querySelector('.psl-rates'), null);
+  assert.equal(field(h, 'Length').value, '6');
+  await quote(h);
+  assert.equal(h.host.querySelector('.psl-rates button').disabled, false);
+  assert.equal(h.calls.filter(call => call.body?.action === 'shipping_label_quote').length, 2);
+  assert.equal(h.calls.filter(call => call.body?.action === 'shipping_label_buy').length, 0);
+});
+
+test('generated labels preview, download and print through authenticated PURE URLs with a postage record', async t => {
+  const created = { id: labelId, status: 'created', test: false, recipient, sender, rate: rates[0], created_at: '2026-11-18T12:00:00Z', transaction_id: 'provider-fixture', tracking_number: 'FIXTURE-TRACKING', label_url: 'https://deliver.goshippo.com/private-signed-label', customs_url: 'https://deliver.goshippo.com/private-customs-file' };
+  const h = harness(t, { state: { labels: [created] } }); await open(h);
+  assert.match(h.host.textContent, /Postage record/);
+  assert.match(h.host.textContent, /Transaction referenceprovider-fixture/);
+  assert.match(h.host.textContent, /Tracking numberFIXTURE-TRACKING/);
+  assert.match(h.host.textContent, /2026/);
+  const frame = h.host.querySelector('iframe'); assert.ok(frame);
+  const expected = { view: 'shipping-label-file', id: orderId, source: 'commerce', label_id: labelId, kind: 'label' };
+  const parsed = new URL(frame.src);
+  assert.equal(parsed.origin, 'https://getpurelabs.com');
+  assert.deepEqual(Object.fromEntries(parsed.searchParams), expected);
+  assert.match(frame.title, /4 × 6/);
+  const links = [...h.host.querySelectorAll('a')];
+  const download = new URL(links.find(a => a.textContent === 'Download 4 × 6 label').href);
+  assert.deepEqual(Object.fromEntries(download.searchParams), { ...expected, download: '1' });
+  const customs = new URL(links.find(a => a.textContent === 'Download customs invoice').href);
+  assert.deepEqual(Object.fromEntries(customs.searchParams), { ...expected, kind: 'customs', download: '1' });
+  assert.ok(!h.host.innerHTML.includes('private-signed-label'));
+  assert.ok(!h.host.innerHTML.includes('private-customs-file'));
+  assert.deepEqual(links.filter(a => new URL(a.href).hostname.includes('goshippo.com')).map(a => a.textContent), ['Manage Shippo billing']);
+  let prints = 0;
+  frame.contentWindow.focus = () => {};
+  frame.contentWindow.print = () => { prints++; };
+  frame.dispatchEvent(new h.window.Event('load'));
+  button(h, 'Print label').click(); assert.equal(prints, 1);
+  frame.contentWindow.print = () => { throw new Error('PDF viewer does not support embedded printing.'); };
+  button(h, 'Print label').click();
+  assert.equal(h.opened.length, 1);
+  const fallback = new URL(h.opened[0].url, h.window.location.href);
+  assert.equal(fallback.origin, 'https://getpurelabs.com');
+  assert.deepEqual(Object.fromEntries(fallback.searchParams), expected);
+  assert.equal(h.opened[0].features, 'noopener,noreferrer');
+  assert.equal(h.calls.filter(call => call.body).length, 0, 'file actions do not purchase another label');
+});
+
+test('unknown purchases reconcile within PURE without a manually entered provider transaction', async t => {
+  const h = harness(t, { state: { labels: [{ id: labelId, status: 'review', test: false, recipient, sender, rate: rates[0], transaction_id: '' }] } });
+  await open(h);
+  assert.equal(h.host.querySelector('input'), null);
+  assert.match(h.host.textContent, /repeat purchase is blocked/);
+  button(h, 'Check label status').click(); await tick();
+  const sent = h.calls.find(call => call.body);
+  assert.deepEqual(sent.body, { id: orderId, source: 'commerce', action: 'shipping_label_reconcile', label_id: labelId });
+  assert.equal(h.calls.at(-1).method, 'GET');
+  assert.equal(h.calls.filter(call => call.body?.action === 'shipping_label_buy').length, 0);
+  assert.equal([...h.host.querySelectorAll('a')].some(a => a.textContent === 'Open Shippo'), false);
+});
+
+test('an expired saved quote cannot be purchased by a forced form submission', async t => {
+  const h = harness(t, { state: { current_quote: { id: labelId, status: 'quoted', test: false, sender, recipient, rates, parcel: { length: '6', width: '4', height: '2', weight: '1', distance_unit: 'in', mass_unit: 'lb' }, expires_at: '2020-01-01T00:00:00Z' } } });
+  await open(h); chooseRate(h); approve(h);
+  const form = h.host.querySelector('.psl-rates'), buy = form.querySelector('button');
+  assert.equal(buy.disabled, true);
+  assert.equal(buy.textContent, 'Quote expired — get new rates');
+  buy.disabled = false; submit(h, form); await tick();
+  assert.equal(h.confirmations.length, 0);
+  assert.equal(h.calls.filter(call => call.body).length, 0);
 });

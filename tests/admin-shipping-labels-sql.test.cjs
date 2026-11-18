@@ -2,7 +2,8 @@
 const test = require('node:test'), assert = require('node:assert/strict'), fs = require('node:fs');
 const { randomUUID } = require('node:crypto');
 const { PGlite } = require('@electric-sql/pglite');
-const { snapshot } = require('../lib/admin-shipping-labels');
+const shipping = require('../lib/admin-shipping-labels');
+const { snapshot } = shipping;
 test('SQL label claims enforce paid/stale/cancellation/duplicate guards and private privileges', { timeout: 60000 }, async () => {
   const db = new PGlite();
   try {
@@ -31,6 +32,43 @@ test('SQL label claims enforce paid/stale/cancellation/duplicate guards and priv
     const record = async (id, status, result = {}, transaction = 'b'.repeat(32), testMode = false, rateId = rate.id) => (await db.query('select pure_shipping_label_record($1,$2,$3,$4,$5,$6) result', [id, transaction, rateId, testMode, status, JSON.stringify({ message: status, ...result })])).rows[0].result;
     for (const overrides of [{ status: 'accepted' }, { status: 'refunded' }, { kind: 'membership' }, { cancellation_status: 'pending' }, { cancellation_status: 'review' }, { tracking_number: 'EXISTING' }]) {
       const order = await makeOrder(overrides); await assert.rejects(claim(await makeQuote(order)), /not ready/);
+    }
+    // Saving a preview while unpaid is allowed. The real SQL claim, reached
+    // through the JavaScript purchase path, must still prevent any provider POST.
+    for (const source of ['commerce', 'store']) {
+      const unpaid = await makeOrder(source === 'commerce' ? { status: 'accepted' }
+        : { payment_status: 'pending', fulfillment_status: 'unfulfilled', shipping_address: {}, shipping_name: '' }, source);
+      const preview = await makeQuote(unpaid, source);
+      const savedPreview = (await db.query('select * from admin_shipping_labels where id=$1', [preview])).rows[0];
+      let providerCalls = 0, claimCalls = 0;
+      const bridge = {
+        from(table) {
+          assert.equal(table, 'admin_shipping_labels');
+          const q = { select() { return q; }, eq() { return q; }, async maybeSingle() { return { data: savedPreview }; } };
+          return q;
+        },
+        async rpc(name, args) {
+          assert.equal(name, 'pure_shipping_label_claim'); claimCalls++;
+          try { return { data: (await db.query('select pure_shipping_label_claim($1,$2,$3,$4) result', [args.p_id, args.p_rate, args.p_amount, args.p_currency])).rows[0].result }; }
+          catch (error) { assert.match(error.message, /not ready/); return { error }; }
+        }
+      };
+      await assert.rejects(shipping.purchase(bridge, {
+        id: unpaid.id, source, label_id: preview, rate_id: rate.id, amount_cents: rate.amount_cents, currency: rate.currency, confirm_purchase: true
+      }, { env: { SHIPPO_MODE: 'live', SHIPPO_API_TOKEN: 'shippo_live_fixture', SHIPPO_ALLOW_LIVE_PURCHASES: 'true' },
+        fetch: async () => { providerCalls++; throw new Error('Unpaid orders must never reach Shippo transactions.'); } }), /order or rate changed/);
+      assert.equal(claimCalls, 1);
+      assert.equal(providerCalls, 0);
+      assert.equal((await db.query('select status from admin_shipping_labels where id=$1', [preview])).rows[0].status, 'quoted');
+      if (source === 'commerce') {
+        await db.query("update commerce_invoices set status='paid',version=version+1 where id=$1", [unpaid.id]);
+        unpaid.status = 'paid'; unpaid.version++;
+      } else {
+        await db.query("update store_orders set payment_status='paid' where id=$1", [unpaid.id]);
+        unpaid.payment_status = 'paid';
+      }
+      await assert.rejects(claim(preview), /changed after quotation/, 'a preview obtained before payment cannot be bought after payment without a fresh quote');
+      assert.equal((await claim(await makeQuote(unpaid, source))).claimed, true, 'a fresh paid quote can be claimed without weakening the snapshot guard');
     }
     const stale = await makeOrder(), staleQuote = await makeQuote(stale);
     await db.query('update commerce_invoices set version=version+1 where id=$1', [stale.id]); await assert.rejects(claim(staleQuote), /changed after quotation/);
