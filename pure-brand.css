@@ -298,6 +298,7 @@ html:root body.ap-site .nl-editorial .nl-doc-art > :is(.nl-doc-top,.nl-doc-headi
 html:root body.ap-site .nl-doc-top,html:root body.ap-site .nl-doc-bottom{display:flex;align-items:center;justify-content:space-between;gap:14px}
 html:root body.ap-site .nl-doc-logo{display:inline-flex;align-items:center;gap:9px;font-weight:950;font-size:26px;letter-spacing:-1px}
 html:root body.ap-site .nl-doc-logo .ap-mark{display:inline-flex;flex:none;width:32px;height:29px}
+html:root body.ap-site .nl-editorial .nl-doc-logo b{color:#fff!important}
 html:root body.ap-site :is(.nl-doc-edition,.nl-doc-kicker,.nl-doc-bottom>span){font-size:10px;font-weight:850;letter-spacing:1.35px;color:#c4c5c6}
 html:root body.ap-site .nl-doc-heading>strong{display:block;margin:11px 0 5px;font-size:clamp(32px,3.5vw,47px);font-weight:950;letter-spacing:-2px;line-height:1.04;color:#fff}
 html:root body.ap-site .nl-doc-heading>strong span{color:#b6bbc0}
