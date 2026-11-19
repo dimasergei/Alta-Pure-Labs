@@ -52,6 +52,8 @@ test('isolated PostgreSQL enforces current stacked discounts and cents while pre
   const savedV6=historicalShape(await make({coupon:'BLACKFRIDAY15'}),'checkout-2026-11-v6');
   savedV6.method_id=payer;savedV6.request.checkout.method_id=payer;savedV6.method_version=1;
   savedV6.pricing.payment_discount_version='pure-payments-2026-11-v1';savedV6.pricing.crypto_discount_eligible=true;
+  const expectedLegacy=(await db.query('select commerce_internal.regular_delivery_quote($1::jsonb,$2,$3) q',[JSON.stringify(savedV6.request.checkout.delivery),savedV6.request.address.country,savedV6.subtotal_cents-savedV6.discount_cents])).rows[0].q;
+  assert.deepEqual(savedV6.pricing.delivery,expectedLegacy,'Legacy shipping mismatch: '+JSON.stringify({actual:savedV6.pricing.delivery,expected:expectedLegacy}));
   assert.equal((await place(savedV6)).rows[0].result.status,'accepted');
   const savedBefore=(await db.query('select to_jsonb(i) row from commerce_invoices i where id=$1',[savedV6.id])).rows[0].row;
   const routesBefore=(await db.query('select to_jsonb(m) row from commerce_payment_methods m order by id')).rows;
