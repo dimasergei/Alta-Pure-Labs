@@ -8,7 +8,7 @@ const products=context.catalog;
 const variants=products.reduce((n,p)=>n+p.variants.length,0);
 const displayCurrencies=JSON.parse(fs.readFileSync('config/display-currencies.json','utf8')).supported_currencies;
 const currencyControl=`<div class="pure-currency-control"><label for="currency-select" data-currency-control-label>Display currency</label><select id="currency-select" data-currency-select aria-describedby="currency-display-status"><option value="auto">Automatic (USD)</option>${displayCurrencies.map(code=>'<option value="'+code+'">'+code+'</option>').join('')}</select><p id="currency-display-status" class="pure-currency-status" data-currency-status role="status" aria-live="polite">Catalog prices in USD.</p></div>`;
-const accountLinks=[['Overview','/account'],['Orders','/account/purchases'],['Membership','/account/membership'],['Member Stack','/account/stack'],['Rewards & Credit','/account#rewards-and-credit'],['Profile','/account/profile'],['Partner','/account/partner'],['Support','/account/requests']];
+const accountLinks=[['Overview','/account'],['Orders','/account/purchases'],['Membership','/account/membership'],['Rewards & Credit','/account#rewards-and-credit'],['Profile','/account/profile'],['Partner','/account/partner'],['Support','/account/requests']];
 const header=`<a class="ap-skip" href="#ap-main">Skip to content</a>
 <div class="ap-announcement"><span id="ap-announcement-text">Enjoy 15% off with code BLACKFRIDAY15 at checkout.</span></div>
 <header class="ap-header ap-header-compact"><div class="ap-header-main ap-container">
@@ -46,12 +46,12 @@ fs.writeFileSync('account.html',account);
 let js=fs.readFileSync('account.js','utf8');
 js=js.replace("if(['/account/membership','/account/subscriptions'].includes(p))return go('/account');",'')
  .replace("if(p==='/research-checkout'||p==='/research-builder'||p==='/research-subscriptions')return go('/shop');",'')
- .replace("['/account/points','/account/store-credit','/account/partner'].includes(p)","['/account/points','/account/store-credit','/account/partner','/account/membership','/account/stack'].includes(p)")
- .replace("['/account/points','/account/store-credit','/account/partner','/account/membership','/account/stack'].includes(p)){if(!user)return go('/account/login');", "['/account/points','/account/store-credit','/account/partner','/account/membership','/account/stack'].includes(p)){if(!user)return go('/account/login?returnTo='+encodeURIComponent(p+location.search));");
+ .replace("['/account/points','/account/store-credit','/account/partner'].includes(p)","['/account/points','/account/store-credit','/account/partner','/account/membership'].includes(p)")
+ .replace("['/account/points','/account/store-credit','/account/partner','/account/membership'].includes(p)){if(!user)return go('/account/login');", "['/account/points','/account/store-credit','/account/partner','/account/membership'].includes(p)){if(!user)return go('/account/login?returnTo='+encodeURIComponent(p+location.search));");
 
-js=js.replace("const p=location.pathname.replace(/\\/$/,'')||'/account';","const p=location.pathname.replace(/^\\/my-account(?=\\/|$)/,'/account').replace(/\\/$/,'')||'/account';");
+js=js.replace("const p=location.pathname.replace(/\\/$/,'')||'/account';","const p=location.pathname.replace(/^\\/my-account(?=\\/|$)/,'/account').replace(/\\/$/,'')||'/account';if(p==='/account/stack'||p==='/account/subscriptions')return go('/account/membership');");
 const start=js.indexOf('function placeholder('),end=js.indexOf('async function orders()',start);
 if(start<0||end<0)throw Error('Account panel integration point not found.');
-js=js.slice(0,start)+`function placeholder(path){const labels={'/account/membership':'Membership','/account/stack':'Member Stack','/account/points':'Points','/account/store-credit':'Store credit','/account/partner':'Partner workspace'};root.innerHTML=head(labels[path]||'Workspace')+accountNav(path)+'<section id="ap-account-panel"></section>';document.getElementById('logout').onclick=logout;window.AltaWorkspace.renderAccountPanel(path,document.getElementById('ap-account-panel'),auth,user);}\n`+js.slice(end);
+js=js.slice(0,start)+`function placeholder(path){const labels={'/account/membership':'Membership','/account/points':'Points','/account/store-credit':'Store credit','/account/partner':'Partner workspace'};root.innerHTML=head(labels[path]||'Workspace')+accountNav(path)+'<section id="ap-account-panel"></section>';document.getElementById('logout').onclick=logout;window.AltaWorkspace.renderAccountPanel(path,document.getElementById('ap-account-panel'),auth,user);}\n`+js.slice(end);
 fs.writeFileSync('account.js',js);
 console.log('Built unified PURE storefront, product routes, research workspace, and account integration. Catalog unchanged: '+products.length+' records / '+variants+' variants.');
