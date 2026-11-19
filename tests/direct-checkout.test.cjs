@@ -25,7 +25,7 @@ test('authoritative catalog ignores client prices and retired volume/referral di
  for(const qty of [1,2,10,25,50]){
   const record=await checkout.normalize({},user,{...body,items:[{...body.items[0],qty}]},catalog);
   const q=checkout.price(record,method,{plan:'elite',invoice_id:id},{points:0,credit_cents:0},{customer_id:uid,code:'PARTNER',first_order:true});
-  const rate=qty>=10?.20:.10;assert.equal(q.subtotal_cents,qty*10000);assert.equal(q.discount_cents,qty*10000*rate);assert.equal(q.earned_points,qty*100*100*(1-rate)/100);
+  const rate=qty>=10?.20:.10;assert.equal(q.subtotal_cents,qty*10000);assert.equal(q.discount_cents,qty*10000*rate);assert.equal(q.earned_points,qty*10000*(1-rate)/10);
   assert.equal(q.total_cents,qty*10000*(1-rate));assert.equal(q.membership_invoice_id,id);
   assert.equal(q.pricing.lines[0].qty,qty);assert.equal(q.pricing.lines[0].unit_price_cents,10000);
   assert.equal(q.pricing.lines[0].bogo_free_units,0);assert.deepEqual(q.pricing.referral,{partner_id:uid,code:'PARTNER',first_order:true});assert.equal(q.pricing.payment_discount,undefined);
