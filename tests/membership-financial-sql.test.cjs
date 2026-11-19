@@ -323,11 +323,9 @@ test('PURE memberships execute verified fees and goods benefits atomically in di
    const fake=await make();fake.membership_invoice_id=white.id;fake.pricing.membership_plan='elite';await assert.rejects(place(fake),/Membership changed/);
   });
 
-  await t.test('one-time Research Builder uses four normal-price products and cannot activate a subscription',async()=>{
-   const p=await make({builder:true});assert.equal(p.request.research_builder_mode,'one_time');await place(p);assert.equal(p.discount_cents,0);assert.equal(p.pricing.bundled_items,undefined);
-   const bad=await make({builder:true});bad.request.items[1].id=bad.request.items[0].id;await assert.rejects(place(bad),/four different/);
-   const subscription=await make({builder:true});subscription.request.subscription=true;await assert.rejects(place(subscription));
-   await pay(p);assert.equal(await count('commerce_fulfillment_items',p.id),4);assert.equal((await db.query('select count(*)::int n from research_subscriptions')).rows[0].n,1);
+  await t.test('standalone research subscriptions are retired and do not create a second paid plan',async()=>{
+   await assert.rejects(make({builder:true}),/Member Stack|current AUTO-STACK/);
+   assert.equal((await db.query("select count(*)::int n from public.commerce_invoices where request_data->>'research_builder_mode'='monthly_invoice'")).rows[0].n,0);
   });
 
   await t.test('current prepaid fees may use existing Rampex and Polygon payment attempt/receipt paths exactly once',async()=>{
