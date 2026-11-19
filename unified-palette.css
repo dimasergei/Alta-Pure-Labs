@@ -193,11 +193,10 @@ body.ap-site {
 .ap-site :is(.dc-method:has(input:checked),.nlx-delivery-card:has(input:checked)){
   border-color:#111;background:#fff;box-shadow:0 0 0 1px #111;
 }
-.ap-site :is(.account-nav a[aria-current=page],.account-nav a.active,
- .rd-partner-tabs button[aria-selected=true],.ae-subnav a[aria-current=page]){
+.ap-site :is(.rd-partner-tabs button[aria-selected=true],.ae-subnav a[aria-current=page]){
   background:#111!important;color:#fff!important;border-radius:8px;
 }
-.ap-site .account-card>.account-nav a[aria-current=page]{border-bottom-color:#111!important}
+/* Account navigation uses the same underline active state as the storefront. */
 .ap-site .rd-partner-tabs button[aria-selected=true]{box-shadow:none}
 .ap-site .rd-welcome>span{background:#f5f5f5;color:#111}
 .ap-site .rd-points{background:#fff!important}

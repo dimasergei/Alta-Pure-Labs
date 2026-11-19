@@ -53,3 +53,9 @@ body.ap-checkout-page .account-page{padding-top:36px;background:#f5f5f5}body.ap-
 .account-card .ap-subscriptions-empty p{max-width:600px;margin:0 auto 18px}
 .account-card .ap-subscriptions-empty .ap-button{display:inline-flex;align-items:center;justify-content:center;background:#111;color:#fff;border:0;border-radius:999px;padding:15px 28px;margin-top:10px}
 .ap-subscription-card{background:#fff;border:1px solid #d4d4d4;border-radius:16px;padding:24px;margin:18px 0}.ap-subscription-card>div{display:flex;align-items:center;justify-content:space-between;gap:20px}.ap-subscription-card h3{margin:0;text-transform:capitalize}.ap-subscription-card strong{color:#111;font-size:20px}.ap-subscription-card p{color:#666}
+
+/* Keep sign-in artwork clean and prominent but not oversized. */
+body.ap-site.ap-auth-page .google-button img.pure-google-mark{
+  display:block;width:24px;height:24px;object-fit:contain;flex:0 0 24px;border:0;box-shadow:none;filter:none;
+}
+body.ap-site.ap-auth-page .google-button{display:flex;align-items:center;justify-content:center;gap:12px}
