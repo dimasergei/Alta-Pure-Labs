@@ -13,12 +13,12 @@
     const plan = config?.plans?.[id] || {};
     const rows = [];
     if (plan.discount_bps > 0) rows.push({strong:true, text:`${plan.discount_bps / 100}% off eligible merchandise`});
-    if (plan.points_per_dollar > 0) rows.push({text:`${plan.points_per_dollar} points per eligible US$1 spent`});
+    if (plan.points_per_dollar > 0) rows.push({text:`${plan.points_per_dollar} points per eligible $1 spent`});
     if (plan.free_shipping) rows.push({text:plan.shipping_label || config.membership_shipping_label || 'Free US shipping on eligible orders'});
     if (['vip','elite'].includes(id)) rows.push({strong:true,text:id==='vip'?'Member Stack: choose four compounds with 20% off, included BAC Water and US standard shipping':'Member Stack: choose four compounds with 40% off, included BAC Water and US express shipping'});
     if (plan.early_access) rows.push({text:'Early access to eligible new releases'});
     if (plan.priority_fulfillment) rows.push({text:'Priority order fulfillment'});
-    if (plan.monthly_credit_cents > 0) rows.push({text:`US${money(plan.monthly_credit_cents).replace('.00','')} monthly credit after a qualifying US$150+ order`, creditTerms:true});
+    if (plan.monthly_credit_cents > 0) rows.push({text:`${money(plan.monthly_credit_cents).replace('.00','')} monthly credit after a qualifying $150+ order`, creditTerms:true});
     if (plan.free_bac_water_3ml) rows.push({text:'BAC Water 3mL with each eligible product order'});
     if (id === 'member') {
       rows.push({text:'Order history and shipment tracking'});
@@ -70,7 +70,7 @@
     const answers = [
       ['When do my benefits start?', 'Your benefits begin when your membership payment is confirmed. Sign in to the same account at checkout so your tier, eligible discount and rewards can be applied.'],
       ['How does monthly or annual billing work?', recurring ? 'Choose monthly or annual recurring billing. The exact price, renewal schedule and cancellation terms are shown before payment and in your account.' : 'Choose monthly or annual access, and pay a new invoice when the term ends. Annual access costs approximately 20% less than twelve monthly payments.'],
-      ['How does the PURE BLACK monthly credit work?', 'After a qualifying paid product order with at least US$150 of eligible merchandise after discounts, US$50 is added to your account for a future order. It is issued once per UTC calendar month. Points and store credit do not reduce that qualifying merchandise amount.'],
+      ['How does the PURE BLACK monthly credit work?', 'After a qualifying paid product order with at least $150 of eligible merchandise after discounts, $50 is added to your account for a future order. It is issued once per UTC calendar month. Points and store credit do not reduce that qualifying merchandise amount.'],
       ['Can I buy a membership with my product order?', 'Membership checkout is a separate purchase. Your product cart is saved, and you can return to it after membership payment is confirmed. Eligible member benefits then apply to your order.'],
       ['What happens when my paid term ends?', 'Your account, order history and existing reward balances remain available. Paid tier benefits end with the membership term. You can choose another membership from your account.']
     ];
