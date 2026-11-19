@@ -44,7 +44,7 @@ if(!account.includes('href="/cart-reference.css"'))account=account.replace('</he
 if(!account.includes('src="/cart-reference.js"'))account=account.replace('<script src="/account.js">','<script src="/cart-reference.js"></script><script src="/account.js">');
 fs.writeFileSync('account.html',account);
 let js=fs.readFileSync('account.js','utf8');
-js=js.replace("if(['/account/membership','/account/stack'].includes(p))return go('/account');",'')
+js=js.replace("if(['/account/membership','/account/subscriptions'].includes(p))return go('/account');",'')
  .replace("if(p==='/research-checkout'||p==='/research-builder'||p==='/research-subscriptions')return go('/shop');",'')
  .replace("['/account/points','/account/store-credit','/account/partner'].includes(p)","['/account/points','/account/store-credit','/account/partner','/account/membership','/account/stack'].includes(p)")
  .replace("['/account/points','/account/store-credit','/account/partner','/account/membership','/account/stack'].includes(p)){if(!user)return go('/account/login');", "['/account/points','/account/store-credit','/account/partner','/account/membership','/account/stack'].includes(p)){if(!user)return go('/account/login?returnTo='+encodeURIComponent(p+location.search));");
