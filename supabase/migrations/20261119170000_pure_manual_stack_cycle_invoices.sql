@@ -134,6 +134,7 @@ begin
     or p_data->'method_id' is distinct from r->'checkout'->'method_id'
   then raise exception 'Monthly AUTO-STACK total changed' using errcode='22023';end if;
 end $stack$;
+revoke all on function commerce_internal.validate_stack_monthly_checkout(jsonb) from public,anon,authenticated;
 CREATE OR REPLACE FUNCTION commerce_internal.validate_membership_checkout(p_data jsonb)
  RETURNS void
  LANGUAGE plpgsql
