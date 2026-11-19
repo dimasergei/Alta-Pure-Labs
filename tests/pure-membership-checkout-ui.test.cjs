@@ -106,7 +106,7 @@ test('an already active tier never renders or submits another fee checkout',asyn
 test('a pending membership payment reopens its saved order and cannot create another fee checkout',async()=>{
  const id='11111111-1111-4111-8111-111111111111';
  const env=await setup({pending:{invoice_id:id,plan:'elite',name:'PURE BLACK',billing_period:'annual',status:'awaiting_payment',currency:'CAD',total_cents:133426,expires_at:'2099-12-31T00:00:00Z'}});
- assert.equal(env.form,null);assert.match(env.root.textContent,/Awaiting payment/);assert.match(env.root.textContent,/CAD\s*1,334\.26/);assert.match(env.root.textContent,/One prepaid year/);
+ assert.equal(env.form,null);assert.match(env.root.textContent,/Awaiting payment/);assert.match(env.root.textContent,/CAD\s*1,334\.26/);assert.match(env.root.textContent,/One-year membership term/);
  assert.ok(env.root.querySelector('a[href="/account/purchases?id='+id+'"]'));
  assert.equal(env.calls.filter(Boolean).length,0);assert.equal(env.payments.length,0);
  assert.deepEqual(JSON.parse(env.w.localStorage.getItem('pp-cart')),env.cart);
