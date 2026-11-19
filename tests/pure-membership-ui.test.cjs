@@ -49,12 +49,12 @@ test('benefits are sourced from configuration, with credit qualification disclos
   const dom = setup(),d = dom.window.document;
   const white = d.querySelector('.mx-card-white'),black = d.querySelector('.mx-card-black');
   assert.match(white.textContent,/5% off eligible merchandise/);
-  assert.match(white.textContent,/5 points per eligible US\$1 spent/);
+  assert.match(white.textContent,/5 points per eligible \$1 spent/);
   assert.match(white.textContent,/Free US 2-Day Express shipping/);
   assert.doesNotMatch(white.textContent,/monthly credit|BAC Water 3mL with each eligible product order/);
   assert.match(white.textContent,/Member Stack: choose four compounds with 20% off, included BAC Water and US standard shipping/);
   assert.match(black.textContent,/Member Stack: choose four compounds with 40% off, included BAC Water and US express shipping/);
-  assert.match(black.textContent,/US\$50 monthly credit after a qualifying US\$150\+ order/);
+  assert.match(black.textContent,/\$50 monthly credit after a qualifying \$150\+ order/);
   assert.doesNotMatch(black.textContent,/Issued once per UTC calendar month|threshold uses eligible merchandise|before points or store credit/);
   const creditTerms=black.querySelector('.mx-benefit-footnote');
   assert.equal(creditTerms.textContent,'†');
@@ -111,8 +111,8 @@ test('currency changes preserve annual selection and keep credit and points bene
     assert.match(white.querySelector('.mx-price').textContent,/259\.07/);assert.match(black.querySelector('.mx-price').textContent,/1,295\.87/);
     assert.equal(white.querySelector('.mx-price-period').textContent,'/ year');
     assert.equal(black.querySelector('.mx-choose').getAttribute('href'),'/checkout?plan=elite&period=annual');
-    assert.match(white.querySelector('.mx-features').textContent,/5 points per eligible US\$1/);
-    assert.match(black.querySelector('.mx-features').textContent,/US\$50 monthly credit after a qualifying US\$150\+ order/);
+    assert.match(white.querySelector('.mx-features').textContent,/5 points per eligible \$1/);
+    assert.match(black.querySelector('.mx-features').textContent,/\$50 monthly credit after a qualifying \$150\+ order/);
     assert.equal(black.querySelector('.mx-features [data-usd-cents]'),null);
     assert.equal(black.querySelector('.mx-benefit-footnote'),footnote);assert.equal(footnote.getAttribute('href'),'/membership-terms.html#pure-black-credit');
     assert.equal(footnote.getAttribute('aria-label'),'Read the PURE BLACK monthly credit terms');
