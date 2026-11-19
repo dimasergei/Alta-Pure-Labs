@@ -85,8 +85,23 @@
   },
   "redirects": [
     {
+      "source": "/my-account/subscriptions",
+      "destination": "/account/membership",
+      "permanent": false
+    },
+    {
+      "source": "/my-account/stack",
+      "destination": "/account/membership",
+      "permanent": false
+    },
+    {
+      "source": "/account/stack",
+      "destination": "/account/membership",
+      "permanent": false
+    },
+    {
       "source": "/account/subscriptions",
-      "destination": "/account/stack",
+      "destination": "/account/membership",
       "permanent": false
     },
     {
