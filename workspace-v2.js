@@ -56,19 +56,22 @@
  }
  function bulkSummary(){
   const root=$('#ap-bulk-summary');if(!root)return;
-  const units=bulk.reduce((n,x)=>n+x.qty,0),subtotal=total(bulk),tierSavingsCents=bulk.reduce((n,x)=>n+(window.PureQuantityPricing?.discountCents(Math.round(x.price*100),x.qty)||0),0),tierNet=subtotal-tierSavingsCents/100,ids=[...new Set(bulk.map(x=>x.id))];
+  const units=bulk.reduce((n,x)=>n+x.qty,0),subtotal=total(bulk),
+   tierRate=window.PureQuantityPricing?.bulkRate?.(units)||0,
+   tierSavingsCents=bulk.reduce((n,x)=>n+Math.round(Math.round(x.price*100)*x.qty*tierRate/10000),0),
+   tierNet=subtotal-tierSavingsCents/100,ids=[...new Set(bulk.map(x=>x.id))];
   root.dataset.empty=String(units===0);
   const selection=ids.length?ids.map(id=>{
    const p=product(id),lines=bulk.filter(x=>x.id===id),count=lines.reduce((n,x)=>n+x.qty,0);
    return `<section class="nl-bulk-menu-product"><header class="nl-bulk-menu-product-head"><img src="${esc(image(p,lines[0].size))}" alt=""><span><strong>${esc(p.name)}</strong><small>${count} units</small></span></header>
-    ${lines.map(x=>{const gross=Math.round(x.price*100)*x.qty,saved=window.PureQuantityPricing?.discountCents(Math.round(x.price*100),x.qty)||0;return `<div class="nl-bulk-menu-line"><div class="nl-bulk-menu-controls"><span class="nl-bulk-menu-variant">${esc(x.size)} · ${priceMarkup(x.price)}/unit</span><div class="nl-bulk-quantity-controls">${quantityControls(x.id,x.size,x.qty,x.name)}</div></div><div class="nl-bulk-menu-line-price">${saved?`<del>${priceMarkup(gross/100)}</del>`:''}<strong>${priceMarkup((gross-saved)/100)}</strong></div></div>`;}).join('')}</section>`;
+    ${lines.map(x=>{const gross=Math.round(x.price*100)*x.qty,saved=Math.round(gross*tierRate/10000);return `<div class="nl-bulk-menu-line"><div class="nl-bulk-menu-controls"><span class="nl-bulk-menu-variant">${esc(x.size)} · ${priceMarkup(x.price)}/unit</span><div class="nl-bulk-quantity-controls">${quantityControls(x.id,x.size,x.qty,x.name)}</div></div><div class="nl-bulk-menu-line-price">${saved?`<del>${priceMarkup(gross/100)}</del>`:''}<strong>${priceMarkup((gross-saved)/100)}</strong></div></div>`;}).join('')}</section>`;
   }).join(''):'<div class="nl-bulk-menu-empty">Select product quantities for your order.</div>';
   root.innerHTML=`<div class="nl-bulk-summary-heading"><span class="ap-eyebrow">YOUR ORDER</span><h2>Your selections</h2><span class="nl-bulk-total-units">${units} units</span></div>
    ${units?'':'<button type="button" class="ap-button nl-bulk-add-products" data-action="bulk-add-products">ADD PRODUCTS</button>'}
    <div class="nl-bulk-summary-scroll" aria-label="Selected products">${selection}</div>
-   <div class="nl-bulk-totals"><div class="nl-bulk-estimate-total"><span>Merchandise subtotal</span><strong>${priceMarkup(subtotal)}</strong></div>${tierSavingsCents>0?`<div class="nl-bulk-tier-savings"><span>Quantity savings</span><strong>−${priceMarkup(tierSavingsCents/100)}</strong></div><div class="nl-bulk-net"><span>After quantity savings</span><strong>${priceMarkup(tierNet)}</strong></div>`:''} </div>
+   <div class="nl-bulk-totals"><div class="nl-bulk-estimate-total"><span>Merchandise subtotal</span><strong>${priceMarkup(subtotal)}</strong></div>${tierSavingsCents>0?`<div class="nl-bulk-tier-savings"><span>Bulk savings ('+tierRate/100+'%)</span><strong>−${priceMarkup(tierSavingsCents/100)}</strong></div><div class="nl-bulk-net"><span>After bulk savings</span><strong>${priceMarkup(tierNet)}</strong></div>`:''} </div>
    <button class="ap-button" data-action="bulk-checkout" ${units?'':'disabled'}>Checkout · ${priceMarkup(tierNet)}</button>
-   <p class="ap-fine nl-bulk-checkout-note">Shipping, coupons and eligible Crypto savings are calculated at checkout. Your regular cart is kept for later.</p>`;
+   <p class="ap-fine nl-bulk-checkout-note">Save 20% on 10–49 total units or 50% on 50+ units. Bulk savings don't stack with other discounts. Shipping is confirmed at checkout. Your regular cart stays saved.</p>`;
  }
  function render(path,root){
   if(!root)return;
