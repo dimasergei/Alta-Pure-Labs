@@ -879,3 +879,17 @@ html[data-display-currency]:not([data-display-currency="USD"]) body.ap-site :is(
 .ap-site .pure-partner-outro a{color:#111;text-underline-offset:4px}
 @media(max-width:850px){.ap-site .pure-partner-content{grid-template-columns:1fr;gap:16px;padding-top:25px}.ap-site .pure-partner-hero-inner{min-height:295px;padding-top:49px;padding-bottom:47px}.ap-site .pure-partner-steps{padding:29px}.ap-site .pure-partner-hero p{font-size:15px}}
 @media(max-width:550px){.ap-site .pure-partner-hero h1{font-size:clamp(42px,10.5vw,59px)}.ap-site .pure-partner-watermark{font-size:165px;right:-16px;bottom:-10px}.ap-site .pure-partner-hero-inner{padding:42px 0;min-height:285px}.ap-site .pure-partner-steps,.ap-site .pure-partner-form{padding:25px 20px}.ap-site .pure-partner-form .ap-inquiry-form>button.ap-button{width:100%}.ap-site .pure-partner-step h3{font-size:16px}.ap-site .pure-partner-outro{padding-bottom:35px}}
+
+
+/* Two conversion paths replace retired 1/2/5/10 quantity-price cards. */
+.ap-site .nl-product-saving-options{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px;margin:27px 0 16px;}
+.ap-site .nl-product-saving-card{display:flex;flex-direction:column;gap:8px;min-width:0;min-height:148px;padding:22px 20px;border:1.5px solid #d7d7d7;border-radius:15px;background:#f6f6f6;color:#111;text-decoration:none;transition:transform .2s ease,box-shadow .2s ease,border-color .2s ease;}
+.ap-site .nl-product-saving-card:hover,.ap-site .nl-product-saving-card:focus-visible{transform:translateY(-2px);box-shadow:0 12px 24px #00000018;border-color:#111;}
+.ap-site .nl-product-saving-card:focus-visible{outline:3px solid #777;outline-offset:3px;}
+.ap-site .nl-product-saving-card>span{font-size:10px;font-weight:800;letter-spacing:1.1px;text-transform:uppercase;opacity:.72;}
+.ap-site .nl-product-saving-card>strong{font-size:21px;font-weight:800;line-height:1.15;letter-spacing:-.04em;}
+.ap-site .nl-product-saving-card>small{font-size:12px;font-weight:550;line-height:1.4;}
+.ap-site .nl-product-saving-card-member{background:#101010;color:#fff;border-color:#101010;}
+.ap-site .nl-product-saving-card-member:hover,.ap-site .nl-product-saving-card-member:focus-visible{border-color:#101010;}
+.ap-site .ap-detail-price .ap-fine{margin-inline-start:8px;}
+@media(max-width:690px){.ap-site .nl-product-saving-options{grid-template-columns:1fr;gap:10px;}.ap-site .nl-product-saving-card{min-height:115px;padding:18px;}}
