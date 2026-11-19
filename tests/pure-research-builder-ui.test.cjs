@@ -54,16 +54,16 @@ test('builder permits four distinct compounds, excludes supplies, and requires a
   assert.match(root.textContent,/existing cart/);
   env.dom.window.close();
 });
-test('monthly plan is a non-billable preview and never sends selections to the regular cart at 40% off',async () => {
+test('monthly set displays 40% discount and creates an explicit invoice checkout instead of changing the regular cart',async () => {
   const env = setup({draft:{mode:'subscription',lines:items}}),{w,root,added,calls,navigated} = env;
   await w.PureResearchBuilder.mount(root,env.options);
   assert.equal(root.querySelector('[data-rb-mode="subscription"] span').textContent,'40% off');
   assert.match(root.querySelector('.nl-builder-benefits').textContent,/Cancel anytime/);
   assert.match(root.querySelector('.nl-builder-benefits').textContent,/No delivery minimum/);
-  assert.match(root.querySelector('.nl-builder-terms').textContent,/Planned monthly terms: ongoing until canceled/);
-  assert.match(root.querySelector('.nl-builder-terms').textContent,/Edit future selections or cancel anytime/);
+  assert.match(root.querySelector('.nl-builder-terms').textContent,/Pay per month with Card or Crypto/);
+  assert.match(root.querySelector('.nl-builder-terms').textContent,/Edit future selections or cancel your plan anytime/);
   assert.doesNotMatch(root.textContent,/Three deliveries|three deliveries|third delivery|after the first shipment|follow the first shipment/);
-  assert.match(root.querySelector('.nl-builder-availability').textContent,/No subscription, charge or delivery is scheduled/);
+  assert.match(root.querySelector('.nl-builder-availability').textContent,/One payment covers this month/);
   assert.equal(root.querySelector('[data-rb-checkout]'),null);
   assert.match(root.querySelector('.nl-price-total').textContent,/\$243\.68/);
   root.querySelector('[data-rb-review]').click();
@@ -110,22 +110,22 @@ test('a late quote for an earlier selection cannot overwrite current pricing',as
   assert.match(env.root.querySelector('.nl-price-total').textContent,/\$486\.11/);
   env.dom.window.close();
 });
-test('monthly review has no payment submission and discloses its preview status',async () => {
+test('monthly review links to secure invoice checkout without charging the customer in the review',async () => {
   const env = setup({draft:{mode:'subscription',lines:items}});
   await env.w.ResearchCheckout.render(env.root,{email:'fixture@example.test'},env.options);
   assert.equal(env.w.document.title,'AUTO-STACK™ Review | PURE');
   assert.equal(env.root.querySelector('.rc-heading h1').textContent,'REVIEW YOUR AUTO-STACK™');
   assert.equal(env.root.querySelector('.rc-heading h1 sup').textContent,'™');
-  assert.ok(env.root.querySelector('.rc-pay').disabled);
+  assert.equal(env.root.querySelector('.rc-pay').getAttribute('href'),'/checkout?stack=monthly');
   assert.equal(env.root.querySelector('form'),null);
   assert.equal(env.root.querySelector('[data-rc-checkout]'),null);
-  assert.match(env.root.querySelector('.rc-terms').textContent,/Planned monthly terms/);
+  assert.match(env.root.querySelector('.rc-terms').textContent,/Monthly invoice terms/);
   assert.match(env.root.querySelector('.rc-terms').textContent,/Monthly until canceled/);
   assert.match(env.root.querySelector('.rc-terms').textContent,/no minimum deliveries/);
   assert.match(env.root.querySelector('.rc-terms').textContent,/Edit future selections anytime/);
   assert.match(env.root.querySelector('.rc-terms').textContent,/Cancel anytime/);
   assert.doesNotMatch(env.root.querySelector('.rc-terms').textContent,/Three deliveries|third delivery|after the first delivery/);
-  assert.match(env.root.querySelector('.rc-unavailable').textContent,/does not create a subscription/);
+  assert.equal(env.root.querySelector('.rc-unavailable'),null);
   assert.ok(env.root.querySelector('a[href="/research-builder?mode=one_time"]'));
   assert.equal(env.added.length,0);assert.equal(env.calls.length,1);
   env.dom.window.close();
