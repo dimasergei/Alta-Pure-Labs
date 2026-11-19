@@ -10,6 +10,7 @@ test('isolated PostgreSQL delivery quote matches JavaScript rates, selections an
   await db.exec('create role anon;create role authenticated;create role service_role;create schema commerce_internal;create table public.commerce_delivery_options(id text primary key,kind text,label text,price_cents integer,enabled boolean,description text);');
   for(const option of delivery.defaults)await db.query('insert into public.commerce_delivery_options(id,kind,label,price_cents,enabled,description) values($1,$2,$3,$4,$5,$6)',[option.id,option.kind,option.label,option.price_cents,option.enabled,option.description]);
   await db.exec(migration);
+  await db.exec(fs.readFileSync('supabase/migrations/20261118235500_pure_canadian_free_standard_shipping.sql','utf8'));
   const quote=async(country,shipping,extras,merchandise)=>(await db.query('select commerce_internal.regular_delivery_quote($1::jsonb,$2,$3) as quote',[JSON.stringify({shipping,extras}),country,merchandise])).rows[0].quote;
   for(const country of ['US','CA','GB'])for(const shipping of ['standard','express','next_day'])for(const merchandise of [14999,15000])for(const extras of [[],['protection'],['priority'],['priority','protection']]){
    if(country==='GB'&&shipping==='next_day'){
