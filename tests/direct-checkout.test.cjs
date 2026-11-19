@@ -25,7 +25,7 @@ test('authoritative catalog ignores client prices and retired volume/referral di
  for(const qty of [1,2,10,25,50]){
   const record=await checkout.normalize({},user,{...body,items:[{...body.items[0],qty}]},catalog);
   const q=checkout.price(record,method,{plan:'elite',invoice_id:id},{points:0,credit_cents:0},{customer_id:uid,code:'PARTNER',first_order:true});
-  const rate=qty>=10?.20:.10;assert.equal(q.subtotal_cents,qty*10000);assert.equal(q.discount_cents,qty*10000*rate);assert.equal(q.earned_points,qty*10000*(1-rate)/10);
+  const rate=.10;assert.equal(q.subtotal_cents,qty*10000);assert.equal(q.discount_cents,qty*10000*rate);assert.equal(q.earned_points,qty*10000*(1-rate)/10);
   assert.equal(q.total_cents,qty*10000*(1-rate));assert.equal(q.membership_invoice_id,id);
   assert.equal(q.pricing.lines[0].qty,qty);assert.equal(q.pricing.lines[0].unit_price_cents,10000);
   assert.equal(q.pricing.lines[0].bogo_free_units,0);assert.deepEqual(q.pricing.referral,{partner_id:uid,code:'PARTNER',first_order:true});assert.equal(q.pricing.payment_discount,undefined);
@@ -61,7 +61,7 @@ test('BLACKFRIDAY15 is normalized and cart, quote and persisted order have ident
 test('removing the explicit coupon restores regular price and invalidates the prior quote',async()=>{
  const b={...body,coupon:'BLACKFRIDAY15',items:[{...body.items[0],qty:2}]};
  const {res:q,db}=await call({...b,action:'quote'});assert.equal(q.body.discount_cents,3000);assert.equal(q.body.total_cents,17000);
- const {res:r}=await call({...b,coupon:'',action:'quote'},{db});assert.equal(r.body.discount_cents,1000);assert.equal(r.body.total_cents,19000);
+ const {res:r}=await call({...b,coupon:'',action:'quote'},{db});assert.equal(r.body.discount_cents,0);assert.equal(r.body.total_cents,20000);
  const {res:stale}=await call({...b,coupon:'',action:'place',quote:q.body.quote},{db});assert.equal(stale.code,409);assert.equal(db.calls.length,0);
 });
 test('US standard shipping threshold uses discounted merchandise before account balances',async()=>{
@@ -89,13 +89,46 @@ test('removed coupons, unsupported membership routes and forged program flags ar
   const {res,db}=await call({...body,action:'quote',coupon},{params});assert.equal(res.code,400);assert.equal(db.calls.length,0);
  }
 });
-test('bulk ordering has ordinary quantities, prices, coupon and shipping with no minimum tier',async()=>{
- for(const qty of [1,9,10,50]){
+test('Bulk Orders save 20% on 10-49 total units and 50% on 50+; no small-order quantity tier',async()=>{
+ for(const qty of [1,9,10,49,50]){
   const b={...body,bulk_order:true,items:[{...body.items[0],qty}],delivery:{shipping:'express',extras:[]}};
-  const {res:q,db}=await call({...b,action:'quote'});assert.equal(q.code,200);assert.equal(q.body.discount_cents,Math.round(qty*10000*(qty>=10?.2:qty>=5?.1:qty>=2?.05:0)));assert.equal(q.body.shipping_cents,3495);
-  assert.equal(q.body.total_cents,qty*10000-q.body.discount_cents+3495);assert.equal(q.body.pricing.lines[0].qty,qty);
+  const {res:q,db}=await call({...b,action:'quote'});
+  assert.equal(q.code,200);
+  const tier=qty>=50?.5:qty>=10?.2:0;
+  const discount=Math.round(qty*10000*tier);
+  assert.equal(q.body.discount_cents,discount);
+  assert.equal(q.body.shipping_cents,3495);
+  assert.equal(q.body.total_cents,qty*10000-discount+3495);
+  assert.equal(q.body.pricing.lines[0].qty,qty);
+  if(qty>=10){
+   assert.equal(q.body.pricing.quantity_discount_version,'pure-bulk-2026-11-v1');
+   assert.equal(q.body.pricing.bulk_unit_count,qty);
+   assert.equal(q.body.pricing.lines[0].discount_bps,qty>=50?5000:2000);
+  }else assert.equal(q.body.pricing.quantity_discount_version,undefined);
   const {res:p}=await call({...b,coupon:'BLACKFRIDAY15',points:100,credit_cents:500,action:'quote'},{db});
-  assert.equal(p.code,200);const expected=qty*10000*(qty>=10?.20:.15);assert.equal(p.body.discount_cents,expected);assert.equal(p.body.total_cents,qty*10000-expected+3495-600);assert.equal(db.calls.length,0);
+  assert.equal(p.code,200);
+  const expected=qty*10000*(qty>=10?tier:.15);
+  assert.equal(p.body.discount_cents,expected);
+  assert.equal(p.body.total_cents,qty*10000-expected+3495-600);
+  assert.equal(db.calls.length,0);
+ }
+});
+test('mixed-strength bulk totals unlock tiers on combined units, without extra Crypto stack',async()=>{
+ const cat=[catalog[0],{id:'fixture-two',name:'Second compound',variants:[{size:'10mg',price:80}]}];
+ for(const [a,b,rate] of [[6,4,2000],[35,15,5000]]){
+  const list=[{id:cat[0].id,size:'5mg',qty:a},{id:cat[1].id,size:'10mg',qty:b}];
+  const order={...body,bulk_order:true,items:list,delivery:{shipping:'express',extras:[]}};
+  const rec=await checkout.normalize({},user,order,cat);
+  const q=checkout.price(rec,method,null,{points:0,credit_cents:0});
+  const gross=[10000*a,8000*b];
+  const savings=gross.reduce((n,x)=>n+Math.round(x*rate/10000),0);
+  assert.equal(q.discount_cents,savings);
+  assert.deepEqual(q.pricing.lines.map(x=>x.discount_bps),[rate,rate]);
+  assert.equal(q.pricing.bulk_unit_count,a+b);
+  const crypto=checkout.price(rec,{...method,native_provider:'polygon_usdc',rampex_provider:null},null,{points:0,credit_cents:0});
+  assert.equal(crypto.discount_cents,savings);
+  assert.equal(crypto.pricing.crypto_discount_cents,0);
+  assert.equal(crypto.pricing.crypto_discount_eligible,false);
  }
 });
 test('modified totals, quantities, delivery, prices and old version quotes fail before placement',async()=>{
