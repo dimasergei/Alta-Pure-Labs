@@ -341,9 +341,9 @@ test('PURE memberships execute verified fees and goods benefits atomically in di
     assert.equal(order.pricing.quantity_discount_version,'pure-bulk-2026-11-v1');
     assert.equal(order.pricing.bulk_unit_count,a+b);
     assert.ok(order.pricing.lines.every(line=>line.discount_bps===rate&&line.discount_reason==='bulk_'+(rate===5000?'50':'10')));
-    await place(order);
     const forged={...order,discount_cents:order.discount_cents-1};
     await assert.rejects(place(forged),/totals|discount|Checkout|amount|changed/i);
+    await place(order);
     const saved=await load(order.id);assert.equal(saved.discount_cents,order.discount_cents);
    }
    const crypto=await make({bulk:true,route:'crypto',items:mixed(25,25)});
