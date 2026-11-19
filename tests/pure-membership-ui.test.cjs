@@ -35,6 +35,9 @@ test('PURE tier selection uses exact monthly and annual prices and retains keybo
   d.querySelector('[data-mx-period="annual"]').click();
   assert.match(d.querySelector('.mx-card-white').textContent,/\$191\.90/);
   assert.match(d.querySelector('.mx-card-black').textContent,/\$959\.90/);
+  assert.equal(d.querySelector('.mx-currency-note'),null);
+  assert.match(d.querySelector('[data-mx-period="annual"]').textContent,/Save 20%/);
+  assert.doesNotMatch(d.querySelector('.mx-comparison').textContent,/≈|CAD \/ year/);
   assert.equal(d.querySelector('.mx-card-black .mx-choose').getAttribute('href'),'/checkout?plan=elite&period=annual');
   assert.equal(d.activeElement.dataset.mxPeriod,'annual');
   assert.equal(d.activeElement.getAttribute('aria-pressed'),'true');
@@ -104,7 +107,7 @@ test('currency changes preserve annual selection and keep credit and points bene
     assert.equal(white.querySelector('.mx-price [data-usd-cents]').dataset.usdCents,'19190');
     assert.equal(black.querySelector('.mx-price [data-usd-cents]').dataset.usdCents,'95990');
     assert.match(white.querySelector('.mx-price').textContent,/259\.07/);assert.match(black.querySelector('.mx-price').textContent,/1,295\.87/);
-    assert.match(white.querySelector('.mx-price-period').textContent,/CAD \/ year/);
+    assert.equal(white.querySelector('.mx-price-period').textContent,'/ year');
     assert.equal(black.querySelector('.mx-choose').getAttribute('href'),'/checkout?plan=elite&period=annual');
     assert.match(white.querySelector('.mx-features').textContent,/5 points per eligible US\$1/);
     assert.match(black.querySelector('.mx-features').textContent,/US\$50 monthly credit after a qualifying US\$150\+ order/);
@@ -113,7 +116,7 @@ test('currency changes preserve annual selection and keep credit and points bene
     assert.equal(footnote.getAttribute('aria-label'),'Read the PURE BLACK monthly credit terms');
     assert.match(black.querySelector('.mx-billing-note').textContent,/One payment/);assert.match(d.querySelector('.mx-terms').textContent,/No automatic renewal/);
     await w.AltaLocale.setCurrency('USD');
-    assert.equal(d.querySelector('[data-mx-period="annual"]'),annual);assert.match(white.querySelector('.mx-price').textContent,/191\.90/);assert.match(white.querySelector('.mx-price-period').textContent,/USD \/ year/);
+    assert.equal(d.querySelector('[data-mx-period="annual"]'),annual);assert.match(white.querySelector('.mx-price').textContent,/191\.90/);assert.equal(white.querySelector('.mx-price-period').textContent,'/ year');
     assert.equal(JSON.stringify(data),original);
   }finally{dom.window.close();}
 });

@@ -4,8 +4,6 @@
   const esc = value => String(value ?? '').replace(/[&<>"']/g, character => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[character]));
   const money = cents => new Intl.NumberFormat('en-US', {style:'currency', currency:'USD'}).format(cents / 100);
   const price = cents => window.AltaLocale?.price ? window.AltaLocale.price(cents,{showCode:false}) : esc(money(cents));
-  const currencyCode = () => window.AltaLocale?.currencyCode?.() || 'USD';
-  const estimateNote = () => window.AltaLocale?.estimateNote?.() || 'Prices shown in USD. Your payment total is confirmed at checkout.';
   const names = {member:'MEMBER', vip:'PURE WHITE', elite:'PURE BLACK'};
   const displayName = id => names[id] || 'MEMBER';
   const billingMode = config => config?.billing_mode === 'automatic_recurring' && config?.recurring_available === true ? 'automatic_recurring' : 'prepaid';
@@ -49,7 +47,7 @@
         <div class="mx-card-top"><span class="mx-tier-label">${badge}</span><span class="mx-tier-index" aria-hidden="true">0${['member','vip','elite'].indexOf(id) + 1}</span></div>
         <h3>${displayName(id)}</h3>
         <p class="mx-description">${free ? 'A place for every research order.' : id === 'vip' ? 'More value in your regular research routine.' : 'Our highest level of savings and account benefits.'}</p>
-        <div class="mx-price">${free ? 'Free' : Number.isSafeInteger(fee) ? price(fee) : '—'}${free ? '' : `<span class="mx-price-period">${currencyCode()} / ${period === 'annual' ? 'year' : 'month'}</span>`}</div>
+        <div class="mx-price">${free ? 'Free' : Number.isSafeInteger(fee) ? price(fee) : '—'}${free ? '' : `<span class="mx-price-period">/ ${period === 'annual' ? 'year' : 'month'}</span>`}</div>
         <p class="mx-billing-note">${free ? 'No membership fee.' : recurring ? `Renews ${period === 'annual' ? 'annually' : 'monthly'} until canceled.` : `One payment. ${period === 'annual' ? 'One year' : 'One month'} of benefits.`}</p>
         ${action}
         <ul class="mx-features">${benefits(config,id).map(row => `<li${row.strong ? ' class="mx-feature-emphasis"' : ''}><span class="mx-check" aria-hidden="true">✓</span><span>${esc(row.text)}${row.creditTerms ? '<a class="mx-benefit-footnote" href="/membership-terms.html#pure-black-credit" aria-label="Read the PURE BLACK monthly credit terms"><span aria-hidden="true">†</span></a>' : ''}</span></li>`).join('')}</ul>
@@ -63,7 +61,7 @@
   }
 
   function toggle(period) {
-    return `<div class="mx-billing" role="group" aria-label="Membership billing period"><button type="button" data-mx-period="monthly" aria-pressed="${period === 'monthly'}">Monthly</button><button type="button" data-mx-period="annual" aria-pressed="${period === 'annual'}">Annual <span>Save ≈20%</span></button></div>`;
+    return `<div class="mx-billing" role="group" aria-label="Membership billing period"><button type="button" data-mx-period="monthly" aria-pressed="${period === 'monthly'}">Monthly</button><button type="button" data-mx-period="annual" aria-pressed="${period === 'annual'}">Annual <span>Save 20%</span></button></div>`;
   }
 
   function faq(config) {
@@ -82,7 +80,7 @@
     if (!root || !config?.plans) return;
     let period = options.period === 'annual' ? 'annual' : 'monthly';
     const render = focus => {
-      root.innerHTML = `<div class="mx-comparison">${toggle(period)}<p class="mx-currency-note">${estimateNote()}</p>${renderCards(config,period,options)}<p class="mx-terms">${esc(terms(config))} <a href="/membership-terms.html">See full terms.</a></p></div>`;
+      root.innerHTML = `<div class="mx-comparison">${toggle(period)}${renderCards(config,period,options)}<p class="mx-terms">${esc(terms(config))} <a href="/membership-terms.html">See full terms.</a></p></div>`;
       root.querySelectorAll('[data-mx-period]').forEach(button => button.addEventListener('click',() => {period = button.dataset.mxPeriod; render(true);}));
       if (focus) root.querySelector(`[data-mx-period="${period}"]`)?.focus();
     };

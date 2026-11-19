@@ -51,3 +51,9 @@ test("Google sign-in is present on account, login, and signup routes", () => {
   assert.match(account, /function signup\(error=''\)[\s\S]*?googleOption\(\)[\s\S]*?bindGoogle\(\)/);
   assert.match(account, /head\('Your account'[\s\S]*?googleOption\(\)[\s\S]*?bindGoogle\(\)/);
 });
+
+test('Google sign-in reuses the clean Google Pay G asset instead of a stroked inline symbol',()=>{
+ const account=require('node:fs').readFileSync('account.js','utf8');
+ assert.match(account,/class="pure-google-mark" src="\/assets\/payment-brands\/google-g-clean\.svg"/);
+ assert.doesNotMatch(account,/<svg viewBox="0 0 48 48"/);
+});
