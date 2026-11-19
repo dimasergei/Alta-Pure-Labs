@@ -53,7 +53,7 @@ test('regular checkout has two honest choices and one saved-order handoff; unkno
   assert.equal(f.requests.filter(r=>r.body.action==='place').length,1);
   assert.equal(f.requests.filter(r=>r.body.action==='pay').length,1);
   const pay=f.requests.find(r=>r.body.action==='pay').body;
-  assert.equal(pay.confirm_amount_cents,20500);assert.equal(pay.crypto_conversion_consent,true);
+  assert.equal(pay.confirm_amount_cents,19500);assert.equal(pay.crypto_conversion_consent,true);
   assert.equal(place.disabled,true);assert.equal(f.root.querySelector('[data-nlx-extra=protection]').disabled,true);
   assert.ok([...f.root.querySelectorAll('[data-nlx-qty]')].every(control=>control.disabled));
   assert.ok(f.root.querySelector('a[href^="/account/purchases?id="]'));
@@ -67,7 +67,7 @@ test('method and coupon changes requote correctly and preserve explicit shipping
   await f.open();change(f,f.root.querySelector('[data-nlx-extra=protection]'),false);await tick();await tick();
   await f.paymentStep();change(f,f.root.querySelector('[name=payment_choice][value=crypto]'),true);await tick();
   assert.equal(f.root.querySelector('[data-nlx-extra=protection]').checked,false);
-  assert.match(f.root.querySelector('[data-nlx-totals]').textContent,/Crypto discount \(5%\).*\$190\.00/);
+  assert.match(f.root.querySelector('[data-nlx-totals]').textContent,/Quantity savings.*\$10\.00.*Crypto discount \(5%\).*\$9\.50.*\$180\.50/);
   assert.deepEqual(f.requests.at(-1).body.delivery.extras,[]);
   f.root.querySelector('[name=sidebar_coupon]').value='BLACKFRIDAY15';f.root.querySelector('[data-nlx-coupon]').click();await tick();
   assert.match(f.root.querySelector('[data-nlx-totals]').textContent,/BLACKFRIDAY15 \(15%\).*\$30\.00.*Crypto discount \(5%\).*\$8\.50.*\$161\.50/);
@@ -81,7 +81,7 @@ test('method and coupon changes requote correctly and preserve explicit shipping
   assert.match(f.root.querySelector('[data-nlx-totals]').textContent,/Crypto discount \(5%\)/);
   change(f,f.root.querySelector('[name=payment_choice][value=card]'),true);await tick();
   assert.doesNotMatch(f.root.querySelector('[data-nlx-totals]').textContent,/Crypto discount/);
-  assert.match(f.root.querySelector('[data-nlx-totals]').textContent,/\$200\.00/);
+  assert.match(f.root.querySelector('[data-nlx-totals]').textContent,/Quantity savings.*\$10\.00.*\$190\.00/);
   assert.equal(f.root.querySelector('[data-nlx-extra=protection]').checked,false);
  }finally{f.dom.window.close();}
 });
