@@ -6,7 +6,7 @@ const crypto={...card,id:'00000000-0000-4000-8000-000000000002',native_provider:
 const bank={...card,id:'00000000-0000-4000-8000-000000000003',kind:'bank_transfer',native_provider:null};
 const products=[10001,20002,30003,40004].map((unit,index)=>({id:'compound-'+index,name:'Compound '+index,size:'5 mg',qty:1,unit_price_usd_cents:unit}));
 function record(overrides={}){
- return {kind:'goods',request:{address:{country:'US'},bulk_order:false,items:products.map(x=>({...x})),
+ return {kind:'goods',request:{research_builder_mode:'monthly_invoice',address:{country:'US'},bulk_order:false,items:products.map(x=>({...x})),
    checkout:{coupon:'',points:0,credit_cents:0,delivery:{shipping:'express',extras:[]}},...overrides}};
 }
 test('a paid month is priced from four exact SKU cents, with 40 percent per-item savings and no extra crypto discount',()=>{
