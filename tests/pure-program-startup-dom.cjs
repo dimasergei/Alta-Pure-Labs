@@ -159,7 +159,7 @@ test('COA and locale updates preserve an in-flight builder mount',async()=>{
   } finally {env.dom.window.close();}
 });
 
-for(const [route,earlyCoa] of [['/research-checkout',false],['/research-checkout.html',true]])test(route+' retains its quoted review and title without creating a recurring payment',async()=>{
+for(const [route,earlyCoa] of [['/research-checkout',false],['/research-checkout.html',true]])test(route+' retains its quoted review and links to a paid monthly invoice',async()=>{
   const env=await start(route,{earlyCoa});
   try {
     await until(()=>env.d.querySelector('.rc-layout'),'quoted research review');
@@ -174,8 +174,9 @@ for(const [route,earlyCoa] of [['/research-checkout',false],['/research-checkout
     assert.equal(env.d.querySelector('body > .ap-header'),header);assert.equal(env.d.querySelector('body > .ap-footer'),footer);
     assert.equal(env.d.querySelector('.rc-layout'),review);
     assert.equal(env.d.querySelectorAll('.rc-line').length,4);
-    assert.equal(env.d.querySelector('.rc-pay').disabled,true);
-    assert.match(env.d.querySelector('.rc-unavailable').textContent,/does not create a subscription/);
+    assert.equal(env.d.querySelector('.rc-pay').getAttribute('href'),'/checkout?stack=monthly');
+    assert.match(env.d.querySelector('.rc-summary').textContent,/new invoice|each new month|month/i);
+    assert.equal(env.d.querySelector('.rc-unavailable'),null);
     assert.equal(env.calls.filter(call=>call.body?.action==='quote').length,1);
     healthy(env);
   } finally {env.dom.window.close();}
