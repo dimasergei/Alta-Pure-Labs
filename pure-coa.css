@@ -215,3 +215,17 @@ html:root body.ap-site .pure-coa-page #ap-supplier-references > .ap-fine {
   .pure-coa-card-body { padding: 20px; }
   html:root body.ap-site .pure-coa-card-body dl { grid-template-columns: minmax(0, .85fr) minmax(0, 1.15fr); }
 }
+
+/* Same PURE editorial scale as Products, Contact and Partner. Existing filters and report viewer remain unchanged. */
+html:root body.ap-site .pure-coa-page{font-family:Archivo,Arial,sans-serif;background:#f7f7f7}
+html:root body.ap-site .pure-coa-page .ap-coa-hero{background:#0b0b0b}
+html:root body.ap-site .pure-coa-page .ap-coa-hero-inner{padding-top:55px;padding-bottom:67px}
+html:root body.ap-site .pure-coa-page .pure-coa-hero-copy .ap-eyebrow{display:inline-flex;align-items:center;gap:11px;padding:0;border:0;border-radius:0;font-size:11px;letter-spacing:.16em;font-weight:850;color:#d0d0d0}
+html:root body.ap-site .pure-coa-page .pure-coa-hero-copy .ap-eyebrow:before{content:"";display:inline-block;width:26px;height:2px;background:#fff}
+html:root body.ap-site .pure-coa-page .pure-coa-hero-copy h1{max-width:18ch;font-size:clamp(43px,5vw,72px);line-height:1.04;letter-spacing:-.06em;font-weight:900;color:#fff;margin:19px 0 20px}
+html:root body.ap-site .pure-coa-page .pure-coa-hero-copy p{font-size:16px;line-height:1.65;color:#dedede}
+html:root body.ap-site .pure-coa-page .ap-coa-search-panel{border-radius:20px;box-shadow:0 14px 40px #0000000b}
+html:root body.ap-site .pure-coa-page .ap-coa-card{border-radius:17px;box-shadow:0 8px 24px #00000008;transition:box-shadow .18s,border-color .18s}
+html:root body.ap-site .pure-coa-page .ap-coa-card:hover{border-color:#bfbfbf;box-shadow:0 14px 34px #00000012}
+html:root body.ap-site .pure-coa-page .ap-coa-results-heading p{font-weight:700}
+@media(max-width:640px){html:root body.ap-site .pure-coa-page .ap-coa-hero-inner{padding-top:42px;padding-bottom:49px}html:root body.ap-site .pure-coa-page .pure-coa-hero-copy h1{font-size:clamp(35px,9.3vw,52px)}html:root body.ap-site .pure-coa-page .pure-coa-hero-copy p{font-size:14px}}
