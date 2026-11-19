@@ -42,7 +42,7 @@ test('public review keeps all review content in its centered shell and preserves
   assert.equal(env.w.document.querySelector('.ap-header'),header);assert.equal(header.parentElement,env.w.document.body);
   assert.equal(env.w.document.querySelector('.ap-footer'),footer);assert.equal(footer.parentElement,env.w.document.body);
   assert.equal(env.w.document.body.className,'');
-  assert.equal(env.root.querySelector('.rc-pay').disabled,true);assert.equal(env.requests.length,1);assert.equal(env.added.length,0);
+  assert.equal(env.root.querySelector('.rc-pay').getAttribute('href'),'/checkout?stack=monthly');assert.equal(env.requests.length,1);assert.equal(env.added.length,0);
  }finally{env.dom.window.close();}
 });
 
@@ -106,19 +106,18 @@ test('a cart write failure is recoverable and never navigates to an empty or par
  }finally{env.dom.window.close();}
 });
 
-test('monthly review clearly remains a preview with no order, payment, subscription mutation or cart change',async()=>{
+test('monthly review quotes one period and links to checkout without charging or modifying the existing cart',async()=>{
  const env=setup({draft:{mode:'subscription',lines}});try{await env.render();
   assert.equal(env.requests.length,1);assert.equal(env.requests[0].body.action,'quote');assert.equal(env.requests[0].body.mode,'subscription');
   assert.match(env.root.querySelector('.rc-due').textContent,/\$168\.00\s*USD \/ month/);
   const terms=env.root.querySelector('.rc-terms').textContent;
   assert.match(terms,/Monthly until canceled/);assert.match(terms,/no minimum deliveries/);
-  assert.match(terms,/Edit future selections anytime/);assert.match(terms,/without waiting for a first shipment/);
-  assert.match(terms,/Cancel anytime/);assert.match(terms,/Cancellation stops future renewals/);
+  assert.match(terms,/Edit future selections anytime/);assert.match(terms,/Cancel anytime/);
   assert.doesNotMatch(terms,/Three deliveries|third delivery|after the first delivery/);
-  assert.match(env.root.querySelector('.rc-unavailable').textContent,/does not create a subscription, collect payment or schedule a delivery/);
-  assert.equal(env.root.querySelector('[data-rc-checkout]'),null);assert.equal(env.root.querySelector('form'),null);assert.equal(env.root.querySelector('.rc-pay').disabled,true);
-  env.root.querySelector('.rc-pay').click();assert.equal(env.requests.length,1,'unavailable monthly enrollment never submits another request');
-  assert.ok(env.root.querySelector('a[href="/research-builder?mode=one_time"]'));assert.equal(env.navigated.length,0);assert.equal(env.added.length,0);
+  assert.equal(env.root.querySelector('.rc-pay').getAttribute('href'),'/checkout?stack=monthly');
+  assert.match(env.root.querySelector('.rc-summary').textContent,/Pay another invoice/);
+  assert.equal(env.root.querySelector('[data-rc-checkout]'),null);assert.equal(env.root.querySelector('form'),null);
+  assert.equal(env.requests.length,1);assert.equal(env.navigated.length,0);assert.equal(env.added.length,0);
   assert.deepEqual(JSON.parse(env.w.localStorage.getItem('pp-cart')),existingCart);
  }finally{env.dom.window.close();}
 });
@@ -139,8 +138,8 @@ test('converted review prices retain the original quote and purchase mode withou
    assert.equal(total.dataset.usdCents,String(expected.total_cents));assert.match(total.textContent,mode==='one_time'?/280\.00/:/168\.00/);
    assert.match(env.root.querySelector('.rc-due small').textContent,/^USD/);
    assert.equal(env.requests.length,1);assert.deepEqual(env.requests[0].body,{action:'quote',items:lines,mode});
-   assert.equal(env.w.localStorage.getItem('ap-research-builder-v2'),draft);assert.equal(button.disabled,mode==='subscription');
-   button.click();
+   assert.equal(env.w.localStorage.getItem('ap-research-builder-v2'),draft);if(mode==='subscription')assert.equal(button.getAttribute('href'),'/checkout?stack=monthly');
+   else button.click();
    assert.deepEqual(env.added,mode==='one_time'?[lines]:[]);assert.deepEqual(env.navigated,mode==='one_time'?['/checkout']:[]);
    assert.equal(env.requests.length,1);
   }finally{env.dom.window.close();}
