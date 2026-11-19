@@ -75,7 +75,7 @@
   const pageFallback=(title,copy,href,label)=>()=>'<div class="pure-simple-page">'+heading('PURE',title,copy)+'<section class="ap-container ap-section"><a class="ap-button ap-button-secondary" href="'+href+'">'+label+' →</a></section></div>';
   const routes={
    '/bulk-orders':bulkPage,
-   '/rewards':pageFallback('Points & Credit','Sign in to view your issued points and store credit.','/account/points','View your balance'),
+   '/rewards':pageFallback('Points & Credit','Sign in to view your issued points and store credit.','/account#rewards-and-credit','View your balance'),
    '/coas':coaPage,
    '/contact':contactPage,'/partner-program':partnerPage,
    '/about':pageFallback('About PURE','Research compounds and product documentation for laboratory teams.','/shop','Explore the catalog'),

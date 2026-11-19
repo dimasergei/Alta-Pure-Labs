@@ -7,7 +7,7 @@ patch('account.js',s=>{
  // Keep checkout/program destinations explicit across internal auth links. The
  // existing checkout allowlist also validates any saved session destination.
  const authLinks=`function authReturnUrl(route){const next=safeCheckoutReturn(new URLSearchParams(location.search).get('returnTo'))||safeCheckoutReturn(sessionStorage.getItem('ap-account-return'));return route+(next?'?returnTo='+encodeURIComponent(next):'');}\n`;
- s=replace(s,'function route(){',authLinks+'function route(){');
+ s=replace(s,'function route(){',authLinks+"function route(){if(['/account/points','/account/points/','/account/store-credit','/account/store-credit/'].includes(location.pathname))return go('/account#rewards-and-credit');");
  s=replace(s,"if(['/account/login','/account/signup'].includes(p))","if(['/account/login','/account/signup','/account/reset-password'].includes(p))");
  for(const route of ['/account/login','/account/signup','/account/reset-password']){
   s=s.replaceAll(`href="${route}"`,`href="'+authReturnUrl('${route}')+'"`);
@@ -20,7 +20,7 @@ patch('account.js',s=>{
  }
  const start=s.indexOf('function accountNav(active)'),end=s.indexOf('async function overview()',start);
  if(start<0||end<0)throw Error('Account navigation missing');
- s=s.slice(0,start)+`function accountNav(active){const current=active.startsWith('/account/orders')||active==='/account/tracking'?'/account/purchases':active;const items=[['Overview','/account'],['Orders','/account/purchases'],['Membership','/account/membership'],['Auto-Stack™','/account/subscriptions'],['Points','/account/points'],['Store Credit','/account/store-credit'],['Profile','/account/profile'],['Partner','/account/partner'],['Support','/account/requests']];return '<nav class="account-nav" aria-label="Account sections">'+items.map(([label,url])=>'<a href="'+url+'"'+(current===url?' aria-current="page"':'')+'>'+label+'</a>').join('')+'<button type="button" id="logout" class="account-nav-logout">Log out</button></nav>';}
+ s=s.slice(0,start)+`function accountNav(active){const current=active.startsWith('/account/orders')||active==='/account/tracking'?'/account/purchases':active;const items=[['Overview','/account'],['Orders','/account/purchases'],['Membership','/account/membership'],['Auto-Stack™','/account/subscriptions'],['Profile','/account/profile'],['Partner','/account/partner'],['Support','/account/requests']];return '<nav class="account-nav" aria-label="Account sections">'+items.map(([label,url])=>'<a href="'+url+'"'+(current===url?' aria-current="page"':'')+'>'+label+'</a>').join('')+'<button type="button" id="logout" class="account-nav-logout">Log out</button></nav>';}
 `+s.slice(end);
  s=replace(s,"root.innerHTML=accountNav(p)+'<section id=\"direct-checkout-root\"></section>';document.getElementById('logout').onclick=logout;","document.body.classList.add('ap-checkout-page');root.innerHTML='<section id=\"direct-checkout-root\"></section>';");
  s=replace(s,"window.DirectCheckout.orders(document.getElementById('direct-orders-root'),auth,user)","window.AccountExperience.orders(document.getElementById('direct-orders-root'),auth,user,api,card)");

@@ -26,7 +26,8 @@ test("account navigation exposes the requested sections in order", () => {
   const end = account.indexOf("async function overview()", start);
   assert.ok(start >= 0 && end > start);
   const nav = account.slice(start, end);
-  const labels = ["Overview", "Points", "Store Credit", "Orders", "Profile", "Partner", "Log out"];
+  const labels = ["Overview", "Orders", "Profile", "Partner", "Log out"];
+  assert.doesNotMatch(nav,/\[\x27(?:Points|Store Credit)\x27,/);
   let previous = -1;
   for (const label of labels) {
     const next = nav.indexOf(label);

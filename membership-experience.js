@@ -80,7 +80,7 @@
     if (!root || !config?.plans) return;
     let period = options.period === 'annual' ? 'annual' : 'monthly';
     const render = focus => {
-      root.innerHTML = `<div class="mx-comparison">${toggle(period)}${renderCards(config,period,options)}<p class="mx-terms">${esc(terms(config))} <a href="/membership-terms.html">See full terms.</a></p></div>`;
+      root.innerHTML = `<div class="mx-comparison">${toggle(period)}${renderCards(config,period,options)}<p class="mx-terms"><a href="/membership-terms.html">See full terms.</a></p></div>`;
       root.querySelectorAll('[data-mx-period]').forEach(button => button.addEventListener('click',() => {period = button.dataset.mxPeriod; render(true);}));
       if (focus) root.querySelector(`[data-mx-period="${period}"]`)?.focus();
     };
