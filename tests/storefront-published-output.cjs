@@ -6,7 +6,8 @@ const retired=['offers.html','data/storefront-programs.json'];
 for(const file of retired)assert.equal(fs.existsSync(path.join(out,file)),false,'Retired artifact: '+file);
 for(const file of ['memberships.html','research-builder.html','membership-terms.html','membership-experience.js','membership-checkout.js','research-builder-client.js'])assert.ok(fs.existsSync(path.join(out,file)),'Restored program artifact: '+file);
 const config=JSON.parse(fs.readFileSync('vercel.json','utf8'));
-for(const route of ['/memberships','/research-builder','/research-checkout']){assert.ok(config.rewrites.some(r=>r.source===route),'Restored route: '+route);assert.ok(!config.redirects.some(r=>r.source===route),'Program route is not retired: '+route);}
+assert.ok(config.rewrites.some(r=>r.source==='/memberships'));assert.ok(!config.redirects.some(r=>r.source==='/memberships'));
+for(const route of ['/research-builder','/research-checkout'])assert.equal(config.redirects.find(r=>r.source===route)?.destination,'/memberships','Retired standalone enrollment: '+route);
 assert.ok(config.redirects.some(r=>r.source==='/offers'&&r.destination==='/shop'));
 const forbiddenCopy=/\bBOGO\b|buy\s+more.{0,15}get\s+more|shop\s+the\s+(?:BOGO\s+)?sale|Alta Gold|Alta Platinum|PURE GOLD|PURE PLATINUM/i;
 let pages=0;
@@ -24,5 +25,5 @@ for(const file of fs.readdirSync(out,{recursive:true}).filter(f=>f.endsWith('.ht
 assert.ok(fs.statSync(path.join(out,'assets/fonts/archivo-latin-variable.woff')).size>10000);
 assert.ok(fs.existsSync(path.join(out,'assets/fonts/OFL.txt')));
 assert.match(fs.readFileSync(path.join(out,'pure-brand.css'),'utf8'),/font-family: 'Archivo'/);
-const sitemap=fs.readFileSync(path.join(out,'sitemap.xml'),'utf8');assert.match(sitemap,/memberships/);assert.match(sitemap,/research-builder/);assert.doesNotMatch(sitemap,/\/offers/);
+const sitemap=fs.readFileSync(path.join(out,'sitemap.xml'),'utf8');assert.match(sitemap,/memberships/);assert.doesNotMatch(sitemap,/research-builder|research-checkout/);assert.doesNotMatch(sitemap,/\/offers/);
 console.log('Verified '+pages+' published pages, local typography, and restored PURE program routes and retirement of old promotions.');
