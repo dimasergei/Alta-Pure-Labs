@@ -174,7 +174,7 @@ test('bulk ordering grows and clears its summary while preserving exact prices, 
   assert.equal(summaryNode().dataset.empty,'false');assert.equal(summaryNode().querySelectorAll('.nl-bulk-menu-line').length,1);
   assert.equal(d.querySelector('[data-action="bulk-checkout"]').disabled,false,'one unit can check out');
   card.querySelector('[data-action="bulk-qty"][data-delta="10"]').click();
-  assert.equal(draft()[0].qty,11);assert.equal(summary(),format(first.price*11));
+  assert.equal(draft()[0].qty,11);assert.equal(summary(),format(first.price*11));assert.match(summaryNode().querySelector('.nl-bulk-tier-savings').textContent,/Quantity savings/);assert.match(summaryNode().querySelector('.nl-bulk-net').textContent,/After quantity savings/);
   let input=card.querySelector('[data-bulk-id]');input.value='100';input.dispatchEvent(new w.Event('input',{bubbles:true}));
   assert.equal(draft()[0].qty,100);assert.equal(summary(),format(first.price*100));
   assert.equal(card.querySelector('[data-delta="1"]').disabled,true);
@@ -208,7 +208,7 @@ test('bulk ordering grows and clears its summary while preserving exact prices, 
   remove(id,second.size);
   assert.equal(summaryNode().dataset.empty,'false');assert.equal(draft().length,1);assert.equal(summary(),format(first.price*100));
   remove(id,first.size);
-  assert.equal(summaryNode().dataset.empty,'true');assert.equal(draft().length,0);assert.equal(summary(),format(0));
+  assert.equal(summaryNode().dataset.empty,'true');assert.equal(draft().length,0);assert.equal(summary(),format(0));assert.equal(summaryNode().querySelector('.nl-bulk-tier-savings'),null);
   assert.equal(summaryNode().querySelectorAll('.nl-bulk-menu-product,.nl-bulk-menu-line').length,0);
   assert.equal(summaryNode().querySelector('[data-action="bulk-add-products"]').textContent,'ADD PRODUCTS');
   assert.equal(d.querySelector('[data-action="bulk-checkout"]').disabled,true);
