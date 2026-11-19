@@ -17,7 +17,7 @@
    const pending=active?null:data.membership_pending;
    const tier=active?.plan||'member',plan=config.plans[tier],name=window.PureMemberships.displayName(tier);
    const benefits=window.PureMemberships.benefits(config,tier),expires=dateLabel(active?.expires_at);
-   root.innerHTML=`<div class="cv-programs"><section class="cv-member-status cv-member-${tier==='elite'?'black':tier==='vip'?'white':'free'}"><div class="cv-program-heading"><span class="cv-program-kicker">YOUR MEMBERSHIP</span><span class="cv-program-badge">${active?'ACTIVE':'FREE ACCOUNT'}</span></div><h2>${esc(name)}</h2><p>${active?`Your paid benefits are active${expires?' through '+esc(expires):''}. Sign in at checkout to use your eligible member savings.`:'Your account brings your orders, tracking, points and store credit together. Choose a paid tier for more benefits.'}</p><div class="cv-member-metrics"><div><strong>${plan.discount_bps?plan.discount_bps/100+'%':'—'}</strong><span>${plan.discount_bps?'Eligible merchandise savings':'Paid tier savings available'}</span></div><div><strong>${plan.points_per_dollar||0}×</strong><span>Points per eligible $1</span></div><div><strong>${active?'Paid':'Free'}</strong><span>${active?'Current membership term':'No membership fee'}</span></div></div>${active?`<ul class="cv-member-benefits">${benefits.map(benefit=>`<li><span aria-hidden="true">✓</span><span>${esc(benefit.text)}${benefit.creditTerms?'<a class="mx-benefit-footnote" href="/membership-terms.html#pure-black-credit" aria-label="Read the PURE BLACK monthly credit terms"><span aria-hidden="true">†</span></a>':benefit.detail?'<small>'+esc(benefit.detail)+'</small>':''}</span></li>`).join('')}</ul>`:''}<div class="cv-program-actions"><a class="cv-program-primary" href="/shop">Shop with your account <span aria-hidden="true">↗</span></a>${active?'<a class="cv-program-primary" href="/account/stack">Build your Member Stack <span aria-hidden="true">↗</span></a>':''}<a class="cv-program-link" href="/account/points">View points & credit</a></div></section>${active?`<section class="cv-program-note"><h3>Your paid term</h3><p>Your benefits are available until ${esc(expires||'the end of your paid term')}. To continue, purchase a new term when this one ends.</p><a href="/membership-terms.html">Membership terms ↗</a></section><details class="cv-tier-options"><summary>Compare membership tiers <span aria-hidden="true">+</span></summary><div data-cv-memberships></div></details>`:'<section class="cv-tier-options"><h2>Choose your membership</h2><p class="cv-program-intro">Choose a monthly or annual term. Benefits start when your payment is confirmed; extend with another invoice at term end.</p><div data-cv-memberships></div></section>'}</div>`;
+   root.innerHTML=`<div class="cv-programs"><section class="cv-member-status cv-member-${tier==='elite'?'black':tier==='vip'?'white':'free'}"><div class="cv-program-heading"><span class="cv-program-kicker">YOUR MEMBERSHIP</span><span class="cv-program-badge">${active?'ACTIVE':'FREE ACCOUNT'}</span></div><h2>${esc(name)}</h2><p>${active?`Your paid benefits are active${expires?' through '+esc(expires):''}. Sign in at checkout to use your eligible member savings.`:'Your account brings your orders, tracking, points and store credit together. Choose a paid tier for more benefits.'}</p><div class="cv-member-metrics"><div><strong>${plan.discount_bps?plan.discount_bps/100+'%':'—'}</strong><span>${plan.discount_bps?'Eligible merchandise savings':'Paid tier savings available'}</span></div><div><strong>${plan.points_per_dollar||0}×</strong><span>Points per eligible $1</span></div><div><strong>${active?'Paid':'Free'}</strong><span>${active?'Current membership term':'No membership fee'}</span></div></div>${active?`<ul class="cv-member-benefits">${benefits.map(benefit=>`<li><span aria-hidden="true">✓</span><span>${esc(benefit.text)}${benefit.creditTerms?'<a class="mx-benefit-footnote" href="/membership-terms.html#pure-black-credit" aria-label="Read the PURE BLACK monthly credit terms"><span aria-hidden="true">†</span></a>':benefit.detail?'<small>'+esc(benefit.detail)+'</small>':''}</span></li>`).join('')}</ul>`:''}<div class="cv-program-actions"><a class="cv-program-primary" href="/shop">Shop with your account <span aria-hidden="true">↗</span></a>${active?'<button class="cv-program-primary" type="button" data-cv-open-member-stack>Build your Member Stack <span aria-hidden="true">↗</span></button>':''}<a class="cv-program-link" href="/account/points">View points & credit</a></div></section>${active?`<details id="member-stack" class="cv-tier-options cv-member-stack-feature" data-cv-member-stack-details><summary><strong>Member Stack</strong><small>${active.plan==='vip'?'20% off · included US standard shipping':'40% off · included US express shipping'}</small><span aria-hidden="true">+</span></summary><div class="cv-member-stack-inner"><div data-cv-member-stack-root></div></div></details><section class="cv-program-note"><h3>Your paid term</h3><p>Your benefits are available until ${esc(expires||'the end of your paid term')}. To continue, purchase a new term when this one ends.</p><a href="/membership-terms.html">Membership terms ↗</a></section><details class="cv-tier-options"><summary>Compare membership tiers <span aria-hidden="true">+</span></summary><div data-cv-memberships></div></details>`:'<section class="cv-tier-options"><h2>Choose your membership</h2><p class="cv-program-intro">Choose a monthly or annual term. Benefits start when your payment is confirmed; extend with another invoice at term end.</p><div data-cv-memberships></div></section>'}</div>`;
    if(pending){
     const pendingName=pending.name||window.PureMemberships.displayName(pending.plan),needsReview=pending.expired===true||pending.requires_review===true;
     const pendingExpiry=dateLabel(pending.expires_at)?new Intl.DateTimeFormat('en-US',{month:'short',day:'numeric',year:'numeric',hour:'numeric',minute:'2-digit',timeZoneName:'short'}).format(new Date(pending.expires_at)):null;
@@ -25,16 +25,29 @@
     root.querySelector('.cv-programs').insertAdjacentHTML('afterbegin',`<section class="cv-pending-membership"><div class="cv-program-heading"><span class="cv-program-kicker">MEMBERSHIP PURCHASE</span><span class="cv-program-badge">${needsReview?'NEEDS ATTENTION':'AWAITING PAYMENT'}</span></div><h2>${esc(pendingName)}</h2><p>${amount?esc(amount)+' · ':''}${pending.billing_period==='annual'?'One prepaid year':'One prepaid month'}.</p>${needsReview?'<p><strong>Unpaid membership needs attention.</strong> Open your saved order to check its status. If you have not sent payment, cancel the unpaid order before starting again. If you sent payment, contact PURE so it can be checked.</p>':'<p>Your benefits begin after this payment is confirmed.</p>'}${pendingExpiry&&!needsReview?'<p class="cv-pending-expiry">Complete this payment before '+esc(pendingExpiry)+'.</p>':''}<a class="cv-program-primary" href="/account/purchases${pending.invoice_id?'?id='+encodeURIComponent(pending.invoice_id):''}">${needsReview?'Review membership order':'Continue payment'} <span aria-hidden="true">↗</span></a></section>`);
     const heading=root.querySelector('.cv-tier-options>h2'),intro=root.querySelector('.cv-tier-options>.cv-program-intro');if(heading)heading.textContent='Membership tiers';if(intro)intro.textContent=needsReview?'Review your saved membership order before choosing another tier. Your account benefits have not changed.':'Your membership purchase is awaiting payment. Complete the existing purchase to activate your paid benefits.';
    }
+   const stackDetails=root.querySelector('[data-cv-member-stack-details]');
+   if(stackDetails){
+    let mounted=false;
+    const showStack=()=>{
+     if(!stackDetails.open||mounted)return;
+     const slot=stackDetails.querySelector('[data-cv-member-stack-root]');
+     if(!slot)return;
+     if(!window.PureResearchBuilder?.mount){
+      slot.innerHTML='<p class="cv-program-error" role="alert">The Member Stack builder could not load. Refresh Membership to try again.</p>';return;
+     }
+     mounted=true;
+     Promise.resolve(window.PureResearchBuilder.mount(slot,{auth})).catch(()=>{
+      mounted=false;slot.innerHTML='<p class="cv-program-error" role="alert">The Member Stack builder is temporarily unavailable. Refresh Membership to try again.</p>';
+     });
+    };
+    stackDetails.addEventListener('toggle',showStack);
+    const button=root.querySelector('[data-cv-open-member-stack]');
+    if(button)button.addEventListener('click',()=>{stackDetails.open=true;showStack();stackDetails.scrollIntoView?.({behavior:'smooth',block:'start'});});
+    if(location.hash==='#member-stack'){stackDetails.open=true;showStack();}
+   }
    window.PureMemberships.mount(root.querySelector('[data-cv-memberships]'),config,{active,pending,context:'account',period:active?.period==='annual'||pending?.billing_period==='annual'?'annual':'monthly'});
   }catch(error){root.innerHTML=`<section class="cv-program-error"><h2>Membership details</h2><p role="alert">${esc(error.message)}</p><a href="/account/membership">Try again ↗</a></section>`;}
  }
- async function memberStack(root,auth){
-    if(!window.PureResearchBuilder?.mount){
-      root.innerHTML='<section class="cv-program-error"><h2>Member Stack</h2><p role="alert">Please refresh your account to load this benefit.</p></section>';
-      return;
-    }
-    return window.PureResearchBuilder.mount(root,{auth});
-  }
   async function partner(root,auth){
   root.textContent='Loading your partner dashboard…';
   try{const d=await request('partner=dashboard',null,auth);
@@ -49,5 +62,5 @@
   }catch(e){root.textContent=e.message;}
  }
  const ref=new URLSearchParams(location.search).get('ref');if(ref&&/^[A-Z0-9][A-Z0-9_-]{2,23}$/i.test(ref))request('partner=visit',{action:'visit',code:ref}).catch(()=>{});
- window.ConversionUI={cart,partner,membershipCards,mountMembership,memberStack};
+ window.ConversionUI={cart,partner,membershipCards,mountMembership};
 })();
