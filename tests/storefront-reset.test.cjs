@@ -65,7 +65,8 @@ test('homepage keeps the announcement, five-vial hero and product links without 
   const coaCard=d.querySelector('.nl-editorial .nl-doc-sheet');
   assert.ok(coaCard,'featured COA card remains present');
   assert.equal(coaCard.querySelector('.nl-doc-sheet-top span').textContent,'VERIFIED LAB TESTING');
-  assert.equal(coaCard.querySelector('.nl-doc-report-link').getAttribute('href'),'/coas?product=retatrutide&size=20mg');
+  assert.equal(coaCard.querySelector('.nl-doc-sheet-top a, .nl-doc-sheet-top button'),null,'verified lab testing is text, not a duplicate link');
+  assert.equal(d.querySelector('.nl-doc-bottom a').getAttribute('href'),'/coas','existing bottom Explore COAS button remains');
   const reportFields=[...coaCard.querySelectorAll('.nl-doc-sheet-row')].map(row=>[
    row.querySelector('span').textContent.trim(),row.querySelector('b').textContent.trim()
   ]);
