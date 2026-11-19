@@ -42,8 +42,8 @@ async function setup(route){const errors=[];const console=new VirtualConsole();c
   dom.window.close();
  }
  {const{dom,d,w}=await setup('/shop');
-  assert.equal(d.querySelector('h1').textContent,'All Products');
-  assert.match(d.querySelector('.nl-shop-header p').textContent,/99%\+ purity/);
+  assert.equal(d.querySelector('h1').textContent,'ALL PRODUCTS.');
+  assert.match(d.querySelector('.nl-shop-header p').textContent,/choose the precise strength/);
   assert.equal(d.querySelector('.nl-shop-sale'),null);assert.equal(d.querySelector('#ap-result-count'),null);
   assert.deepEqual([...d.querySelectorAll('.nl-filter-pills button')].map(x=>x.textContent),['All Products','Peptides','Mist Applicators','Supplies','Equipment']);
   const cards=[...d.querySelectorAll('#ap-catalog-grid .ap-product-card')];assert.equal(cards.length,20);
@@ -79,10 +79,10 @@ async function setup(route){const errors=[];const console=new VirtualConsole();c
   assert.equal(d.querySelector('.nl-bulk-count'),null);assert.equal(d.querySelector('#ap-bulk-count'),null);
   const benefits=[...d.querySelectorAll('.nl-bulk-benefit')];
   assert.equal(benefits.length,4);
-  assert.deepEqual(benefits.map(benefit=>benefit.querySelector('.nl-bulk-benefit-copy').textContent),['unit pricing','product strengths','before payment','Product documentation']);
+  assert.deepEqual(benefits.map(benefit=>benefit.querySelector('.nl-bulk-benefit-copy').textContent),['Clear pricing','Exact strengths','Review before payment','Product documentation']);
   assert.equal(d.querySelector('.nl-bulk-benefit-shipping'),null);
   assert.equal(benefits[3].getAttribute('href'),'/coas');
-  assert.match(d.querySelector('.nl-bulk-hero p').textContent,/regular catalog unit prices/);
+  assert.match(d.querySelector('.nl-bulk-hero p').textContent,/Volume savings apply automatically/);
   assert.deepEqual([...d.querySelectorAll('[data-action="bulk-category"]')].map(button=>button.textContent),['All Products','Peptides','Mist Applicators','Supplies','Equipment']);
   const category=d.querySelector('[data-action="bulk-category"][data-group="Supplies"]');category.click();
   assert.equal(category.getAttribute('aria-pressed'),'true');
@@ -100,11 +100,11 @@ async function setup(route){const errors=[];const console=new VirtualConsole();c
   qty.value='10';qty.dispatchEvent(new w.Event('input',{bubbles:true}));
   assert.equal(subtotal(),money(variant.price*10),'larger quantities retain the same catalog unit price');
   assert.equal(w.AltaStore.read('ap-bulk-draft-v2',[])[0].qty,10,'the draft contains exactly the selected units');
-  assert.equal(d.querySelector('[data-action="bulk-checkout"]').textContent,'Checkout · '+money(variant.price*10));
+  assert.equal(d.querySelector('[data-action="bulk-checkout"]').textContent,'Checkout · '+money(variant.price*10*0.8));
   assert.equal(w.AltaStore.cart.length,0);
   assertCurrentView(d,'/bulk-orders after quantity changes');
   dom.window.close();
  }
- for(const route of ['/contact','/partner-program','/coas','/rewards','/track-order']){const{dom,d}=await setup(route);assert.ok(d.querySelector('h1'),route);if(route==='/rewards'||route==='/track-order'){assert.ok(d.querySelector('#ap-main a[href="'+(route==='/rewards'?'/account/points':'/account/purchases')+'"]'),route+' points to the signed-in account page');}else assert.ok(d.querySelector('#ap-main').textContent.trim().length>150,route);dom.window.close();}
+ for(const route of ['/contact','/partner-program','/coas','/rewards','/track-order']){const{dom,d}=await setup(route);assert.ok(d.querySelector('h1'),route);if(route==='/rewards'||route==='/track-order'){assert.ok(d.querySelector('#ap-main a[href="'+(route==='/rewards'?'/account#rewards-and-credit':'/account/purchases')+'"]'),route+' points to the signed-in account page');}else assert.ok(d.querySelector('#ap-main').textContent.trim().length>150,route);dom.window.close();}
  console.log('PASS: built reference pages, retired view removal, product size changes, regular quantities/prices, search/category filters and isolated bulk order.');
 })().catch(e=>{console.error(e);process.exitCode=1;});
