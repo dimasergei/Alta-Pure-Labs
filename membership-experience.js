@@ -15,7 +15,7 @@
     if (plan.discount_bps > 0) rows.push({strong:true, text:`${plan.discount_bps / 100}% off eligible merchandise`});
     if (plan.points_per_dollar > 0) rows.push({text:`${plan.points_per_dollar} points per eligible US$1 spent`});
     if (plan.free_shipping) rows.push({text:plan.shipping_label || config.membership_shipping_label || 'Free US shipping on eligible orders'});
-    if (['vip','elite'].includes(id)) rows.push({strong:true,text:'Member Stack: choose four compounds with 40% off, included BAC Water and US express shipping'});
+    if (['vip','elite'].includes(id)) rows.push({strong:true,text:id==='vip'?'Member Stack: choose four compounds with 20% off, included BAC Water and US standard shipping':'Member Stack: choose four compounds with 40% off, included BAC Water and US express shipping'});
     if (plan.early_access) rows.push({text:'Early access to eligible new releases'});
     if (plan.priority_fulfillment) rows.push({text:'Priority order fulfillment'});
     if (plan.monthly_credit_cents > 0) rows.push({text:`US${money(plan.monthly_credit_cents).replace('.00','')} monthly credit after a qualifying US$150+ order`, creditTerms:true});
