@@ -88,7 +88,7 @@ begin
     or coalesce(r->>'subscription','false')<>'false' or coalesce(r->>'automatic_renewal','false')<>'false'
     or coalesce(r->>'research_builder','false')<>'false'
     or r->>'billing_period' is not null or r->>'plan' is not null
-    or r->'bulk_order' is distinct from 'false'::jsonb
+    or coalesce(r->>'bulk_order','false')<>'false'
     or p ?| array['referral','bulk_tier','payment_discount','referral_discount','delivery_tax']
   then raise exception 'Invalid monthly AUTO-STACK payment terms' using errcode='22023'; end if;
   if jsonb_typeof(r->'items') is distinct from 'array' or jsonb_typeof(p->'lines') is distinct from 'array'
