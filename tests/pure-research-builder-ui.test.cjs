@@ -187,7 +187,7 @@ test('currency updates keep builder selections, focus, filters and canonical quo
     const expected=pricing.quote(JSON.parse(draft).lines,catalog,{mode:'subscription'}),monthly=root.querySelector('.nl-price-total strong');
     assert.equal(monthly.querySelector('[data-usd-cents]').dataset.usdCents,String(expected.total_cents));
     assert.equal(root.querySelector('.nl-builder-savings [data-usd-cents]').dataset.usdCents,String(expected.discount_cents));
-    assert.match(monthly.querySelector('small').textContent,/CAD \/ month/);
+    assert.match(monthly.querySelector('small').textContent,/CAD \/ paid month/);
     const monthlyCount=calls.filter(call=>call.body).length,monthlyDraft=w.localStorage.getItem('ap-research-builder-v2');
     await w.AltaLocale.setCurrency('USD');
     assert.equal(root.querySelector('.nl-price-total strong'),monthly);assert.match(monthly.textContent,/291\.68/);assert.match(monthly.querySelector('small').textContent,/USD \/ month/);
