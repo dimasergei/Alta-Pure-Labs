@@ -7,7 +7,7 @@ const {JSDOM,VirtualConsole}=require('jsdom');
 const root=path.resolve(__dirname,'..');
 const read=file=>fs.readFileSync(path.join(root,file),'utf8');
 const settle=()=>new Promise(resolve=>setTimeout(resolve,0));
-const retired=/BOGO|buy\s*1\s*,?\s*get\s*1|additional free|subscribe and save|5%.*bank|50%|60%/i;
+const retired=/BOGO|buy\s*1\s*,?\s*get\s*1|additional free|5%.*bank|60%/i;
 function referenceSource(file,scope,anchor){
  const source=read(file),views=require('../reference-ui-functions.cjs')[scope];
  assert.ok(source.includes(anchor),file+' exposes the reference view insertion point');
@@ -124,22 +124,26 @@ test('catalog photo cards preserve product navigation, integer prices, search, f
   assert.doesNotMatch(d.querySelector('.nl-shop').textContent,retired);
  }finally{await f.close();}
 });
-test('product quantity value tiers preserve the selected number of units and base SKU price',async()=>{
+test('product page shows only Subscribe & Save and bulk savings paths, with regular quantity pricing',async()=>{
  const f=await fixture('/product/retatrutide');
  try{
-  const {d,w}=f;
+  const {d,w}=f,product=w.AltaStore.product('retatrutide');
   assert.equal(d.querySelector('#ap-detail-quantity').value,'1');
-  assert.equal(d.querySelector('[data-bundle-quantity="1"]').getAttribute('aria-pressed'),'true');
-  assert.equal(d.querySelectorAll('.nl-badge,del,.nl-sale-box,[data-promo-active]').length,0);
-  const price=w.AltaStore.product('retatrutide').variants[0].price;
-  d.querySelector('[data-bundle-quantity="10"]').click();
-  assert.equal(d.querySelector('#ap-detail-quantity').value,'10');
+  assert.equal(d.querySelectorAll('[data-bundle-quantity]').length,0);
+  const offers=[...d.querySelectorAll('.nl-product-saving-card')];
+  assert.equal(offers.length,2);
+  assert.equal(offers[0].getAttribute('href'),'/memberships');
+  assert.match(offers[0].textContent,/SUBSCRIBE & SAVE/);
+  assert.match(offers[1].getAttribute('href'),/^\/bulk-orders\?product=retatrutide/);
+  assert.match(offers[1].textContent,/Save up to 50%/);
+  const price=product.variants[0].price;
+  const input=d.querySelector('#ap-detail-quantity');
+  input.value='10';input.dispatchEvent(new w.Event('input',{bubbles:true}));
   assert.match(d.querySelector('[data-bundle-estimate]').textContent,/for 10 vials/);
-   assert.match(d.querySelector('[data-bundle-estimate]').textContent,/SAVE 20%/);
-   assert.equal(d.querySelectorAll('[data-bundle-quantity]').length,4);
+  assert.doesNotMatch(d.querySelector('[data-bundle-estimate]').textContent,/SAVE|off/i);
   d.querySelector('[data-action="detail-add"]').click();
   assert.equal(w.AltaStore.cart[0].qty,10);assert.equal(w.AltaStore.cart[0].price,price);
-  assert.doesNotMatch(d.querySelector('.nl-detail').textContent,retired);
+  assert.doesNotMatch(d.querySelector('.ap-detail-copy').textContent,/BOGO|additional free/i);
  }finally{await f.close();}
 });
 
@@ -174,7 +178,7 @@ test('bulk ordering grows and clears its summary while preserving exact prices, 
   assert.equal(summaryNode().dataset.empty,'false');assert.equal(summaryNode().querySelectorAll('.nl-bulk-menu-line').length,1);
   assert.equal(d.querySelector('[data-action="bulk-checkout"]').disabled,false,'one unit can check out');
   card.querySelector('[data-action="bulk-qty"][data-delta="10"]').click();
-  assert.equal(draft()[0].qty,11);assert.equal(summary(),format(first.price*11));assert.match(summaryNode().querySelector('.nl-bulk-tier-savings').textContent,/Quantity savings/);assert.match(summaryNode().querySelector('.nl-bulk-net').textContent,/After quantity savings/);
+  assert.equal(draft()[0].qty,11);assert.equal(summary(),format(first.price*11));assert.match(summaryNode().querySelector('.nl-bulk-tier-savings').textContent,/Bulk savings 20%/);assert.match(summaryNode().querySelector('.nl-bulk-net').textContent,/After bulk savings/);
   let input=card.querySelector('[data-bulk-id]');input.value='100';input.dispatchEvent(new w.Event('input',{bubbles:true}));
   assert.equal(draft()[0].qty,100);assert.equal(summary(),format(first.price*100));
   assert.equal(card.querySelector('[data-delta="1"]').disabled,true);
@@ -214,7 +218,7 @@ test('bulk ordering grows and clears its summary while preserving exact prices, 
   assert.equal(d.querySelector('[data-action="bulk-checkout"]').disabled,true);
   assert.equal(JSON.stringify(w.AltaStore.cart),regularCart,'bulk selections never replace the existing regular cart');
   assert.equal(w.localStorage.getItem('pp-cart'),storedCart,'the saved regular cart remains intact');
-  assert.doesNotMatch(d.querySelector('#ap-main').textContent,/BOGO|membership|research builder|auto-stack|10 units minimum|50%|60%|free 2-day|express delivery/i);
+  assert.doesNotMatch(d.querySelector('#ap-main').textContent,/BOGO|membership|research builder|auto-stack|60%|free 2-day|express delivery/i);
  }finally{await f.close();}
 });
 
