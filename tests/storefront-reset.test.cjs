@@ -58,6 +58,23 @@ test('homepage keeps the announcement, five-vial hero and product links without 
   assert.equal(w.AltaStore.cart.length,0);
   assert.equal(d.querySelectorAll('del,[data-promo-clock],.nl-offer-grid').length,0);
   assert.ok(d.querySelector('[data-mx-membership-home]'),'the homepage includes the shared membership component mount');
+  const supplierReport=require('../data/supplier-coas.json').reports.find(r=>r.product_id==='retatrutide'&&r.size==='20mg'&&r.lab_name==='Prodigy Labs');
+  assert.ok(supplierReport,'the featured 20mg example must exist in the COA source library');
+  assert.match(supplierReport.lot,/laboratory sample 202607-PRO-005/);
+  assert.equal(supplierReport.inventory_lot_linked,false,'do not confuse the sample number with a delivered PURE lot');
+  const coaCard=d.querySelector('.nl-editorial .nl-doc-sheet');
+  assert.ok(coaCard,'featured COA card remains present');
+  assert.equal(coaCard.querySelector('.nl-doc-sheet-top span').textContent,'VERIFIED LAB TESTING');
+  assert.equal(coaCard.querySelector('.nl-doc-report-link').getAttribute('href'),'/coas?product=retatrutide&size=20mg');
+  const reportFields=[...coaCard.querySelectorAll('.nl-doc-sheet-row')].map(row=>[
+   row.querySelector('span').textContent.trim(),row.querySelector('b').textContent.trim()
+  ]);
+  assert.deepEqual(reportFields,[
+   ['COMPOUND','Retatrutide · 20mg'],
+   ['LAB',supplierReport.lab_name],
+   ['LAB SAMPLE','202607-PRO-005']
+  ]);
+  assert.doesNotMatch(coaCard.textContent,/ILLUSTRATIVE PREVIEW|FULFILLED LOT|Retatrutide\s*60\s*mg/i);
   assert.doesNotMatch(d.body.textContent,retired);
  }finally{await f.close();}
 });
