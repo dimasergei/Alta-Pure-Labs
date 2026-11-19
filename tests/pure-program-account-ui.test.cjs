@@ -17,7 +17,7 @@ test('active WHITE account shows the paid term and benefits without another purc
   await env.w.ConversionUI.mountMembership(env.root,auth);
   assert.match(env.root.querySelector('.cv-member-status h2').textContent,/PURE WHITE/);
   assert.match(env.root.querySelector('.cv-member-status').textContent,/5%/);
-  assert.match(env.root.querySelector('.cv-member-status').textContent,/No automatic renewal/);
+  assert.match(env.root.querySelector('.cv-member-status').textContent,/Current membership term/);
   assert.match(env.root.querySelector('.cv-program-note').textContent,/2099/);
   assert.equal(env.root.querySelectorAll('a[href^="/checkout?plan="]').length,0);
   assert.equal(env.calls[0].url,'/api/customer-config?checkout=account');
@@ -88,15 +88,15 @@ test('account API failures do not fabricate tier or subscription state',async()=
   assert.equal(env.root.querySelector('.cv-research-empty'),null);
   env.dom.window.close();
 });
-test('empty research account distinguishes one-time sets and unavailable monthly enrollment',async()=>{
+test('empty research account introduces paid monthly invoices',async()=>{
   const env=setup({subscriptions:[],subscription_available:false,one_time_available:true});
   await env.w.ConversionUI.subscriptions(env.root,auth);
   assert.equal(env.root.querySelector('.cv-research-heading h2').textContent,'AUTO-STACK™');
   assert.match(env.root.querySelector('.cv-research-heading a').textContent,/Open Auto-Stack™/);
   assert.match(env.root.textContent,/No paid Auto-Stack™ plan is linked to your account/);
-  assert.match(env.root.textContent,/Automatic monthly billing is not connected yet/);
-  assert.match(env.root.querySelector('.cv-program-note').textContent,/planned monthly subscription continues until canceled/);
-  assert.match(env.root.querySelector('.cv-program-note').textContent,/no minimum deliveries/);
+  assert.match(env.root.textContent,/Each month is paid by a new Card or Crypto invoice/);
+  assert.match(env.root.querySelector('.cv-program-note').textContent,/Each month is paid by a new Card or Crypto invoice/);
+  assert.doesNotMatch(env.root.querySelector('.cv-program-note').textContent,/automatic billing/);
   assert.match(env.root.querySelector('.cv-program-note').textContent,/Edit future selections or cancel anytime/);
   assert.equal(env.root.querySelector('.cv-research-plan'),null);
   assert.ok(env.root.querySelector('a[href="/research-builder"]'));
@@ -110,12 +110,12 @@ test('research plan and cycle history come from account records, without unsuppo
   assert.match(env.root.textContent,/\$240\.00/);
   assert.equal(env.root.querySelector('.cv-research-details dd').textContent,'2','history shows paid cycles without presenting a legacy minimum as a current requirement');
   assert.doesNotMatch(env.root.textContent,/initial cycles|third delivery|follow the first shipment/);
-  assert.match(env.root.querySelector('.cv-plan-support').textContent,/changes to future selections or cancellation/);
+  assert.match(env.root.querySelector('.cv-plan-support').textContent,/Pay the next month by a new invoice/);
   assert.match(env.root.textContent,/TRACK-123/);
   assert.equal(env.root.querySelectorAll('.cv-cycle-history li').length,2);
   assert.equal(env.root.querySelector('script'),null);
-  assert.equal(env.root.querySelectorAll('button').length,0);
-  assert.ok(env.root.querySelector('a[href="/contact"]'));
+  assert.equal(env.root.querySelectorAll('[data-cv-renew],[data-cv-edit],[data-cv-cancel]').length,3);
+  assert.equal(env.root.querySelector('a[href="/contact"]'),null);
   assert.ok(env.calls.every(call=>call.options.method==='GET'));
   env.dom.window.close();
 });
