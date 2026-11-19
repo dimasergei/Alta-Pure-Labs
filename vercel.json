@@ -85,6 +85,36 @@
   },
   "redirects": [
     {
+      "source": "/account/subscriptions",
+      "destination": "/account/stack",
+      "permanent": false
+    },
+    {
+      "source": "/research-subscriptions",
+      "destination": "/memberships",
+      "permanent": false
+    },
+    {
+      "source": "/research-checkout.html",
+      "destination": "/memberships",
+      "permanent": false
+    },
+    {
+      "source": "/research-checkout",
+      "destination": "/memberships",
+      "permanent": false
+    },
+    {
+      "source": "/research-builder.html",
+      "destination": "/memberships",
+      "permanent": false
+    },
+    {
+      "source": "/research-builder",
+      "destination": "/memberships",
+      "permanent": false
+    },
+    {
       "source": "/track-order",
       "destination": "/account/purchases",
       "permanent": false
