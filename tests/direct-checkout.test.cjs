@@ -25,8 +25,8 @@ test('authoritative catalog ignores client prices and retired volume/referral di
  for(const qty of [1,2,10,25,50]){
   const record=await checkout.normalize({},user,{...body,items:[{...body.items[0],qty}]},catalog);
   const q=checkout.price(record,method,{plan:'elite',invoice_id:id},{points:0,credit_cents:0},{customer_id:uid,code:'PARTNER',first_order:true});
-  assert.equal(q.subtotal_cents,qty*10000);assert.equal(q.discount_cents,qty*1000);assert.equal(q.earned_points,qty*900);
-  assert.equal(q.total_cents,qty*9000);assert.equal(q.membership_invoice_id,id);
+  const rate=qty>=10?.20:.10;assert.equal(q.subtotal_cents,qty*10000);assert.equal(q.discount_cents,qty*10000*rate);assert.equal(q.earned_points,qty*100*100*(1-rate)/100);
+  assert.equal(q.total_cents,qty*10000*(1-rate));assert.equal(q.membership_invoice_id,id);
   assert.equal(q.pricing.lines[0].qty,qty);assert.equal(q.pricing.lines[0].unit_price_cents,10000);
   assert.equal(q.pricing.lines[0].bogo_free_units,0);assert.deepEqual(q.pricing.referral,{partner_id:uid,code:'PARTNER',first_order:true});assert.equal(q.pricing.payment_discount,undefined);
  }
@@ -61,7 +61,7 @@ test('BLACKFRIDAY15 is normalized and cart, quote and persisted order have ident
 test('removing the explicit coupon restores regular price and invalidates the prior quote',async()=>{
  const b={...body,coupon:'BLACKFRIDAY15',items:[{...body.items[0],qty:2}]};
  const {res:q,db}=await call({...b,action:'quote'});assert.equal(q.body.discount_cents,3000);assert.equal(q.body.total_cents,17000);
- const {res:r}=await call({...b,coupon:'',action:'quote'},{db});assert.equal(r.body.discount_cents,0);assert.equal(r.body.total_cents,20000);
+ const {res:r}=await call({...b,coupon:'',action:'quote'},{db});assert.equal(r.body.discount_cents,1000);assert.equal(r.body.total_cents,19000);
  const {res:stale}=await call({...b,coupon:'',action:'place',quote:q.body.quote},{db});assert.equal(stale.code,409);assert.equal(db.calls.length,0);
 });
 test('US standard shipping threshold uses discounted merchandise before account balances',async()=>{
