@@ -100,7 +100,7 @@ async function setup(route){const errors=[];const console=new VirtualConsole();c
   qty.value='10';qty.dispatchEvent(new w.Event('input',{bubbles:true}));
   assert.equal(subtotal(),money(variant.price*10),'larger quantities retain the same catalog unit price');
   assert.equal(w.AltaStore.read('ap-bulk-draft-v2',[])[0].qty,10,'the draft contains exactly the selected units');
-  assert.equal(d.querySelector('[data-action="bulk-checkout"]').textContent,'Checkout · '+money(variant.price*10*0.8));
+  assert.equal(d.querySelector('[data-action="bulk-checkout"]').textContent,'Checkout · '+money(variant.price*10));
   assert.equal(w.AltaStore.cart.length,0);
   assertCurrentView(d,'/bulk-orders after quantity changes');
   dom.window.close();
