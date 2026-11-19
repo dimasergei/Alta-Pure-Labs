@@ -74,7 +74,7 @@ test('automatic renewal is never implied by a single unverified flag',() => {
   const c = config();c.automatic_renewal = true;c.billing_mode = 'automatic_recurring';
   const dom = setup('/memberships',c),d = dom.window.document;
   assert.equal(d.querySelector('.mx-terms').textContent.trim(),'See full terms.');
-  assert.match(d.querySelector('.mx-card-white .mx-billing-note').textContent,/One payment/);
+  assert.match(d.querySelector('.mx-card-white .mx-billing-note').textContent,/Monthly access/);
   assert.doesNotMatch(d.querySelector('.mx-card-white').textContent,/Renews monthly/);
   dom.window.close();
 });
@@ -114,7 +114,7 @@ test('currency changes preserve annual selection and keep credit and points bene
     assert.equal(black.querySelector('.mx-features [data-usd-cents]'),null);
     assert.equal(black.querySelector('.mx-benefit-footnote'),footnote);assert.equal(footnote.getAttribute('href'),'/membership-terms.html#pure-black-credit');
     assert.equal(footnote.getAttribute('aria-label'),'Read the PURE BLACK monthly credit terms');
-    assert.match(black.querySelector('.mx-billing-note').textContent,/One payment/);assert.equal(d.querySelector('.mx-terms').textContent.trim(),'See full terms.');
+    assert.match(black.querySelector('.mx-billing-note').textContent,/Monthly access/);assert.equal(d.querySelector('.mx-terms').textContent.trim(),'See full terms.');
     await w.AltaLocale.setCurrency('USD');
     assert.equal(d.querySelector('[data-mx-period="annual"]'),annual);assert.match(white.querySelector('.mx-price').textContent,/191\.90/);assert.equal(white.querySelector('.mx-price-period').textContent,'/ year');
     assert.equal(JSON.stringify(data),original);
