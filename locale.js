@@ -291,9 +291,11 @@
   }
   function formatValue(usdCents, code, {showCode=true,trimWhole=false}={}){
     const amount=usdCents*(code==="USD"?1:rateData.rates[code])/100;
-    const options={style:"currency",currency:code,currencyDisplay:showCode?"code":"symbol"};
+    // Display $ for USD; use unambiguous localized symbols for other supported currencies
+    // (CA$, A$, €, £) instead of a USD prefix or three-letter code.
+    const options={style:"currency",currency:code,currencyDisplay:"symbol"};
     if(code==="USD"&&trimWhole&&usdCents%100===0){options.minimumFractionDigits=0;options.maximumFractionDigits=0;}
-    return new Intl.NumberFormat(locales[language],options).format(amount).replace(/[\u00a0\u202f]/g," ");
+    return new Intl.NumberFormat("en-US",options).format(amount).replace(/[\u00a0\u202f]/g," ");
   }
   function priceParts(cents, options={}){
     const code=effectiveCurrency(),base=formatValue(cents,"USD"),local=code!=="USD";
