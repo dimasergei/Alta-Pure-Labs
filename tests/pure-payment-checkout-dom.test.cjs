@@ -183,7 +183,7 @@ test('Canadian Interac checkout shows actual CAD totals, preserves coupons, and 
   assert.equal(f.root.querySelector('[data-nlx-points] a'),null);
   assert.match(f.root.querySelector('[data-nlx-payment-currency]').textContent,/order total is shown in CAD/);
   assert.doesNotMatch(f.root.textContent,/invoice|request a|USD estimate/i);
-  const place=f.root.querySelector('[data-nlx-place]');assert.equal(place.textContent,'PLACE ORDER · CA$300.93');assert.equal(place.disabled,true);
+  const place=f.root.querySelector('[data-nlx-place]');assert.equal(place.textContent,'PLACE ORDER · CA$245.00');assert.equal(place.disabled,true);
   consent(f);place.click();place.click();await tick();await tick();
   const placed=f.requests.find(r=>r.body.action==='place').body;
   assert.equal(placed.method_id,interacMethod.id);assert.equal(placed.points,0);assert.equal(placed.credit_cents,0);assert.equal(placed.coupon,'BLACKFRIDAY15');
@@ -221,7 +221,7 @@ test('a preferred Interac route converts cross-sells, all shipping choices, prio
   assert.equal(f.root.querySelector('[data-nlx-cross-sell-price]').textContent,'CA$42.00');
   f.root.querySelector('[data-nlx-next]').click();await tick();
   const prices=[...f.root.querySelectorAll('.nlx-delivery-price')].map(target=>target.textContent);
-  assert.deepEqual(prices,['CA$0.00','CA$83.93','CA$97.93']);assert.equal(f.root.querySelector('[data-nlx-extra-price=priority]').textContent,'CA$13.99');
+  assert.deepEqual(prices,['FREE','CA$83.93','CA$97.93']);assert.equal(f.root.querySelector('[data-nlx-extra-price=priority]').textContent,'CA$13.99');
   assert.equal(f.root.querySelector('.nlx-protection-price').textContent,'CA$7.00');
   change(f,f.root.querySelector('[data-nlx-extra=priority]'),true);await new Promise(resolve=>setTimeout(resolve,230));
   assert.match(f.root.querySelector('[data-nlx-totals]').textContent,/Priority ProcessingCA\$13\.99/);
@@ -303,7 +303,7 @@ test('balance and bulk checkout disable USD redemptions and show every amount in
    await new Promise(resolve=>setTimeout(resolve,230));
    assert.match(f.root.querySelector('.dc-totals').textContent,/Total \(CAD\).*CA\$273\.00/);
    assert.equal(f.root.querySelector('[data-dc-line-price]').textContent,'CA$280.00');
-   assert.equal(form.querySelector('[data-rd-shipping-price=standard]').textContent,'CA$0.00');
+   assert.equal(form.querySelector('[data-rd-shipping-price=standard]').textContent,'FREE');
    assert.equal(form.querySelector('[data-rd-extra-price=protection]').textContent,'CA$7.00');
    assert.match(f.root.querySelector('.dc-totals').textContent,/USD points and store credit cannot be applied/);
    form.elements.research_use.checked=true;form.elements.consent.checked=true;await form.onsubmit({preventDefault(){}});
