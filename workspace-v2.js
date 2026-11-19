@@ -69,7 +69,7 @@
   root.innerHTML=`<div class="nl-bulk-summary-heading"><span class="ap-eyebrow">YOUR ORDER</span><h2>Your selections</h2><span class="nl-bulk-total-units">${units} units</span></div>
    ${units?'':'<button type="button" class="ap-button nl-bulk-add-products" data-action="bulk-add-products">ADD PRODUCTS</button>'}
    <div class="nl-bulk-summary-scroll" aria-label="Selected products">${selection}</div>
-   <div class="nl-bulk-totals"><div class="nl-bulk-estimate-total"><span>Merchandise subtotal</span><strong>${priceMarkup(subtotal)}</strong></div>${tierSavingsCents>0?`<div class="nl-bulk-tier-savings"><span>Bulk savings ('+tierRate/100+'%)</span><strong>−${priceMarkup(tierSavingsCents/100)}</strong></div><div class="nl-bulk-net"><span>After bulk savings</span><strong>${priceMarkup(tierNet)}</strong></div>`:''} </div>
+   <div class="nl-bulk-totals"><div class="nl-bulk-estimate-total"><span>Merchandise subtotal</span><strong>${priceMarkup(subtotal)}</strong></div>${tierSavingsCents>0?`<div class="nl-bulk-tier-savings"><span>Bulk savings ${tierRate/100}%</span><strong>−${priceMarkup(tierSavingsCents/100)}</strong></div><div class="nl-bulk-net"><span>After bulk savings</span><strong>${priceMarkup(tierNet)}</strong></div>`:''} </div>
    <button class="ap-button" data-action="bulk-checkout" ${units?'':'disabled'}>Checkout · ${priceMarkup(tierNet)}</button>
    <p class="ap-fine nl-bulk-checkout-note">Save 20% on 10–49 total units or 50% on 50+ units. Bulk savings don't stack with other discounts. Shipping is confirmed at checkout. Your regular cart stays saved.</p>`;
  }
