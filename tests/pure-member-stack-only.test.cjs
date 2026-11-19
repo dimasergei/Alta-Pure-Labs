@@ -60,12 +60,15 @@ test('public standalone checkout and separate subscription links are removed',()
  for(const pathname of ['/research-builder','/research-builder.html','/research-checkout','/research-checkout.html']){
   assert.equal(vercel.redirects.find(row=>row.source===pathname)?.destination,'/memberships');
  }
- assert.equal(vercel.redirects.find(x=>x.source==='/account/subscriptions')?.destination,'/account/stack');
+ assert.equal(vercel.redirects.find(x=>x.source==='/account/subscriptions')?.destination,'/account/membership');
+ for(const url of ['/account/stack','/my-account/stack'])assert.equal(vercel.redirects.find(x=>x.source===url)?.destination,'/account/membership');
  const shell=fs.readFileSync('public-build/index.html','utf8');
  assert.doesNotMatch(shell,/<a href="\/research-builder">/);
  assert.match(shell,/href="\/memberships"/);
  const account=fs.readFileSync('public-build/account.js','utf8');
- assert.match(account,/Member Stack/);
+ const tabSource=account.slice(account.indexOf('function accountNav'),account.indexOf('async function overview'));
+ assert.doesNotMatch(tabSource,/Member Stack|\/account\/stack/);
+ assert.match(tabSource,/Membership/);
  assert.doesNotMatch(account,/Auto-Stack™/);
  const client=fs.readFileSync('public-build/direct-checkout-client.js','utf8');
  assert.match(client,/member_stack/);
