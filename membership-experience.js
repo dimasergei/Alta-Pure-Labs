@@ -48,7 +48,7 @@
         <h3>${displayName(id)}</h3>
         <p class="mx-description">${free ? 'A place for every research order.' : id === 'vip' ? 'More value in your regular research routine.' : 'Our highest level of savings and account benefits.'}</p>
         <div class="mx-price">${free ? 'Free' : Number.isSafeInteger(fee) ? price(fee) : '—'}${free ? '' : `<span class="mx-price-period">/ ${period === 'annual' ? 'year' : 'month'}</span>`}</div>
-        <p class="mx-billing-note">${free ? 'No membership fee.' : recurring ? `Renews ${period === 'annual' ? 'annually' : 'monthly'} until canceled.` : `One payment. ${period === 'annual' ? 'One year' : 'One month'} of benefits.`}</p>
+        <p class="mx-billing-note">${free ? 'No membership fee.' : recurring ? `Renews ${period === 'annual' ? 'annually' : 'monthly'} until canceled.` : `${period === 'annual' ? '12-month' : 'Monthly'} access · pay each term separately.`}</p>
         ${action}
         <ul class="mx-features">${benefits(config,id).map(row => `<li${row.strong ? ' class="mx-feature-emphasis"' : ''}><span class="mx-check" aria-hidden="true">✓</span><span>${esc(row.text)}${row.creditTerms ? '<a class="mx-benefit-footnote" href="/membership-terms.html#pure-black-credit" aria-label="Read the PURE BLACK monthly credit terms"><span aria-hidden="true">†</span></a>' : ''}</span></li>`).join('')}</ul>
       </article>`;
@@ -57,7 +57,7 @@
 
   function terms(config) {
     const recurring = billingMode(config) === 'automatic_recurring';
-    return `${recurring ? 'Recurring billing terms are shown before payment.' : 'Paid memberships are prepaid. No automatic renewal.'} Benefits begin after payment is confirmed. Merchandise discounts, reward eligibility and credit terms are shown at checkout. Membership fees do not earn points.`;
+    return `${recurring ? 'Recurring billing terms are shown before payment.' : 'Memberships are purchased by the month or year.'} Benefits begin after payment is confirmed. Merchandise discounts, reward eligibility and credit terms are shown at checkout. Membership fees do not earn points.`;
   }
 
   function toggle(period) {
@@ -68,7 +68,7 @@
     const recurring = billingMode(config) === 'automatic_recurring';
     const answers = [
       ['When do my benefits start?', 'Your benefits begin when your membership payment is confirmed. Sign in to the same account at checkout so your tier, eligible discount and rewards can be applied.'],
-      ['How does monthly or annual billing work?', recurring ? 'Choose monthly or annual recurring billing. The exact price, renewal schedule and cancellation terms are shown before payment and in your account.' : 'Pay once for one month or one year of access. Your membership does not renew automatically. Annual plans provide the same benefits for a longer paid term at approximately 20% less than twelve monthly purchases.'],
+      ['How does monthly or annual billing work?', recurring ? 'Choose monthly or annual recurring billing. The exact price, renewal schedule and cancellation terms are shown before payment and in your account.' : 'Choose monthly or annual access, and pay a new invoice when the term ends. Annual access costs approximately 20% less than twelve monthly payments.'],
       ['How does the PURE BLACK monthly credit work?', 'After a qualifying paid product order with at least US$150 of eligible merchandise after discounts, US$50 is added to your account for a future order. It is issued once per UTC calendar month. Points and store credit do not reduce that qualifying merchandise amount.'],
       ['Can I buy a membership with my product order?', 'Membership checkout is a separate purchase. Your product cart is saved, and you can return to it after membership payment is confirmed. Eligible member benefits then apply to your order.'],
       ['What happens when my paid term ends?', 'Your account, order history and existing reward balances remain available. Paid tier benefits end with the membership term. You can choose another membership from your account.']
