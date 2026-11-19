@@ -190,7 +190,7 @@ test('currency updates keep builder selections, focus, filters and canonical quo
     assert.match(monthly.querySelector('small').textContent,/CAD \/ paid month/);
     const monthlyCount=calls.filter(call=>call.body).length,monthlyDraft=w.localStorage.getItem('ap-research-builder-v2');
     await w.AltaLocale.setCurrency('USD');
-    assert.equal(root.querySelector('.nl-price-total strong'),monthly);assert.match(monthly.textContent,/291\.68/);assert.match(monthly.querySelector('small').textContent,/USD \/ month/);
+    assert.equal(root.querySelector('.nl-price-total strong'),monthly);assert.match(monthly.textContent,/291\.68/);assert.match(monthly.querySelector('small').textContent,/USD \/ paid month/);
     assert.equal(w.localStorage.getItem('ap-research-builder-v2'),monthlyDraft);assert.equal(calls.filter(call=>call.body).length,monthlyCount);
     assert.equal(root.querySelector('[data-rb-checkout]'),null);assert.equal(env.added.length,0);
   }finally{env.dom.window.close();}
