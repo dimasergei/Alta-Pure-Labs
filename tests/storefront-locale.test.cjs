@@ -180,7 +180,7 @@ test('formatting respects exact USD cents, native currency minor units, optional
   await L.setCurrency('USD');host.innerHTML=L.price(10000,{trimWhole:true})+L.price(10001,{trimWhole:true});
   assert.equal(host.querySelectorAll('.pure-price')[0].textContent,'$100');assert.equal(host.querySelectorAll('.pure-price')[1].textContent,'$100.01');
   assert.match(L.price(10000,{showCode:false,trimWhole:true}),/\$100</);assert.equal(L.formatMoney(19.99),'$19.99');
-  await L.setCurrency('JPY');host.innerHTML=L.price(1999,{trimWhole:true});assert.equal(host.textContent,'JPY 2,999');assert.equal(host.querySelector('.pure-price').dataset.usdCents,'1999');
+  await L.setCurrency('JPY');host.innerHTML=L.price(1999,{trimWhole:true});assert.equal(host.textContent,'¥2,999');assert.equal(host.querySelector('.pure-price').dataset.usdCents,'1999');
   await L.setCurrency('GBP');host.innerHTML=L.price(10000,{trimWhole:true});assert.equal(host.textContent,'£80.00','only USD can trim whole-dollar decimals');
   assert.match(L.formatMoney(19.99),/£15\.99/);
  }finally{env.dom.window.close();}
@@ -192,7 +192,7 @@ test('dynamic marked prices update in place while authoritative unmarked checkou
   const {w}=env,host=markup(env);const priceNode=host.querySelector('.pure-price'),codeNode=host.querySelector('.pure-currency-code');
   priceNode.dataset.usdCents='12345';await tick();assert.match(priceNode.textContent,/CA\$172\.83/);
   const dynamic=w.document.createElement('div');dynamic.innerHTML='<span data-usd-cents="10000">USD 100.00</span>';w.document.querySelector('main').append(dynamic);await tick();assert.equal(dynamic.textContent,'CA$140.00');
-  await w.AltaLocale.setCurrency('EUR');assert.strictEqual(host.querySelector('.pure-price'),priceNode);assert.strictEqual(host.querySelector('.pure-currency-code'),codeNode);assert.equal(codeNode.textContent,'EUR');assert.match(priceNode.textContent,/EUR 111\.11/);
+  await w.AltaLocale.setCurrency('EUR');assert.strictEqual(host.querySelector('.pure-price'),priceNode);assert.strictEqual(host.querySelector('.pure-currency-code'),codeNode);assert.equal(codeNode.textContent,'EUR');assert.match(priceNode.textContent,/€111\.11/);
   assert.equal(w.document.getElementById('checkout-usd').textContent,'USD 119.99');assert.equal(w.document.getElementById('checkout-cad').textContent,'CAD 168.42');assertDocumentIntact(env);
  }finally{env.dom.window.close();}
 });
