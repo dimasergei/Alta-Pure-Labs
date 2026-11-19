@@ -33,13 +33,13 @@ test('PURE memberships execute verified fees and goods benefits atomically in di
  const member=async customer=>(await db.query('select * from commerce_internal.active_paid_membership($1,now())',[customer])).rows[0];
  const count=async(table,id)=>(await db.query('select count(*)::int n from '+table+(id?' where invoice_id=$1':''),id?[id]:[])).rows[0].n;
  let methods={};
- async function make({kind='goods',plan='vip',period='monthly',customer=randomUUID(),route='card',coupon='',points=0,credit=0,shipping='standard',extras=[],country=route==='interac'?'CA':'US',items,cat=catalog,rate=1375000,builder=false}={}){
+ async function make({kind='goods',plan='vip',period='monthly',customer=randomUUID(),route='card',coupon='',points=0,credit=0,shipping='standard',extras=[],country=route==='interac'?'CA':'US',items,cat=catalog,rate=1375000,builder=false,bulk=false}={}){
   const method=methods[route],user={id:customer,email:'membership-fixture@example.test'};
   const body={id:randomUUID(),kind,plan:kind==='membership'?plan:undefined,billing_period:kind==='membership'?period:undefined,
    method_id:method.id,checkout_version:config.version,consent:true,research_use:true,name:'Isolated researcher',
    coupon,points,credit_cents:credit,items:items||cat.slice(0,builder?4:2).map(x=>({id:x.id,size:x.variants[0].size,qty:1})),
    address:{line1:'123 Fixture Street',city:'Fixture City',region:country==='CA'?'ON':'NY',postal_code:country==='CA'?'N2L 1A1':'10001',country},
-   delivery:{shipping,extras},...(builder?{research_builder_mode:'one_time'}:{})};
+   delivery:{shipping,extras},...(builder?{research_builder_mode:'one_time'}:{}),...(bulk?{bulk_order:true}:{})};
   const record=await checkout.normalize({},user,body,cat);
   if(route==='interac'){
    record.request.checkout.input_digest=record.digest;
@@ -100,6 +100,9 @@ test('PURE memberships execute verified fees and goods benefits atomically in di
   await db.exec(read(migration));
   await db.exec(read('20261118231100_pure_quantity_tiers.sql'));
   await db.exec(read('20261118235500_pure_canadian_free_standard_shipping.sql'));
+  await db.exec(read('20261119213000_pure_membership_only_stack.sql'));
+  await db.exec(read('20261119221500_pure_member_stack_tier_benefits.sql'));
+  await db.exec(read('20261119231000_pure_bulk_order_volume_tiers.sql'));
   for(const route of Object.keys(ids))methods[route]=(await db.query('select * from commerce_payment_methods where id=$1',[ids[route]])).rows[0];
 
   await t.test('migration preserves history, retired recurring guards, and inactive/old Stripe receiving routes',async()=>{
@@ -326,6 +329,30 @@ test('PURE memberships execute verified fees and goods benefits atomically in di
   await t.test('standalone research subscriptions are retired and do not create a second paid plan',async()=>{
    await assert.rejects(make({builder:true}),/Member Stack|current AUTO-STACK/);
    assert.equal((await db.query("select count(*)::int n from public.commerce_invoices where request_data->>'research_builder_mode'='monthly_invoice'")).rows[0].n,0);
+  });
+
+  await t.test('10 and 50 combined bulk units get 20% and 50%; tampered totals cannot place',async()=>{
+   const mixed=(a,b)=>[
+    {id:catalog[0].id,size:catalog[0].variants[0].size,qty:a},
+    {id:catalog[1].id,size:catalog[1].variants[0].size,qty:b}
+   ];
+   for(const [a,b,rate] of [[6,4,2000],[25,25,5000]]){
+    const order=await make({bulk:true,items:mixed(a,b)});
+    assert.equal(order.pricing.quantity_discount_version,'pure-bulk-2026-11-v1');
+    assert.equal(order.pricing.bulk_unit_count,a+b);
+    assert.ok(order.pricing.lines.every(line=>line.discount_bps===rate&&line.discount_reason==='bulk_'+(rate===5000?'50':'10')));
+    await place(order);
+    const forged={...order,discount_cents:order.discount_cents-1};
+    await assert.rejects(place(forged),/totals|discount|Checkout|amount|changed/i);
+    const saved=await load(order.id);assert.equal(saved.discount_cents,order.discount_cents);
+   }
+   const crypto=await make({bulk:true,route:'crypto',items:mixed(25,25)});
+   assert.equal(crypto.pricing.crypto_discount_cents,0);
+   assert.equal(crypto.pricing.crypto_discount_eligible,false);
+   await place(crypto);
+   const cad=await make({bulk:true,route:'interac',country:'CA',items:mixed(6,4)});
+   assert.equal(cad.pricing.quantity_discount_version,'pure-bulk-2026-11-v1');
+   await place(cad);
   });
 
   await t.test('current prepaid fees may use existing Rampex and Polygon payment attempt/receipt paths exactly once',async()=>{
