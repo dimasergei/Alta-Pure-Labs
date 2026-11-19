@@ -114,7 +114,7 @@ test('currency changes preserve annual selection and keep credit and points bene
     assert.equal(black.querySelector('.mx-features [data-usd-cents]'),null);
     assert.equal(black.querySelector('.mx-benefit-footnote'),footnote);assert.equal(footnote.getAttribute('href'),'/membership-terms.html#pure-black-credit');
     assert.equal(footnote.getAttribute('aria-label'),'Read the PURE BLACK monthly credit terms');
-    assert.match(black.querySelector('.mx-billing-note').textContent,/Monthly access/);assert.equal(d.querySelector('.mx-terms').textContent.trim(),'See full terms.');
+    assert.match(black.querySelector('.mx-billing-note').textContent,/12-month access/);assert.equal(d.querySelector('.mx-terms').textContent.trim(),'See full terms.');
     await w.AltaLocale.setCurrency('USD');
     assert.equal(d.querySelector('[data-mx-period="annual"]'),annual);assert.match(white.querySelector('.mx-price').textContent,/191\.90/);assert.equal(white.querySelector('.mx-price-period').textContent,'/ year');
     assert.equal(JSON.stringify(data),original);
