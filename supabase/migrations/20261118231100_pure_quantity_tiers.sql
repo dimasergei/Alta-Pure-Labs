@@ -233,7 +233,10 @@ begin
       or (quantity_mode and line->'quantity_discount_cents' is distinct from to_jsonb(line_quantity_discount))
       or line->>'discount_reason' is distinct from reason or line->'bogo_free_units' is distinct from '0'::jsonb
       or line ?| array['membership_gift','free_qty','paid_qty','bank_discount_cents','payment_discount_cents','bulk_tier']
-    then raise exception 'Membership, coupon or Crypto arithmetic changed' using errcode='22023';end if;
+    then raise exception 'Arithmetic mismatch actual: %, expected: %',
+ jsonb_build_object('unit',line->'unit_price_cents','gross',line->'gross_cents','disc',line->'discount_cents','member',line->'membership_discount_cents','coupon',line->'coupon_discount_cents','crypto',line->'crypto_discount_cents','total',line->'line_total_cents','bps',line->'discount_bps','reason',line->>'discount_reason','qtyMode',quantity_mode),
+ jsonb_build_object('unit',unit,'gross',gross,'disc',line_base+line_crypto,'member',line_member,'coupon',line_coupon,'crypto',line_crypto,'total',gross-line_base-line_crypto,'bps',winner_rate+(10000-winner_rate)*crypto_rate/10000,'reason',reason,'qtyMode',quantity_mode)
+ using errcode='22023';end if;
   end loop;
   if quantity_mode then
     for n in 0..jsonb_array_length(usd_amounts)-1 loop
