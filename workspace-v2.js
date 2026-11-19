@@ -68,7 +68,7 @@
    <div class="nl-bulk-summary-scroll" aria-label="Selected products">${selection}</div>
    <div class="nl-bulk-totals"><div class="nl-bulk-estimate-total"><span>Merchandise subtotal</span><strong>${priceMarkup(subtotal)}</strong></div>${tierSavingsCents>0?`<div class="nl-bulk-tier-savings"><span>Quantity savings</span><strong>−${priceMarkup(tierSavingsCents/100)}</strong></div><div class="nl-bulk-net"><span>After quantity savings</span><strong>${priceMarkup(tierNet)}</strong></div>`:''} </div>
    <button class="ap-button" data-action="bulk-checkout" ${units?'':'disabled'}>Checkout · ${priceMarkup(tierNet)}</button>
-   <p class="ap-fine nl-bulk-checkout-note">Final shipping, coupon, membership and eligible Crypto savings are calculated at checkout. Your regular cart is kept for later.</p>`;
+   <p class="ap-fine nl-bulk-checkout-note">Shipping, coupons and eligible Crypto savings are calculated at checkout. Your regular cart is kept for later.</p>`;
  }
  function render(path,root){
   if(!root)return;
