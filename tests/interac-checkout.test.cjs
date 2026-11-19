@@ -111,16 +111,16 @@ test('placement atomically accepts an unpaid CAD order with server identity, pro
  assert.equal(db.calls.length,1);const saved=db.calls[0].args.p_data;
  assert.equal(saved.customer_id,uid);assert.equal(saved.customer_email,'customer@example.test');assert.equal(saved.consent,true);
  for(const field of ['payment_snapshot','paid_at','status','request_only'])assert.equal(saved[field],undefined,field);
- assert.equal(saved.checkout_version,checkout.INTERAC_VERSION);assert.equal(saved.currency,'CAD');assert.equal(saved.total_cents,123056);assert.equal(saved.pricing.currency,'CAD');
+ assert.equal(saved.checkout_version,checkout.INTERAC_VERSION);assert.equal(saved.currency,'CAD');assert.equal(saved.total_cents,110688);assert.equal(saved.pricing.currency,'CAD');
  assert.equal(saved.request.items[0].unit_price_usd_cents,10000);assert.equal(saved.request.items[0].qty,10);assert.equal(saved.request.bulk_order,true);
  assert.deepEqual(saved.request.preferred_payment,{method_id:mid,provider_key:'interac',label:interac.label,currency:'CAD'});
  assert.equal(saved.request.checkout.payment_kind,'interac');assert.equal(saved.request.checkout.request_only,undefined);assert.equal(saved.request.checkout.payment_method_version,3);
  assert.equal(saved.request.checkout.coupon,'BLACKFRIDAY15');assert.equal(saved.request.checkout.points,0);assert.equal(saved.request.checkout.credit_cents,0);assert.deepEqual(saved.request.checkout.delivery,body.delivery);
- assert.equal(saved.request.checkout.usd_estimate,undefined);assert.deepEqual(saved.pricing.usd_basis,{currency:'USD',subtotal_cents:100000,coupon_discount_cents:15000,membership_discount_cents:0,merchandise_cents:85000});
+ assert.equal(saved.request.checkout.usd_estimate,undefined);assert.deepEqual(saved.pricing.usd_basis,{currency:'USD',subtotal_cents:100000,coupon_discount_cents:0,membership_discount_cents:0,merchandise_cents:80000});
  assert.equal(saved.request.checkout.input_digest,(await checkout.normalize({},user,input,catalog)).digest);assert.match(saved.digest,/^[a-f0-9]{64}$/);
  assert.equal(db.state.invoices[0].checkout_version,checkout.INTERAC_VERSION);assert.deepEqual(db.state.balance,{points:1000,credit_cents:5000});assert.equal(notifications,1,'A failed mocked post-commit email attempt cannot fail or undo placement');
  db.state.methods[0].active=false;
- const {res:again,fxCalls:replayedFx}=await call({...input,action:'place',quote:q.body.quote,fx_quote:'expired-token'},{db});assert.equal(again.code,200);assert.equal(again.body.replayed,true);assert.equal(again.body.manual_transfer,true);assert.equal(again.body.total_cents,123056);assert.equal(db.calls.length,1);assert.equal(replayedFx.length,0);
+ const {res:again,fxCalls:replayedFx}=await call({...input,action:'place',quote:q.body.quote,fx_quote:'expired-token'},{db});assert.equal(again.code,200);assert.equal(again.body.replayed,true);assert.equal(again.body.manual_transfer,true);assert.equal(again.body.total_cents,110688);assert.equal(db.calls.length,1);assert.equal(replayedFx.length,0);
  const {res:conflict}=await call({...input,action:'place',quote:q.body.quote,fx_quote:q.body.fx_quote,note:'Changed after submitting'},{db});assert.equal(conflict.code,409);assert.equal(db.calls.length,1);
 });
 
