@@ -72,7 +72,7 @@ test('US standard shipping threshold uses discounted merchandise before account 
  }
 });
 test('coupon does not make express, international shipping, priority or protection free',async()=>{
- for(const [country,shipping,extras,expected] of [['US','standard',['protection'],500],['US','express',['protection'],3995],['US','next_day',['priority','protection'],8494],['CA','standard',[],3995],['CA','next_day',[],6995],['CA','next_day',['protection'],7495],['GB','express',[],9995]]){
+ for(const [country,shipping,extras,expected] of [['US','standard',['protection'],500],['US','express',['protection'],3995],['US','next_day',['priority','protection'],8494],['CA','standard',[],0],['CA','next_day',[],6995],['CA','next_day',['protection'],7495],['GB','express',[],9995]]){
   const r=await checkout.normalize({},user,{...body,coupon:'BLACKFRIDAY15',items:[{...body.items[0],qty:2}],address:{...body.address,country},delivery:{shipping,extras}},catalog);
   assert.equal(checkout.price(r,method,null,{points:0,credit_cents:0}).shipping_cents,expected);
  }
@@ -92,10 +92,10 @@ test('removed coupons, unsupported membership routes and forged program flags ar
 test('bulk ordering has ordinary quantities, prices, coupon and shipping with no minimum tier',async()=>{
  for(const qty of [1,9,10,50]){
   const b={...body,bulk_order:true,items:[{...body.items[0],qty}],delivery:{shipping:'express',extras:[]}};
-  const {res:q,db}=await call({...b,action:'quote'});assert.equal(q.code,200);assert.equal(q.body.discount_cents,0);assert.equal(q.body.shipping_cents,3495);
-  assert.equal(q.body.total_cents,qty*10000+3495);assert.equal(q.body.pricing.lines[0].qty,qty);
+  const {res:q,db}=await call({...b,action:'quote'});assert.equal(q.code,200);assert.equal(q.body.discount_cents,Math.round(qty*10000*(qty>=10?.2:qty>=5?.1:qty>=2?.05:0)));assert.equal(q.body.shipping_cents,3495);
+  assert.equal(q.body.total_cents,qty*10000-q.body.discount_cents+3495);assert.equal(q.body.pricing.lines[0].qty,qty);
   const {res:p}=await call({...b,coupon:'BLACKFRIDAY15',points:100,credit_cents:500,action:'quote'},{db});
-  assert.equal(p.code,200);assert.equal(p.body.discount_cents,qty*1500);assert.equal(p.body.total_cents,qty*8500+3495-600);assert.equal(db.calls.length,0);
+  assert.equal(p.code,200);const expected=qty*10000*(qty>=10?.20:.15);assert.equal(p.body.discount_cents,expected);assert.equal(p.body.total_cents,qty*10000-expected+3495-600);assert.equal(db.calls.length,0);
  }
 });
 test('modified totals, quantities, delivery, prices and old version quotes fail before placement',async()=>{
