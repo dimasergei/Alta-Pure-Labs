@@ -86,7 +86,7 @@
       ] : [
         ['4','Compounds in one set','One of each selected strength'],
         ['Your choice','Choose every compound','Built from the current catalog'],
-        ['One payment','No automatic renewal','Member pricing applies at checkout'],
+        ['One-time purchase','Choose your set','Member pricing applies at checkout'],
         ['COAs','Product documentation','Explore available batch reports']
       ]).map(([value,label,detail],index) => `<${!monthly && index === 3 ? 'a href="/coas"' : 'article'} class="nl-builder-benefit${!monthly && index === 3 ? ' nl-builder-benefit-coa' : ''}"><strong class="nl-builder-benefit-value">${esc(value)}</strong><span>${esc(label)}</span><small>${esc(detail)}${!monthly && index === 3 ? ' ↗' : ''}</small></${!monthly && index === 3 ? 'a' : 'article'}>`).join('');
     }
