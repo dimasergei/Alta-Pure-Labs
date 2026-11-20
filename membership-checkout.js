@@ -1,18 +1,13 @@
 (()=>{
  'use strict';
  const esc=value=>String(value??'').replace(/[&<>"']/g,char=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[char]));
- const money=(value,currency='USD')=>new Intl.NumberFormat('en-US',{style:'currency',currency,currencyDisplay:'code'}).format(value/100);
+ const money=(value,currency='USD')=>new Intl.NumberFormat('en-US',{style:'currency',currency,currencyDisplay:'symbol'}).format(value/100);
  const field=(label,name,value='',attributes='')=>'<label>'+label+'<input name="'+name+'" value="'+esc(value)+'" '+attributes+'></label>';
  function offer(root,quote,config,actions={}){
   if(!root)return;
   const membership=quote?.membership,addon=quote?.pricing?.membership_addon;
   if(membership){root.hidden=true;return;}
-  if(addon){
-   root.hidden=false;
-   root.innerHTML='<div class="pm-offer pm-offer-added"><span class="pm-eyebrow">ADDED TO ORDER</span><h3>'+esc(addon.name)+'</h3><div class="pm-offer-actions"><strong>'+esc(money(addon.fee_cents,quote.currency))+'</strong><button type="button" class="ap-button" data-pm-remove>Remove</button></div></div>';
-   root.querySelector('[data-pm-remove]').onclick=()=>actions.onRemove?.();
-   return;
-  }
+  if(addon){root.hidden=true;return;}
   if(!config?.memberships_enabled||!quote?.membership_offer){root.hidden=true;return;}
   const tiers=['vip','elite'],months=['monthly','annual'],selected=actions.selection||{plan:'vip',period:'monthly'},
    plan=config.plans[selected.plan]||config.plans.vip;
