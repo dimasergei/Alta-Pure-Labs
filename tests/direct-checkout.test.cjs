@@ -34,7 +34,7 @@ test('authoritative catalog ignores client prices and retired volume/referral di
 test('existing points and store credit remain payment value without changing regular source prices',async()=>{
  const record=await checkout.normalize({},user,{...body,points:500,credit_cents:1000},catalog);
  const q=checkout.price(record,method,null,{points:600,credit_cents:1200});
- assert.equal(q.total_cents,9995);assert.equal(q.discount_cents,0);assert.equal(q.earned_points,0);
+ assert.equal(q.total_cents,9295);assert.equal(q.discount_cents,0);assert.equal(q.earned_points,0);
  assert.equal(q.points_redeemed,500);assert.equal(q.credit_redeemed_cents,1000);
  assert.throws(()=>checkout.price(record,method,null,{points:499,credit_cents:1200}),/available/);
  assert.throws(()=>checkout.price(record,method,null,{points:600,credit_cents:999}),/credit/);
@@ -65,7 +65,7 @@ test('removing the explicit coupon restores regular price and invalidates the pr
  const {res:stale}=await call({...b,coupon:'',action:'place',quote:q.body.quote},{db});assert.equal(stale.code,409);assert.equal(db.calls.length,0);
 });
 test('US standard shipping threshold uses discounted merchandise before account balances',async()=>{
- for(const [cents,coupon,shipping] of [[14999,'',1195],[15000,'',0],[17646,'BLACKFRIDAY15',1195],[17647,'BLACKFRIDAY15',0]]){
+ for(const [cents,coupon,shipping] of [[14999,'',795],[15000,'',0],[17646,'BLACKFRIDAY15',795],[17647,'BLACKFRIDAY15',0]]){
   const cat=[{...catalog[0],variants:[{size:'5mg',price:cents/100}]}];
   const r=await checkout.normalize({},user,{...body,coupon,points:500,credit_cents:1000},cat),q=checkout.price(r,method,null,{points:1000,credit_cents:2000});
   assert.equal(q.shipping_cents,shipping,'subtotal '+cents+' '+coupon);assert.equal(q.total_cents,cents-Math.round(cents*(coupon?0.15:0))+shipping-1500);
@@ -155,7 +155,7 @@ test('authentication, origin, malformed cart and credit issuance fail closed',as
 });
 test('public preview needs no card processor and public/account terms expose current PURE plans',async()=>{
  const db=dbMock({paymentMethods:[]});const {res}=await call({...body,country:'CA',delivery:{shipping:'standard',extras:['protection']}},{db,params:'checkout=cart',headers:{authorization:''}});
- assert.equal(res.code,200);assert.equal(res.body.total_cents,14495);assert.equal(db.calls.length,0);
+ assert.equal(res.code,200);assert.equal(res.body.total_cents,12995);assert.equal(db.calls.length,0);
  for(const params of ['checkout=public','']){const r=response();await checkout.handle({method:'GET',headers:{authorization:'Bearer fixture-auth-token-long-enough'}},r,new URLSearchParams(params),{env,db,catalog});
   assert.equal(r.code,200);assert.equal(r.body.terms.memberships,undefined);assert.equal(r.body.terms.membership_days,undefined);assert.equal(r.body.terms.renewal,undefined);
   assert.equal(r.body.terms.conversion.plans.vip.name,'PURE WHITE');assert.equal(r.body.terms.conversion.plans.elite.name,'PURE BLACK');assert.equal(r.body.terms.conversion.automatic_renewal,false);assert.equal(r.body.config.points_per_dollar,0);
@@ -169,7 +169,7 @@ test('signed partner attribution and existing commissions do not add a customer 
  for(const extra of [{},{coupon:'BLACKFRIDAY15'}]){
   const db=dbMock({partner}),{res}=await call({...body,action:'quote',...extra},{db,headers:{cookie}});
   assert.equal(res.code,200);assert.deepEqual(res.body.pricing.referral,{partner_id:partner.customer_id,code:partner.code,first_order:true});
-  assert.equal(res.body.discount_cents,extra.coupon?1500:0);assert.equal(res.body.total_cents,extra.coupon?9695:11195);
+  assert.equal(res.body.discount_cents,extra.coupon?1500:0);assert.equal(res.body.total_cents,extra.coupon?9295:10795);
  }
  const {res}=await call({...body,action:'quote'},{db:dbMock({partner}),headers:{cookie:cookie+'forged'}});
  assert.equal(res.code,200);assert.equal(res.body.pricing.referral,undefined);assert.equal(res.body.discount_cents,0);
