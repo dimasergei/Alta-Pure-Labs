@@ -114,41 +114,48 @@ async function setup(route){const errors=[];const console=new VirtualConsole();c
   dom.window.close();
  }
  for(const route of ['/contact','/partner-program','/coas','/rewards','/track-order']){const{dom,d}=await setup(route);assert.ok(d.querySelector('h1'),route);if(route==='/rewards'||route==='/track-order'){assert.ok(d.querySelector('#ap-main a[href="'+(route==='/rewards'?'/account#rewards-and-credit':'/account/purchases')+'"]'),route+' points to the signed-in account page');}else assert.ok(d.querySelector('#ap-main').textContent.trim().length>150,route);dom.window.close();}
- // Both public information pages share PURE's final editorial stylesheet.
+ // COAs and Partner Program use PURE's original dark hero and shared bold uppercase display typography.
  {
-  const editorial=read('public-build/pure-editorial-parity.css');
-  assert.match(editorial,/pure-coa-page \.ap-coa-hero/);
-  assert.match(editorial,/pure-partner-program-page \.nl-partner-hero/);
-  assert.match(editorial,/font-family:Archivo,Arial,sans-serif/);
-  assert.match(editorial,/@media\(max-width:767px\)/);
-  assert.match(read('public-build/index.html'),/href="\/pure-editorial-parity\.css\?v=20261120-editorial"/);
+  const html=read('public-build/index.html'),stylesheet=read('public-build/pure-coa.css');
+  assert.doesNotMatch(html,/pure-editorial-parity\.css/,'the light theme override was removed');
+  assert.match(stylesheet,/Dark, high-contrast editorial headers/);
+  assert.match(stylesheet,/\.pure-coa-hero-copy h1\{/);
+  assert.match(stylesheet,/\.nl-partner-hero h1\{/);
+  assert.match(stylesheet,/background:#0b0b0b!important/);
+  assert.match(stylesheet,/color:#fff!important/);
+  assert.match(stylesheet,/@media\(max-width:767px\)/);
  }
  {
-  const {dom,d}=await setup('/coas');
-  const page=d.querySelector('.pure-coa-page');
-  assert.ok(page,'COA page has its own styling scope');
-  assert.ok(page.querySelector('.ap-coa-hero.pure-editorial-hero'));
-  assert.match(page.querySelector('h1').textContent,/Find your product\s+documentation\./);
-  assert.ok(page.querySelector('.pure-coa-hero-art'),'PURE logo artwork is retained');
+  const {dom,d}=await setup('/coas'),page=d.querySelector('.pure-coa-page');
+  assert.ok(page,'COA library has a scoped design');
+  assert.ok(page.querySelector('.ap-coa-hero'));
+  assert.equal(page.querySelector('.ap-coa-hero.pure-editorial-hero'),null,'original hero structure restored');
+  const title=page.querySelector('.pure-coa-hero-copy h1');
+  assert.equal(title.textContent,'FIND YOUR PRODUCTDOCUMENTATION.');
+  assert.equal(title.textContent,title.textContent.toUpperCase());
+  assert.equal(title.querySelector('em').textContent,'DOCUMENTATION.');
+  assert.ok(page.querySelector('.pure-coa-hero-art'),'PURE identity artwork remains');
   for(const id of ['ap-coa-query','ap-coa-product','ap-coa-size','ap-coa-lab','ap-coa-reset','ap-supplier-references'])
-   assert.ok(page.querySelector('#'+id),'COA search/report control retained: '+id);
+   assert.ok(page.querySelector('#'+id),'COA filter/report function remains: '+id);
   assert.equal(page.querySelector('#ap-coa-reset').type,'button');
   assert.equal(page.querySelector('.ap-coa-results-heading a').getAttribute('href'),'/contact');
   dom.window.close();
  }
  {
   const {dom,d}=await setup('/partner-program');
-  const page=d.querySelector('.pure-partner-program-page');
-  assert.ok(page,'Partner Program has its own styling scope');
-  assert.ok(page.querySelector('.nl-partner-hero.pure-editorial-hero'));
-  assert.ok(page.querySelector('.pure-editorial-watermark'),'PURE watermark is retained');
-  assert.match(page.querySelector('h1').textContent,/Good research grows/);
-  const rates=[...page.querySelectorAll('.nl-partner-rates article')];
+  const hero=d.querySelector('.nl-partner-hero'),h1=hero?.querySelector('h1');
+  assert.ok(hero,'Partner page retains the original high-contrast black hero');
+  assert.ok(h1);
+  assert.equal(h1.textContent,'GOOD RESEARCH GROWSTHROUGH GOOD CONNECTIONS.');
+  assert.equal(h1.textContent,h1.textContent.toUpperCase());
+  assert.equal(h1.querySelector('em').textContent,'THROUGH GOOD CONNECTIONS.');
+  assert.equal(d.querySelector('.pure-partner-program-page'),null,'the light-theme wrapper is removed');
+  const rates=[...d.querySelectorAll('.nl-partner-rates article')];
   assert.equal(rates.length,2);
-  assert.deepEqual(rates.map(a=>a.querySelector('strong').textContent),['20%','10%']);
-  assert.equal(page.querySelector('.nl-partner-actions a[href="/account/partner"]').textContent,'Open Partner Workspace');
-  assert.ok(page.querySelector('.nl-partner-actions a[href="/partner-terms.html"]'));
-  assert.equal(page.querySelectorAll('.nl-partner-step-grid article').length,4);
+  assert.deepEqual(rates.map(x=>x.querySelector('strong').textContent),['20%','10%']);
+  assert.ok(d.querySelector('.nl-partner-actions a[href="/account/partner"]'));
+  assert.ok(d.querySelector('.nl-partner-actions a[href="/partner-terms.html"]'));
+  assert.equal(d.querySelectorAll('.nl-partner-step-grid article').length,4);
   dom.window.close();
  }
  console.log('PASS: built reference pages, retired view removal, product size changes, regular quantities/prices, search/category filters and isolated bulk order.');
