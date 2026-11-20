@@ -224,7 +224,7 @@
    }).join('');
    if(currentPreview?.pricing?.membership_addon){
      const member=currentPreview.pricing.membership_addon;
-     view('[data-nlx-products]',detail).insertAdjacentHTML('beforeend','<div class="nlx-product nlx-membership-line"><button type="button" class="nlx-remove" data-nlx-remove-membership aria-label="Remove membership">×</button><div class="nlx-product-name"><strong>'+esc(member.name)+'</strong><small>'+esc(member.period==='monthly'?'First month':'Annual membership')+'</small></div><strong class="nlx-product-price">'+currentMoney(member.fee_cents)+'</strong></div>');
+     view('[data-nlx-products]',detail).insertAdjacentHTML('beforeend','<div class="nlx-product nlx-membership-line"><button type="button" class="nlx-remove" data-nlx-remove-membership aria-label="Remove membership">×</button><div class="nlx-product-name"><strong>'+esc(member.name)+'</strong><span class="nlx-membership-period">'+esc(member.period==='monthly'?'First month':'Annual')+'</span></div><strong class="nlx-product-price">'+currentMoney(member.fee_cents)+'</strong></div>');
    }
    view('[data-nlx-totals]',detail).innerHTML=currentPreview?moneyLines().map(([n,v])=>'<div class="'+(['Total','Total (CAD)'].includes(n)?'nlx-grand':'')+'"><span>'+esc(n)+'</span><strong>'+currentMoney(v)+'</strong></div>').join(''):'<p role="status">Calculating your order total…</p>';
    window.PureMembershipCheckout?.offer(view('[data-pure-membership-offer]',detail),currentPreview,data.terms?.conversion,{
@@ -236,7 +236,7 @@
    const removeMember=view('[data-nlx-remove-membership]',detail);
    if(removeMember)removeMember.onclick=()=>{state.membershipAddon=null;sessionStorage.removeItem('pure-checkout-membership-item-v1');invalidate();renderSummary();void refresh();};
    const balances=view('[data-nlx-points]',detail),hasBalance=(data.balances?.points||0)>0||(data.balances?.credit_cents||0)>0;balances.hidden=!hasBalance;balances.innerHTML=hasBalance?'<span>Available: '+Math.max(0,data.balances.points||0)+' points · '+usd(data.balances.credit_cents||0)+' store credit.</span>'+(state.paymentKind==='interac'?'<span>USD points and store credit cannot be applied to an Interac payment. Choose Card or Crypto to use these balances.</span>':'<a href="/checkout?balance=1">Use existing balance →</a>'):'';
-   view('[data-nlx-quote-note]',detail).textContent=(state.paymentKind==='interac'?'Your total is in CAD. Place your order to view the Interac receiving details and payment reference. ':currentPreview?.pricing?.discount_source==='coupon_crypto'?'Your coupon is applied first, then an extra 5% Crypto discount on the remaining merchandise. ':'')+(currentPreview?.shipping_note||'');
+   view('[data-nlx-quote-note]',detail).textContent='';
    view('[data-nlx-remove-coupon]',detail).hidden=!state.coupon;
    const coupon=view('[name=sidebar_coupon]',detail);if(document.activeElement!==coupon)coupon.value=state.coupon;
    wireDisclosures(detail);
@@ -328,7 +328,7 @@
     const target='nlx-disclose-priority';
     return '<div class="nlx-extra-box nlx-extra-'+id+'"><div><span class="nlx-extra-icon">◷</span><div><strong>'+esc(x.label)+'</strong><button type="button" class="nlx-disclosure-trigger" data-nlx-info="'+id+'" data-testid="priority-disclosure" aria-expanded="false" aria-controls="'+target+'">Read more</button><div id="'+target+'" data-testid="priority-disclosure-panel" data-nlx-panel class="nlx-disclosure" hidden><p>'+esc(x.description)+'</p><p>Optional service; pricing is included only when selected in the final quote.</p></div></div></div><span data-nlx-extra-price="'+id+'">'+extraDisplay(id)+'</span><label class="nlx-extra-check"><input type="checkbox" aria-label="'+esc(x.label)+'" data-nlx-extra="'+id+'" '+(state.extras.has(id)?'checked':'')+(x.enabled?'':' disabled')+'></label></div>';
    }).join('');
-   return '<h2>Delivery speed</h2><div class="nlx-delivery-list">'+options+'</div><p class="nlx-quote-note">Next-day service is available for US and Canadian destinations after dispatch, subject to carrier coverage, cutoffs and customs clearance. Processing time is separate.</p><div class="nlx-addons">'+extra+'</div>';
+   return '<h2>Delivery speed</h2><div class="nlx-delivery-list">'+options+'</div><div class="nlx-addons">'+extra+'</div>';
   }
   function lockCheckout(){all('input,select,textarea,button',div).forEach(control=>control.disabled=true);}
   function updatePayment(){
@@ -341,10 +341,7 @@
    const card=paymentMethods.find(m=>paymentKind(m)==='card'&&m.countries?.includes(shippingCountry()));
    all('[data-nlx-wallet]',form).forEach(control=>{control.disabled=!card||onePayment||!!lastPlaced;control.setAttribute('aria-pressed',String(state.paymentKind==='card'&&state.wallet===control.dataset.nlxWallet));});
    const amount=view('[data-nlx-wallet-amount]',form);if(amount)amount.textContent=state.paymentKind==='interac'?'Card payments in USD':usd(currentPreview?.total_cents||0);
-   const paymentNote=view('[data-nlx-payment-currency]',form);if(paymentNote)paymentNote.textContent=state.paymentKind==='interac'?'Your order total is shown in CAD. Place your order, then send an Interac e-Transfer using the receiving details provided. Payment is confirmed after PURE verifies receipt.':'Your order is priced in USD. Review your total and payment-provider terms before paying.';
-   const walletNote=view('[data-nlx-wallet-note]',form);
-   if(walletNote)walletNote.textContent=!card?'Digital wallet payments are unavailable for this destination.':state.paymentKind==='card'&&walletName?(walletName==='APPLE PAY'?'Apple Pay':'Google Pay')+' selected. Review your order and accept the terms below, then continue. Choose that wallet in the secure provider checkout if offered for your device.':'Choose a wallet, review your order and accept the terms, then continue. Apple Pay and Google Pay are offered by the secure provider when your device, country and transaction are eligible.';
-  }
+     }
   function paymentLayout(){
    const rows=['card','crypto',...(paymentMethods.some(m=>paymentKind(m)==='interac')?['interac']:[])].map(key=>{
     const method=paymentMethods.find(m=>paymentKind(m)===key),available=method&&Array.isArray(method.countries)&&method.countries.includes(shippingCountry());
@@ -356,7 +353,7 @@
    }).join('');
    return '<section class="nlx-payment"><h2>Choose how to pay</h2><div class="nlx-express-label"><strong>DIGITAL WALLET</strong><span data-nlx-wallet-amount>'+(state.paymentKind==='interac'?'Card payments in USD':usd(currentPreview?.total_cents||0))+'</span></div>'
     +'<div class="nlx-wallets" data-nlx-wallets><button type="button" class="nlx-wallet-button nlx-apple-pay" data-nlx-wallet="apple" aria-label="Choose Apple Pay" aria-pressed="false"><span class="nlx-wallet-lockup"><img class="nlx-wallet-symbol nlx-apple-symbol" src="/assets/payment-brands/apple-mark-clean.svg" alt="" aria-hidden="true" width="20" height="24"><span class="nlx-wallet-wordmark">Pay</span></span></button><span class="nlx-or">or</span><button type="button" class="nlx-wallet-button nlx-google-pay" data-nlx-wallet="google" aria-label="Choose Google Pay" aria-pressed="false"><span class="nlx-wallet-lockup"><img class="nlx-wallet-symbol nlx-google-symbol" src="/assets/payment-brands/google-g-clean.svg" alt="" aria-hidden="true" width="22" height="22"><span class="nlx-wallet-wordmark">Pay</span></span></button></div>'
-    +'<p class="nlx-wallet-consent" data-nlx-wallet-note aria-live="polite"></p><div class="nlx-divider"><span>OR PAY ANOTHER WAY</span></div><p data-nlx-payment-currency>Your order is priced in USD. Review your total and payment-provider terms before paying.</p><div class="nlx-payment-rows">'+rows+'</div>'
+    +'<div class="nlx-divider"><span>OR PAY ANOTHER WAY</span></div><div class="nlx-payment-rows">'+rows+'</div>'
     +'<div class="nlx-terms"><label><input type="checkbox" name="ruo" required><span>'+esc(terms1)+'</span></label><label><input type="checkbox" name="responsibility" required><span>'+esc(terms2)+'</span></label></div>'
     +'<div class="nlx-payment-controls"><div class="nlx-status" data-nlx-status role="status" aria-live="polite"></div><button type="button" class="nlx-primary" data-nlx-place disabled>CONTINUE TO PAYMENT</button></div>'+trustMarkup+'</section>';
   }
@@ -401,8 +398,7 @@
    }else if(stage===1){
     form.innerHTML='<div class="nlx-step-delivery"><div class="nlx-address-confirm"><div class="nlx-address-lines">'+displayAddress()+'<span>'+esc(state.phone||'')+'</span><span>'+esc(user.email)+'</span></div><button type="button" data-nlx-back-edit>Edit</button></div>'+deliveryCards()
       +'<details class="nlx-order-note"><summary>Add order notes (optional)</summary><textarea name="note" rows="3" maxlength="1000" placeholder="Special handling instructions">'+esc(state.note)+'</textarea></details>'
-      +'<p class="nlx-shipping-terms">Carrier eligibility and customs/import requirements depend on destination. International duties, taxes and restrictions are not included in the displayed shipping fee.</p>'
-      +'<div class="nlx-next"><button type="button" class="nlx-primary" data-nlx-next>Continue to payment</button></div>'+trustMarkup+'</div>';
+            +'<div class="nlx-next"><button type="button" class="nlx-primary" data-nlx-next>Continue to payment</button></div>'+trustMarkup+'</div>';
     all('[name=delivery_speed]',form).forEach(x=>x.addEventListener('change',()=>{state.shipping=x.value;schedule();renderStep()}));
     all('[data-nlx-extra]',form).forEach(x=>x.addEventListener('change',()=>{x.checked?state.extras.add(x.dataset.nlxExtra):state.extras.delete(x.dataset.nlxExtra);schedule();renderSummary()}));
     view('[data-nlx-back-edit]',form).addEventListener('click',()=>{state.note=form.elements.note?.value||'';showStep(0);});
