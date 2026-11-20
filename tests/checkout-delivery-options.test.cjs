@@ -16,12 +16,12 @@ test('Cold Chain cannot be selected or charged at checkout',async()=>{
 test('US and Canada share the next-day rate while unsupported destinations remain unavailable',()=>{
  for(const country of ['US','CA']){
   const quote=delivery.price({shipping:'next_day',extras:['protection']},true,delivery.defaults,country);
-  assert.equal(quote.shipping_cents,6995);
+  assert.equal(quote.shipping_cents,country==='US'?5995:6495);
   assert.equal(quote.extras_cents,500);
-  assert.equal(quote.total_cents,7495);
-  assert.equal(quote.rate_version,'shipping-2026-11-v3');
+  assert.equal(quote.total_cents,country==='US'?6495:6995);
+  assert.equal(quote.rate_version,'shipping-2026-11-v4');
   assert.deepEqual(quote.selection,{shipping:'next_day',extras:['protection']});
-  assert.equal(delivery.price({shipping:'next_day',extras:[]},true,delivery.defaults,country).total_cents,6995);
+  assert.equal(delivery.price({shipping:'next_day',extras:[]},true,delivery.defaults,country).total_cents,country==='US'?5995:6495);
  }
  assert.throws(()=>delivery.price({shipping:'next_day',extras:[]},false,delivery.defaults,'GB'),/unavailable/);
 });
@@ -40,8 +40,17 @@ test('protection is priced exactly as selected for US, Canadian and other suppor
 test('US and Canada both qualify for free standard shipping at the same USD threshold',()=>{
  for(const country of ['US','CA']){
   assert.equal(delivery.price({shipping:'standard',extras:[]},true,delivery.defaults,country).shipping_cents,0);
-  assert.equal(delivery.price({shipping:'standard',extras:[]},false,delivery.defaults,country).shipping_cents,country==='US'?1495:3995);
-  assert.equal(delivery.price({shipping:'express',extras:[]},true,delivery.defaults,country).shipping_cents,country==='US'?3495:5995);
+  assert.equal(delivery.price({shipping:'standard',extras:[]},false,delivery.defaults,country).shipping_cents,country==='US'?1195:2495);
+  assert.equal(delivery.price({shipping:'express',extras:[]},true,delivery.defaults,country).shipping_cents,country==='US'?2995:4995);
  }
- assert.equal(delivery.price({shipping:'standard',extras:[]},true,delivery.defaults,'GB').shipping_cents,5995);
+ assert.equal(delivery.price({shipping:'standard',extras:[]},true,delivery.defaults,'GB').shipping_cents,4995);
+});
+
+test('Economy is the cheapest tracked shipping option in US and Canada',()=>{
+ for(const [country,price] of [['US',795],['CA',1495]]){
+  const basic=delivery.price({shipping:'economy',extras:[]},false,delivery.defaults,country);
+  assert.equal(basic.shipping_cents,price);
+  assert.ok(basic.shipping_cents<delivery.price({shipping:'standard',extras:[]},false,delivery.defaults,country).shipping_cents);
+  assert.equal(delivery.price({shipping:'economy',extras:[]},true,delivery.defaults,country).shipping_cents,0);
+ }
 });
