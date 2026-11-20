@@ -71,3 +71,19 @@ test('cleanup script is syntactically valid and never lists active payment keys 
     assert.doesNotMatch(removedNames, new RegExp(key));
   }
 });
+
+test('active payment and worker status cannot advertise retired providers or dispatch Lotus', () => {
+  const published = gateway.publicStatus({}).map(x => x.provider);
+  assert.equal(published.includes('peptidepay'), false);
+  assert.equal(published.includes('rampex'), true);
+  assert.equal(published.includes('polygon_usdc'), true);
+  const root = path.join(__dirname, '..');
+  const nativeSource = fs.readFileSync(path.join(root, 'lib', 'native-gateway.js'), 'utf8');
+  const adminMethodList = nativeSource.match(/\.in\('native_provider',\[([^\]]+)\]\)/);
+  assert.ok(adminMethodList, 'Admin gateway list must remain present');
+  assert.doesNotMatch(adminMethodList[1], /peptidepay/);
+  const workerSource = fs.readFileSync(path.join(root, 'lib', 'manual-commerce-integrated.js'), 'utf8');
+  assert.doesNotMatch(workerSource, /LOTUS_FULFILLMENT_ENABLED|lotus-fulfillment/);
+  assert.match(workerSource, /reconcilePending/);
+  assert.match(workerSource, /notificationsDispatch/);
+});
