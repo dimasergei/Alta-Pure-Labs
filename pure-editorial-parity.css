@@ -1,0 +1,414 @@
+/* PURE editorial parity · COAs + Partner Program only.
+   Shared quiet-white canvas, Archivo display type, monochrome content cards.
+   Underlying COA filter/report actions and partner navigation are untouched. */
+html:root body.ap-site .pure-coa-page,
+html:root body.ap-site .pure-partner-program-page{
+  --pure-editorial-ink:#111;
+  --pure-editorial-secondary:#626262;
+  --pure-editorial-line:#dedede;
+  --pure-editorial-paper:#f8f8f8;
+  background:var(--pure-editorial-paper)!important;
+  color:var(--pure-editorial-ink);
+  font-family:Archivo,Arial,sans-serif;
+  overflow:hidden;
+}
+html:root body.ap-site .pure-coa-page .ap-coa-hero,
+html:root body.ap-site .pure-partner-program-page .nl-partner-hero{
+  position:relative;
+  overflow:hidden;
+  background:linear-gradient(122deg,#fff 2%,#fafafa 65%,#f2f2f2 100%)!important;
+  color:#111!important;
+  border-bottom:1px solid #e7e7e7;
+}
+html:root body.ap-site .pure-coa-page .ap-coa-hero-inner,
+html:root body.ap-site .pure-partner-program-page .pure-partner-hero-inner{
+  position:relative;
+  z-index:1;
+  min-height:350px;
+  padding-top:62px;
+  padding-bottom:93px;
+  align-items:center;
+}
+html:root body.ap-site .pure-coa-page .pure-coa-hero-copy .ap-eyebrow,
+html:root body.ap-site .pure-partner-program-page .nl-partner-hero .nl-capsule{
+  display:inline-flex;
+  align-items:center;
+  gap:12px;
+  min-height:0;
+  padding:0;
+  border:0!important;
+  border-radius:0;
+  background:transparent!important;
+  color:#535353!important;
+  font-size:11px;
+  font-weight:800;
+  letter-spacing:.13em;
+  line-height:1.4;
+  text-transform:uppercase;
+}
+html:root body.ap-site .pure-coa-page .pure-coa-hero-copy .ap-eyebrow::before,
+html:root body.ap-site .pure-partner-program-page .nl-partner-hero .nl-capsule::before{
+  content:"";
+  display:inline-block;
+  width:26px;
+  height:2px;
+  flex:0 0 26px;
+  background:#111;
+}
+html:root body.ap-site .pure-coa-page .pure-coa-hero-copy h1,
+html:root body.ap-site .pure-partner-program-page .nl-partner-hero h1{
+  max-width:920px;
+  margin:21px 0 20px;
+  color:#111!important;
+  font-size:clamp(43px,5.9vw,80px);
+  font-weight:900;
+  letter-spacing:-.066em;
+  line-height:1.045;
+  text-wrap:balance;
+}
+html:root body.ap-site .pure-coa-page .pure-coa-hero-copy h1 em,
+html:root body.ap-site .pure-partner-program-page .nl-partner-hero h1 em{
+  color:#747474!important;
+  -webkit-text-fill-color:#747474!important;
+  font-style:normal;
+  font-weight:900;
+}
+html:root body.ap-site .pure-coa-page .pure-coa-hero-copy h1 em{
+  display:block;
+}
+html:root body.ap-site .pure-coa-page .pure-coa-hero-copy p,
+html:root body.ap-site .pure-partner-program-page .nl-partner-hero p,
+html:root body.ap-site .pure-partner-program-page .nl-partner-hero>div>p{
+  max-width:680px;
+  margin:0;
+  color:#5b5b5b!important;
+  font-size:16px;
+  line-height:1.7;
+}
+html:root body.ap-site .pure-coa-page .pure-coa-hero-art{
+  color:#111!important;
+  opacity:.1;
+  transform:translateY(-9px);
+}
+html:root body.ap-site .pure-coa-page .pure-coa-hero-art svg{width:190px;height:190px}
+html:root body.ap-site .pure-partner-program-page .pure-editorial-watermark{
+  position:absolute;
+  z-index:0;
+  right:3%;
+  top:50%;
+  transform:translateY(-50%);
+  font-weight:950;
+  font-size:clamp(125px,19vw,285px);
+  letter-spacing:-.085em;
+  line-height:1;
+  color:#111;
+  opacity:.044;
+  pointer-events:none;
+  user-select:none;
+  white-space:nowrap;
+}
+/* COA library: the same inset content plane and neutral storefront cards. */
+html:root body.ap-site .pure-coa-page .ap-coa-library{
+  position:relative;
+  z-index:2;
+  margin-top:-40px;
+  padding-top:0;
+  padding-bottom:78px;
+}
+html:root body.ap-site .pure-coa-page .ap-coa-search-panel{
+  padding:28px 30px;
+  border:1px solid var(--pure-editorial-line);
+  border-radius:18px;
+  background:#fff;
+  box-shadow:0 15px 45px #00000009;
+}
+html:root body.ap-site .pure-coa-page .ap-coa-search-label{
+  margin-bottom:13px;
+  font-size:17px;
+  font-weight:800;
+  letter-spacing:-.02em;
+  color:#111;
+}
+html:root body.ap-site .pure-coa-page #ap-coa-query,
+html:root body.ap-site .pure-coa-page .ap-coa-controls select{
+  min-height:50px;
+  border:1px solid #d4d4d4;
+  border-radius:10px;
+  background:#f8f8f8;
+  color:#111;
+  box-shadow:none;
+}
+html:root body.ap-site .pure-coa-page #ap-coa-query:focus,
+html:root body.ap-site .pure-coa-page .ap-coa-controls select:focus{
+  background:#fff;
+  border-color:#111;
+}
+html:root body.ap-site .pure-coa-page .ap-coa-controls{
+  margin-top:17px;
+  gap:12px;
+}
+html:root body.ap-site .pure-coa-page .ap-coa-controls label{
+  color:#333;
+  font-size:12px;
+  font-weight:750;
+}
+html:root body.ap-site .pure-coa-page #ap-coa-reset{
+  min-height:50px;
+  border:1px solid #111!important;
+  border-radius:10px;
+  background:#fff!important;
+  color:#111!important;
+  font-size:11px;
+  font-weight:800;
+}
+html:root body.ap-site .pure-coa-page #ap-coa-reset:hover{background:#f1f1f1!important}
+html:root body.ap-site .pure-coa-page .ap-coa-results-heading{
+  margin:30px 0 18px;
+  gap:12px;
+}
+html:root body.ap-site .pure-coa-page .ap-coa-results-heading p{
+  font-size:15px;
+  font-weight:800;
+}
+html:root body.ap-site .pure-coa-page .ap-coa-results-heading .ap-text-link{
+  color:#111!important;
+  font-weight:700;
+  text-decoration-thickness:1px;
+  text-underline-offset:4px;
+}
+html:root body.ap-site .pure-coa-page .ap-supplier-coa-grid{
+  gap:17px;
+}
+html:root body.ap-site .pure-coa-page .ap-coa-card{
+  border:1px solid var(--pure-editorial-line);
+  border-radius:16px;
+  box-shadow:0 5px 24px #00000007;
+  background:#fff;
+}
+html:root body.ap-site .pure-coa-page .pure-coa-card-head{
+  position:relative;
+  padding:21px 22px 20px;
+  border:0;
+  border-top:3px solid #111;
+  border-bottom:1px solid #e9e9e9;
+  background:#f7f7f7!important;
+  color:#111!important;
+}
+html:root body.ap-site .pure-coa-page .pure-coa-card-head .ap-pill{
+  color:#686868!important;
+  font-size:10px;
+  font-weight:800;
+  letter-spacing:.1em;
+}
+html:root body.ap-site .pure-coa-page .pure-coa-card-head h2{
+  margin-top:12px;
+  color:#111!important;
+  font-size:21px;
+  font-weight:850;
+  letter-spacing:-.035em;
+}
+html:root body.ap-site .pure-coa-page .pure-coa-card-body{padding:21px 22px 23px}
+html:root body.ap-site .pure-coa-page .pure-coa-card-body .ap-actions{gap:12px}
+html:root body.ap-site .pure-coa-page .pure-coa-card-body .ap-actions .ap-button{
+  border-radius:10px;
+}
+/* Partner network: aligned left editorial hero, full-width equal-rate cards. */
+html:root body.ap-site .pure-partner-program-page .nl-partner-hero{
+  padding:0!important;
+}
+html:root body.ap-site .pure-partner-program-page .pure-partner-hero-inner{
+  padding-top:64px;
+  padding-bottom:94px;
+}
+html:root body.ap-site .pure-partner-program-page .nl-partner-hero h1{
+  max-width:1000px;
+  font-size:clamp(43px,5.7vw,77px);
+}
+html:root body.ap-site .pure-partner-program-page .nl-partner-hero p{max-width:650px}
+html:root body.ap-site .pure-partner-program-page .nl-partner-actions{
+  position:relative;
+  z-index:2;
+  display:flex;
+  gap:11px;
+  margin-top:26px;
+  flex-wrap:wrap;
+}
+html:root body.ap-site .pure-partner-program-page .nl-partner-hero .nl-partner-actions .ap-button{
+  min-height:49px;
+  padding:13px 21px;
+  border-radius:11px;
+  font-size:11px;
+  font-weight:850;
+  letter-spacing:.025em;
+  box-shadow:none!important;
+}
+html:root body.ap-site .pure-partner-program-page .nl-partner-hero .nl-partner-actions .ap-button.nl-primary{
+  background:#111!important;
+  border:1px solid #111!important;
+  color:#fff!important;
+}
+html:root body.ap-site .pure-partner-program-page .nl-partner-hero .nl-partner-actions .ap-button.nl-primary:hover{
+  background:#333!important;border-color:#333!important;
+}
+html:root body.ap-site .pure-partner-program-page .nl-partner-hero .nl-partner-actions .ap-button-secondary{
+  background:#fff!important;
+  border:1px solid #111!important;
+  color:#111!important;
+}
+html:root body.ap-site .pure-partner-program-page .nl-partner-hero .nl-partner-actions .ap-button-secondary:hover{
+  background:#f0f0f0!important;
+}
+html:root body.ap-site .pure-partner-program-page .nl-partner-rates{
+  position:relative;
+  z-index:2;
+  display:grid;
+  grid-template-columns:repeat(2,minmax(0,1fr));
+  gap:16px;
+  margin-top:-36px;
+}
+html:root body.ap-site .pure-partner-program-page .nl-partner-rates article,
+html:root body.ap-site .pure-partner-program-page .nl-partner-rates article:nth-child(n+2){
+  min-height:155px;
+  padding:23px 28px;
+  border:1px solid #dedede;
+  border-top:3px solid #111;
+  border-radius:16px;
+  background:#fff!important;
+  box-shadow:0 10px 34px #0000000b;
+  color:#111!important;
+}
+html:root body.ap-site .pure-partner-program-page .nl-partner-rates article :is(span,strong,small),
+html:root body.ap-site .pure-partner-program-page .nl-partner-rates article:nth-child(n+2) :is(span,strong,small){
+  color:#111!important;
+}
+html:root body.ap-site .pure-partner-program-page .nl-partner-rates article span{
+  color:#666!important;
+  font-size:10px;
+  letter-spacing:.11em;
+}
+html:root body.ap-site .pure-partner-program-page .nl-partner-rates article strong{
+  margin:12px 0 8px;
+  font-size:clamp(37px,4vw,53px);
+  letter-spacing:-.05em;
+}
+html:root body.ap-site .pure-partner-program-page .nl-partner-rates article small{
+  color:#666!important;
+  font-size:12px;
+}
+html:root body.ap-site .pure-partner-program-page .nl-partner-steps{
+  padding-top:73px;
+  padding-bottom:50px;
+}
+html:root body.ap-site .pure-partner-program-page .nl-partner-section-head{
+  max-width:860px;
+  margin-bottom:25px;
+}
+html:root body.ap-site .pure-partner-program-page .nl-partner-section-head h2,
+html:root body.ap-site .pure-partner-program-page .nl-partner-details h2{
+  font-size:clamp(28px,3.2vw,44px);
+  line-height:1.12;
+  font-weight:850;
+  letter-spacing:-.052em;
+  color:#111;
+}
+html:root body.ap-site .pure-partner-program-page .nl-partner-step-grid{gap:16px}
+html:root body.ap-site .pure-partner-program-page .nl-partner-step-grid article{
+  min-height:210px;
+  padding:25px 22px;
+  border:1px solid #dedede;
+  border-radius:16px;
+  background:#fff;
+}
+html:root body.ap-site .pure-partner-program-page .nl-partner-step-grid article>span{
+  display:grid;
+  place-items:center;
+  width:36px;
+  height:36px;
+  border-radius:10px;
+  background:#111!important;
+  color:#fff!important;
+  font-size:11px;
+}
+html:root body.ap-site .pure-partner-program-page .nl-partner-step-grid h3{
+  margin-top:23px;
+  font-size:18px;
+  letter-spacing:-.03em;
+}
+html:root body.ap-site .pure-partner-program-page .nl-partner-step-grid p{
+  font-size:13px;
+  line-height:1.6;
+}
+html:root body.ap-site .pure-partner-program-page .nl-partner-details{
+  gap:35px;
+  padding-top:26px;
+  padding-bottom:86px;
+  border-top:1px solid #e5e5e5;
+}
+html:root body.ap-site .pure-partner-program-page .nl-partner-callout{
+  padding:27px;
+  border:1px solid #dedede;
+  border-radius:16px;
+  background:#fff!important;
+  color:#111;
+}
+html:root body.ap-site .pure-partner-program-page .nl-partner-callout strong{
+  color:#111!important;
+  font-size:26px;
+  letter-spacing:-.035em;
+}
+html:root body.ap-site .pure-partner-program-page :is(a,button,input,select):focus-visible{
+  outline:2px solid #111!important;
+  outline-offset:3px;
+}
+@media(max-width:1000px){
+  html:root body.ap-site .pure-coa-page .ap-coa-hero-inner{grid-template-columns:minmax(0,1fr) 160px;gap:22px}
+  html:root body.ap-site .pure-partner-program-page .nl-partner-rates{grid-template-columns:repeat(2,minmax(0,1fr))}
+  html:root body.ap-site .pure-partner-program-page .nl-partner-step-grid{grid-template-columns:repeat(2,minmax(0,1fr))}
+}
+@media(max-width:767px){
+  html:root body.ap-site .pure-coa-page .ap-coa-hero-inner,
+  html:root body.ap-site .pure-partner-program-page .pure-partner-hero-inner{
+    min-height:0;
+    padding-top:45px;
+    padding-bottom:70px;
+  }
+  html:root body.ap-site .pure-coa-page .ap-coa-hero-inner{grid-template-columns:minmax(0,1fr)}
+  html:root body.ap-site .pure-coa-page .pure-coa-hero-copy h1,
+  html:root body.ap-site .pure-partner-program-page .nl-partner-hero h1{
+    font-size:clamp(37px,8.2vw,55px);
+    letter-spacing:-.057em;
+    margin:18px 0 16px;
+  }
+  html:root body.ap-site .pure-coa-page .pure-coa-hero-copy p,
+  html:root body.ap-site .pure-partner-program-page .nl-partner-hero p{
+    font-size:14px;
+    line-height:1.65;
+  }
+  html:root body.ap-site .pure-coa-page .pure-coa-hero-art,
+  html:root body.ap-site .pure-partner-program-page .pure-editorial-watermark{display:none}
+  html:root body.ap-site .pure-coa-page .ap-coa-library{margin-top:-30px;padding-bottom:50px}
+  html:root body.ap-site .pure-coa-page .ap-coa-search-panel{padding:20px;border-radius:15px}
+  html:root body.ap-site .pure-coa-page .ap-coa-controls{grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}
+  html:root body.ap-site .pure-coa-page #ap-coa-reset{grid-column:1/-1}
+  html:root body.ap-site .pure-partner-program-page .nl-partner-rates{gap:10px;margin-top:-27px}
+  html:root body.ap-site .pure-partner-program-page .nl-partner-rates article,
+  html:root body.ap-site .pure-partner-program-page .nl-partner-rates article:nth-child(n+2){min-height:145px;padding:20px 17px}
+  html:root body.ap-site .pure-partner-program-page .nl-partner-steps{padding-top:55px}
+  html:root body.ap-site .pure-partner-program-page .nl-partner-step-grid{grid-template-columns:repeat(2,minmax(0,1fr))}
+  html:root body.ap-site .pure-partner-program-page .nl-partner-details{grid-template-columns:1fr;padding-bottom:60px}
+}
+@media(max-width:520px){
+  html:root body.ap-site .pure-partner-program-page .nl-partner-rates,
+  html:root body.ap-site .pure-partner-program-page .nl-partner-step-grid{grid-template-columns:1fr}
+  html:root body.ap-site .pure-partner-program-page .nl-partner-rates article,
+  html:root body.ap-site .pure-partner-program-page .nl-partner-rates article:nth-child(n+2){min-height:122px}
+  html:root body.ap-site .pure-partner-program-page .nl-partner-actions{flex-direction:column}
+  html:root body.ap-site .pure-partner-program-page .nl-partner-actions .ap-button{width:100%}
+  html:root body.ap-site .pure-coa-page .ap-coa-controls{grid-template-columns:1fr}
+  html:root body.ap-site .pure-coa-page .ap-coa-controls > label:first-child,
+  html:root body.ap-site .pure-coa-page #ap-coa-reset{grid-column:1}
+  html:root body.ap-site .pure-coa-page .ap-coa-results-heading>a{width:100%}
+}
+@media(prefers-reduced-motion:reduce){
+  html:root body.ap-site .pure-coa-page .ap-coa-card{transition:none}
+}
