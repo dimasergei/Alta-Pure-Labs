@@ -14,7 +14,7 @@ function fixture(surface,{legacyCoupon=false,balances={points:0,credit_cents:0}}
  const data={config,delivery_options:delivery,shipping_zones:zones,methods:[card,bank],nmi:null,balances,events:[]};
  w.AltaStore={get cart(){return cart;},catalog:products,product:id=>products.find(p=>p.id===id),image:()=>'/fixture.svg',adjustQuantity(key,delta){cart=cart.map(item=>item.key===key?{...item,qty:item.qty+delta}:item).filter(item=>item.qty>0);}};
  function quote(body){
-  const q=price({kind:'goods',request:{items:body.items.map(item=>({...item,name:'Fixture compound',unit_price_usd_cents:8000})),address:{country:body.country||body.address?.country||'US'},checkout:{coupon:body.coupon||'',points:body.points||0,credit_cents:body.credit_cents||0,delivery:body.delivery}}},bank,null,balances,null,delivery);
+  const q=price({kind:'goods',request:{items:body.items.map(item=>({...item,name:'Fixture compound',unit_price_usd_cents:8000})),...(body.membership_addon?{membership_addon:body.membership_addon}:{}),address:{country:body.country||body.address?.country||'US'},checkout:{coupon:body.coupon||'',points:body.points||0,credit_cents:body.credit_cents||0,delivery:body.delivery}}},bank,null,balances,null,delivery);
   return {...q,free_shipping_threshold_cents:15000,free_shipping_remaining_cents:Math.max(0,15000-q.subtotal_cents+q.discount_cents)};
  }
  w.fetch=async(url,options={})=>{
@@ -89,4 +89,36 @@ test('checkout Card order quotes and places the same purchased quantity and conf
 test('checkout exposes existing balances without promising new rewards',async()=>{
  const f=fixture('checkout',{balances:{points:200,credit_cents:500}});
  try{await f.w.DirectCheckout.checkout(f.root,f.auth,f.user);await tick();assert.ok(f.root.querySelector('a[href="/checkout?balance=1"]'));assert.match(f.root.textContent,/200 points/);assert.doesNotMatch(f.root.textContent,/Earn .*points|membership/i);}finally{f.dom.window.close();}
+});
+
+
+test('checkout membership item lines up with product prices and no redundant payment or delivery copy appears',async()=>{
+ const f=fixture('checkout');
+ f.w.sessionStorage.setItem('pure-checkout-membership-item-v1',JSON.stringify({plan:'vip',period:'monthly'}));
+ try{
+  await f.w.DirectCheckout.checkout(f.root,f.auth,f.user);await tick();
+  assert.equal(f.requests[0].membership_addon.plan,'vip');
+  assert.equal(f.requests[0].membership_addon.period,'monthly');
+  const member=f.root.querySelector('.nlx-membership-line');
+  assert.ok(member,'The purchased membership remains an ordinary order-summary line');
+  assert.equal(member.querySelector('.nlx-product-name strong').textContent,'PURE WHITE');
+  assert.equal(member.querySelector('.nlx-membership-period').textContent,'First month');
+  assert.equal(member.querySelector('.nlx-product-price').textContent,'$19.99');
+  assert.equal(member.querySelectorAll('.nlx-product-price').length,1);
+  assert.equal(member.querySelectorAll('small').length,0,'No second-line membership sublabel');
+  const css=fs.readFileSync('checkout-reference.css','utf8');
+  assert.match(css,/\.nlx-checkout-root \.nlx-membership-line\{[^}]*grid-template-columns:18px minmax\(0,1fr\) auto;[^}]*border-top:0/);
+  assert.match(css,/\.nlx-checkout-root \.nlx-membership-line \.nlx-product-name\{[^}]*flex-direction:row!important/);
+  assert.match(css,/\.nlx-checkout-root \.nlx-membership-line \.nlx-product-price\{[^}]*grid-column:3;justify-self:end/);
+  assert.equal(f.root.querySelector('[data-nlx-quote-note]').textContent,'','No summary shipping explanation below totals');
+  f.root.querySelector('[data-nlx-next]').click();await tick();
+  assert.doesNotMatch(f.root.textContent,/Next-day service is available for US and Canadian|Carrier eligibility and customs\/import requirements depend/);
+  f.root.querySelector('[data-nlx-next]').click();await tick();
+  assert.equal(f.root.querySelector('[data-nlx-wallet-note]'),null);
+  assert.equal(f.root.querySelector('[data-nlx-payment-currency]'),null);
+  assert.doesNotMatch(f.root.textContent,/Choose a wallet, review your order|Your order is priced in USD|Shipping rates are displayed by destination/);
+  assert.ok(f.root.querySelector('[name=payment_choice][value=card]'),'Card payment remains available');
+  assert.ok(f.root.querySelector('[name=ruo]'),'Required RUO checkbox remains');
+  assert.ok(f.root.querySelector('[name=responsibility]'),'Required responsibility checkbox remains');
+ }finally{f.dom.window.close();}
 });
