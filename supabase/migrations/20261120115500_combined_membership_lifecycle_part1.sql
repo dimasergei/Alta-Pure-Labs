@@ -7,7 +7,7 @@ declare i public.commerce_invoices%rowtype; a jsonb; r jsonb; usd_fee integer; f
 begin
  select * into i from public.commerce_invoices where id=p_invoice;
  if i.id is null or i.kind<>'goods' or i.status not in ('paid','processing','shipped','delivered')
-   or i.paid_at is null or i.membership_invoice_id is not null or i.pricing ? 'membership_addon' is false
+   or i.paid_at is null or i.membership_invoice_id is not null or not (i.pricing ? 'membership_addon')
    or i.request_data->'membership_addon' is null
    or not exists(select 1 from public.commerce_receipts where invoice_id=i.id and method_id=i.method_id and kind='payment'
      and amount_cents=i.total_cents and currency=i.currency)
