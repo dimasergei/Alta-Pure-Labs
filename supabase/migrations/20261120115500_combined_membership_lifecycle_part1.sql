@@ -25,7 +25,7 @@ begin
  name:=case r->>'plan' when 'vip' then 'PURE WHITE' else 'PURE BLACK' end;
  return a is not distinct from jsonb_build_object('plan',r->>'plan','period',r->>'period',
      'fee_usd_cents',usd_fee,'fee_cents',fee,'name',name,'currency',i.currency)
-   and i.subtotal_cents=i.pricing->>'subtotal_cents'::integer+fee
+   and i.subtotal_cents=(i.pricing->>'subtotal_cents')::integer+fee
    and i.total_cents=i.subtotal_cents-i.discount_cents+i.shipping_cents-i.points_redeemed-i.credit_redeemed_cents
    and i.terms_version='launch-2026-11-v1'
    and i.pricing->>'membership_plan'=r->>'plan'
