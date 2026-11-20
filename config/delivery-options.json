@@ -1,25 +1,33 @@
 [
   {
+    "id": "economy",
+    "kind": "shipping",
+    "label": "Economy Tracked",
+    "price_cents": 795,
+    "enabled": true,
+    "description": "Lower-cost tracked shipping; delivery timing depends on address and carrier."
+  },
+  {
     "id": "standard",
     "kind": "shipping",
-    "label": "Standard UPS",
-    "price_cents": 1495,
+    "label": "Standard Tracked",
+    "price_cents": 1195,
     "enabled": true,
     "description": "Standard shipping with tracking. Delivery dates depend on destination and carrier confirmation."
   },
   {
     "id": "express",
     "kind": "shipping",
-    "label": "Express UPS",
-    "price_cents": 3495,
+    "label": "Express Shipping",
+    "price_cents": 2995,
     "enabled": true,
     "description": "Expedited carrier service when available. Final delivery dates follow dispatch confirmation."
   },
   {
     "id": "next_day",
     "kind": "shipping",
-    "label": "UPS Next Day",
-    "price_cents": 6995,
+    "label": "Next-Day Shipping",
+    "price_cents": 5995,
     "enabled": true,
     "description": "Next-business-day service after dispatch to eligible US and Canadian destinations. Carrier coverage, order cutoffs and customs clearance can affect availability and timing."
   },
