@@ -65,14 +65,14 @@ test('removing the explicit coupon restores regular price and invalidates the pr
  const {res:stale}=await call({...b,coupon:'',action:'place',quote:q.body.quote},{db});assert.equal(stale.code,409);assert.equal(db.calls.length,0);
 });
 test('US standard shipping threshold uses discounted merchandise before account balances',async()=>{
- for(const [cents,coupon,shipping] of [[14999,'',1495],[15000,'',0],[17646,'BLACKFRIDAY15',1495],[17647,'BLACKFRIDAY15',0]]){
+ for(const [cents,coupon,shipping] of [[14999,'',1195],[15000,'',0],[17646,'BLACKFRIDAY15',1195],[17647,'BLACKFRIDAY15',0]]){
   const cat=[{...catalog[0],variants:[{size:'5mg',price:cents/100}]}];
   const r=await checkout.normalize({},user,{...body,coupon,points:500,credit_cents:1000},cat),q=checkout.price(r,method,null,{points:1000,credit_cents:2000});
   assert.equal(q.shipping_cents,shipping,'subtotal '+cents+' '+coupon);assert.equal(q.total_cents,cents-Math.round(cents*(coupon?0.15:0))+shipping-1500);
  }
 });
 test('coupon does not make express, international shipping, priority or protection free',async()=>{
- for(const [country,shipping,extras,expected] of [['US','standard',['protection'],500],['US','express',['protection'],3995],['US','next_day',['priority','protection'],8494],['CA','standard',[],0],['CA','next_day',[],6995],['CA','next_day',['protection'],7495],['GB','express',[],9995]]){
+ for(const [country,shipping,extras,expected] of [['US','standard',['protection'],500],['US','express',['protection'],3495],['US','next_day',['priority','protection'],7494],['CA','standard',[],0],['CA','next_day',[],6495],['CA','next_day',['protection'],6995],['GB','express',[],7995]]){
   const r=await checkout.normalize({},user,{...body,coupon:'BLACKFRIDAY15',items:[{...body.items[0],qty:2}],address:{...body.address,country},delivery:{shipping,extras}},catalog);
   assert.equal(checkout.price(r,method,null,{points:0,credit_cents:0}).shipping_cents,expected);
  }
@@ -97,8 +97,8 @@ test('Bulk Orders save 20% on 10-49 total units and 50% on 50+; no small-order q
   const tier=qty>=50?.5:qty>=10?.2:0;
   const discount=Math.round(qty*10000*tier);
   assert.equal(q.body.discount_cents,discount);
-  assert.equal(q.body.shipping_cents,3495);
-  assert.equal(q.body.total_cents,qty*10000-discount+3495);
+  assert.equal(q.body.shipping_cents,2995);
+  assert.equal(q.body.total_cents,qty*10000-discount+2995);
   assert.equal(q.body.pricing.lines[0].qty,qty);
   if(qty>=10){
    assert.equal(q.body.pricing.quantity_discount_version,'pure-bulk-2026-11-v1');
@@ -109,7 +109,7 @@ test('Bulk Orders save 20% on 10-49 total units and 50% on 50+; no small-order q
   assert.equal(p.code,200);
   const expected=qty*10000*(qty>=10?tier:.15);
   assert.equal(p.body.discount_cents,expected);
-  assert.equal(p.body.total_cents,qty*10000-expected+3495-600);
+  assert.equal(p.body.total_cents,qty*10000-expected+2995-600);
   assert.equal(db.calls.length,0);
  }
 });
@@ -169,7 +169,7 @@ test('signed partner attribution and existing commissions do not add a customer 
  for(const extra of [{},{coupon:'BLACKFRIDAY15'}]){
   const db=dbMock({partner}),{res}=await call({...body,action:'quote',...extra},{db,headers:{cookie}});
   assert.equal(res.code,200);assert.deepEqual(res.body.pricing.referral,{partner_id:partner.customer_id,code:partner.code,first_order:true});
-  assert.equal(res.body.discount_cents,extra.coupon?1500:0);assert.equal(res.body.total_cents,extra.coupon?9995:11495);
+  assert.equal(res.body.discount_cents,extra.coupon?1500:0);assert.equal(res.body.total_cents,extra.coupon?9695:11195);
  }
  const {res}=await call({...body,action:'quote'},{db:dbMock({partner}),headers:{cookie:cookie+'forged'}});
  assert.equal(res.code,200);assert.equal(res.body.pricing.referral,undefined);assert.equal(res.body.discount_cents,0);
