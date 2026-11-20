@@ -390,9 +390,13 @@ body.ap-checkout-page #account-root{box-shadow:none!important;border:0!important
 
 
 /* Membership is a single order item at checkout, not another checkout. */
-.nlx-checkout-root .nlx-membership-line{align-items:center;border-top:1px solid #e6e6e6;margin-top:10px;padding-top:13px}
-.nlx-checkout-root .nlx-membership-line .nlx-product-name{flex:1;min-width:0}
-.nlx-checkout-root .nlx-membership-line .nlx-product-name small{display:block;margin-top:5px;color:#6a6a6a}
+.nlx-checkout-root .nlx-membership-line{grid-template-columns:18px minmax(0,1fr) auto;align-items:center;gap:9px;border-top:0;margin-top:0;padding:15px 0}
+.nlx-checkout-root .nlx-membership-line .nlx-remove{grid-column:1}
+.nlx-checkout-root .nlx-membership-line .nlx-product-name{grid-column:2;display:flex!important;flex-direction:row!important;flex-wrap:wrap;align-items:center!important;gap:7px!important;min-width:0}
+.nlx-checkout-root .nlx-membership-line .nlx-product-name strong{display:inline;font-size:14px;white-space:nowrap}
+.nlx-checkout-root .nlx-membership-line .nlx-membership-period{font-size:12px;line-height:1.4;font-weight:500;color:#666;white-space:nowrap}
+.nlx-checkout-root .nlx-membership-line .nlx-product-price{grid-column:3;justify-self:end;text-align:right}
+.nlx-checkout-root .nlx-quote-note:empty{display:none}
 .nlx-checkout-root .pm-add-membership-options{display:grid;gap:10px;margin:10px 0 14px}
 .nlx-checkout-root .pm-add-tiers,.nlx-checkout-root .pm-add-periods{display:flex;gap:8px;min-width:0}
 .nlx-checkout-root .pm-add-tiers button,.nlx-checkout-root .pm-add-periods button{flex:1;min-width:0;border:1px solid #d4d4d4;border-radius:9px;background:#fff;padding:11px 8px;font-size:12px;font-weight:750;color:#111;cursor:pointer}
