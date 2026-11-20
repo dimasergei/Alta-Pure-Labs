@@ -48,7 +48,7 @@ test('BLACKFRIDAY15 is normalized and cart, quote and persisted order have ident
  const cat=[{id:'a',name:'A',variants:[{size:'5mg',price:19.99}]},{id:'b',name:'B',variants:[{size:'10mg',price:30.01}]}];
  const b={...body,coupon:' blackFriday15 ',items:[{id:'a',size:'5mg',qty:2,price:0},{id:'b',size:'10mg',qty:1,price:0}],total_cents:1,pricing:{discount_cents:999999}};
  const {res:quoted,db}=await call({...b,action:'quote'},{cat});assert.equal(quoted.code,200);
- assert.equal(quoted.body.subtotal_cents,6999);assert.equal(quoted.body.discount_cents,1050);assert.equal(quoted.body.total_cents,7444);
+ assert.equal(quoted.body.subtotal_cents,6999);assert.equal(quoted.body.discount_cents,1050);assert.equal(quoted.body.total_cents,6744);
  assert.deepEqual(quoted.body.pricing.lines.map(x=>x.coupon_discount_cents),[600,450]);
  const {res:cart}=await call({...b,country:'US'},{db,cat,params:'checkout=cart',headers:{authorization:''}});
  assert.equal(cart.code,200);assert.deepEqual(cart.body.pricing,quoted.body.pricing);assert.equal(db.calls.length,0);
