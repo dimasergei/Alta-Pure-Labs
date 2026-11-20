@@ -2,3 +2,10 @@
 dist/
 node_modules/
 assets/*.png
+
+# Local credentials and Vercel CLI project files — never commit secrets
+.env
+.env.*
+!.env.example
+!.env.*.example
+.vercel/
