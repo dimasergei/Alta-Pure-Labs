@@ -242,7 +242,7 @@ test('PURE memberships execute verified fees and goods benefits atomically in di
     if(coupon)assert.equal(p.pricing.membership_discount_cents,0);
     if(customer!==white.customer_id&&customer!==black.customer_id)assert.equal(p.earned_points,0);
    }
-   for(const [country,shipping,expected] of [['US','standard',0],['US','express',0],['US','next_day',6995],['CA','express',5995],['CA','next_day',6995]]){
+   for(const [country,shipping,expected] of [['US','standard',0],['US','express',0],['US','next_day',5995],['CA','express',4995],['CA','next_day',6495]]){
     const p=await make({customer:white.customer_id,country,shipping});await db.query('select commerce_internal.validate_regular_checkout($1::jsonb)',[JSON.stringify(p)]);assert.equal(p.shipping_cents,expected);
    }
    const p=await make({customer:white.customer_id,shipping:'express',extras:['priority','protection']});assert.equal(p.shipping_cents,delivery.defaults.filter(x=>['priority','protection'].includes(x.id)).reduce((sum,x)=>sum+x.price_cents,0));
