@@ -56,3 +56,18 @@ test('developer environment template cannot accidentally commit production crede
     assert.doesNotMatch(example, new RegExp('^' + key + '=','m'));
   }
 });
+
+test('cleanup script is syntactically valid and never lists active payment keys for deletion', () => {
+  const { spawnSync } = require('node:child_process');
+  const script = path.join(__dirname, '..', 'scripts', 'retire-vercel-env-safe.sh');
+  const check = spawnSync('bash', ['-n', script], { encoding: 'utf8' });
+  assert.equal(check.status, 0, check.stderr || 'Invalid bash script');
+  const source = fs.readFileSync(script, 'utf8');
+  const removedNames = source.split('retired_production=(')[1]?.split(')')[0] || '';
+  assert.match(removedNames, /PEPTIDEPAY_WEBHOOK_SECRET/);
+  assert.match(removedNames, /LOTUS_PARTNER_API_KEY/);
+  assert.match(removedNames, /TAGADA_API_KEY/);
+  for (const key of ['RAMPEX_API_KEY', 'RAMPEX_WEBHOOK_SECRET', 'POLYGON_USDC_RECIPIENT', 'SUPABASE_SERVICE_ROLE_KEY']) {
+    assert.doesNotMatch(removedNames, new RegExp(key));
+  }
+});
