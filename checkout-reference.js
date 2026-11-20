@@ -57,8 +57,15 @@
   let stage=0,quote=null,quoteVersion=0,quoteTimer=null,onePayment=false,lastPlaced=null,orderId=crypto.randomUUID(),currentPreview=null,loadingPreview=false,sms=false;
   const trustMarkup='<div class="nlx-trust"><span><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="5" y="10" width="14" height="11" rx="2"/><path d="M8 10V7a4 4 0 0 1 8 0v3"/></svg>SECURE</span><span>'+shieldIcon+'PROTECTED</span><span><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="m7 12 3 3 7-7"/></svg>3RD PARTY TESTED</span></div>';
   const displayAddress=()=>{const a=state.shippingData||formatAddress();return '<b>'+esc(((state.firstName||nameFirst)+' '+(state.lastName||nameLast)).trim())+'</b><span>'+esc(a.line1||'')+'</span>'+(a.line2?'<span>'+esc(a.line2)+'</span>':'')+'<span>'+esc((a.city||'')+(a.region?', '+a.region:'')+(a.postal_code?' '+a.postal_code:''))+'</span>';};
+  let savedAddon=null;
+  try{
+    const value=JSON.parse(sessionStorage.getItem('pure-checkout-membership-item-v1')||'null');
+    if(!data.membership&&value&&['vip','elite'].includes(value.plan)&&['monthly','annual'].includes(value.period))
+      savedAddon={plan:value.plan,period:value.period};
+    else sessionStorage.removeItem('pure-checkout-membership-item-v1');
+  }catch{sessionStorage.removeItem('pure-checkout-membership-item-v1');}
   const state={country:supported.includes(saved.country)?saved.country:'US',
-    membershipAddon:null,membershipChoice:{plan:'vip',period:'monthly'},
+    membershipAddon:savedAddon,membershipChoice:savedAddon||{plan:'vip',period:'monthly'},
     shipping:'economy',extras:new Set([...(Array.isArray(priorExtras)?priorExtras.filter(x=>x!=='protection'&&isActive(x)):[]),...(isActive('protection')&&wantsProtection(cart)?['protection']:[])]),
     coupon:initialCoupon(),paymentKind:walletPreference?'card':paymentKind(preferred)||'card',wallet:walletPreference,fxQuote:null,shippingData:null,billingData:null,billingSame:true,note:'',smsOptIn:false};
   if(state.paymentKind==='interac'&&!preferred?.countries?.includes(state.country))state.paymentKind='card';
@@ -223,11 +230,11 @@
    window.PureMembershipCheckout?.offer(view('[data-pure-membership-offer]',detail),currentPreview,data.terms?.conversion,{
      selection:state.membershipChoice,
      onSelect:choice=>{state.membershipChoice=choice;renderSummary();},
-     onAdd:addon=>{state.membershipAddon={plan:addon.plan,period:addon.period};invalidate();renderSummary();void refresh();},
-     onRemove:()=>{state.membershipAddon=null;invalidate();renderSummary();void refresh();}
+     onAdd:addon=>{state.membershipAddon={plan:addon.plan,period:addon.period};sessionStorage.setItem('pure-checkout-membership-item-v1',JSON.stringify(state.membershipAddon));invalidate();renderSummary();void refresh();},
+     onRemove:()=>{state.membershipAddon=null;sessionStorage.removeItem('pure-checkout-membership-item-v1');invalidate();renderSummary();void refresh();}
    });
    const removeMember=view('[data-nlx-remove-membership]',detail);
-   if(removeMember)removeMember.onclick=()=>{state.membershipAddon=null;invalidate();renderSummary();void refresh();};
+   if(removeMember)removeMember.onclick=()=>{state.membershipAddon=null;sessionStorage.removeItem('pure-checkout-membership-item-v1');invalidate();renderSummary();void refresh();};
    const balances=view('[data-nlx-points]',detail),hasBalance=(data.balances?.points||0)>0||(data.balances?.credit_cents||0)>0;balances.hidden=!hasBalance;balances.innerHTML=hasBalance?'<span>Available: '+Math.max(0,data.balances.points||0)+' points · '+usd(data.balances.credit_cents||0)+' store credit.</span>'+(state.paymentKind==='interac'?'<span>USD points and store credit cannot be applied to an Interac payment. Choose Card or Crypto to use these balances.</span>':'<a href="/checkout?balance=1">Use existing balance →</a>'):'';
    view('[data-nlx-quote-note]',detail).textContent=(state.paymentKind==='interac'?'Your total is in CAD. Place your order to view the Interac receiving details and payment reference. ':currentPreview?.pricing?.discount_source==='coupon_crypto'?'Your coupon is applied first, then an extra 5% Crypto discount on the remaining merchandise. ':'')+(currentPreview?.shipping_note||'');
    view('[data-nlx-remove-coupon]',detail).hidden=!state.coupon;
@@ -449,7 +456,7 @@
       }
       const current=snapshotCart().map(({id,size,qty})=>({id,size,qty}));
       if(!['void','refunded'].includes(result.status)&&JSON.stringify(current)===JSON.stringify(body.items))localStorage.removeItem('pp-cart');
-      sessionStorage.removeItem('ap-checkout-id');sessionStorage.removeItem('ap-checkout-fingerprint');
+      sessionStorage.removeItem('ap-checkout-id');sessionStorage.removeItem('ap-checkout-fingerprint');sessionStorage.removeItem('pure-checkout-membership-item-v1');
       location.assign(destination);
      }catch(error){
       if(lastPlaced){
