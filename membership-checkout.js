@@ -3,16 +3,30 @@
  const esc=value=>String(value??'').replace(/[&<>"']/g,char=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[char]));
  const money=(value,currency='USD')=>new Intl.NumberFormat('en-US',{style:'currency',currency,currencyDisplay:'code'}).format(value/100);
  const field=(label,name,value='',attributes='')=>'<label>'+label+'<input name="'+name+'" value="'+esc(value)+'" '+attributes+'></label>';
- function offer(root,quote,config){
+ function offer(root,quote,config,actions={}){
   if(!root)return;
-  const membership=quote?.membership,details=quote?.pricing;
-  if(membership){
-   root.hidden=false;root.innerHTML='<div class="pm-offer pm-offer-active"><span class="pm-eyebrow">MEMBER BENEFITS</span><h3>'+esc(membership.name||config.plans[membership.plan]?.name)+'</h3><p>'+esc(details?.membership_discount_cents>0?money(details.membership_discount_cents,quote.currency)+' membership savings applied.':'Your best eligible merchandise discount is applied.')+'</p><p>'+Number(quote.earned_points||0)+' points on this order after payment.'+(details?.membership_benefits?.free_bac_water_3ml?' Complimentary BAC Water 3 mL included.':'')+'</p><a href="/account/membership">View your membership</a></div>';return;
+  const membership=quote?.membership,addon=quote?.pricing?.membership_addon;
+  if(membership){root.hidden=true;return;}
+  if(addon){
+   root.hidden=false;
+   root.innerHTML='<div class="pm-offer pm-offer-added"><span class="pm-eyebrow">ADDED TO ORDER</span><h3>'+esc(addon.name)+'</h3><div class="pm-offer-actions"><strong>'+esc(money(addon.fee_cents,quote.currency))+'</strong><button type="button" class="ap-button" data-pm-remove>Remove</button></div></div>';
+   root.querySelector('[data-pm-remove]').onclick=()=>actions.onRemove?.();
+   return;
   }
-  if(!config?.memberships_enabled||!quote?.membership_offer||sessionStorage.getItem('pure-membership-offer-dismissed')==='1'){root.hidden=true;return;}
-  const tier=config.plans.vip,potential=quote.membership_offer.plans.vip;
-  root.hidden=false;root.innerHTML='<div class="pm-offer"><span class="pm-eyebrow">PURE WHITE MEMBERSHIP</span><h3>'+(potential.total_savings_cents>0?'Unlock '+esc(money(potential.total_savings_cents,quote.currency))+' on this order':'More from every research order')+'</h3><p>5% off eligible merchandise, free US standard or express shipping, and 5 points per $1.</p><p class="pm-small">The better of your member discount or coupon applies. Membership purchase: '+esc(money(tier.monthly_cents))+' for one month. Benefits start after payment is confirmed.</p><a class="ap-button" href="/checkout?plan=vip&period=monthly">Join PURE WHITE · '+esc(money(tier.monthly_cents))+'</a><div class="pm-offer-links"><a href="/memberships">Compare plans</a><button type="button" data-pm-dismiss>No thanks</button></div></div>';
-  root.querySelector('[data-pm-dismiss]').onclick=()=>{sessionStorage.setItem('pure-membership-offer-dismissed','1');root.hidden=true;};
+  if(!config?.memberships_enabled||!quote?.membership_offer){root.hidden=true;return;}
+  const tiers=['vip','elite'],months=['monthly','annual'],selected=actions.selection||{plan:'vip',period:'monthly'},
+   plan=config.plans[selected.plan]||config.plans.vip;
+  const fx=quote.currency==='CAD'&&Number.isSafeInteger(quote.pricing?.fx_ppm)?quote.pricing.fx_ppm:1000000;
+  const amount=Math.round(plan[selected.period+'_cents']*fx/1000000);
+  const potential=quote.membership_offer.plans[selected.plan]||quote.membership_offer.plans.vip;
+  root.hidden=false;
+  root.innerHTML='<div class="pm-offer"><span class="pm-eyebrow">SUBSCRIBE & SAVE</span><h3>'+esc(potential.total_savings_cents>0?'Save '+money(potential.total_savings_cents,quote.currency)+' on this order':'Add a PURE membership')+'</h3>'+
+   '<div class="pm-add-membership-options"><div class="pm-add-tiers">'+tiers.map(key=>'<button type="button" data-pm-tier="'+key+'" aria-pressed="'+(selected.plan===key)+'">'+esc(config.plans[key].name)+'</button>').join('')+'</div>'+
+   '<div class="pm-add-periods">'+months.map(key=>'<button type="button" data-pm-period="'+key+'" aria-pressed="'+(selected.period===key)+'">'+(key==='annual'?'Annual':'Monthly')+'</button>').join('')+'</div></div>'+
+   '<button type="button" class="ap-button pm-add-to-order" data-pm-add>Add '+esc(plan.name)+' · '+esc(money(amount,quote.currency))+'</button></div>';
+  root.querySelectorAll('[data-pm-tier]').forEach(button=>button.onclick=()=>actions.onSelect?.({plan:button.dataset.pmTier,period:selected.period}));
+  root.querySelectorAll('[data-pm-period]').forEach(button=>button.onclick=()=>actions.onSelect?.({plan:selected.plan,period:button.dataset.pmPeriod}));
+  root.querySelector('[data-pm-add]').onclick=()=>actions.onAdd?.(selected);
  }
  async function checkout(root,auth,user,options={}){
   let busy=false,savedId=null,quote=null,request=null,requestId=null,previousFingerprint=null,revision=0,quotedRevision=null,quotedFingerprint=null;
