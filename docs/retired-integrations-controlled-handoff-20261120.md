@@ -38,8 +38,28 @@
 ## Developer handoff
 - GitHub: `https://github.com/dimasergei/PURE` (repository was renamed from Alta-Pure-Labs).
 - Vercel: `https://vercel.com/dimasergeis-projects/pure`.
-- Developer intended email: `main.belkdigital@gmail.com`.
-- Domain `getpureskin.co` registered, auto-renew off; domain routing not changed by this audit.
-- Vercel CLI environment pull generated `.env.local`, but 25 protected secrets were replaced with `[SENSITIVE]`; use scoped project access or provider-issued development keys, not a committed or emailed production secret file.
+- Developer **confirmed**: `main.belkdigital@gmail.com` accepted Vercel team member role `MEMBER`; GitHub account `belk-digital` has `write` collaborator permissions.
+- Domain `getpureskin.co` registered to the Vercel team, registrar verification **confirmed**; auto-renew off. It has **zero** project-domain attachments: do not change existing production domain routing without separate cutover planning.
+- Vercel CLI environment pull generated `.env.local`, but 25 protected secrets were replaced with `[SENSITIVE]`; use Vercel team access for hosted execution and provider-issued scoped development credentials when local execution requires keys. Do not email or commit a populated file. A safe `.env.example` is included in this branch, with retired providers omitted.
+- `.gitignore` now protects `.env`, `.env.*`, and `.vercel/` from accidental commit.
+- Deletion CLI is in `scripts/retire-vercel-env-safe.sh` and defaults to `--dry-run`. It enforces exact Vercel team/project matching, disabled retired flags, active-key presence, and a typed confirmation for `--apply`. **Only run after CI and release checks pass.**
 
-**State of this branch:** audit and handoff documentation only. No production changes or retired integration code removal yet.
+**State of this branch:** audited, safe template + Git ignore protections, isolation regression tests, and a guarded dry-run retirement script are committed in draft PR #112. No production env deletion, production deploy, domain rerouting, payment code activation, or DB mutation has occurred.
+
+## New Stripe account — not yet activated
+- **Old Stripe account (closed):** `acct_1K7VwMFgmwsD5cg2`. Closure notice confirmed its API keys were expired; do not repurpose old production credentials.
+- **Replacement Stripe account:** `acct_1UcAGhHgf0oCHlRb`, business **1001517614 ONTARIO INC.** The latest email confirmed the business profile was completed but further setup tasks were outstanding.
+- Do not route card payments, replace `STRIPE_SECRET_KEY`/`STRIPE_WEBHOOK_SECRET`, or change the live merchant-of-record until Stripe has verified activation **and approved the actual products and jurisdictions**.
+- Existing current card-to-crypto payments are handled by Rampex, including a `rampex_provider='stripe'` setting. This is **not** the new merchant-direct Stripe account.
+- Plan any new direct Stripe checkout behind a dedicated, disabled adapter and separate test credentials and webhook, with dedicated idempotency and reconciliation tests. Keep legacy event handling independent until closed obligations have been reconciled.
+
+## Four-item handoff status
+1. **Domain** — registered, verified; Vercel team owns it, developer is a member of the team. No live DNS cutover.
+2. **GitHub** — developer `belk-digital` has verified write collaborator access to `dimasergei/PURE`.
+3. **.env** — safe template tracked. Owner's production pull exists locally but has 25 sensitive placeholders; complete export is not available through Vercel CLI. Developer can use hosted Vercel env and scoped provider credentials.
+4. **Hosting** — developer email confirmed member of Vercel team `dimasergeis-projects`, project `pure`.
+
+## Cleanup release status
+- Checkout, auth, admin, order, bank/Interac, direct USDC, Rampex, notifications, marketing, and shipping source code **unchanged**.
+- Retired configuration remains on Vercel until verified CI/preview and explicit execution of guarded script; do not claim removed until verified.
+- For testing and review, use draft PR `https://github.com/dimasergei/PURE/pull/112` (base = current production branch, NOT default `main`).
