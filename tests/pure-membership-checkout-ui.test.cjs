@@ -61,7 +61,7 @@ test('a changed CAD exchange quote requires a second purchase click and uses the
  await env.root.querySelector('[data-pm-place]').onclick();
  assert.equal(env.calls.filter(call=>call?.action==='place').length,0);
  assert.match(env.root.querySelector('[data-pm-status]').textContent,/CAD total changed/);
- assert.match(env.root.querySelector('.pm-final').textContent,/CAD\s*28\.00/);
+ assert.match(env.root.querySelector('.pm-final').textContent,/CA\$28\.00/);
  assert.equal(env.root.querySelector('[data-pm-place]').disabled,false);
  await env.root.querySelector('[data-pm-place]').onclick();
  const order=env.calls.find(call=>call?.action==='place');assert.ok(order);assert.equal(order.fx_quote.fixture_version,3);assert.equal(order.quote,'fixture-quote-3');
