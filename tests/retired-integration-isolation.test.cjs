@@ -72,7 +72,7 @@ test('cleanup script is syntactically valid and never lists active payment keys 
   }
 });
 
-test('active payment and worker status cannot advertise retired providers or dispatch Lotus', () => {
+test('active payment and admin status hide retired providers while Lotus stays safely disabled', () => {
   const published = gateway.publicStatus({}).map(x => x.provider);
   assert.equal(published.includes('peptidepay'), false);
   assert.equal(published.includes('rampex'), true);
@@ -83,7 +83,8 @@ test('active payment and worker status cannot advertise retired providers or dis
   assert.ok(adminMethodList, 'Admin gateway list must remain present');
   assert.doesNotMatch(adminMethodList[1], /peptidepay/);
   const workerSource = fs.readFileSync(path.join(root, 'lib', 'manual-commerce-integrated.js'), 'utf8');
-  assert.doesNotMatch(workerSource, /LOTUS_FULFILLMENT_ENABLED|lotus-fulfillment/);
+  assert.match(workerSource, /LOTUS_FULFILLMENT_ENABLED==='true'/);
+  assert.match(workerSource, /supplierEnabled\?/);
   assert.match(workerSource, /reconcilePending/);
   assert.match(workerSource, /notificationsDispatch/);
 });
