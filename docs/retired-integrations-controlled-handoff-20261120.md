@@ -46,10 +46,10 @@
 
 **State of this branch:** audited, safe template + Git ignore protections, isolation regression tests, and a guarded dry-run retirement script are committed in draft PR #112. No production env deletion, production deploy, domain rerouting, payment code activation, or DB mutation has occurred.
 
-## New Stripe account — not yet activated
+## New Stripe account — live charges enabled; NOT connected to PURE checkout
 - **Old Stripe account (closed):** `acct_1K7VwMFgmwsD5cg2`. Closure notice confirmed its API keys were expired; do not repurpose old production credentials.
-- **Replacement Stripe account:** `acct_1UcAGhHgf0oCHlRb`, business **1001517614 ONTARIO INC.** The latest email confirmed the business profile was completed but further setup tasks were outstanding.
-- Do not route card payments, replace `STRIPE_SECRET_KEY`/`STRIPE_WEBHOOK_SECRET`, or change the live merchant-of-record until Stripe has verified activation **and approved the actual products and jurisdictions**.
+- **Replacement Stripe account:** `acct_1UcAGhHgf0oCHlRb`, business **1001517614 ONTARIO INC.** **Verified directly via Stripe live account API on 2026-11-20:** `charges_enabled=true`, `payouts_enabled=true`, `details_submitted=true`, `card_payments=active`. Stripe account requirements still list `person_1UcAR8Hgf0oCHlRbiLHybhWV.verification.document_live_capture` as `currently_due`, `past_due`, and `eventually_due`; the account has `disabled_reason=null`. Identity-document verification must be completed by the account owner. This API result establishes technical capability but does **not** establish Stripe approval of PURE's actual product catalog or lawful sales jurisdictions.
+- Do not route card payments, replace `STRIPE_SECRET_KEY`/`STRIPE_WEBHOOK_SECRET`, or change the live merchant-of-record until the account owner completes the outstanding identity verification, confirms Stripe permits the actual product catalog and jurisdictions, and the new integration has passed isolated checkout/webhook tests.
 - Existing current card-to-crypto payments are handled by Rampex, including a `rampex_provider='stripe'` setting. This is **not** the new merchant-direct Stripe account.
 - Plan any new direct Stripe checkout behind a dedicated, disabled adapter and separate test credentials and webhook, with dedicated idempotency and reconciliation tests. Keep legacy event handling independent until closed obligations have been reconciled.
 
@@ -63,3 +63,10 @@
 - Checkout, auth, admin, order, bank/Interac, direct USDC, Rampex, notifications, marketing, and shipping source code **unchanged**.
 - Retired configuration remains on Vercel until verified CI/preview and explicit execution of guarded script; do not claim removed until verified.
 - For testing and review, use draft PR `https://github.com/dimasergei/PURE/pull/112` (base = current production branch, NOT default `main`).
+
+## Verified latest audit (2026-11-20)
+- Stripe live API independently confirms the replacement account can currently accept charges and payouts, subject to outstanding identity-document verification; it is **not** yet integrated into PURE checkout.
+- GitHub `dimasergei/pure-gateway` exists as a private, empty repository and `belk-digital` has verified `write` permission.
+- Vercel still reports 13 retired Lotus/PeptidePay/Tagada environment entries, plus the legacy `STRIPE_SECRET_KEY` and `STRIPE_WEBHOOK_SECRET`. They are **not removed**; changing/deleting old Stripe keys before historical webhook reconciliation could break production.
+- CI on commit `0a76cc01ff4e6ec156f38a98920f3f18275c882e`: 5 targeted workflows green, full build-and-test workflow red (984 pass, 77 fail, 1 skip). Do not merge/deploy based on partial green checks.
+- Current production remains `4bd6cbd845c963c337d0641a9068ec7f6fb4e3d1` / deployment `dpl_DGggAwMwiwgHV77t9Tb4qkjoqGwb` READY. This audit did not mutate production.
