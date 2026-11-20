@@ -1,19 +1,22 @@
 {
-  "version": "shipping-2026-11-v3",
+  "version": "shipping-2026-11-v4",
   "currency": "USD",
   "US": {
-    "standard": 1495,
-    "express": 3495,
-    "next_day": 6995
+    "economy": 795,
+    "standard": 1195,
+    "express": 2995,
+    "next_day": 5995
   },
   "CA": {
-    "standard": 3995,
-    "express": 5995,
-    "next_day": 6995
+    "economy": 1495,
+    "standard": 2495,
+    "express": 4995,
+    "next_day": 6495
   },
   "OTHER": {
-    "standard": 5995,
-    "express": 9995
+    "economy": 3995,
+    "standard": 4995,
+    "express": 7995
   },
   "unavailable_countries": [
     "RU",
@@ -23,5 +26,5 @@
     "CU",
     "SY"
   ],
-  "notice": "Rates are flat checkout charges, not live UPS quotations. Carrier availability and customs/import restrictions are reviewed before dispatch; import duties are the recipient\u2019s responsibility."
+  "notice": "Checkout rates are flat destination-based estimates until live parcel dimensions and packed weights are confirmed."
 }
