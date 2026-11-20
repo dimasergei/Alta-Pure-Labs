@@ -12,6 +12,12 @@ async function setup(route){const errors=[];const console=new VirtualConsole();c
 (async()=>{
  {const{dom,d,w}=await setup('/');
   assert.match(d.querySelector('h1').textContent,/CUTTING EDGEPURITY/);
+   // Desktop navigation and mobile side menu share this single route/link.
+   const testingLink=d.querySelector('#ap-nav a[href="/coas"]');
+   assert.ok(testingLink,'Testing link preserves the COA route');
+   assert.equal(testingLink.textContent,'Testing','nav label after locale initialization');
+   assert.equal(d.querySelector('.ap-footer a[href="/coas"]')?.textContent,'Testing','footer label matches');
+   assert.equal((read('public-build/storefront-v2.js').match(/coas:'Testing'/g)||[]).length,3,'en/fr/es labels stay Testing');
   const vials=[...d.querySelectorAll('.nl-hero .nl-vial')];
   assert.deepEqual(vials.map(a=>a.getAttribute('href')),['/product/nad','/product/retatrutide','/product/bpc-157','/product/ghk-cu','/product/tirzepatide']);
   assert.equal(vials[2].querySelector('img').getAttribute('fetchpriority'),'high');
