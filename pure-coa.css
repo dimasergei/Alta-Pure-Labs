@@ -229,3 +229,61 @@ html:root body.ap-site .pure-coa-page .ap-coa-card{border-radius:17px;box-shadow
 html:root body.ap-site .pure-coa-page .ap-coa-card:hover{border-color:#bfbfbf;box-shadow:0 14px 34px #00000012}
 html:root body.ap-site .pure-coa-page .ap-coa-results-heading p{font-weight:700}
 @media(max-width:640px){html:root body.ap-site .pure-coa-page .ap-coa-hero-inner{padding-top:42px;padding-bottom:49px}html:root body.ap-site .pure-coa-page .pure-coa-hero-copy h1{font-size:clamp(35px,9.3vw,52px)}html:root body.ap-site .pure-coa-page .pure-coa-hero-copy p{font-size:14px}}
+
+
+/* Dark, high-contrast editorial headers: same PURE treatment as Products and Contact. */
+html:root body.ap-site .pure-coa-page .ap-coa-hero,
+html:root body.ap-site .nl-partner-hero{
+  background:#0b0b0b!important;
+  color:#fff!important;
+}
+html:root body.ap-site .pure-coa-page .pure-coa-hero-copy h1{
+  max-width:940px;
+  color:#fff!important;
+  font-family:Archivo,Arial,sans-serif;
+  font-size:clamp(43px,5.6vw,78px);
+  font-weight:950;
+  letter-spacing:-.067em;
+  line-height:1.02;
+  text-transform:uppercase;
+  text-wrap:balance;
+}
+html:root body.ap-site .pure-coa-page .pure-coa-hero-copy h1 em{
+  font-style:normal;
+  color:#bfbfbf!important;
+  -webkit-text-fill-color:#bfbfbf!important;
+}
+html:root body.ap-site .nl-partner-hero h1{
+  max-width:1120px;
+  color:#fff!important;
+  font-family:Archivo,Arial,sans-serif;
+  font-size:clamp(43px,5.25vw,76px);
+  font-weight:950;
+  letter-spacing:-.069em;
+  line-height:1.035;
+  text-transform:uppercase;
+  text-wrap:balance;
+}
+html:root body.ap-site .nl-partner-hero h1 em{
+  font-style:normal;
+  color:#c6c6c6!important;
+  -webkit-text-fill-color:#c6c6c6!important;
+}
+html:root body.ap-site .nl-partner-hero .nl-capsule{
+  color:#fff!important;
+  border-color:#777!important;
+}
+html:root body.ap-site .nl-partner-hero>div>p,
+html:root body.ap-site .pure-coa-page .pure-coa-hero-copy p{
+  color:#d5d5d5!important;
+}
+@media(max-width:767px){
+  html:root body.ap-site .pure-coa-page .pure-coa-hero-copy h1{
+    font-size:clamp(36px,8.8vw,53px);
+    letter-spacing:-.058em;
+  }
+  html:root body.ap-site .nl-partner-hero h1{
+    font-size:clamp(35px,8.4vw,53px);
+    letter-spacing:-.058em;
+  }
+}
