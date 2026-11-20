@@ -387,3 +387,16 @@ body.ap-checkout-page #account-root{box-shadow:none!important;border:0!important
 }
 .nlx-wallet-button[aria-pressed="true"]{outline:2px solid #111;outline-offset:3px}
 .nlx-wallet-button:focus-visible{outline:2px solid #111;outline-offset:3px}
+
+
+/* Membership is a single order item at checkout, not another checkout. */
+.nlx-checkout-root .nlx-membership-line{align-items:center;border-top:1px solid #e6e6e6;margin-top:10px;padding-top:13px}
+.nlx-checkout-root .nlx-membership-line .nlx-product-name{flex:1;min-width:0}
+.nlx-checkout-root .nlx-membership-line .nlx-product-name small{display:block;margin-top:5px;color:#6a6a6a}
+.nlx-checkout-root .pm-add-membership-options{display:grid;gap:10px;margin:10px 0 14px}
+.nlx-checkout-root .pm-add-tiers,.nlx-checkout-root .pm-add-periods{display:flex;gap:8px;min-width:0}
+.nlx-checkout-root .pm-add-tiers button,.nlx-checkout-root .pm-add-periods button{flex:1;min-width:0;border:1px solid #d4d4d4;border-radius:9px;background:#fff;padding:11px 8px;font-size:12px;font-weight:750;color:#111;cursor:pointer}
+.nlx-checkout-root .pm-add-tiers button[aria-pressed="true"],.nlx-checkout-root .pm-add-periods button[aria-pressed="true"]{background:#111;color:#fff;border-color:#111}
+.nlx-checkout-root .pm-add-to-order{width:100%;text-align:center}
+.nlx-checkout-root .pm-offer-added .pm-offer-actions{display:flex;justify-content:space-between;align-items:center;gap:10px}
+.nlx-checkout-root .pm-offer-added .pm-offer-actions button{max-width:140px}
