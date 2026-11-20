@@ -18,11 +18,11 @@ test('membership is an add-to-order action, with no redirect and normal membersh
   const el=env.box.querySelector('[data-pm-add]');
   assert.ok(el);assert.match(el.textContent,/PURE WHITE/);assert.match(el.textContent,/\$19\.99/);
   assert.equal(env.box.querySelector('a[href^="/checkout?plan="]'),null,'no second checkout link');
-  el.click();assert.deepEqual(added,[{plan:'vip',period:'monthly'}]);
+  el.click();assert.deepEqual(JSON.parse(JSON.stringify(added)),[{plan:'vip',period:'monthly'}]);
   env.box.querySelector('[data-pm-tier=elite]').click();
-  assert.deepEqual(selected,[{plan:'elite',period:'monthly'}]);
+  assert.deepEqual(JSON.parse(JSON.stringify(selected)),[{plan:'elite',period:'monthly'}]);
   env.box.querySelector('[data-pm-period=annual]').click();
-  assert.deepEqual(selected.at(-1),{plan:'vip',period:'annual'});
+  assert.deepEqual(JSON.parse(JSON.stringify(selected.at(-1))),{plan:'vip',period:'annual'});
  }finally{env.dom.window.close();}
 });
 test('annual membership uses annual prepaid price and does not add another payment',()=>{
@@ -30,7 +30,7 @@ test('annual membership uses annual prepaid price and does not add another payme
  try{
   assert.match(env.box.querySelector('[data-pm-add]').textContent,/PURE BLACK/);
   assert.match(env.box.querySelector('[data-pm-add]').textContent,/\$959\.90/);
-  env.box.querySelector('[data-pm-add]').click();assert.deepEqual(added,[{plan:'elite',period:'annual'}]);
+  env.box.querySelector('[data-pm-add]').click();assert.deepEqual(JSON.parse(JSON.stringify(added)),[{plan:'elite',period:'annual'}]);
  }finally{env.dom.window.close();}
 });
 test('selected membership is shown once in order item list, not duplicated in upsell area',()=>{
