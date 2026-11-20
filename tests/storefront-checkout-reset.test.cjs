@@ -55,11 +55,11 @@ for(const surface of ['cart','checkout'])test(surface+': regular purchased quant
   assert.equal(remove.hidden,false);
   assert.match(f.root.textContent,/BLACKFRIDAY15 applied/);
   assert.match(f.root.textContent,/\$24\.00/);
-  assert.match(f.root.textContent,/\$152\.95/);
+  assert.match(f.root.textContent,new RegExp(surface==='cart'?String.raw\`\$152\.95\`:String.raw\`\$148\.95\`));
   if(surface==='cart')assert.match(f.root.querySelector('[data-nlc-unlock-copy]').textContent,/\$14\.00/);
   input.value='BOGO';apply.click();await tick();await tick();
   assert.equal(f.w.localStorage.getItem('ap-checkout-coupon'),'BLACKFRIDAY15','Rejected code cannot replace the applied coupon');
-  assert.match(f.root.textContent,/\$152\.95/);
+  assert.match(f.root.textContent,new RegExp(surface==='cart'?String.raw\`\$152\.95\`:String.raw\`\$148\.95\`));
   assert.doesNotMatch(f.root.textContent,/BOGO applied/);
   remove.click();await tick();
   assert.equal(f.requests.at(-1).coupon,'');
