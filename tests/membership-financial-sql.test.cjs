@@ -33,13 +33,13 @@ test('PURE memberships execute verified fees and goods benefits atomically in di
  const member=async customer=>(await db.query('select * from commerce_internal.active_paid_membership($1,now())',[customer])).rows[0];
  const count=async(table,id)=>(await db.query('select count(*)::int n from '+table+(id?' where invoice_id=$1':''),id?[id]:[])).rows[0].n;
  let methods={};
- async function make({kind='goods',plan='vip',period='monthly',customer=randomUUID(),route='card',coupon='',points=0,credit=0,shipping='standard',extras=[],country=route==='interac'?'CA':'US',items,cat=catalog,rate=1375000,builder=false,bulk=false}={}){
+ async function make({kind='goods',plan='vip',period='monthly',customer=randomUUID(),route='card',coupon='',points=0,credit=0,shipping='standard',extras=[],country=route==='interac'?'CA':'US',items,cat=catalog,rate=1375000,builder=false,bulk=false,membershipAddon=null}={}){
   const method=methods[route],user={id:customer,email:'membership-fixture@example.test'};
   const body={id:randomUUID(),kind,plan:kind==='membership'?plan:undefined,billing_period:kind==='membership'?period:undefined,
    method_id:method.id,checkout_version:config.version,consent:true,research_use:true,name:'Isolated researcher',
    coupon,points,credit_cents:credit,items:items||cat.slice(0,builder?4:2).map(x=>({id:x.id,size:x.variants[0].size,qty:1})),
    address:{line1:'123 Fixture Street',city:'Fixture City',region:country==='CA'?'ON':'NY',postal_code:country==='CA'?'N2L 1A1':'10001',country},
-   delivery:{shipping,extras},...(builder?{research_builder_mode:'one_time'}:{}),...(bulk?{bulk_order:true}:{})};
+   delivery:{shipping,extras},...(builder?{research_builder_mode:'one_time'}:{}),...(bulk?{bulk_order:true}:{}),...(membershipAddon?{membership_addon:membershipAddon}:{})};
   const record=await checkout.normalize({},user,body,cat);
   if(route==='interac'){
    record.request.checkout.input_digest=record.digest;
@@ -103,6 +103,12 @@ test('PURE memberships execute verified fees and goods benefits atomically in di
   await db.exec(read('20261119213000_pure_membership_only_stack.sql'));
   await db.exec(read('20261119221500_pure_member_stack_tier_benefits.sql'));
   await db.exec(read('20261119231000_pure_bulk_order_volume_tiers.sql'));
+  for(const file of ['20261120103000_economy_shipping_lower_rates.sql',
+     '20261120115000_combined_member_checkout_validation.sql',
+     '20261120115500_combined_membership_lifecycle_part1.sql',
+     '20261120120000_combined_membership_lifecycle_part2.sql']){
+   try{await db.exec(read(file));}catch(error){error.message=file+': '+error.message;throw error;}
+  }
   for(const route of Object.keys(ids))methods[route]=(await db.query('select * from commerce_payment_methods where id=$1',[ids[route]])).rows[0];
 
   await t.test('migration preserves history, retired recurring guards, and inactive/old Stripe receiving routes',async()=>{
@@ -353,6 +359,43 @@ test('PURE memberships execute verified fees and goods benefits atomically in di
    const cad=await make({bulk:true,route:'interac',country:'CA',items:mixed(6,4)});
    assert.equal(cad.pricing.quantity_discount_version,'pure-bulk-2026-11-v1');
    await place(cad);
+  });
+
+  await t.test('one merchandise invoice includes membership fee, activates on verified paid receipt',async()=>{
+   for(const [plan,period,fee,rate] of [
+     ['vip','monthly',1999,500],['vip','annual',19190,500],
+     ['elite','monthly',9999,1000],['elite','annual',95990,1000]]){
+    const customer=randomUUID(),addon={plan,period};
+    const order=await make({customer,items:[{id:'fixture-a',size:'5mg',qty:1}],coupon:'BLACKFRIDAY15',membershipAddon:addon});
+    assert.equal(order.pricing.membership_addon.fee_cents,fee);
+    assert.equal(order.pricing.membership_discount_bps,rate);
+    assert.equal(order.pricing.coupon_discount_cents,1500);
+    assert.equal(order.subtotal_cents,order.pricing.subtotal_cents+fee);
+    assert.equal(order.membership_invoice_id,null);
+    const forged=structuredClone(order);forged.pricing.membership_addon.fee_cents--;
+    await assert.rejects(place(forged),/membership|price|Checkout|changed/i);
+    await place(order);assert.equal(await count('commerce_receipts',order.id),0);
+    assert.equal((await member(customer)).invoice_id,null);
+    await pay(order);
+    const m=await member(customer);assert.equal(m.plan,plan);assert.equal(m.invoice_id,order.id);
+    assert.equal(await count('commerce_receipts',order.id),1);
+    assert.equal((await db.query("select count(*)::int n from commerce_invoices where customer_id=$1 and kind='membership'",[customer])).rows[0].n,0);
+    const term=(await db.query("select expires_at-starts_at as duration from commerce_memberships where invoice_id=$1",[order.id])).rows[0];
+    assert.ok(term,'a membership term is created');
+    if(plan==='elite')assert.equal((await db.query("select count(*)::int n from commerce_fulfillment_items where invoice_id=$1 and item->>'membership_gift'='true'",[order.id])).rows[0].n,1);
+   }
+  });
+  await t.test('combined membership cannot duplicate, be falsely activated, or survive full refund',async()=>{
+    const customer=randomUUID(),order=await make({customer,membershipAddon:{plan:'vip',period:'monthly'}});
+    await place(order);
+    const again=await make({customer,membershipAddon:{plan:'elite',period:'annual'}});
+    await assert.rejects(place(again),/membership/i);
+    assert.equal((await member(customer)).invoice_id,null);
+    await pay(order);
+    assert.equal((await member(customer)).plan,'vip');
+    await assert.rejects(make({customer,membershipAddon:{plan:'elite',period:'monthly'}}),/membership/i);
+    await refund(order);
+    assert.equal((await member(customer)).invoice_id,null);
   });
 
   await t.test('current prepaid fees may use existing Rampex and Polygon payment attempt/receipt paths exactly once',async()=>{
