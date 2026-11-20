@@ -19,6 +19,21 @@
  let promise,dialog,returnFocus;
  const el=(tag,text,cls)=>{const n=document.createElement(tag);if(text!==undefined)n.textContent=text;if(cls)n.className=cls;return n;};
  function link(url,label){const a=el('a',label,'ap-text-link');a.href=safeUrl(url);a.target='_blank';a.rel='noopener noreferrer';return a;}
+ // Consistent secondary action; never change where the source report points.
+ function originalDocumentLink(url,isImage){
+  const a=link(url,isImage?'Open original report':'Open original PDF');
+  a.className='ap-coa-original-link';
+  const ns='http://www.w3.org/2000/svg';
+  const svg=document.createElementNS(ns,'svg');
+  svg.setAttribute('viewBox','0 0 24 24');
+  svg.setAttribute('aria-hidden','true');
+  svg.setAttribute('focusable','false');
+  const path=document.createElementNS(ns,'path');
+  path.setAttribute('d','M6.5 3.5h7l4 4v13h-11z M13.5 3.5v4h4 M9 12h6 M9 16h6');
+  svg.append(path);
+  a.prepend(svg);
+  return a;
+ }
  function closeViewer(){if(dialog?.open)dialog.close();dialog?.querySelector('iframe')?.remove();returnFocus?.focus();}
  function viewReport(r,button){
   if(!dialog){dialog=el('dialog',undefined,'ap-coa-dialog');dialog.setAttribute('aria-labelledby','ap-coa-viewer-title');document.body.append(dialog);dialog.addEventListener('cancel',e=>{e.preventDefault();closeViewer();});dialog.addEventListener('click',e=>{if(e.target===dialog)closeViewer();});}
@@ -47,7 +62,13 @@
    for(const r of records){
     const card=el('article',undefined,'ap-coa-card'),head=el('header',undefined,'pure-coa-card-head'),body=el('div',undefined,'pure-coa-card-body');head.append(el('span','COA REPORT','ap-pill'),el('h2',r.product+' · '+r.size));card.append(head,body);
     const dl=el('dl');for(const [label,value]of [['Laboratory',r.lab_name],['Certificate publisher',r.publisher],['Reported lot',r.lot],['Report / analysis date',r.report_date],['Report ID',r.report_id]])if(value)dl.append(el('dt',label),el('dd',value));body.append(dl);
-    const actions=el('div',undefined,'ap-actions'),button=el('button','View COA','ap-button ap-button-small');button.type='button';button.onclick=()=>viewReport(r,button);actions.append(button,link(r.document_type==='images'?r.source_library_url:r.document_url,r.document_type==='images'?'Original report ↗':'Original PDF ↗'));if(safeUrl(r.verification_url))actions.append(link(r.verification_url,'Certificate verification ↗'));body.append(actions);grid.append(card);
+    const actions=el('div',undefined,'ap-actions'),button=el('button','View COA','ap-button ap-button-small');
+    button.type='button';button.onclick=()=>viewReport(r,button);
+    const isImage=r.document_type==='images';
+    const originalUrl=isImage&&safeUrl(r.source_library_url)?r.source_library_url:r.document_url;
+    actions.append(button,originalDocumentLink(originalUrl,isImage));
+    if(safeUrl(r.verification_url))actions.append(link(r.verification_url,'Certificate verification ↗'));
+    body.append(actions);grid.append(card);
    }
    if(!records.length)grid.append(el('p','No COA report matches these filters. Try another selection or request the exact product, strength and lot.','ap-panel'));
    container.append(grid);

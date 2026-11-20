@@ -132,7 +132,7 @@ async function setup(route){const errors=[];const console=new VirtualConsole();c
   assert.match(stylesheet,/@media\(max-width:767px\)/);
  }
  {
-  const {dom,d}=await setup('/coas'),page=d.querySelector('.pure-coa-page');
+  const {dom,d,w}=await setup('/coas'),page=d.querySelector('.pure-coa-page');
   assert.ok(page,'COA library has a scoped design');
   assert.ok(page.querySelector('.ap-coa-hero'));
   assert.equal(page.querySelector('.ap-coa-hero.pure-editorial-hero'),null,'original hero structure restored');
@@ -145,6 +145,32 @@ async function setup(route){const errors=[];const console=new VirtualConsole();c
    assert.ok(page.querySelector('#'+id),'COA filter/report function remains: '+id);
   assert.equal(page.querySelector('#ap-coa-reset').type,'button');
   assert.equal(page.querySelector('.ap-coa-results-heading a').getAttribute('href'),'/contact');
+  // Actual supplier report rendering: original document buttons are consistent for every card.
+  const fixture=JSON.parse(read('data/supplier-coas.json'));
+  const sampleReports=fixture.reports.slice(0,5);
+  assert.ok(sampleReports.length>0,'report data fixture exists');
+  w.fetch=async()=>({ok:true,json:async()=>({...fixture,reports:sampleReports})});
+  w.eval(read('public-build/supplier-coas.js'));
+  await w.AltaSupplierCoas.render(d.getElementById('ap-supplier-references'),w.AltaStore.catalog);
+  const cards=[...d.querySelectorAll('.ap-supplier-coa-grid .ap-coa-card')];
+  assert.equal(cards.length,sampleReports.length,'sample report cards render');
+  for(const card of cards){
+   const actions=card.querySelector('.pure-coa-card-body .ap-actions');
+   const primary=actions.querySelector('button.ap-button');
+   const original=actions.querySelector('a.ap-coa-original-link');
+   assert.ok(primary&&original,'both actions are present on each card');
+   assert.equal(actions.children[0],primary);
+   assert.equal(actions.children[1],original);
+   assert.match(original.textContent,/^Open original (?:PDF|report)$/);
+   assert.equal(original.target,'_blank');
+   assert.ok(original.rel.includes('noopener'));
+   assert.ok(original.href.startsWith('https://'),'original document remains secure');
+   assert.equal(original.querySelector('svg')?.getAttribute('aria-hidden'),'true');
+  }
+  const coaStyles=read('public-build/pure-coa.css');
+  assert.ok(coaStyles.includes('.ap-coa-original-link {'),'new original button CSS is published');
+  assert.ok(coaStyles.includes('flex-direction: column;'),'COA actions are vertically stacked');
+
   dom.window.close();
  }
  {

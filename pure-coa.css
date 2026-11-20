@@ -153,21 +153,73 @@ html:root body.ap-site .pure-coa-card-body dd {
 }
 html:root body.ap-site .pure-coa-card-body .ap-actions {
   display: flex;
-  align-items: center;
+  flex-direction: column;
+  align-items: stretch;
   justify-content: flex-start;
-  gap: 14px 18px;
+  gap: 10px;
+  width: 100%;
   margin-top: auto;
   padding-top: 18px;
   border-top: 1px solid #e8e8e8;
 }
 html:root body.ap-site .pure-coa-card-body .ap-actions .ap-button {
-  flex: 0 0 100%;
-  min-height: 46px;
+  flex: none;
+  width: 100%;
+  min-height: 48px;
   font-size: 13px;
 }
-html:root body.ap-site .pure-coa-card-body .ap-text-link {
-  font-size: 13px;
+html:root body.ap-site .pure-coa-card-body .ap-actions .ap-coa-original-link {
+  box-sizing: border-box;
+  display: inline-flex;
+  flex: none;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  width: 100%;
+  min-height: 46px;
+  margin: 0;
+  padding: 11px 16px;
+  border: 1px solid #d2d2d2;
+  border-radius: 12px;
+  background: #f8f8f8;
+  color: #171717;
+  font-family: Archivo, Arial, sans-serif;
+  font-size: 12px;
+  font-weight: 800;
+  letter-spacing: .055em;
+  line-height: 1.25;
+  text-align: center;
+  text-decoration: none;
+  text-transform: uppercase;
+  transition: background-color .18s ease, border-color .18s ease;
+}
+html:root body.ap-site .pure-coa-card-body .ap-actions .ap-coa-original-link:hover {
+  border-color: #a7a7a7;
+  background: #f0f0f0;
+  color: #101010;
+  text-decoration: none;
+}
+html:root body.ap-site .pure-coa-card-body .ap-actions .ap-coa-original-link svg {
+  display: block;
+  flex: 0 0 17px;
+  width: 17px;
+  height: 17px;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 1.7;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+html:root body.ap-site .pure-coa-card-body .ap-actions > .ap-text-link {
+  align-self: center;
+  margin: 4px 0 0;
+  font-size: 12px;
   overflow-wrap: anywhere;
+}
+@media (prefers-reduced-motion: reduce) {
+  html:root body.ap-site .pure-coa-card-body .ap-actions .ap-coa-original-link {
+    transition: none;
+  }
 }
 html:root body.ap-site .pure-coa-card-body .nl-coa-copy {
   min-height: 28px;
