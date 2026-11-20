@@ -58,7 +58,7 @@
   const trustMarkup='<div class="nlx-trust"><span><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="5" y="10" width="14" height="11" rx="2"/><path d="M8 10V7a4 4 0 0 1 8 0v3"/></svg>SECURE</span><span>'+shieldIcon+'PROTECTED</span><span><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="m7 12 3 3 7-7"/></svg>3RD PARTY TESTED</span></div>';
   const displayAddress=()=>{const a=state.shippingData||formatAddress();return '<b>'+esc(((state.firstName||nameFirst)+' '+(state.lastName||nameLast)).trim())+'</b><span>'+esc(a.line1||'')+'</span>'+(a.line2?'<span>'+esc(a.line2)+'</span>':'')+'<span>'+esc((a.city||'')+(a.region?', '+a.region:'')+(a.postal_code?' '+a.postal_code:''))+'</span>';};
   const state={country:supported.includes(saved.country)?saved.country:'US',
-    shipping:'standard',extras:new Set([...(Array.isArray(priorExtras)?priorExtras.filter(x=>x!=='protection'&&isActive(x)):[]),...(isActive('protection')&&wantsProtection(cart)?['protection']:[])]),
+    shipping:'economy',extras:new Set([...(Array.isArray(priorExtras)?priorExtras.filter(x=>x!=='protection'&&isActive(x)):[]),...(isActive('protection')&&wantsProtection(cart)?['protection']:[])]),
     coupon:initialCoupon(),paymentKind:walletPreference?'card':paymentKind(preferred)||'card',wallet:walletPreference,fxQuote:null,shippingData:null,billingData:null,billingSame:true,note:'',smsOptIn:false};
   if(state.paymentKind==='interac'&&!preferred?.countries?.includes(state.country))state.paymentKind='card';
   root.classList.add('nlx-checkout-root');document.title='Checkout | PURE';
@@ -106,13 +106,13 @@
   function extraDisplay(id){const quoted=currentPreview?.pricing?.delivery?.extras?.find(item=>item.id===id);return quoted?currentMoney(quoted.amount_cents):usdDisplay(optionsById[id]?.price_cents);}
   function deliveryDisplay(id,amount){
    const delivery=currentPreview?.pricing?.delivery;
-   if(data.membership?.benefits?.free_shipping&&shippingCountry()==='US'&&['standard','express'].includes(id))return 'Included';
+   if(data.membership?.benefits?.free_shipping&&shippingCountry()==='US'&&['economy','standard','express'].includes(id))return 'Included';
    if(delivery?.selection?.shipping===id)return currentMoney(delivery.shipping_cents);
    return usdDisplay(amount);
   }
   function syncCurrencyDisplays(){
    const rates=data.shipping_zones?.[shippingCountry()]||data.shipping_zones?.OTHER||{};
-   all('[name=delivery_speed]',form).forEach(input=>{const price=input.closest('.nlx-delivery-card')?.querySelector('.nlx-delivery-price');if(price)price.textContent=!Number.isSafeInteger(rates[input.value])?'Unavailable':input.value==='standard'&&['US','CA'].includes(shippingCountry())&&currentPreview?.free_shipping_remaining_cents===0?'FREE':deliveryDisplay(input.value,rates[input.value]);});
+   all('[name=delivery_speed]',form).forEach(input=>{const price=input.closest('.nlx-delivery-card')?.querySelector('.nlx-delivery-price');if(price)price.textContent=!Number.isSafeInteger(rates[input.value])?'Unavailable':['economy','standard'].includes(input.value)&&['US','CA'].includes(shippingCountry())&&currentPreview?.free_shipping_remaining_cents===0?'FREE':deliveryDisplay(input.value,rates[input.value]);});
    all('[data-nlx-extra-price]',form).forEach(target=>target.textContent=extraDisplay(target.dataset.nlxExtraPrice));
    all('[data-nlx-cross-sell-price]',form).forEach(target=>target.textContent=usdDisplay(Number(target.dataset.nlxCrossSellPrice)));
    const shipping=view('[data-nlx-confirm-shipping-price]',form);if(shipping)shipping.textContent=currentMoney(currentPreview?.pricing?.delivery?.shipping_cents);
@@ -292,7 +292,7 @@
     if(date.getUTCDay()===5)date.setUTCDate(date.getUTCDate()+3);
     else if(date.getUTCDay()===6)date.setUTCDate(date.getUTCDate()+2);
     else if(date.getUTCDay()===0)date.setUTCDate(date.getUTCDate()+1);
-    let days={standard:3,express:2,next_day:1}[id]||3;
+    let days={economy:6,standard:3,express:2,next_day:1}[id]||6;
     while(days>0){date.setUTCDate(date.getUTCDate()+1);if(![0,6].includes(date.getUTCDay()))days--;}
     return date;
   }
@@ -300,8 +300,8 @@
   function deliveryCards(){
    const rates=data.shipping_zones||{};
    const country=shippingCountry();const map=rates[country]||rates.OTHER||{};
-   const options=['standard','express','next_day'].map((id,i)=>{const x=optionsById[id];if(!x)return'';
-    const regularAmount=map[id],eligible=x.enabled&&Number.isSafeInteger(regularAmount);const amount=id==='standard'&&['US','CA'].includes(country)&&currentPreview?.free_shipping_remaining_cents===0?0:regularAmount;
+   const options=['economy','standard','express','next_day'].map((id,i)=>{const x=optionsById[id];if(!x)return'';
+    const regularAmount=map[id],eligible=x.enabled&&Number.isSafeInteger(regularAmount);const amount=['economy','standard'].includes(id)&&['US','CA'].includes(country)&&currentPreview?.free_shipping_remaining_cents===0?0:regularAmount;
     return '<label class="nlx-delivery-card '+(state.shipping===id?'nlx-chosen':'')+(eligible?'':' nlx-disabled')+'"><input type="radio" name="delivery_speed" value="'+id+'" '+(state.shipping===id?'checked ':'')+(eligible?'':'disabled')+'><span class="nlx-delivery-desc"><strong>'+esc(x.label)+'</strong><small>'+esc(arrivalLabel(id))+'</small></span><span class="nlx-delivery-price">'+(eligible?deliveryDisplay(id,amount):'Unavailable')+'</span></label>';
    }).join('');
    const extra=(data.membership?.benefits?.priority_fulfillment?[]:['priority']).map(id=>{const x=optionsById[id];if(!x)return'';
@@ -366,7 +366,7 @@
      }
      view('.nlx-billing-other',form).hidden=false;all('input',view('.nlx-billing-other',form)).forEach(x=>x.required=true);
     }
-    form.elements.country.addEventListener('change',()=>{state.country=shippingCountry();if(state.paymentKind==='interac'&&!selectedMethod()){state.paymentKind='card';state.wallet=null;}localStorage.setItem('ap-shipping-country',state.country);const rates=data.shipping_zones?.[state.country]||data.shipping_zones?.OTHER||{};if(!Number.isSafeInteger(rates[state.shipping]))state.shipping='standard';schedule();});
+    form.elements.country.addEventListener('change',()=>{state.country=shippingCountry();if(state.paymentKind==='interac'&&!selectedMethod()){state.paymentKind='card';state.wallet=null;}localStorage.setItem('ap-shipping-country',state.country);const rates=data.shipping_zones?.[state.country]||data.shipping_zones?.OTHER||{};if(!Number.isSafeInteger(rates[state.shipping]))state.shipping='economy';schedule();});
     const other=view('.nlx-billing-other',form);form.elements.billing_same.addEventListener('change',()=>{
       other.hidden=form.elements.billing_same.checked;all('input',other).forEach(x=>x.required=!other.hidden);
     });
