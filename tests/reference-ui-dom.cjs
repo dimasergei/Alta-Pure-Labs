@@ -114,5 +114,42 @@ async function setup(route){const errors=[];const console=new VirtualConsole();c
   dom.window.close();
  }
  for(const route of ['/contact','/partner-program','/coas','/rewards','/track-order']){const{dom,d}=await setup(route);assert.ok(d.querySelector('h1'),route);if(route==='/rewards'||route==='/track-order'){assert.ok(d.querySelector('#ap-main a[href="'+(route==='/rewards'?'/account#rewards-and-credit':'/account/purchases')+'"]'),route+' points to the signed-in account page');}else assert.ok(d.querySelector('#ap-main').textContent.trim().length>150,route);dom.window.close();}
+ // Both public information pages share PURE's final editorial stylesheet.
+ {
+  const editorial=read('public-build/pure-editorial-parity.css');
+  assert.match(editorial,/pure-coa-page \.ap-coa-hero/);
+  assert.match(editorial,/pure-partner-program-page \.nl-partner-hero/);
+  assert.match(editorial,/font-family:Archivo,Arial,sans-serif/);
+  assert.match(editorial,/@media\(max-width:767px\)/);
+  assert.match(read('public-build/index.html'),/href="\/pure-editorial-parity\.css\?v=20261120-editorial"/);
+ }
+ {
+  const {dom,d}=await setup('/coas');
+  const page=d.querySelector('.pure-coa-page');
+  assert.ok(page,'COA page has its own styling scope');
+  assert.ok(page.querySelector('.ap-coa-hero.pure-editorial-hero'));
+  assert.match(page.querySelector('h1').textContent,/Find your product\s+documentation\./);
+  assert.ok(page.querySelector('.pure-coa-hero-art'),'PURE logo artwork is retained');
+  for(const id of ['ap-coa-query','ap-coa-product','ap-coa-size','ap-coa-lab','ap-coa-reset','ap-supplier-references'])
+   assert.ok(page.querySelector('#'+id),'COA search/report control retained: '+id);
+  assert.equal(page.querySelector('#ap-coa-reset').type,'button');
+  assert.equal(page.querySelector('.ap-coa-results-heading a').getAttribute('href'),'/contact');
+  dom.window.close();
+ }
+ {
+  const {dom,d}=await setup('/partner-program');
+  const page=d.querySelector('.pure-partner-program-page');
+  assert.ok(page,'Partner Program has its own styling scope');
+  assert.ok(page.querySelector('.nl-partner-hero.pure-editorial-hero'));
+  assert.ok(page.querySelector('.pure-editorial-watermark'),'PURE watermark is retained');
+  assert.match(page.querySelector('h1').textContent,/Good research grows/);
+  const rates=[...page.querySelectorAll('.nl-partner-rates article')];
+  assert.equal(rates.length,2);
+  assert.deepEqual(rates.map(a=>a.querySelector('strong').textContent),['20%','10%']);
+  assert.equal(page.querySelector('.nl-partner-actions a[href="/account/partner"]').textContent,'Open Partner Workspace');
+  assert.ok(page.querySelector('.nl-partner-actions a[href="/partner-terms.html"]'));
+  assert.equal(page.querySelectorAll('.nl-partner-step-grid article').length,4);
+  dom.window.close();
+ }
  console.log('PASS: built reference pages, retired view removal, product size changes, regular quantities/prices, search/category filters and isolated bulk order.');
 })().catch(e=>{console.error(e);process.exitCode=1;});
