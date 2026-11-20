@@ -58,6 +58,7 @@
   const trustMarkup='<div class="nlx-trust"><span><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="5" y="10" width="14" height="11" rx="2"/><path d="M8 10V7a4 4 0 0 1 8 0v3"/></svg>SECURE</span><span>'+shieldIcon+'PROTECTED</span><span><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="m7 12 3 3 7-7"/></svg>3RD PARTY TESTED</span></div>';
   const displayAddress=()=>{const a=state.shippingData||formatAddress();return '<b>'+esc(((state.firstName||nameFirst)+' '+(state.lastName||nameLast)).trim())+'</b><span>'+esc(a.line1||'')+'</span>'+(a.line2?'<span>'+esc(a.line2)+'</span>':'')+'<span>'+esc((a.city||'')+(a.region?', '+a.region:'')+(a.postal_code?' '+a.postal_code:''))+'</span>';};
   const state={country:supported.includes(saved.country)?saved.country:'US',
+    membershipAddon:null,membershipChoice:{plan:'vip',period:'monthly'},
     shipping:'economy',extras:new Set([...(Array.isArray(priorExtras)?priorExtras.filter(x=>x!=='protection'&&isActive(x)):[]),...(isActive('protection')&&wantsProtection(cart)?['protection']:[])]),
     coupon:initialCoupon(),paymentKind:walletPreference?'card':paymentKind(preferred)||'card',wallet:walletPreference,fxQuote:null,shippingData:null,billingData:null,billingSame:true,note:'',smsOptIn:false};
   if(state.paymentKind==='interac'&&!preferred?.countries?.includes(state.country))state.paymentKind='card';
@@ -144,7 +145,7 @@
     sms_opt_in:state.smsOptIn,billing_same:state.billingSame,
     note:state.note,method_id:selectedMethod()?.id,
     points:0,credit_cents:0,coupon:state.coupon,
-    delivery:selection(),checkout_version:data.config.version,
+    delivery:selection(),checkout_version:data.config.version,...(state.membershipAddon?{membership_addon:state.membershipAddon}:{}),
     ...(state.paymentKind==='interac'&&state.fxQuote?{fx_quote:state.fxQuote}:{})
   });
   async function fetchPreview(coupon=state.coupon){
@@ -154,7 +155,7 @@
    const res=await fetch('/api/customer-config?checkout=cart',{method:'POST',cache:'no-store',
      headers:{'Content-Type':'application/json',...(token?{Authorization:'Bearer '+token}:{})},
      body:JSON.stringify({items:checkoutItems(),
-       method_id:selectedMethod()?.id||null,coupon,delivery:selection(),country:addr,
+       method_id:selectedMethod()?.id||null,coupon,delivery:selection(),country:addr,...(state.membershipAddon?{membership_addon:state.membershipAddon}:{}),
        ...(state.paymentKind==='interac'&&state.fxQuote?{fx_quote:state.fxQuote}:{})})});
    const result=await res.json().catch(()=>null);
    if(current!==quoteVersion||onePayment||lastPlaced)return null;
@@ -167,7 +168,7 @@
   }
   function moneyLines(){
    const p=currentPreview;
-   const subtotal=p?.subtotal_cents??snapshotCart().reduce((n,x)=>n+Math.round(x.price*100)*x.qty,0);
+   const subtotal=p?.pricing?.subtotal_cents??snapshotCart().reduce((n,x)=>n+Math.round(x.price*100)*x.qty,0);
    const savings=Math.max(0,p?.pricing?.coupon_discount_cents||0),cryptoSavings=Math.max(0,p?.pricing?.crypto_discount_cents||0);
    const delivery=p?.pricing?.delivery||{};
    const ships=p?.shipping_cents??0,shipBase=delivery.shipping_cents??0;
@@ -177,6 +178,7 @@
    if(savings)counts.push(['BLACKFRIDAY15 (15%)',-savings]);
     if(p?.pricing?.quantity_discount_cents>0)counts.push(['Quantity savings',-p.pricing.quantity_discount_cents]);
    if(cryptoSavings)counts.push(['Crypto discount (5%)',-cryptoSavings]);
+   if(p?.pricing?.membership_addon)counts.push([p.pricing.membership_addon.name+' — '+(p.pricing.membership_addon.period==='monthly'?'first month':'annual'),p.pricing.membership_addon.fee_cents]);
    counts.push(['Shipping',shipBase]);
    for(const x of fees)counts.push([x.label,x.amount_cents]);
    if(!p&&ships&&!fees.length)counts.push(['Shipping and add-ons',ships]);
@@ -213,8 +215,19 @@
     const amount=currentPreview?.currency===paymentCurrency()&&Number.isSafeInteger(line?.gross_cents)?currentMoney(line.gross_cents):paymentCurrency()==='USD'?usd(Math.round(x.price*100)*x.qty):'Calculating…';
     return '<div class="nlx-product"><button type="button" class="nlx-remove" data-nlx-remove="'+esc(x.key)+'" aria-label="Remove '+esc(x.name)+'">×</button><img src="'+esc(image)+'" alt=""><div class="nlx-product-name"><strong>'+esc(x.name)+'</strong><div class="nlx-size-line"><small>'+esc(x.size)+'</small>'+'</div><div class="nlx-qty"><button data-nlx-qty="-1" data-key="'+esc(x.key)+'" aria-label="Decrease quantity">−</button><span>'+x.qty+'</span><button data-nlx-qty="1" data-key="'+esc(x.key)+'" aria-label="Increase quantity">+</button></div></div><strong class="nlx-product-price">'+amount+'</strong></div>';
    }).join('');
+   if(currentPreview?.pricing?.membership_addon){
+     const member=currentPreview.pricing.membership_addon;
+     view('[data-nlx-products]',detail).insertAdjacentHTML('beforeend','<div class="nlx-product nlx-membership-line"><button type="button" class="nlx-remove" data-nlx-remove-membership aria-label="Remove membership">×</button><div class="nlx-product-name"><strong>'+esc(member.name)+'</strong><small>'+esc(member.period==='monthly'?'First month':'Annual membership')+'</small></div><strong class="nlx-product-price">'+currentMoney(member.fee_cents)+'</strong></div>');
+   }
    view('[data-nlx-totals]',detail).innerHTML=currentPreview?moneyLines().map(([n,v])=>'<div class="'+(['Total','Total (CAD)'].includes(n)?'nlx-grand':'')+'"><span>'+esc(n)+'</span><strong>'+currentMoney(v)+'</strong></div>').join(''):'<p role="status">Calculating your order total…</p>';
-   window.PureMembershipCheckout?.offer(view('[data-pure-membership-offer]',detail),currentPreview,data.terms?.conversion);
+   window.PureMembershipCheckout?.offer(view('[data-pure-membership-offer]',detail),currentPreview,data.terms?.conversion,{
+     selection:state.membershipChoice,
+     onSelect:choice=>{state.membershipChoice=choice;renderSummary();},
+     onAdd:addon=>{state.membershipAddon={plan:addon.plan,period:addon.period};invalidate();renderSummary();void refresh();},
+     onRemove:()=>{state.membershipAddon=null;invalidate();renderSummary();void refresh();}
+   });
+   const removeMember=view('[data-nlx-remove-membership]',detail);
+   if(removeMember)removeMember.onclick=()=>{state.membershipAddon=null;invalidate();renderSummary();void refresh();};
    const balances=view('[data-nlx-points]',detail),hasBalance=(data.balances?.points||0)>0||(data.balances?.credit_cents||0)>0;balances.hidden=!hasBalance;balances.innerHTML=hasBalance?'<span>Available: '+Math.max(0,data.balances.points||0)+' points · '+usd(data.balances.credit_cents||0)+' store credit.</span>'+(state.paymentKind==='interac'?'<span>USD points and store credit cannot be applied to an Interac payment. Choose Card or Crypto to use these balances.</span>':'<a href="/checkout?balance=1">Use existing balance →</a>'):'';
    view('[data-nlx-quote-note]',detail).textContent=(state.paymentKind==='interac'?'Your total is in CAD. Place your order to view the Interac receiving details and payment reference. ':currentPreview?.pricing?.discount_source==='coupon_crypto'?'Your coupon is applied first, then an extra 5% Crypto discount on the remaining merchandise. ':'')+(currentPreview?.shipping_note||'');
    view('[data-nlx-remove-coupon]',detail).hidden=!state.coupon;
