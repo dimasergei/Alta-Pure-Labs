@@ -84,7 +84,7 @@ begin
       if not found or m.plan is distinct from new.pricing->>'membership_plan' or coalesce(new.paid_at,now())>new.expires_at
       then raise exception 'Membership revoked or payment deadline passed; reconcile this order' using errcode='P0001';end if;
     end if;
-    new.priority_fulfillment:=coalesce(m.plan='elite',false) or (new.request_data->'membership_addon'->>'plan'='elite');
+    new.priority_fulfillment:=coalesce(m.plan='elite',false) or coalesce(new.request_data->'membership_addon'->>'plan'='elite',false);
   elsif new.priority_fulfillment is distinct from old.priority_fulfillment then
     raise exception 'Priority fulfillment requires verified payment' using errcode='P0001';
   end if;
